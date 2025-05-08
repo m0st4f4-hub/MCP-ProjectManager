@@ -64,8 +64,8 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
             title,
             description: description || undefined,
             completed,
-            project_id: projectId ? parseInt(projectId, 10) : null, // Send null if empty
-            agent_name: agentName || null, // Send null if empty
+            project_id: projectId ? parseInt(projectId, 10) : undefined,
+            agent_name: agentName || undefined,
         };
 
         try {

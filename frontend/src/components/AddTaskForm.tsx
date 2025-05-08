@@ -2,131 +2,149 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { TaskCreateData } from '@/services/api';
-import { useTaskStore } from '@/store/taskStore';
 import {
     Box,
-    Input,
     Button,
-    Textarea,
     FormControl,
     FormLabel,
+    Input,
+    Textarea,
     VStack,
-    Select,
     useToast,
+    Select
 } from '@chakra-ui/react';
-import { useShallow } from 'zustand/react/shallow';
+import { useTaskStore } from '@/store/taskStore';
+import { TaskCreateData } from '@/types';
 
-interface AddTaskFormProps {
-    onTaskAdded?: () => void; // Optional callback for when a task is successfully added
-}
-
-const AddTaskForm: React.FC<AddTaskFormProps> = ({ onTaskAdded }) => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [projectId, setProjectId] = useState<string>('');
-    const [agentName, setAgentName] = useState<string>('');
-    const [isLoading, setIsLoading] = useState(false);
-
-    // Get projects, agents, scopes from store for dropdowns
-    const { projects, agents, addTask, fetchProjects, fetchAgents } = useTaskStore(
-        useShallow(state => ({
-            projects: state.projects,
-            agents: state.agents,
-            addTask: state.addTask,
-            fetchProjects: state.fetchProjects,
-            fetchAgents: state.fetchAgents,
-        }))
-    );
+const AddTaskForm: React.FC = () => {
+    const addTask = useTaskStore(state => state.addTask);
+    const projects = useTaskStore(state => state.projects);
+    const agents = useTaskStore(state => state.agents);
+    const fetchProjectsAndAgents = useTaskStore(state => state.fetchProjectsAndAgents);
     const toast = useToast();
+    
+    const [formData, setFormData] = useState<TaskCreateData>({
+        title: '',
+        description: null,
+        completed: false,
+        project_id: null,
+        agent_name: null
+    });
 
     useEffect(() => {
-        if (projects.length === 0) {
-            fetchProjects();
-        }
-        if (agents.length === 0) {
-            fetchAgents();
-        }
-    }, [projects.length, agents.length, fetchProjects, fetchAgents]);
+        fetchProjectsAndAgents();
+    }, [fetchProjectsAndAgents]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!title.trim()) {
-             toast({ title: "Title is required", status: "warning", duration: 3000, isClosable: true });
-             return;
-        }
-        setIsLoading(true);
-        const taskData: TaskCreateData = {
-            title,
-            description: description || undefined,
-            project_id: projectId ? parseInt(projectId, 10) : undefined,
-            agent_name: agentName || undefined,
-        };
         try {
-            await addTask(taskData);
-            setTitle('');
-            setDescription('');
-            setProjectId('');
-            setAgentName('');
-            toast({ title: "Task added successfully!", status: "success", duration: 3000, isClosable: true });
-            if (onTaskAdded) {
-                onTaskAdded(); // Call the callback if provided
-            }
+            await addTask(formData);
+            setFormData({
+                title: '',
+                description: null,
+                completed: false,
+                project_id: null,
+                agent_name: null
+            });
+            toast({
+                title: 'Task added successfully',
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+            });
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-             toast({ title: "Failed to add task", description: message, status: "error", duration: 5000, isClosable: true });
-        } finally {
-            setIsLoading(false);
+            toast({
+                title: 'Error adding task',
+                description: error instanceof Error ? error.message : 'An error occurred',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
         }
     };
 
+    const handleChange = (field: keyof TaskCreateData, value: string | number | null) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: field === 'project_id' ? (value ? Number(value) : null) : value
+        }));
+    };
+
     return (
-        <Box as="form" onSubmit={handleSubmit} width="100%">
-            <VStack spacing={4} align="stretch">
+        <Box 
+            as="form" 
+            onSubmit={handleSubmit} 
+            bg="gray.800" 
+            p={6} 
+            rounded="lg" 
+            shadow="lg" 
+            borderWidth="1px" 
+            borderColor="gray.700"
+        >
+            <VStack spacing={4}>
                 <FormControl isRequired>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel color="gray.100">Title</FormLabel>
                     <Input
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Enter task title" 
-                        focusBorderColor="brand.primary"
-                        bg="bg.surface"
+                        value={formData.title}
+                        onChange={(e) => handleChange('title', e.target.value)}
+                        placeholder="Enter task title"
+                        bg="gray.700"
+                        color="white"
+                        borderColor="gray.600"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                        _placeholder={{ color: "gray.400" }}
                     />
                 </FormControl>
+
                 <FormControl>
-                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormLabel color="gray.100">Description</FormLabel>
                     <Textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Enter task description" 
-                        focusBorderColor="brand.primary"
-                        bg="bg.surface"
+                        value={formData.description || ''}
+                        onChange={(e) => handleChange('description', e.target.value || null)}
+                        placeholder="Enter task description"
+                        bg="gray.700"
+                        color="white"
+                        borderColor="gray.600"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                        _placeholder={{ color: "gray.400" }}
                     />
                 </FormControl>
-                 <FormControl>
-                    <FormLabel>Project (Optional)</FormLabel>
+
+                <FormControl>
+                    <FormLabel color="gray.100">Project</FormLabel>
                     <Select 
-                        placeholder="- Select Project -" 
-                        value={projectId}
-                        onChange={(e) => setProjectId(e.target.value)}
-                        focusBorderColor="brand.primary"
-                        bg="bg.surface"
+                        value={formData.project_id || ''}
+                        onChange={(e) => handleChange('project_id', e.target.value || null)}
+                        placeholder="Select project"
+                        bg="gray.700"
+                        color="white"
+                        borderColor="gray.600"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                        _placeholder={{ color: "gray.400" }}
                     >
                         {projects.map(project => (
-                            <option key={project.id} value={project.id.toString()}>
+                            <option key={project.id} value={project.id}>
                                 {project.name}
                             </option>
                         ))}
                     </Select>
                 </FormControl>
+
                 <FormControl>
-                    <FormLabel>Agent (Optional)</FormLabel>
+                    <FormLabel color="gray.100">Agent</FormLabel>
                     <Select 
-                        placeholder="- Select Agent -" 
-                        value={agentName}
-                        onChange={(e) => setAgentName(e.target.value)}
-                        focusBorderColor="brand.primary"
-                        bg="bg.surface"
+                        value={formData.agent_name || ''}
+                        onChange={(e) => handleChange('agent_name', e.target.value || null)}
+                        placeholder="Select agent"
+                        bg="gray.700"
+                        color="white"
+                        borderColor="gray.600"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                        _placeholder={{ color: "gray.400" }}
                     >
                         {agents.map(agent => (
                             <option key={agent.id} value={agent.name}>
@@ -135,12 +153,14 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({ onTaskAdded }) => {
                         ))}
                     </Select>
                 </FormControl>
-                <Button
-                    type="submit"
-                    colorScheme="blue"
-                    isLoading={isLoading}
-                    loadingText="Adding..."
+
+                <Button 
+                    type="submit" 
+                    colorScheme="blue" 
                     width="full"
+                    size="lg"
+                    _hover={{ bg: "blue.500" }}
+                    _active={{ bg: "blue.600" }}
                 >
                     Add Task
                 </Button>

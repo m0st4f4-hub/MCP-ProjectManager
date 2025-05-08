@@ -1,72 +1,87 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AgentCreateData } from '@/services/api';
-import { useTaskStore } from '@/store/taskStore';
 import {
     Box,
-    Input,
     Button,
     FormControl,
     FormLabel,
+    Input,
     VStack,
-    Heading,
-    useToast,
+    useToast
 } from '@chakra-ui/react';
+import { useAgentStore } from '@/store/agentStore';
+import { AgentCreateData } from '@/types';
 
-interface AddAgentFormProps {
-    addAgent: (agentData: AgentCreateData) => Promise<void>;
-}
-
-const AddAgentForm: React.FC<AddAgentFormProps> = ({ addAgent }) => {
-    const [name, setName] = useState('');
-    const isLoading = useTaskStore((state) => state.loadingCreateAgent);
+const AddAgentForm: React.FC = () => {
+    const addAgent = useAgentStore(state => state.addAgent);
     const toast = useToast();
+    const [formData, setFormData] = useState<AgentCreateData>({
+        name: ''
+    });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!name.trim()) {
-            toast({ title: "Agent name is required", status: "warning", duration: 3000, isClosable: true });
-            return;
-        }
-        
-        const agentData: AgentCreateData = {
-            name: name.trim(),
-        };
-
         try {
-            await addAgent(agentData);
-            setName('');
-            toast({ title: "Agent added successfully", status: "success", duration: 3000, isClosable: true });
-        } catch (error: unknown) {
-            console.error("Failed to add agent:", error);
-            const message = error instanceof Error ? error.message : 'Unknown error';
-            toast({ title: "Failed to add agent", description: message, status: "error", duration: 5000, isClosable: true });
+            await addAgent(formData);
+            setFormData({
+                name: ''
+            });
+            toast({
+                title: 'Agent added successfully',
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+            });
+        } catch (error) {
+            toast({
+                title: 'Error adding agent',
+                description: error instanceof Error ? error.message : 'An error occurred',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
         }
     };
 
+    const handleChange = (field: keyof AgentCreateData, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
     return (
-        <Box as="form" onSubmit={handleSubmit} p={4} borderWidth="1px" borderRadius="lg" borderColor="border.default" bg="bg.surface">
-            <VStack spacing={4} align="stretch">
-                 <Heading size="sm" mb={2} color="text.secondary">Add New Agent</Heading>
+        <Box 
+            as="form" 
+            onSubmit={handleSubmit} 
+            bg="gray.800" 
+            p={6} 
+            rounded="lg" 
+            shadow="lg" 
+            borderWidth="1px" 
+            borderColor="gray.700"
+        >
+            <VStack spacing={4}>
                 <FormControl isRequired>
-                    <FormLabel color="text.secondary">Agent Name</FormLabel>
+                    <FormLabel color="gray.100">Name</FormLabel>
                     <Input
-                        placeholder="Enter agent name..."
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        bg="bg.default"
-                        borderColor="border.default"
-                        focusBorderColor="brand.primary"
-                        isDisabled={isLoading}
+                        value={formData.name}
+                        onChange={(e) => handleChange('name', e.target.value)}
+                        placeholder="Enter agent name"
+                        bg="gray.700"
+                        color="white"
+                        borderColor="gray.600"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                        _placeholder={{ color: "gray.400" }}
                     />
                 </FormControl>
 
-                <Button
-                    type="submit"
-                    colorScheme="teal" // Use another color scheme
-                    isLoading={isLoading}
-                    loadingText="Adding..."
+                <Button 
+                    type="submit" 
+                    colorScheme="blue" 
+                    width="full"
+                    size="lg"
+                    _hover={{ bg: "blue.500" }}
+                    _active={{ bg: "blue.600" }}
                 >
                     Add Agent
                 </Button>

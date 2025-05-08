@@ -1,85 +1,110 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ProjectCreateData } from '@/services/api';
-import { useTaskStore } from '@/store/taskStore';
 import {
-    Input,
-    Textarea,
+    Box,
+    Button,
     FormControl,
     FormLabel,
-    useToast,
+    Input,
+    Textarea,
+    VStack,
+    useToast
 } from '@chakra-ui/react';
-import AddFormBase from './common/AddFormBase';
+import { useProjectStore } from '@/store/projectStore';
+import { ProjectCreateData } from '@/types';
 
-interface AddProjectFormProps {
-    // Prop to receive the store action
-    addProject: (projectData: ProjectCreateData) => Promise<void>;
-}
-
-const AddProjectForm: React.FC<AddProjectFormProps> = ({ addProject }) => {
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const isLoading = useTaskStore((state) => state.loadingCreateProject);
+const AddProjectForm: React.FC = () => {
+    const addProject = useProjectStore(state => state.addProject);
     const toast = useToast();
+    const [formData, setFormData] = useState<ProjectCreateData>({
+        name: '',
+        description: null
+    });
 
-    const handleSubmit = async (_e: React.FormEvent) => {
-        if (!name.trim()) {
-             toast({ title: "Project name is required", status: "warning", duration: 3000, isClosable: true });
-             return;
-        }
-        
-        const projectData: ProjectCreateData = {
-            name: name.trim(),
-            description: description.trim() || undefined,
-        };
-
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
         try {
-            await addProject(projectData); // Call the action passed via props
-            setName('');
-            setDescription('');
-            toast({ title: "Project added successfully", status: "success", duration: 3000, isClosable: true });
-        } catch (error: unknown) {
-            console.error("Failed to add project:", error);
-            const message = error instanceof Error ? error.message : 'Unknown error';
-            toast({ title: "Failed to add project", description: message, status: "error", duration: 5000, isClosable: true });
+            await addProject(formData);
+            setFormData({
+                name: '',
+                description: null
+            });
+            toast({
+                title: 'Project added successfully',
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+            });
+        } catch (error) {
+            toast({
+                title: 'Error adding project',
+                description: error instanceof Error ? error.message : 'An error occurred',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
         }
     };
 
-    return (
-        <AddFormBase
-            formTitle="Add New Project"
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            submitButtonText="Add Project"
-            submitButtonColorScheme="green"
-        >
-            <FormControl isRequired>
-                <FormLabel color="text.secondary">Project Name</FormLabel>
-                <Input
-                    placeholder="Enter project name..."
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    bg="bg.default"
-                    borderColor="border.default"
-                    focusBorderColor="brand.primary"
-                    isDisabled={isLoading}
-                />
-            </FormControl>
+    const handleChange = (field: keyof ProjectCreateData, value: string | null) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
 
-            <FormControl>
-                <FormLabel color="text.secondary">Description (Optional)</FormLabel>
-                <Textarea
-                    placeholder="Enter project description..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    bg="bg.default"
-                    borderColor="border.default"
-                    focusBorderColor="brand.primary"
-                    isDisabled={isLoading}
-                />
-            </FormControl>
-        </AddFormBase>
+    return (
+        <Box 
+            as="form" 
+            onSubmit={handleSubmit} 
+            bg="gray.800" 
+            p={6} 
+            rounded="lg" 
+            shadow="lg" 
+            borderWidth="1px" 
+            borderColor="gray.700"
+        >
+            <VStack spacing={4}>
+                <FormControl isRequired>
+                    <FormLabel color="gray.100">Name</FormLabel>
+                    <Input
+                        value={formData.name}
+                        onChange={(e) => handleChange('name', e.target.value)}
+                        placeholder="Enter project name"
+                        bg="gray.700"
+                        color="white"
+                        borderColor="gray.600"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                        _placeholder={{ color: "gray.400" }}
+                    />
+                </FormControl>
+
+                <FormControl>
+                    <FormLabel color="gray.100">Description</FormLabel>
+                    <Textarea
+                        value={formData.description || ''}
+                        onChange={(e) => handleChange('description', e.target.value || null)}
+                        placeholder="Enter project description"
+                        bg="gray.700"
+                        color="white"
+                        borderColor="gray.600"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                        _placeholder={{ color: "gray.400" }}
+                    />
+                </FormControl>
+
+                <Button 
+                    type="submit" 
+                    colorScheme="blue" 
+                    width="full"
+                    size="lg"
+                    _hover={{ bg: "blue.500" }}
+                    _active={{ bg: "blue.600" }}
+                >
+                    Add Project
+                </Button>
+            </VStack>
+        </Box>
     );
 };
 

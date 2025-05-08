@@ -1,154 +1,313 @@
 // D:\mcp\task-manager\frontend\src\components\TaskItem.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import {
     Box,
     Text,
-    Checkbox,
-    IconButton,
     HStack,
-    VStack,
-    useToast,
-    Accordion,
-    AccordionItem,
-    AccordionButton,
-    AccordionPanel,
-    AccordionIcon,
-    Input,
-    Select,
-    Button,
-    Tag,
-    Tooltip,
-    Spinner,
+    IconButton,
+    Checkbox,
     Badge,
-    Flex
+    VStack,
+    useDisclosure,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalCloseButton,
+    Button,
+    FormControl,
+    FormLabel,
+    Input,
+    Textarea,
+    Select
 } from '@chakra-ui/react';
-import { EditIcon, DeleteIcon, AddIcon, ChatIcon } from '@chakra-ui/icons';
-import { Task } from '@/services/api';
+import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { Task } from '@/types';
 import { useTaskStore } from '@/store/taskStore';
-import { useShallow } from 'zustand/react/shallow';
 
 interface TaskItemProps {
     task: Task;
+    onToggle: (id: number) => void;
+    onDelete: (id: number) => void;
+    onEdit: (task: Task) => void;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task }) => {
-    const toast = useToast();
+const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete, onEdit }) => {
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    const [editedTask, setEditedTask] = React.useState<Task>(task);
+    const projects = useTaskStore(state => state.projects);
+    const agents = useTaskStore(state => state.agents);
+    const fetchProjectsAndAgents = useTaskStore(state => state.fetchProjectsAndAgents);
 
-    const {
-        removeTask,
-        toggleTaskComplete,
-        openEditModal,
-    } = useTaskStore(useShallow(state => ({
-        removeTask: state.removeTask,
-        toggleTaskComplete: state.toggleTaskComplete,
-        openEditModal: state.openEditModal,
-    })));
-
-    const handleToggle = React.useCallback(async () => {
-        try {
-            await toggleTaskComplete(task.id, !task.completed);
-        } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : 'Please try again.';
-            toast({
-                title: "Failed to update task status",
-                description: message,
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-            });
+    useEffect(() => {
+        if (isOpen) {
+            fetchProjectsAndAgents();
         }
-    }, [task.id, task.completed, toggleTaskComplete, toast]);
+    }, [isOpen, fetchProjectsAndAgents]);
 
-    const handleDelete = React.useCallback(async () => {
-        try {
-            await removeTask(task.id);
-            toast({ title: "Task deleted", status: "info", duration: 2000, isClosable: true });
-        } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : 'Please try again.';
-            toast({
-                title: "Failed to delete task",
-                description: message,
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-            });
-        }
-    }, [task.id, removeTask, toast]);
+    // Reset edited task when the task prop changes
+    React.useEffect(() => {
+        setEditedTask(task);
+    }, [task]);
 
-    const handleEdit = React.useCallback(() => {
-        openEditModal(task);
-    }, [task, openEditModal]);
+    // Memoize handlers
+    const handleSubmit = useCallback((e: React.FormEvent) => {
+        e.preventDefault();
+        onEdit(editedTask);
+        onClose();
+    }, [editedTask, onEdit, onClose]);
+
+    const handleInputChange = (field: keyof Task, value: string | number | boolean | null) => {
+        setEditedTask(prev => ({
+            ...prev,
+            [field]: field === 'project_id' ? (value ? Number(value) : null) : value
+        }));
+    };
+
+    // Get project and agent names for display
+    const projectName = useMemo(() => {
+        if (!task.project_id) return null;
+        return projects.find(p => p.id === task.project_id)?.name || `Project ${task.project_id}`;
+    }, [task.project_id, projects]);
+
+    // Memoize modal content to prevent unnecessary re-renders
+    const modalContent = useMemo(() => (
+        <Modal isOpen={isOpen} onClose={onClose} size="xl">
+            <ModalOverlay backdropFilter="blur(2px)" />
+            <ModalContent bg="gray.800" color="white" borderColor="gray.700" borderWidth="1px">
+                <ModalHeader borderBottomWidth="1px" borderColor="gray.700">Edit Task</ModalHeader>
+                <ModalCloseButton color="gray.300" _hover={{ bg: "gray.700", color: "white" }} />
+                <ModalBody pb={6}>
+                    <form onSubmit={handleSubmit}>
+                        <VStack spacing={4}>
+                            <FormControl isRequired>
+                                <FormLabel color="gray.100">Title</FormLabel>
+                                <Input
+                                    value={editedTask.title}
+                                    onChange={(e) => handleInputChange('title', e.target.value)}
+                                    placeholder="Task title"
+                                    bg="gray.700"
+                                    color="white"
+                                    borderColor="gray.600"
+                                    _hover={{ borderColor: "gray.500" }}
+                                    _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                                    _placeholder={{ color: "gray.400" }}
+                                />
+                            </FormControl>
+
+                            <FormControl>
+                                <FormLabel color="gray.100">Description</FormLabel>
+                                <Textarea
+                                    value={editedTask.description || ''}
+                                    onChange={(e) => handleInputChange('description', e.target.value || null)}
+                                    placeholder="Task description"
+                                    bg="gray.700"
+                                    color="white"
+                                    borderColor="gray.600"
+                                    _hover={{ borderColor: "gray.500" }}
+                                    _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                                    _placeholder={{ color: "gray.400" }}
+                                />
+                            </FormControl>
+
+                            <FormControl>
+                                <FormLabel color="gray.100">Project</FormLabel>
+                                <Select
+                                    value={editedTask.project_id || ''}
+                                    onChange={(e) => handleInputChange('project_id', e.target.value ? Number(e.target.value) : null)}
+                                    placeholder="Select project"
+                                    bg="gray.700"
+                                    color="white"
+                                    borderColor="gray.600"
+                                    _hover={{ borderColor: "gray.500" }}
+                                    _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                                    _placeholder={{ color: "gray.400" }}
+                                >
+                                    {projects.map(project => (
+                                        <option key={project.id} value={project.id}>
+                                            {project.name}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </FormControl>
+
+                            <FormControl>
+                                <FormLabel color="gray.100">Agent</FormLabel>
+                                <Select
+                                    value={editedTask.agent_name || ''}
+                                    onChange={(e) => handleInputChange('agent_name', e.target.value || null)}
+                                    placeholder="Select agent"
+                                    bg="gray.700"
+                                    color="white"
+                                    borderColor="gray.600"
+                                    _hover={{ borderColor: "gray.500" }}
+                                    _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                                    _placeholder={{ color: "gray.400" }}
+                                >
+                                    {agents.map(agent => (
+                                        <option key={agent.id} value={agent.name}>
+                                            {agent.name}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </FormControl>
+
+                            <HStack spacing={4} width="100%" justify="flex-end" pt={4}>
+                                <Button 
+                                    onClick={onClose}
+                                    variant="outline"
+                                    borderColor="gray.600"
+                                    color="gray.100"
+                                    _hover={{ bg: "gray.700" }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    colorScheme="blue" 
+                                    type="submit"
+                                    _hover={{ bg: "blue.500" }}
+                                    _active={{ bg: "blue.600" }}
+                                >
+                                    Save Changes
+                                </Button>
+                            </HStack>
+                        </VStack>
+                    </form>
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+    ), [isOpen, onClose, editedTask, handleSubmit, projects, agents]);
 
     return (
-        <Flex align="center" px={4} py={2} borderBottomWidth="1px" borderColor="border.subtle" gap={3} minH="56px">
-            <Tooltip label={task.completed ? "Mark as incomplete" : "Mark as complete"} placement="top" openDelay={300}>
+        <>
+            <Box
+                p={5}
+                bg="gray.700"
+                rounded="lg"
+                shadow="lg"
+                borderWidth="1px"
+                borderColor={task.completed ? "green.500" : "gray.600"}
+                _hover={{ 
+                    shadow: "xl", 
+                    borderColor: "blue.400",
+                    transform: "translateY(-1px)",
+                }}
+                transition="all 0.2s ease-in-out"
+                position="relative"
+                overflow="hidden"
+                _before={{
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "4px",
+                    bg: task.completed ? "green.400" : "blue.400",
+                    opacity: 0.7
+                }}
+            >
+                <HStack spacing={4} justify="space-between" align="start">
+                    <HStack spacing={4} flex={1}>
                 <Checkbox
                     isChecked={task.completed}
-                    onChange={handleToggle}
+                            onChange={() => onToggle(task.id)}
                     colorScheme="green"
                     size="lg"
-                    aria-label="Toggle task completion"
-                    onClick={e => e.stopPropagation()}
+                            borderColor="gray.500"
                 />
-            </Tooltip>
-            <VStack alignItems="flex-start" spacing={0} flex={1} minW={0}>
+                        <VStack align="start" spacing={3} flex={1}>
                 <Text
-                    fontSize="md"
-                    fontWeight="medium"
-                    color={task.completed ? "text.disabled" : "text.default"}
-                    textDecoration={task.completed ? 'line-through' : 'none'}
-                    isTruncated
+                                fontSize="lg"
+                                fontWeight="semibold"
+                                textDecoration={task.completed ? "line-through" : "none"}
+                                color={task.completed ? "gray.400" : "white"}
+                                letterSpacing="tight"
                 >
                     {task.title}
                 </Text>
-                <HStack spacing={2} mt={1}>
-                    {task.project?.name && (
-                        <Badge variant="subtle" colorScheme="purple" fontSize="0.7em">{task.project.name}</Badge>
-                    )}
-                    {task.agent?.name && (
-                        <Tag size="sm" colorScheme="blue" variant="subtle">
-                            <ChatIcon mr={1.5} /> {task.agent.name}
-                        </Tag>
-                    )}
+                            {task.description && (
+                                <Text
+                                    color={task.completed ? "gray.500" : "gray.300"}
+                                    fontSize="sm"
+                                    noOfLines={2}
+                                    textDecoration={task.completed ? "line-through" : "none"}
+                                    lineHeight="tall"
+                                >
+                                    {task.description}
+                                </Text>
+                            )}
+                            <HStack spacing={2} flexWrap="wrap">
+                                {projectName && (
+                                    <Badge 
+                                        colorScheme="purple" 
+                                        px={3} 
+                                        py={1} 
+                                        borderRadius="full"
+                                        textTransform="none"
+                                        fontWeight="medium"
+                                        variant="solid"
+                                    >
+                                        {projectName}
+                                    </Badge>
+                                )}
+                                {task.agent_name && (
+                                    <Badge 
+                                        colorScheme="blue" 
+                                        px={3} 
+                                        py={1} 
+                                        borderRadius="full"
+                                        textTransform="none"
+                                        fontWeight="medium"
+                                        variant="solid"
+                                    >
+                                        {task.agent_name}
+                                    </Badge>
+                                )}
+                                <Badge 
+                                    colorScheme={task.completed ? "green" : "yellow"} 
+                                    px={3} 
+                                    py={1} 
+                                    borderRadius="full"
+                                    textTransform="none"
+                                    fontWeight="medium"
+                                    variant="solid"
+                                >
+                                    {task.completed ? "Completed" : "In Progress"}
+                                </Badge>
                 </HStack>
             </VStack>
-            <VStack alignItems="flex-end" spacing={0} minW="120px">
-                <Text fontSize="xs" color="text.muted">
-                    {new Date(task.created_at).toLocaleDateString()} {new Date(task.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Text>
-                {task.updated_at && (
-                    <Text fontSize="xs" color="text.muted">
-                        Updated: {new Date(task.updated_at).toLocaleDateString()} {new Date(task.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </Text>
-                )}
-            </VStack>
-            <HStack spacing={2} ml={2}>
-                <Tooltip label="Edit task" placement="top">
+                    </HStack>
+                    <HStack spacing={2}>
                     <IconButton
+                            icon={<EditIcon />}
                         aria-label="Edit task"
-                        icon={<EditIcon />}
-                        onClick={e => { e.stopPropagation(); handleEdit(); }}
+                            variant="ghost"
+                            colorScheme="blue"
                         size="sm"
-                        variant="outline"
-                        colorScheme="gray"
-                        isDisabled={task.completed}
-                    />
-                </Tooltip>
-                <Tooltip label="Delete task" placement="top">
+                            onClick={onOpen}
+                            color="gray.100"
+                            _hover={{ bg: 'blue.500', color: 'white' }}
+                        />
                     <IconButton
+                            icon={<DeleteIcon />}
                         aria-label="Delete task"
-                        icon={<DeleteIcon />}
-                        onClick={e => { e.stopPropagation(); handleDelete(); }}
+                            variant="ghost"
+                            colorScheme="red"
                         size="sm"
-                        colorScheme="red"
-                        variant="outline"
+                            onClick={() => onDelete(task.id)}
+                            color="gray.100"
+                            _hover={{ bg: 'red.500', color: 'white' }}
                     />
-                </Tooltip>
+                    </HStack>
             </HStack>
-        </Flex>
+            </Box>
+            {modalContent}
+        </>
     );
-};
+});
 
-export default React.memo(TaskItem);
+TaskItem.displayName = 'TaskItem';
+export default TaskItem;

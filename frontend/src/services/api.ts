@@ -12,6 +12,7 @@ export interface Task {
   agent_name: string | null;
   project: Project | null; // Include nested project
   agent: Agent | null; // Add nested agent
+  [key: string]: unknown; // Add index signature
 }
 
 // Define the structure for creating a Task
@@ -38,6 +39,7 @@ export interface Project {
   name: string;
   description: string | null;
   created_at: string;
+  [key: string]: unknown; // Add index signature
   // tasks: Task[]; // If you need to show tasks under a project
 }
 
@@ -57,6 +59,7 @@ export interface Agent {
   id: number;
   name: string;
   created_at: string;
+  [key: string]: unknown; // Use unknown instead of any for better type safety
   // tasks: Task[]; // Example, if needed
 }
 
@@ -100,9 +103,8 @@ export const getTasks = (filters?: { projectId?: number; agentName?: string }): 
 };
 
 // Fetch a single task by ID
-export const getTaskById = async (id: number): Promise<Task> => {
-  const response = await fetch(`${API_BASE_URL}/tasks/${id}`);
-  return handleResponse<Task>(response);
+export const getTaskById = (id: number): Promise<Task> => {
+  return request<Task>(`${API_BASE_URL}/tasks/${id}`);
 };
 
 // Create a new task

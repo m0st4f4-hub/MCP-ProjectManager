@@ -90,7 +90,6 @@ const semanticTokens = {
 const config: ThemeConfig = {
   initialColorMode: 'system',
   useSystemColorMode: true,
-  storageKey: 'chakra-ui-color-mode',
 };
 
 // Extend the default theme

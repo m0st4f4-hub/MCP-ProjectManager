@@ -1,91 +1,157 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Box, Text, List, ListItem, ListIcon, Heading, IconButton, useDisclosure, Spinner } from '@chakra-ui/react';
-import { MdWork, MdEdit } from 'react-icons/md';
-import { Project, ProjectUpdateData } from '@/services/api';
-import EditProjectModal from './EditProjectModal';
+import React, { useEffect } from 'react';
+import {
+    VStack,
+    Box,
+    Text,
+    Progress,
+    Badge,
+    IconButton,
+    HStack,
+    Spacer,
+    useToast
+} from '@chakra-ui/react';
+import { DeleteIcon } from '@chakra-ui/icons';
+import { useProjectStore } from '@/store/projectStore';
 import { useTaskStore } from '@/store/taskStore';
+import { Project } from '@/types';
 
 const ProjectList: React.FC = () => {
-  const projects = useTaskStore((state) => state.projects);
-  const loadingProjects = useTaskStore((state) => state.loadingProjects);
-  const updateProjectAction = useTaskStore((state) => state.updateProjectAction);
-  const deleteProjectAction = useTaskStore((state) => state.deleteProjectAction);
+    const projects = useProjectStore(state => state.projects);
+    const loading = useProjectStore(state => state.loading);
+    const fetchProjects = useProjectStore(state => state.fetchProjects);
+    const removeProject = useProjectStore(state => state.removeProject);
+    const tasks = useTaskStore(state => state.tasks);
+    const toast = useToast();
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+    useEffect(() => {
+        fetchProjects();
+    }, [fetchProjects]);
 
-  const handleEditClick = (project: Project) => {
-    setSelectedProject(project);
-    onOpen();
-  };
+    const getProjectStats = (projectId: number) => {
+        const projectTasks = tasks.filter(task => task.project_id === projectId);
+        const completedTasks = projectTasks.filter(task => task.completed);
+        const progress = projectTasks.length ? (completedTasks.length / projectTasks.length) * 100 : 0;
+        return {
+            totalTasks: projectTasks.length,
+            completedTasks: completedTasks.length,
+            progress
+        };
+    };
 
-  const handleModalClose = () => {
-    setSelectedProject(null);
-    onClose();
-  };
+    const handleDelete = async (project: Project) => {
+        try {
+            await removeProject(project.id);
+            toast({
+                title: 'Project deleted',
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+            });
+        } catch (error) {
+            toast({
+                title: 'Error deleting project',
+                description: error instanceof Error ? error.message : 'An error occurred',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
+        }
+    };
 
-  const handleProjectUpdated = async (dataToUpdate: ProjectUpdateData) => {
-    if (!selectedProject) {
-      console.error("No project selected for update.");
-      return;
+    if (loading) {
+        return (
+            <VStack spacing={4} align="stretch">
+                {[1, 2, 3].map(i => (
+                    <Box key={i} p={4} bg="gray.700" rounded="lg" shadow="lg" borderWidth="1px" borderColor="gray.600">
+                        <Box height="20px" width="60%" bg="gray.600" rounded="md" mb={2} />
+                        <Box height="8px" bg="gray.600" rounded="full" />
+                    </Box>
+                ))}
+            </VStack>
+        );
     }
-    try {
-      await updateProjectAction(selectedProject.id, dataToUpdate);
-    } catch (_error) {
-      console.error("Update project action failed, error caught in ProjectList:", _error);
+
+    if (!projects.length) {
+        return (
+            <Box textAlign="center" py={8} bg="gray.700" rounded="lg" shadow="lg" borderWidth="1px" borderColor="gray.600">
+                <Text color="gray.300">No projects found</Text>
+            </Box>
+        );
     }
-  };
 
-  const handleProjectDeleted = async (projectId: number) => {
-    try {
-      await deleteProjectAction(projectId);
-    } catch (_error) {
-      console.error("Delete failed in ProjectList, handled by store/modal.");
-    }
-  };
-
-  if (loadingProjects) {
-    return <Spinner />;
-  }
-
-  return (
-    <Box p={4} borderWidth="1px" borderRadius="lg" borderColor="border.default" bg="bg.surface">
-      <Heading size="md" mb={4} color="text.default">Projects</Heading>
-      {projects.length === 0 && !loadingProjects ? (
-        <Text color="text.secondary">No projects found.</Text>
-      ) : (
-        <List spacing={3}>
-          {projects.map((project) => (
-            <ListItem key={project.id} display="flex" justifyContent="space-between" alignItems="center" py={2} borderBottomWidth="1px" borderColor="border.default">
-              <Box>
-                <ListIcon as={MdWork} color="green.500" />
-                <Text as="span" fontWeight="bold" color="text.default">{project.name}</Text>
-                {project.description && <Text fontSize="sm" color="text.secondary">{project.description}</Text>}
-              </Box>
-              <IconButton
-                aria-label="Edit project"
-                icon={<MdEdit />}
-                size="sm"
-                variant="ghost"
-                onClick={() => handleEditClick(project)}
-                color="text.secondary"
-              />
-            </ListItem>
-          ))}
-        </List>
-      )}
-
-      <EditProjectModal
-        isOpen={isOpen}
-        onClose={handleModalClose}
-        project={selectedProject}
-        onProjectUpdated={handleProjectUpdated}
-        onProjectDeleted={handleProjectDeleted}
-      />
-    </Box>
-  );
+    return (
+        <VStack spacing={4} align="stretch">
+            {projects.map(project => {
+                const stats = getProjectStats(project.id);
+                return (
+                    <Box
+                        key={project.id}
+                        p={4}
+                        bg="gray.700"
+                        rounded="lg"
+                        shadow="lg"
+                        borderWidth="1px"
+                        borderColor="gray.600"
+                        _hover={{ shadow: "xl", borderColor: "blue.400", transform: "translateY(-1px)" }}
+                        transition="all 0.2s ease-in-out"
+                        position="relative"
+                        overflow="hidden"
+                        _before={{
+                            content: '""',
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: "4px",
+                            bg: "blue.400",
+                            opacity: 0.7
+                        }}
+                    >
+                        <HStack mb={2}>
+                            <Text fontWeight="medium" fontSize="md" color="white">{project.name}</Text>
+                            <Spacer />
+                            <IconButton
+                                icon={<DeleteIcon />}
+                                aria-label="Delete project"
+                                variant="ghost"
+                                colorScheme="red"
+                                size="sm"
+                                color="gray.100"
+                                _hover={{ bg: 'red.500', color: 'white' }}
+                                onClick={() => handleDelete(project)}
+                            />
+                        </HStack>
+                        {project.description && (
+                            <Text color="gray.300" fontSize="sm" mb={2} noOfLines={2}>
+                                {project.description}
+                            </Text>
+                        )}
+                        <Progress
+                            value={stats.progress}
+                            size="sm"
+                            colorScheme="blue"
+                            rounded="full"
+                            mb={2}
+                            bg="gray.600"
+                        />
+                        <HStack spacing={2} mt={2}>
+                            <Badge colorScheme="blue" variant="solid">
+                                Tasks: {stats.totalTasks}
+                            </Badge>
+                            <Badge colorScheme="green" variant="solid">
+                                Completed: {stats.completedTasks}
+                            </Badge>
+                            <Badge colorScheme={stats.progress === 100 ? "green" : "yellow"} variant="solid">
+                                {Math.round(stats.progress)}%
+                            </Badge>
+                        </HStack>
+                    </Box>
+                );
+            })}
+        </VStack>
+    );
 };
 
-export default ProjectList; 
+export default React.memo(ProjectList); 
