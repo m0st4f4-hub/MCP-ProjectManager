@@ -203,7 +203,7 @@ const TaskList: React.FC = () => {
                                     <Text fontSize="md" fontWeight="medium" color="gray.100">Filters</Text>
                                     <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mt={3}>
                                         <FormControl>
-                                            <FormLabel color="gray.100" fontSize="sm">Status</FormLabel>
+                                            <FormLabel color="gray.100" fontSize="sm" fontWeight="medium">Status</FormLabel>
                                             <Select
                                                 value={filters.status}
                                                 onChange={(e) => handleFilterChange('status', e.target.value)}
@@ -220,7 +220,7 @@ const TaskList: React.FC = () => {
                                         </FormControl>
 
                                         <FormControl>
-                                            <FormLabel color="gray.100" fontSize="sm">Project</FormLabel>
+                                            <FormLabel color="gray.100" fontSize="sm" fontWeight="medium">Project</FormLabel>
                                             <Select
                                                 value={filters.projectId || ''}
                                                 onChange={(e) => handleFilterChange('projectId', e.target.value ? Number(e.target.value) : null)}
@@ -240,7 +240,7 @@ const TaskList: React.FC = () => {
                                         </FormControl>
 
                                         <FormControl>
-                                            <FormLabel color="gray.100" fontSize="sm">Agent</FormLabel>
+                                            <FormLabel color="gray.100" fontSize="sm" fontWeight="medium">Agent</FormLabel>
                                             <Select
                                                 value={filters.agentName || ''}
                                                 onChange={(e) => handleFilterChange('agentName', e.target.value || null)}
@@ -265,7 +265,7 @@ const TaskList: React.FC = () => {
                                     <Text fontSize="md" fontWeight="medium" color="gray.100">Sort Options</Text>
                                     <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mt={3}>
                                         <FormControl>
-                                            <FormLabel color="gray.100" fontSize="sm">Sort By</FormLabel>
+                                            <FormLabel color="gray.100" fontSize="sm" fontWeight="medium">Sort By</FormLabel>
                                             <Select
                                                 value={sortOptions.field}
                                                 onChange={(e) => handleSortChange(e.target.value, sortOptions.direction)}
@@ -281,7 +281,7 @@ const TaskList: React.FC = () => {
                                         </FormControl>
 
                                         <FormControl>
-                                            <FormLabel color="gray.100" fontSize="sm">Sort Direction</FormLabel>
+                                            <FormLabel color="gray.100" fontSize="sm" fontWeight="medium">Sort Direction</FormLabel>
                                             <Select
                                                 value={sortOptions.direction}
                                                 onChange={(e) => handleSortChange(sortOptions.field, e.target.value)}

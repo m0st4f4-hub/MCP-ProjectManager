@@ -97,6 +97,10 @@ const theme = extendTheme({
   config,
   colors,
   semanticTokens,
+  fonts: {
+    heading: "var(--font-inter), sans-serif",
+    body: "var(--font-inter), sans-serif",
+  },
   // You can also customize other theme aspects like fonts, components, etc.
   // Example:
   // fonts: {

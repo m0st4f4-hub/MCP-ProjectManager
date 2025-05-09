@@ -1,6 +1,10 @@
-# Task Manager - FastAPI & Next.js
+# MCP Task Manager (Formerly Task Manager) - FastAPI & Next.js
 
-A full-stack task manager application built with a FastAPI backend and a Next.js frontend.
+A full-stack, MCP-enabled task management application designed to serve as the central hub for an agentic framework. It is built with a FastAPI backend and a Next.js frontend.
+
+## Core Goal
+
+To provide a robust platform for creating, managing, and tracking tasks, projects, and agents, with deep integration for the Model Context Protocol (MCP) to support automated workflows and agent operations.
 
 ## Tech Stack
 
@@ -12,10 +16,13 @@ A full-stack task manager application built with a FastAPI backend and a Next.js
     *   SQLite (Default Database) / PostgreSQL (Optional)
     *   Uvicorn (ASGI Server)
     *   `python-dotenv` (Environment Variables)
+    *   `fastapi-mcp` (Model Context Protocol Integration)
 *   **Frontend:**
-    *   Next.js (React Framework)
+    *   Next.js 15+ (React Framework with Turbopack)
+    *   React 19+
     *   TypeScript
-    *   Tailwind CSS (Styling)
+    *   Tailwind CSS (Utility-first CSS Framework)
+    *   Chakra UI (Component Library)
     *   Zustand (State Management)
     *   `fetch` API (for backend communication)
 *   **Development:**
@@ -27,37 +34,56 @@ A full-stack task manager application built with a FastAPI backend and a Next.js
 ```
 task-manager/
 ├── backend/
-│   ├── .venv/              # Python virtual environment (created on setup)
-│   ├── crud.py             # Database CRUD functions
-│   ├── database.py         # Database engine, session, Base
-│   ├── main.py             # FastAPI application, routes, CORS
-│   ├── models.py           # SQLAlchemy ORM models (Task table)
-│   ├── schemas.py          # Pydantic schemas for API data
+│   ├── .venv/              # Python virtual environment
+│   ├── app/                # Main application module (example structure)
+│   │   ├── __init__.py
+│   │   ├── crud.py         # Database CRUD functions
+│   │   ├── database.py     # Database engine, session, Base
+│   │   ├── main.py         # FastAPI application, routes, MCP init
+│   │   ├── models.py       # SQLAlchemy ORM models
+│   │   └── schemas.py      # Pydantic schemas for API data
+│   ├── mcp/
+│   │   └── server/
+│   │       └── agents/     # Directory for potential MCP agent implementations
 │   ├── requirements.txt    # Python dependencies
-│   └── sql_app.db          # SQLite database file (created on first run)
+│   ├── sql_app.db          # SQLite database file
 │   └── .env                # Optional: for PostgreSQL connection details
 ├── frontend/
 │   ├── public/             # Static assets
 │   ├── src/
-│   │   ├── app/            # Next.js App Router pages (page.tsx)
-│   │   ├── components/     # React components (AddTaskForm, TaskList, etc.)
-│   │   ├── services/       # API communication logic (api.ts)
-│   │   └── store/          # Zustand state management (taskStore.ts)
+│   │   ├── app/            # Next.js App Router pages (layout.tsx, page.tsx)
+│   │   ├── components/     # React components
+│   │   ├── providers/      # Client-side providers (e.g., Chakra UI)
+│   │   ├── services/       # API communication logic
+│   │   └── store/          # Zustand state management
 │   ├── next.config.mjs     # Next.js configuration
 │   ├── package.json        # Node dependencies
 │   ├── tailwind.config.ts  # Tailwind CSS configuration
 │   └── tsconfig.json       # TypeScript configuration
+├── .cursor/                # Cursor-specific configurations (rules, tools)
+├── .gitignore
 └── README.md               # This file
 ```
+*(Note: The backend structure for application files like `main.py`, `crud.py`, etc., might reside directly in `backend/` or within a subdirectory like `backend/app/`. The example above assumes `backend/app/` for modularity, consistent with imports like `from . import models` in `main.py` if it were in `backend/app/main.py`.)*
 
-## Features (Overview)
+## Features
 
-*   **Task Management:** Create, view, update, and delete tasks.
+*   **Task Management:** Create, view, update, and delete tasks with titles, descriptions, status, priority, etc.
 *   **Project Organization:** Create, view, update, and delete projects to group tasks.
-*   **Agent Assignment:** (If applicable and UI supports it clearly) Assign agents to tasks.
-*   **Scope Definition:** (If applicable and UI supports it clearly) Define scopes for tasks.
-*   **Subtask Management:** Create and manage subtasks under main tasks.
-*   **Filtering:** Filter tasks by project, agent, or scope.
+*   **Agent Registration:** Register and manage agents that can be assigned to tasks.
+*   **Task Assignment:** Link tasks to specific projects and assign them to registered agents.
+*   **Subtask Management:** (If implemented) Create and manage subtasks under main tasks.
+*   **Filtering:** Filter tasks by project, agent, or other criteria.
+*   **MCP Enabled:** Backend integration with `FastApiMCP` to expose MCP-compliant endpoints.
+*   **Planning Support:** Includes a `/planning/generate-prompt` endpoint for integration with planning agents like Overmind.
+
+## MCP Integration
+
+The backend is designed for integration with the Model Context Protocol:
+*   It utilizes `fastapi-mcp` to initialize and mount MCP functionalities.
+*   Standard MCP routes (e.g., under `/mcp/...`) are expected to be available once `FastApiMCP` is active.
+*   The system includes specific endpoints like `/planning/generate-prompt` which can be used by MCP agents (e.g., OvermindAgent) to facilitate planning and execution within the broader agentic framework.
+*   The `backend/mcp/server/agents/` directory is provisioned, suggesting future capabilities for hosting or defining MCP agents directly within the Task Manager's backend.
 
 ## Setup and Running
 
@@ -83,24 +109,18 @@ python -m venv .venv
 # Install dependencies
 pip install -r requirements.txt
 
-# (Optional) Configure PostgreSQL
-# 1. Create a .env file in the backend/ directory
-# 2. Add your PostgreSQL connection details:
-#    DATABASE_USER=your_db_user
-#    DATABASE_PASSWORD=your_db_password
-#    DATABASE_HOST=your_db_host (e.g., localhost)
-#    DATABASE_PORT=your_db_port (e.g., 5432)
-#    DATABASE_NAME=your_db_name
-# 3. Uncomment the PostgreSQL section in backend/database.py
-#    and comment out the SQLite section.
+# (Optional) Configure PostgreSQL (see original README section for details)
 
 # Run the FastAPI development server
 # It will automatically create the sql_app.db (SQLite) if it doesn't exist
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+# and initialize MCP services.
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# (If main.py is directly in backend/, use: uvicorn main:app --reload ...)
 ```
 
 The backend API will be available at `http://localhost:8000`.
 Interactive API documentation (Swagger UI) is available at `http://localhost:8000/docs`.
+MCP endpoints should be available under `http://localhost:8000/mcp/`.
 
 ### 2. Frontend Setup (Next.js)
 
@@ -115,16 +135,17 @@ npm install
 npm run dev
 ```
 
-The frontend application will be available at `http://localhost:3000`.
+The frontend application, titled "MCP Task Manager Frontend," will be available at `http://localhost:3000`.
 
 ## How It Works
 
-1.  The **Next.js frontend** (running on port 3000) provides the user interface.
-2.  Components in `src/components` handle the display and user interactions.
-3.  State management is handled globally using **Zustand** (`src/store/taskStore.ts`).
-4.  When data is needed or actions occur (add, update, delete), components (usually via the Zustand store) call functions in the **API service** (`src/services/api.ts`).
-5.  The API service uses `fetch` to make requests to the **FastAPI backend** (running on port 8000).
-6.  The FastAPI backend receives requests, validates data using **Pydantic schemas** (`schemas.py`), and interacts with the database using **CRUD functions** (`crud.py`) and **SQLAlchemy models** (`models.py`).
-7.  **CORS middleware** in FastAPI allows the frontend (on port 3000) to communicate with the backend (on port 8000).
-8.  Data is stored in the **SQLite database** (`sql_app.db`) by default, or PostgreSQL if configured.
+1.  The **Next.js frontend** (`MCP Task Manager Frontend` on port 3000) provides the user interface.
+2.  Components in `src/components` and pages in `src/app/` handle display and user interactions, leveraging **Tailwind CSS** and **Chakra UI** for styling.
+3.  Global state is managed using **Zustand** (`src/store/`).
+4.  Frontend communicates with the backend via API service calls (`src/services/`).
+5.  The **FastAPI backend** (port 8000) handles requests:
+    *   Validates data using Pydantic schemas.
+    *   Interacts with the database (SQLite/PostgreSQL) via SQLAlchemy models and CRUD operations.
+    *   Initializes `FastApiMCP` to provide Model Context Protocol services and endpoints.
+6.  CORS middleware enables cross-origin communication.
 

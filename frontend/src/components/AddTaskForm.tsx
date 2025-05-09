@@ -83,7 +83,7 @@ const AddTaskForm: React.FC = () => {
         >
             <VStack spacing={4}>
                 <FormControl isRequired>
-                    <FormLabel color="gray.100">Title</FormLabel>
+                    <FormLabel color="gray.100" fontWeight="medium">Title</FormLabel>
                     <Input
                         value={formData.title}
                         onChange={(e) => handleChange('title', e.target.value)}
@@ -98,7 +98,7 @@ const AddTaskForm: React.FC = () => {
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel color="gray.100">Description</FormLabel>
+                    <FormLabel color="gray.100" fontWeight="medium">Description</FormLabel>
                     <Textarea
                         value={formData.description || ''}
                         onChange={(e) => handleChange('description', e.target.value || null)}
@@ -113,7 +113,7 @@ const AddTaskForm: React.FC = () => {
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel color="gray.100">Project</FormLabel>
+                    <FormLabel color="gray.100" fontWeight="medium">Project</FormLabel>
                     <Select 
                         value={formData.project_id || ''}
                         onChange={(e) => handleChange('project_id', e.target.value || null)}
@@ -134,7 +134,7 @@ const AddTaskForm: React.FC = () => {
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel color="gray.100">Agent</FormLabel>
+                    <FormLabel color="gray.100" fontWeight="medium">Agent</FormLabel>
                     <Select 
                         value={formData.agent_name || ''}
                         onChange={(e) => handleChange('agent_name', e.target.value || null)}
