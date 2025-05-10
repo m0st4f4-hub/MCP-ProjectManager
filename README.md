@@ -1,6 +1,6 @@
-# Task Manager - FastAPI & Next.js
+# Project Manager - FastAPI & Next.js
 
-A full-stack task manager application built with a FastAPI backend and a Next.js frontend.
+A full-stack project manager application built with a FastAPI backend and a Next.js frontend.
 
 ## Tech Stack
 
@@ -25,7 +25,7 @@ A full-stack task manager application built with a FastAPI backend and a Next.js
 ## Project Structure
 
 ```
-task-manager/
+project-manager/
 ├── backend/
 │   ├── .venv/              # Python virtual environment (created on setup)
 │   ├── crud.py             # Database CRUD functions

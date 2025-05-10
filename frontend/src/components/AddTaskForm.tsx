@@ -11,7 +11,8 @@ import {
     Textarea,
     VStack,
     useToast,
-    Select
+    Select,
+    Heading
 } from '@chakra-ui/react';
 import { useTaskStore } from '@/store/taskStore';
 import { TaskCreateData } from '@/types';
@@ -82,6 +83,10 @@ const AddTaskForm: React.FC = () => {
             borderColor="gray.700"
         >
             <VStack spacing={4}>
+                <Heading size="md" color="whiteAlpha.900" mb={2} textAlign="center">
+                    Trigger New Work Item
+                </Heading>
+
                 <FormControl isRequired>
                     <FormLabel color="gray.100">Title</FormLabel>
                     <Input
@@ -162,7 +167,7 @@ const AddTaskForm: React.FC = () => {
                     _hover={{ bg: "blue.500" }}
                     _active={{ bg: "blue.600" }}
                 >
-                    Add Task
+                    Trigger New Work Item
                 </Button>
             </VStack>
         </Box>

@@ -1,4 +1,5 @@
 // D:\mcp\task-manager\frontend\src\services\api.ts
+import { TaskFilters } from "@/types"; // Ensure TaskFilters is imported if not already
 
 // Define the structure of a Task object based on backend schema
 export interface Task {
@@ -95,10 +96,12 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
 }
 
 // Fetch all tasks
-export const getTasks = (filters?: { projectId?: number; agentName?: string }): Promise<Task[]> => {
+export const getTasks = (filters?: TaskFilters): Promise<Task[]> => {
   const queryParams = new URLSearchParams();
   if (filters?.projectId) queryParams.append('project_id', filters.projectId.toString());
   if (filters?.agentName) queryParams.append('agent_name', filters.agentName);
+  if (filters?.status && filters.status !== 'all') queryParams.append('status', filters.status);
+  if (filters?.searchTerm) queryParams.append('search', filters.searchTerm); // Assuming backend uses 'search' for searchTerm
   return request<Task[]>(`${API_BASE_URL}/tasks/?${queryParams.toString()}`);
 };
 

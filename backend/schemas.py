@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
+from pydantic import field_validator
 
 # --- Agent Schemas ---
 class AgentBase(BaseModel):
@@ -36,8 +37,21 @@ class TaskBase(BaseModel):
     description: Optional[str] = None
     completed: bool = False
     # Add new fields related to project/agent
-    project_id: Optional[int] = None
+    project_id: Optional[Union[int, str]] = None
     agent_name: Optional[str] = None
+
+    @field_validator('project_id', mode='before')
+    @classmethod
+    def project_id_must_be_int_or_none(cls, v: any) -> Optional[Union[int, str]]:
+        if v is None:
+            return None
+        if isinstance(v, float) and v.is_integer():
+            return int(v)
+        # If v is already an int, Pydantic will handle it.
+        # If v is a string like "2", Pydantic will handle it for Optional[int].
+        # If it's a non-integer float or other incompatible type, 
+        # Pydantic's default validation for Optional[int] will raise the error.
+        return v
 
 # Model for creating a task (inherits from Base, specific for creation)
 class TaskCreate(TaskBase):
@@ -48,7 +62,7 @@ class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     completed: Optional[bool] = None
-    project_id: Optional[int] = None # Allow updating project
+    project_id: Optional[Union[int, str]] = None # Allow updating project
     agent_name: Optional[str] = None # Allow updating agent
 
 # If we wanted tasks listed under project:

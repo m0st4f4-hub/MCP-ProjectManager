@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
     mcp_initialized = False
     mcp_instance = None
 
-app = FastAPI(title="Task Manager API with Projects & Agents", lifespan=lifespan)
+app = FastAPI(title="Project Manager API with Projects & Agents", lifespan=lifespan)
 
 # Middleware to check MCP initialization state
 @app.middleware("http")
@@ -79,7 +79,7 @@ app.add_middleware(
 @app.get("/", summary="Get API Root Message")
 async def get_root_message():
     print("[Backend Log] Request received for /")
-    return {"message": "Welcome to the Task Manager API"}
+    return {"message": "Welcome to the Project Manager API"}
 
 # --- Project Endpoints (SAFE) ---
 

@@ -8,7 +8,8 @@ import {
     FormLabel,
     Input,
     VStack,
-    useToast
+    useToast,
+    Heading
 } from '@chakra-ui/react';
 import { useAgentStore } from '@/store/agentStore';
 import { AgentCreateData } from '@/types';
@@ -60,6 +61,10 @@ const AddAgentForm: React.FC = () => {
             borderColor="gray.700"
         >
             <VStack spacing={4}>
+                <Heading size="md" color="whiteAlpha.900" mb={2} textAlign="center">
+                    Register New Operator
+                </Heading>
+
                 <FormControl isRequired>
                     <FormLabel color="gray.100">Name</FormLabel>
                     <Input
@@ -83,7 +88,7 @@ const AddAgentForm: React.FC = () => {
                     _hover={{ bg: "blue.500" }}
                     _active={{ bg: "blue.600" }}
                 >
-                    Add Agent
+                    Register New Operator
                 </Button>
             </VStack>
         </Box>

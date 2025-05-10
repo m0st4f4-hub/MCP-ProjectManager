@@ -1,5 +1,5 @@
 {
-  "name": "task-manager-monorepo-runner",
+  "name": "project-manager-monorepo-runner",
   "version": "1.0.0",
   "private": true,
   "description": "Runs FastAPI backend and Next.js frontend concurrently",
@@ -17,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "react-window": "^1.8.11"
+    "react-window": "^1.8.11",
+    "recharts": "^2.15.3"
   }
 }

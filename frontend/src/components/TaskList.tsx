@@ -133,237 +133,79 @@ const TaskList: React.FC = () => {
     }
 
     return (
-        <Container maxW="container.lg" p={4}>
-            <VStack spacing={6} align="stretch" w="100%">
-                {/* Filters Section */}
-                <Accordion allowToggle defaultIndex={[0]}>
-                    <AccordionItem 
-                        border="none" 
-                        bg="gray.800" 
-                        rounded="xl" 
-                        shadow="lg" 
-                        borderWidth="1px" 
-                        borderColor="gray.700"
-                        mb={0}
-                    >
-                        <h2>
-                            <AccordionButton 
-                                py={4} 
-                                _hover={{ bg: 'gray.700' }} 
-                                roundedTop="xl"
-                            >
-                                <Box flex={1} textAlign="left">
-                                    <Heading size="md" color="white">Filters & Sorting</Heading>
-                                </Box>
-                                <AccordionIcon color="gray.300" />
-                            </AccordionButton>
-                        </h2>
-                        <AccordionPanel pb={6} px={6}>
-                            <VStack spacing={6} align="stretch">
-                                {/* Task Statistics */}
-                                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
-                                    <Box 
-                                        p={4} 
-                                        bg="gray.700" 
-                                        rounded="lg" 
-                                        borderWidth="1px" 
-                                        borderColor="gray.600"
-                                        textAlign="center"
-                                    >
-                                        <Text fontSize="sm" fontWeight="medium" color="gray.300" mb={1}>Total Tasks</Text>
-                                        <Text fontSize="2xl" fontWeight="bold" color="white">{tasks.length}</Text>
-                                    </Box>
-                                    <Box 
-                                        p={4} 
-                                        bg="gray.700" 
-                                        rounded="lg" 
-                                        borderWidth="1px" 
-                                        borderColor="gray.600"
-                                        textAlign="center"
-                                    >
-                                        <Text fontSize="sm" fontWeight="medium" color="gray.300" mb={1}>Active</Text>
-                                        <Text fontSize="2xl" fontWeight="bold" color="blue.300">{activeTasks.length}</Text>
-                                    </Box>
-                                    <Box 
-                                        p={4} 
-                                        bg="gray.700" 
-                                        rounded="lg" 
-                                        borderWidth="1px" 
-                                        borderColor="gray.600"
-                                        textAlign="center"
-                                    >
-                                        <Text fontSize="sm" fontWeight="medium" color="gray.300" mb={1}>Completed</Text>
-                                        <Text fontSize="2xl" fontWeight="bold" color="green.300">{completedTasks.length}</Text>
-                                    </Box>
-                                </SimpleGrid>
-                                
-                                <Divider borderColor="gray.600" />
-                                
-                                <Box>
-                                    <Text fontSize="md" fontWeight="medium" color="gray.100">Filters</Text>
-                                    <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mt={3}>
-                                        <FormControl>
-                                            <FormLabel color="gray.100" fontSize="sm">Status</FormLabel>
-                                            <Select
-                                                value={filters.status}
-                                                onChange={(e) => handleFilterChange('status', e.target.value)}
-                                                bg="gray.600"
-                                                color="white"
-                                                borderColor="gray.500"
-                                                _hover={{ borderColor: "gray.400" }}
-                                                _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                                            >
-                                                <option value="all">All</option>
-                                                <option value="completed">Completed</option>
-                                                <option value="active">Active</option>
-                                            </Select>
-                                        </FormControl>
-
-                                        <FormControl>
-                                            <FormLabel color="gray.100" fontSize="sm">Project</FormLabel>
-                                            <Select
-                                                value={filters.projectId || ''}
-                                                onChange={(e) => handleFilterChange('projectId', e.target.value ? Number(e.target.value) : null)}
-                                                bg="gray.600"
-                                                color="white"
-                                                borderColor="gray.500"
-                                                _hover={{ borderColor: "gray.400" }}
-                                                _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                                            >
-                                                <option value="">All Projects</option>
-                                                {projects.map(project => (
-                                                    <option key={project.id} value={project.id}>
-                                                        {project.name}
-                                                    </option>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-
-                                        <FormControl>
-                                            <FormLabel color="gray.100" fontSize="sm">Agent</FormLabel>
-                                            <Select
-                                                value={filters.agentName || ''}
-                                                onChange={(e) => handleFilterChange('agentName', e.target.value || null)}
-                                                bg="gray.600"
-                                                color="white"
-                                                borderColor="gray.500"
-                                                _hover={{ borderColor: "gray.400" }}
-                                                _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                                            >
-                                                <option value="">All Agents</option>
-                                                {agents.map(agent => (
-                                                    <option key={agent.id} value={agent.name}>
-                                                        {agent.name}
-                                                    </option>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-                                    </SimpleGrid>
-                                </Box>
-
-                                <Box>
-                                    <Text fontSize="md" fontWeight="medium" color="gray.100">Sort Options</Text>
-                                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mt={3}>
-                                        <FormControl>
-                                            <FormLabel color="gray.100" fontSize="sm">Sort By</FormLabel>
-                                            <Select
-                                                value={sortOptions.field}
-                                                onChange={(e) => handleSortChange(e.target.value, sortOptions.direction)}
-                                                bg="gray.600"
-                                                color="white"
-                                                borderColor="gray.500"
-                                                _hover={{ borderColor: "gray.400" }}
-                                                _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                                            >
-                                                <option value="created_at">Created Date</option>
-                                                <option value="title">Title</option>
-                                            </Select>
-                                        </FormControl>
-
-                                        <FormControl>
-                                            <FormLabel color="gray.100" fontSize="sm">Sort Direction</FormLabel>
-                                            <Select
-                                                value={sortOptions.direction}
-                                                onChange={(e) => handleSortChange(sortOptions.field, e.target.value)}
-                                                bg="gray.600"
-                                                color="white"
-                                                borderColor="gray.500"
-                                                _hover={{ borderColor: "gray.400" }}
-                                                _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                                            >
-                                                <option value="asc">Ascending</option>
-                                                <option value="desc">Descending</option>
-                                            </Select>
-                                        </FormControl>
-                                    </SimpleGrid>
-                                </Box>
-                            </VStack>
-                        </AccordionPanel>
-                    </AccordionItem>
-                </Accordion>
-
-                {/* Tasks List */}
-                <Box>
-                    {activeTasks.length > 0 && (
-                        <Box mb={4}>
-                            <Flex align="center" bg="gray.800" p={4} rounded="lg" mb={2} borderWidth="1px" borderColor="gray.700">
-                                <Heading size="md" color="blue.300" flex={1}>Active Tasks</Heading>
-                                <Badge colorScheme="blue" fontSize="md" px={3} py={1} borderRadius="full">{activeTasks.length}</Badge>
-                            </Flex>
-                            <VStack spacing={3} align="stretch">
-                                {activeTasks.map(task => (
-                                    <TaskItem
-                                        key={task.id}
-                                        task={task}
-                                        onToggle={handleToggle}
-                                        onDelete={handleDelete}
-                                        onEdit={handleEdit}
-                                    />
-                                ))}
-                            </VStack>
-                        </Box>
-                    )}
-
-                    {completedTasks.length > 0 && (
-                        <Box>
-                            <Flex align="center" bg="gray.800" p={4} rounded="lg" mb={2} borderWidth="1px" borderColor="gray.700">
-                                <Heading size="md" color="green.300" flex={1}>Completed Tasks</Heading>
-                                <Badge colorScheme="green" fontSize="md" px={3} py={1} borderRadius="full">{completedTasks.length}</Badge>
-                            </Flex>
-                            <Accordion allowToggle>
-                                <AccordionItem 
-                                    border="none" 
-                                    bg="gray.800" 
-                                    rounded="lg" 
-                                    borderWidth="1px" 
-                                    borderColor="gray.700"
+        <Container maxW="container.lg" p={0}>
+            <VStack spacing={4} align="stretch" w="full">
+                {tasks.length > 0 && (
+                    <Accordion allowMultiple defaultIndex={[0]} w="full">
+                        <AccordionItem border="none" mb={4}>
+                            <h2>
+                                <AccordionButton 
+                                    bg="gray.750"
+                                    _hover={{ bg: 'gray.700' }} 
+                                    rounded="md"
+                                    py={3}
+                                    px={4}
                                 >
-                                    <h2>
-                                        <AccordionButton py={3} _hover={{ bg: 'gray.700' }}>
-                                            <Box flex={1} textAlign="left">
-                                                <Text color="gray.100">Show Completed Tasks</Text>
-                                            </Box>
-                                            <AccordionIcon color="gray.300" />
-                                        </AccordionButton>
-                                    </h2>
-                                    <AccordionPanel pb={4}>
-                                        <VStack spacing={3} align="stretch">
-                                            {completedTasks.map(task => (
-                                                <TaskItem
-                                                    key={task.id}
-                                                    task={task}
-                                                    onToggle={handleToggle}
-                                                    onDelete={handleDelete}
-                                                    onEdit={handleEdit}
-                                                />
-                                            ))}
-                                        </VStack>
-                                    </AccordionPanel>
-                                </AccordionItem>
-                            </Accordion>
-                        </Box>
-                    )}
-                </Box>
+                                    <Box flex={1} textAlign="left">
+                                        <Heading size="sm" color="whiteAlpha.900">Active Tasks ({activeTasks.length})</Heading>
+                                    </Box>
+                                    <AccordionIcon color="whiteAlpha.900" />
+                                </AccordionButton>
+                            </h2>
+                            <AccordionPanel pb={4} pt={2} px={0}>
+                                {activeTasks.length > 0 ? (
+                                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+                                        {activeTasks.map(task => (
+                                            <TaskItem
+                                                key={task.id}
+                                                task={task}
+                                                onToggle={handleToggle}
+                                                onDelete={handleDelete}
+                                                onEdit={handleEdit}
+                                            />
+                                        ))}
+                                    </SimpleGrid>
+                                ) : (
+                                    <Text color="gray.400" p={4} textAlign="center">No active tasks.</Text>
+                                )}
+                            </AccordionPanel>
+                        </AccordionItem>
+
+                        <AccordionItem border="none">
+                            <h2>
+                                <AccordionButton 
+                                    bg="gray.750" 
+                                    _hover={{ bg: 'gray.700' }} 
+                                    rounded="md"
+                                    py={3}
+                                    px={4}
+                                >
+                                    <Box flex={1} textAlign="left">
+                                        <Heading size="sm" color="whiteAlpha.900">Completed Tasks ({completedTasks.length})</Heading>
+                                    </Box>
+                                    <AccordionIcon color="whiteAlpha.900" />
+                                </AccordionButton>
+                            </h2>
+                            <AccordionPanel pb={4} pt={2} px={0}>
+                                {completedTasks.length > 0 ? (
+                                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+                                        {completedTasks.map(task => (
+                                            <TaskItem
+                                                key={task.id}
+                                                task={task}
+                                                onToggle={handleToggle}
+                                                onDelete={handleDelete}
+                                                onEdit={handleEdit}
+                                            />
+                                        ))}
+                                    </SimpleGrid>
+                                ) : (
+                                    <Text color="gray.400" p={4} textAlign="center">No completed tasks.</Text>
+                                )}
+                            </AccordionPanel>
+                        </AccordionItem>
+                    </Accordion>
+                )}
             </VStack>
         </Container>
     );

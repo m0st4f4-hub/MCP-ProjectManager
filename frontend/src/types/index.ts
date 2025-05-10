@@ -36,4 +36,15 @@ export interface ToastMessage {
     type: ToastType;
     message: string;
     duration?: number;
+}
+
+export interface TaskFilters {
+    status?: 'all' | 'completed' | 'active' | null;
+    projectId?: number | null;
+    agentName?: string | null;
+    searchTerm?: string | null;
+}
+
+export interface TaskSortOptions {
+    // ... rest of the file
 } 

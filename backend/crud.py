@@ -9,16 +9,46 @@ def get_task(db: Session, task_id: int):
 def get_tasks(
     db: Session, 
     skip: int = 0, 
-    limit: int = 100, 
+    limit: int = 100, # Default limit
     project_id: Optional[int] = None, 
     agent_name: Optional[str] = None
 ):
+    print(f"[CRUD get_tasks] Received project_id: {project_id}, agent_name: {agent_name}, skip: {skip}, limit: {limit}")
+    
+    effective_limit = limit
+    if project_id is None and agent_name is None: # If fetching all tasks from all projects and all agents
+        effective_limit = 10000 # Use a very large limit to effectively get all tasks
+        print(f"[CRUD get_tasks] No project_id or agent_name specified, using effective_limit: {effective_limit}")
+
     query = db.query(models.Task).options(joinedload(models.Task.project))
+    # Compiling query for logging. Ensure quotes are handled correctly.
+    try:
+        base_query_compiled = str(query.statement.compile(compile_kwargs={'literal_binds': True}))
+        print(f"[CRUD get_tasks] Base query: {base_query_compiled}")
+    except Exception as e:
+        print(f"[CRUD get_tasks] Error compiling base query for logging: {e}")
+
     if project_id is not None:
+        print(f"[CRUD get_tasks] Applying project_id filter: {project_id}")
         query = query.filter(models.Task.project_id == project_id)
+        try:
+            query_after_project_filter_compiled = str(query.statement.compile(compile_kwargs={'literal_binds': True}))
+            print(f"[CRUD get_tasks] Query after project_id filter: {query_after_project_filter_compiled}")
+        except Exception as e:
+            print(f"[CRUD get_tasks] Error compiling query after project_id filter for logging: {e}")
+    
     if agent_name is not None:
+        print(f"[CRUD get_tasks] Applying agent_name filter: {agent_name}")
         query = query.filter(models.Task.agent_name == agent_name)
-    return query.offset(skip).limit(limit).all()
+        try:
+            query_after_agent_filter_compiled = str(query.statement.compile(compile_kwargs={'literal_binds': True}))
+            print(f"[CRUD get_tasks] Query after agent_name filter: {query_after_agent_filter_compiled}")
+        except Exception as e:
+            print(f"[CRUD get_tasks] Error compiling query after agent_name filter for logging: {e}")
+    
+    results = query.offset(skip).limit(effective_limit).all()
+    print(f"[CRUD get_tasks] Number of results returned: {len(results)} (skip: {skip}, limit: {effective_limit})")
+    return results
 
 def create_task(db: Session, task: schemas.TaskCreate):
     if task.project_id and not get_project(db, task.project_id):
@@ -84,7 +114,7 @@ def update_project(db: Session, project_id: int, project_update: schemas.Project
         if "name" in update_data and update_data["name"] != db_project.name:
             existing = get_project_by_name(db, name=update_data["name"])
             if existing:
-                raise ValueError(f"Project name '{update_data['name']}' already exists")
+                raise ValueError(f"Project name '{update_data["name"]}' already exists")
         for key, value in update_data.items():
             setattr(db_project, key, value)
         db.commit()
@@ -92,11 +122,33 @@ def update_project(db: Session, project_id: int, project_update: schemas.Project
     return db_project
 
 def delete_project(db: Session, project_id: int):
+    # First, get the project to ensure it exists and for returning its data
     db_project = get_project(db, project_id)
     if db_project:
+        # Store the project data before deletion for the return value
+        # (as accessing attributes after deletion might be problematic)
+        project_data_to_return = schemas.Project.model_validate(db_project) 
+
+        # Delete associated tasks
+        # Query all tasks associated with this project_id
+        tasks_to_delete = db.query(models.Task).filter(models.Task.project_id == project_id).all()
+        
+        deleted_tasks_count = 0
+        for task in tasks_to_delete:
+            db.delete(task)
+            deleted_tasks_count += 1
+        
+        print(f"[CRUD delete_project] Deleted {deleted_tasks_count} tasks associated with project_id: {project_id}")
+
+        # Now, delete the project itself
         db.delete(db_project)
+        
+        # Commit all changes (task deletions and project deletion)
         db.commit()
-    return db_project
+        
+        return project_data_to_return # Return the data of the deleted project
+    
+    return None # Project not found
 
 def get_agent(db: Session, agent_id: int):
     return db.query(models.Agent).filter(models.Agent.id == agent_id).first()

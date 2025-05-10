@@ -10,12 +10,21 @@ import {
     IconButton,
     HStack,
     Spacer,
-    useToast
+    useToast,
+    Menu,
+    MenuButton,
+    MenuList,
+    MenuItem
 } from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
+import { DeleteIcon, HamburgerIcon, CheckCircleIcon, CopyIcon, StarIcon } from '@chakra-ui/icons';
 import { useProjectStore } from '@/store/projectStore';
 import { useTaskStore } from '@/store/taskStore';
-import { Project } from '@/types';
+import { Project, TaskFilters } from '@/types';
+import { formatDisplayName } from '@/lib/utils';
+
+const ACCENT_COLOR = "#dad2cc";
+const COMPLETED_COLOR_SUBTLE = "gray.500"; // For completed items, less prominent than accent
+const COMPLETED_TEXT_COLOR = "gray.400";
 
 const ProjectList: React.FC = () => {
     const projects = useProjectStore(state => state.projects);
@@ -23,6 +32,7 @@ const ProjectList: React.FC = () => {
     const fetchProjects = useProjectStore(state => state.fetchProjects);
     const removeProject = useProjectStore(state => state.removeProject);
     const tasks = useTaskStore(state => state.tasks);
+    const globalFilters = useTaskStore(state => state.filters);
     const toast = useToast();
 
     useEffect(() => {
@@ -60,6 +70,49 @@ const ProjectList: React.FC = () => {
         }
     };
 
+    const filteredProjects = React.useMemo(() => {
+        if (!projects) return [];
+        return projects.filter(project => {
+            if (!project) return false;
+
+            // Search Term Filter (Project Name and Description)
+            if (globalFilters.searchTerm) {
+                const searchTermLower = globalFilters.searchTerm.toLowerCase();
+                const nameMatch = project.name?.toLowerCase().includes(searchTermLower);
+                const descriptionMatch = project.description?.toLowerCase().includes(searchTermLower);
+                if (!nameMatch && !descriptionMatch) return false;
+            }
+
+            // Agent Filter (Projects the agent is working on)
+            if (globalFilters.agentName) {
+                const agentTasksInProject = tasks.filter(task => 
+                    task.project_id === project.id && task.agent_name === globalFilters.agentName
+                );
+                if (agentTasksInProject.length === 0) return false;
+            }
+
+            // Status Filter (Based on project's tasks completion)
+            if (globalFilters.status && globalFilters.status !== 'all') {
+                const projectTasks = tasks.filter(task => task.project_id === project.id);
+                if (projectTasks.length === 0 && globalFilters.status === 'active') return false; // No tasks, not active
+                if (projectTasks.length === 0 && globalFilters.status === 'completed') return true; // No tasks, can be considered completed for filtering if desired or false
+
+                const allCompleted = projectTasks.every(task => task.completed);
+                if (globalFilters.status === 'completed' && !allCompleted) return false;
+                if (globalFilters.status === 'active' && allCompleted && projectTasks.length > 0) return false;
+            }
+
+            // Project ID filter from globalFilters doesn't make sense for filtering the project list itself,
+            // unless it means to show only that specific project.
+            if (globalFilters.projectId && project.id !== globalFilters.projectId) {
+                // This would make the filter very restrictive, essentially singling out a project.
+                // return false; // Uncomment if this specific behavior is desired.
+            }
+
+            return true;
+        });
+    }, [projects, globalFilters, tasks]);
+
     if (loading) {
         return (
             <VStack spacing={4} align="stretch">
@@ -73,7 +126,7 @@ const ProjectList: React.FC = () => {
         );
     }
 
-    if (!projects.length) {
+    if (!filteredProjects.length && !loading) {
         return (
             <Box textAlign="center" py={8} bg="gray.700" rounded="lg" shadow="lg" borderWidth="1px" borderColor="gray.600">
                 <Text color="gray.300">No projects found</Text>
@@ -83,8 +136,11 @@ const ProjectList: React.FC = () => {
 
     return (
         <VStack spacing={4} align="stretch">
-            {projects.map(project => {
+            {filteredProjects.map(project => {
                 const stats = getProjectStats(project.id);
+                const isCompleted = stats.progress === 100;
+                const isInProgress = stats.totalTasks > 0 && !isCompleted;
+
                 return (
                     <Box
                         key={project.id}
@@ -94,7 +150,11 @@ const ProjectList: React.FC = () => {
                         shadow="lg"
                         borderWidth="1px"
                         borderColor="gray.600"
-                        _hover={{ shadow: "xl", borderColor: "blue.400", transform: "translateY(-1px)" }}
+                        _hover={{ 
+                            shadow: "xl", 
+                            borderColor: isInProgress ? ACCENT_COLOR : (isCompleted ? COMPLETED_COLOR_SUBTLE : "gray.500"), 
+                            transform: "translateY(-1px)" 
+                        }}
                         transition="all 0.2s ease-in-out"
                         position="relative"
                         overflow="hidden"
@@ -105,47 +165,87 @@ const ProjectList: React.FC = () => {
                             left: 0,
                             right: 0,
                             height: "4px",
-                            bg: "blue.400",
-                            opacity: 0.7
+                            bg: isInProgress ? ACCENT_COLOR : "transparent",
+                            opacity: 0.9
                         }}
                     >
-                        <HStack mb={2}>
-                            <Text fontWeight="medium" fontSize="md" color="white">{project.name}</Text>
+                        <HStack mb={2} align="start">
+                            <VStack align="start" spacing={0.5} flex={1}>
+                                <Text 
+                                    fontWeight="semibold"
+                                    fontSize="lg"
+                                    color="whiteAlpha.900"
+                                >
+                                    {formatDisplayName(project.name)}
+                                </Text>
+                                <Text
+                                    fontSize="xs"
+                                    color={isCompleted ? COMPLETED_TEXT_COLOR : (isInProgress ? ACCENT_COLOR : "gray.400")}
+                                    fontWeight="medium"
+                                >
+                                    Status: {isCompleted ? "Completed" : (isInProgress ? "In Progress" : "Idle")}
+                                </Text>
+                            </VStack>
                             <Spacer />
-                            <IconButton
-                                icon={<DeleteIcon />}
-                                aria-label="Delete project"
-                                variant="ghost"
-                                colorScheme="red"
-                                size="sm"
-                                color="gray.100"
-                                _hover={{ bg: 'red.500', color: 'white' }}
-                                onClick={() => handleDelete(project)}
-                            />
+                            <Menu placement="bottom-end">
+                                <MenuButton
+                                    as={IconButton}
+                                    aria-label="Options"
+                                    icon={<HamburgerIcon />}
+                                    variant="ghost"
+                                    color="gray.400"
+                                    _hover={{ bg: "gray.600", color: "white" }}
+                                    size="sm"
+                                />
+                                <MenuList bg="gray.700" borderColor="gray.600">
+                                    <MenuItem 
+                                        icon={<DeleteIcon />} 
+                                        onClick={() => handleDelete(project)}
+                                        bg="gray.700"
+                                        color="red.300"
+                                        _hover={{ bg: "gray.600", color: "red.200" }}
+                                    >
+                                        Delete
+                                    </MenuItem>
+                                </MenuList>
+                            </Menu>
                         </HStack>
                         {project.description && (
-                            <Text color="gray.300" fontSize="sm" mb={2} noOfLines={2}>
+                            <Text 
+                                color="gray.300" 
+                                fontSize="sm"
+                                fontWeight="normal"
+                                mb={2} 
+                                noOfLines={2}
+                            >
                                 {project.description}
                             </Text>
                         )}
                         <Progress
                             value={stats.progress}
                             size="sm"
-                            colorScheme="blue"
                             rounded="full"
                             mb={2}
                             bg="gray.600"
+                            sx={{
+                                '& > div:first-of-type': {
+                                    bg: isCompleted ? COMPLETED_COLOR_SUBTLE : (isInProgress ? ACCENT_COLOR : "gray.500")
+                                }
+                            }}
                         />
-                        <HStack spacing={2} mt={2}>
-                            <Badge colorScheme="blue" variant="solid">
-                                Tasks: {stats.totalTasks}
-                            </Badge>
-                            <Badge colorScheme="green" variant="solid">
-                                Completed: {stats.completedTasks}
-                            </Badge>
-                            <Badge colorScheme={stats.progress === 100 ? "green" : "yellow"} variant="solid">
-                                {Math.round(stats.progress)}%
-                            </Badge>
+                        <HStack spacing={4} mt={3} flexWrap="wrap">
+                            <HStack spacing={1} align="center">
+                                <CopyIcon color={ACCENT_COLOR} boxSize="14px" /> 
+                                <Text fontSize="xs" color="gray.200">Tasks: {stats.totalTasks}</Text>
+                            </HStack>
+                            <HStack spacing={1} align="center">
+                                <CheckCircleIcon color={stats.completedTasks > 0 ? ACCENT_COLOR : "gray.500"} boxSize="14px" />
+                                <Text fontSize="xs" color="gray.200">Completed: {stats.completedTasks}</Text>
+                            </HStack>
+                            <HStack spacing={1} align="center">
+                                <StarIcon color={isInProgress ? ACCENT_COLOR : (isCompleted ? COMPLETED_COLOR_SUBTLE : "gray.500")} boxSize="14px" /> 
+                                <Text fontSize="xs" color="gray.200">Progress: {Math.round(stats.progress)}%</Text>
+                            </HStack>
                         </HStack>
                     </Box>
                 );

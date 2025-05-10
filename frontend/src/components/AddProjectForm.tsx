@@ -9,7 +9,8 @@ import {
     Input,
     Textarea,
     VStack,
-    useToast
+    useToast,
+    Heading
 } from '@chakra-ui/react';
 import { useProjectStore } from '@/store/projectStore';
 import { ProjectCreateData } from '@/types';
@@ -63,6 +64,10 @@ const AddProjectForm: React.FC = () => {
             borderColor="gray.700"
         >
             <VStack spacing={4}>
+                <Heading size="md" color="whiteAlpha.900" mb={2} textAlign="center">
+                    Define New Initiative
+                </Heading>
+
                 <FormControl isRequired>
                     <FormLabel color="gray.100">Name</FormLabel>
                     <Input
@@ -101,7 +106,7 @@ const AddProjectForm: React.FC = () => {
                     _hover={{ bg: "blue.500" }}
                     _active={{ bg: "blue.600" }}
                 >
-                    Add Project
+                    Define New Initiative
                 </Button>
             </VStack>
         </Box>

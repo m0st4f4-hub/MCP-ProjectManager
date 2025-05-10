@@ -22,11 +22,16 @@ import {
     FormLabel,
     Input,
     Textarea,
-    Select
+    Select,
+    Menu,
+    MenuButton,
+    MenuList,
+    MenuItem
 } from '@chakra-ui/react';
-import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { DeleteIcon, EditIcon, HamburgerIcon, AtSignIcon, TagLeftIcon, TimeIcon } from '@chakra-ui/icons';
 import { Task } from '@/types';
 import { useTaskStore } from '@/store/taskStore';
+import { formatDisplayName } from '@/lib/utils';
 
 interface TaskItemProps {
     task: Task;
@@ -34,6 +39,11 @@ interface TaskItemProps {
     onDelete: (id: number) => void;
     onEdit: (task: Task) => void;
 }
+
+const ACCENT_COLOR = "#dad2cc"; // Define the single accent color
+const COMPLETED_TEXT_COLOR = "gray.400"; // For completed item text
+const COMPLETED_BORDER_COLOR = "gray.500"; // Softer border for completed
+const ACTIVE_BORDER_COLOR = ACCENT_COLOR; // Accent border for emphasis if desired, or stick to gray.600 and use top bar for accent
 
 const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete, onEdit }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -70,8 +80,16 @@ const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete
     // Get project and agent names for display
     const projectName = useMemo(() => {
         if (!task.project_id) return null;
-        return projects.find(p => p.id === task.project_id)?.name || `Project ${task.project_id}`;
+        const project = projects.find(p => p.id === task.project_id);
+        return project ? formatDisplayName(project.name) : `Project ${task.project_id}`;
     }, [task.project_id, projects]);
+
+    const agentNameDisplay = useMemo(() => {
+        if (!task.agent_name) return null;
+        // Assuming agent_name from task is the raw name. 
+        // If agents list contains formatted names, adjust logic.
+        return formatDisplayName(task.agent_name);
+    }, [task.agent_name]);
 
     // Memoize modal content to prevent unnecessary re-renders
     const modalContent = useMemo(() => (
@@ -128,7 +146,7 @@ const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete
                                 >
                                     {projects.map(project => (
                                         <option key={project.id} value={project.id}>
-                                            {project.name}
+                                            {formatDisplayName(project.name)}
                                         </option>
                                     ))}
                                 </Select>
@@ -149,7 +167,7 @@ const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete
                                 >
                                     {agents.map(agent => (
                                         <option key={agent.id} value={agent.name}>
-                                            {agent.name}
+                                            {formatDisplayName(agent.name)}
                                         </option>
                                     ))}
                                 </Select>
@@ -179,7 +197,7 @@ const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete
                 </ModalBody>
             </ModalContent>
         </Modal>
-    ), [isOpen, onClose, editedTask, handleSubmit, projects, agents]);
+    ), [isOpen, onClose, editedTask, handleSubmit, projects, agents, handleInputChange]);
 
     return (
         <>
@@ -189,10 +207,10 @@ const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete
                 rounded="lg"
                 shadow="lg"
                 borderWidth="1px"
-                borderColor={task.completed ? "green.500" : "gray.600"}
+                borderColor={task.completed ? COMPLETED_BORDER_COLOR : "gray.600"} // Use softer border for completed
                 _hover={{ 
                     shadow: "xl", 
-                    borderColor: "blue.400",
+                    borderColor: task.completed ? COMPLETED_BORDER_COLOR : ACTIVE_BORDER_COLOR, // Accent on hover for active
                     transform: "translateY(-1px)",
                 }}
                 transition="all 0.2s ease-in-out"
@@ -205,104 +223,114 @@ const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete
                     left: 0,
                     right: 0,
                     height: "4px",
-                    bg: task.completed ? "green.400" : "blue.400",
-                    opacity: 0.7
+                    bg: task.completed ? "transparent" : ACCENT_COLOR, // Accent top bar only for active tasks
+                    opacity: 0.9 // Slightly more opaque if it's the main indicator
                 }}
             >
                 <HStack spacing={4} justify="space-between" align="start">
-                    <HStack spacing={4} flex={1}>
-                <Checkbox
-                    isChecked={task.completed}
+                    <HStack spacing={4} flex={1} align="start">
+                        <Checkbox
+                            isChecked={task.completed}
                             onChange={() => onToggle(task.id)}
-                    colorScheme="green"
-                    size="lg"
+                            colorScheme="gray" // Neutral color scheme for checkbox
+                            size="lg"
                             borderColor="gray.500"
-                />
-                        <VStack align="start" spacing={3} flex={1}>
-                <Text
+                            mt={1}
+                            sx={{
+                                '& .chakra-checkbox__control[data-checked]': {
+                                    bg: ACCENT_COLOR,
+                                    borderColor: ACCENT_COLOR,
+                                    color: 'gray.800' // Checkmark color
+                                },
+                                '& .chakra-checkbox__control': {
+                                    bg: 'gray.600'
+                                }
+                            }}
+                        />
+                        <VStack align="start" spacing={1} flex={1}>
+                            <Text
+                                fontWeight="bold"
                                 fontSize="lg"
-                                fontWeight="semibold"
-                                textDecoration={task.completed ? "line-through" : "none"}
-                                color={task.completed ? "gray.400" : "white"}
-                                letterSpacing="tight"
-                >
-                    {task.title}
-                </Text>
+                                color={task.completed ? COMPLETED_TEXT_COLOR : "whiteAlpha.900"}
+                                textDecoration={task.completed ? 'line-through' : 'none'}
+                                sx={{
+                                    textTransform: 'capitalize', // Simple way to approximate Title Case for first words
+                                    // For true Title Case, a utility function applied to task.title would be better
+                                }}
+                            >
+                                {formatDisplayName(task.title)} {/* Using formatDisplayName for title consistency */}
+                            </Text>
+                            <Text fontSize="xs" color={task.completed ? COMPLETED_TEXT_COLOR : "gray.400"}>
+                                Status: {task.completed ? 'Completed' : 'Active'}
+                            </Text>
+
                             {task.description && (
-                                <Text
-                                    color={task.completed ? "gray.500" : "gray.300"}
-                                    fontSize="sm"
-                                    noOfLines={2}
-                                    textDecoration={task.completed ? "line-through" : "none"}
-                                    lineHeight="tall"
-                                >
+                                <Text fontSize="sm" color={task.completed ? COMPLETED_TEXT_COLOR : "gray.300"} noOfLines={2}>
                                     {task.description}
                                 </Text>
                             )}
-                            <HStack spacing={2} flexWrap="wrap">
+
+                            <VStack align="start" spacing={1} mt={2} pt={2} borderTopWidth="1px" borderColor="gray.600" w="full">
+                                <Text fontSize="xs" fontWeight="medium" color="gray.400">Details:</Text>
                                 {projectName && (
-                                    <Badge 
-                                        colorScheme="purple" 
-                                        px={3} 
-                                        py={1} 
-                                        borderRadius="full"
-                                        textTransform="none"
-                                        fontWeight="medium"
-                                        variant="solid"
-                                    >
-                                        {projectName}
-                                    </Badge>
+                                    <HStack spacing={1.5}>
+                                        <TagLeftIcon boxSize="14px" color={ACCENT_COLOR} />
+                                        <Text fontSize="xs" color={task.completed ? COMPLETED_TEXT_COLOR : "gray.200"}>
+                                            {projectName}
+                                        </Text>
+                                    </HStack>
                                 )}
-                                {task.agent_name && (
-                                    <Badge 
-                                        colorScheme="blue" 
-                                        px={3} 
-                                        py={1} 
-                                        borderRadius="full"
-                                        textTransform="none"
-                                        fontWeight="medium"
-                                        variant="solid"
-                                    >
-                                        {task.agent_name}
-                                    </Badge>
+                                {agentNameDisplay && (
+                                    <HStack spacing={1.5}>
+                                        <AtSignIcon boxSize="14px" color={ACCENT_COLOR} />
+                                        <Text fontSize="xs" color={task.completed ? COMPLETED_TEXT_COLOR : "gray.200"}>
+                                            {agentNameDisplay}
+                                        </Text>
+                                    </HStack>
                                 )}
-                                <Badge 
-                                    colorScheme={task.completed ? "green" : "yellow"} 
-                                    px={3} 
-                                    py={1} 
-                                    borderRadius="full"
-                                    textTransform="none"
-                                    fontWeight="medium"
-                                    variant="solid"
-                                >
-                                    {task.completed ? "Completed" : "In Progress"}
-                                </Badge>
-                </HStack>
-            </VStack>
+                                <HStack spacing={1.5}>
+                                    <TimeIcon color={task.completed ? COMPLETED_TEXT_COLOR : ACCENT_COLOR} boxSize="14px" />
+                                    <Text fontSize="xs" color="gray.200">{new Date(task.created_at).toLocaleDateString()}</Text>
+                                </HStack>
+                            </VStack>
+                        </VStack>
                     </HStack>
-                    <HStack spacing={2}>
-                    <IconButton
-                            icon={<EditIcon />}
-                        aria-label="Edit task"
+
+                    <Menu>
+                        <MenuButton
+                            as={IconButton}
+                            aria-label="Options"
+                            icon={<HamburgerIcon />}
                             variant="ghost"
-                            colorScheme="blue"
-                        size="sm"
-                            onClick={onOpen}
-                            color="gray.100"
-                            _hover={{ bg: 'blue.500', color: 'white' }}
+                            size="sm"
+                            color={task.completed ? "gray.500" : "gray.300"}
+                            _hover={{ bg: "gray.600" }}
+                            position="absolute"
+                            top="8px"
+                            right="8px"
                         />
-                    <IconButton
-                            icon={<DeleteIcon />}
-                        aria-label="Delete task"
-                            variant="ghost"
-                            colorScheme="red"
-                        size="sm"
-                            onClick={() => onDelete(task.id)}
-                            color="gray.100"
-                            _hover={{ bg: 'red.500', color: 'white' }}
-                    />
-                    </HStack>
-            </HStack>
+                        <MenuList bg="gray.700" borderColor="gray.600">
+                            <MenuItem 
+                                icon={<EditIcon />} 
+                                onClick={onOpen} 
+                                bg="gray.700" 
+                                color="gray.100"
+                                _hover={{ bg: "gray.600" }}
+                            >
+                                Edit
+                            </MenuItem>
+                            <MenuItem 
+                                icon={<DeleteIcon />} 
+                                onClick={() => onDelete(task.id)} 
+                                bg="gray.700" 
+                                color="red.300"
+                                _hover={{ bg: "red.600", color: "white" }}
+                            >
+                                Delete
+                            </MenuItem>
+                        </MenuList>
+                    </Menu>
+                </HStack>
             </Box>
             {modalContent}
         </>
