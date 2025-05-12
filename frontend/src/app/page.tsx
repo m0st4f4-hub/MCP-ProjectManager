@@ -28,7 +28,7 @@ import {
     IconButton,
     Flex,
 } from '@chakra-ui/react';
-import { AddIcon, ArrowUpIcon, CopyIcon, HamburgerIcon } from '@chakra-ui/icons';
+import { AddIcon, ArrowUpIcon, CopyIcon, HamburgerIcon, SettingsIcon } from '@chakra-ui/icons';
 import TaskList from '@/components/TaskList';
 import AddTaskForm from '@/components/AddTaskForm';
 import ProjectList from '@/components/ProjectList';
@@ -44,12 +44,16 @@ import { ProjectCreateData } from '@/types/project';
 import { TaskCreateData } from '@/types/task';
 import Dashboard from '@/components/Dashboard';
 import { ThemeToggleButton } from '@/components/ThemeToggleButton';
+import MCPDevTools from '@/components/MCPDevTools';
 
-const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProjectOpen, onAddAgentOpen, onImportPlanOpen }) => (
+const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProjectOpen, onAddAgentOpen, onImportPlanOpen, onOpenDevTools }) => (
     <>
-        <Heading size="md" mb={2} color="text.heading" borderBottomWidth="1px" borderColor="border.primary" pb={3}>
-            Workflow Console
-        </Heading>
+        <HStack justify="space-between" align="center" w="full" pb={3} borderBottomWidth="1px" borderColor="border.primary">
+            <Heading size="md" color="text.heading">
+                Workflow Console
+            </Heading>
+            <ThemeToggleButton size="sm" />
+        </HStack>
         <Button
             justifyContent="flex-start"
             onClick={() => setActiveView('Dashboard')}
@@ -120,6 +124,7 @@ const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProject
                     onClick={onAddTaskOpen}
                     bg="bg.button.accent"
                     color="text.button.accent"
+                    _hover={{ bg: 'bg.button.accent.hover' }}
                 >
                     Add New Task
                 </Button>
@@ -133,6 +138,7 @@ const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProject
                     onClick={onAddProjectOpen}
                     bg="bg.button.accent"
                     color="text.button.accent"
+                    _hover={{ bg: 'bg.button.accent.hover' }}
                  >
                     Add New Project
                 </Button>
@@ -146,6 +152,7 @@ const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProject
                     onClick={onAddAgentOpen}
                     bg="bg.button.accent"
                     color="text.button.accent"
+                    _hover={{ bg: 'bg.button.accent.hover' }}
                 >
                     Add New Agent
                 </Button>
@@ -160,8 +167,22 @@ const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProject
                 onClick={onImportPlanOpen}
                 bg="bg.button.action"
                 color="text.button.action"
+                _hover={{ bg: 'bg.button.action.hover' }}
             >
                 Import Plan
+            </Button>
+        </Box>
+        <Box w="full" pt={2} borderTopWidth="1px" borderColor="border.divider" mt={4}>
+            <Button 
+                leftIcon={<SettingsIcon />} 
+                variant="ghost" 
+                size="sm" 
+                w="full" 
+                onClick={onOpenDevTools}
+                color="text.secondary"
+                _hover={{ bg: 'bg.hover.nav' }} 
+            >
+                Dev Tools
             </Button>
         </Box>
         <FilterSidebar />
@@ -183,6 +204,7 @@ export default function Home() {
     const { isOpen: isAddProjectOpen, onOpen: onAddProjectOpen, onClose: onAddProjectClose } = useDisclosure();
     const { isOpen: isAddAgentOpen, onOpen: onAddAgentOpen, onClose: onAddAgentClose } = useDisclosure();
     const { isOpen: isImportPlanOpen, onOpen: onImportPlanOpen, onClose: onImportPlanClose } = useDisclosure();
+    const { isOpen: isDevToolsOpen, onOpen: onOpenDevTools, onClose: onCloseDevTools } = useDisclosure();
 
     const [jsonPasteContent, setJsonPasteContent] = React.useState<string>("");
     const [importStatus, setImportStatus] = React.useState<string>("");
@@ -248,85 +270,59 @@ export default function Home() {
             }
 
             let newProjectId: number | undefined;
-            let projectWasExisting = false;
+            let newProject: any | null = null;
 
-            try {
-                setImportStatus(`Attempting to create project: ${plan.projectName}...`);
+            const existingProjects = await getProjects();
+            const foundProject = existingProjects.find(p => p.name === plan.projectName);
+
+            if (foundProject) {
+                setImportStatus(`Project '${plan.projectName}' already exists. Adding tasks to existing project (ID: ${foundProject.id}).`);
+                newProjectId = foundProject.id;
+                newProject = foundProject;
+            } else {
+                setImportStatus(`Creating new project: '${plan.projectName}'...`);
                 const projectData: ProjectCreateData = {
                     name: plan.projectName,
-                    description: plan.projectDescription
+                    description: plan.projectDescription || undefined
                 };
-                const newProject = await createProject(projectData);
-                newProjectId = newProject.id;
-                setImportStatus(`Project '${plan.projectName}' created with ID: ${newProjectId}. Creating tasks...`);
-            } catch (projectCreationError: unknown) {
-                const errorMessage = projectCreationError?.message?.toLowerCase() || '';
-                if (errorMessage.includes("already exist") || errorMessage.includes("duplicate") || errorMessage.includes("already registered") || errorMessage.includes("unique constraint failed")) {
-                    setImportStatus(`Project '${plan.projectName}' likely already exists. Verifying...`);
-                    try {
-                        const existingProjects = await getProjects();
-                        const foundProject = existingProjects.find(p => p.name === plan.projectName);
-                        if (foundProject) {
-                            newProjectId = foundProject.id;
-                            projectWasExisting = true;
-                            setImportStatus(`Using existing project '${plan.projectName}' (ID: ${newProjectId}). Creating tasks...`);
-                        } else {
-                            throw new Error(`Project creation failed (duplicate?) but could not find '${plan.projectName}' by name to confirm.`);
-                        }
-                    } catch (fetchExistingError: unknown) {
-                        console.error("Error fetching or finding existing project:", fetchExistingError);
-                        setImportStatus(`Error: Project '${plan.projectName}' may already exist but failed to retrieve its details. ${fetchExistingError.message}`);
-                        setIsImporting(false);
-                        return;
-                    }
-                } else {
-                    throw projectCreationError;
+                const createdProject = await createProject(projectData);
+                if (!createdProject || !createdProject.id) {
+                    throw new Error("Failed to create project or project ID is missing.");
                 }
+                newProjectId = createdProject.id;
+                newProject = createdProject;
+                setImportStatus(`Project '${createdProject.name}' created (ID: ${newProjectId}). Now importing tasks...`);
             }
 
-            if (typeof newProjectId === 'undefined') {
-                setImportStatus(`Error: Could not obtain a project ID for '${plan.projectName}'. Import cannot proceed.`);
-                setIsImporting(false);
-                return;
-            }
-
-            setImportStatus(`Processing tasks for project '${plan.projectName}' (ID: ${newProjectId})...`);
-            
-            let tasksCreatedCount = 0;
-            let tasksFailedCount = 0;
-            for (const task of plan.tasks) {
-                try {
-                    setImportStatus(`Creating task: ${task.title}...`);
-                    const taskPayload: TaskCreateData = {
-                        title: task.title,
-                        description: task.description,
-                        project_id: newProjectId,
-                        agent_name: task.agentName || plan.projectAgentName || undefined,
-                        completed: task.completed || false
-                    };
-                    await createTask(taskPayload);
-                    tasksCreatedCount++;
-                } catch (taskError) {
-                    console.error(`Failed to create task '${task.title}':`, taskError);
-                    tasksFailedCount++;
+            let tasksImportedCount = 0;
+            for (const taskData of plan.tasks) {
+                if (!taskData.title) {
+                    console.warn("Skipping task due to missing title:", taskData);
+                    continue;
                 }
+                const newTaskData: TaskCreateData = {
+                    project_id: newProjectId!,
+                    title: taskData.title,
+                    description: taskData.description || undefined,
+                    agent_name: taskData.agentName || plan.projectAgentName || undefined,
+                    completed: taskData.completed === true
+                };
+                await createTask(newTaskData);
+                tasksImportedCount++;
             }
-            let finalStatus = `Import finished. Project '${plan.projectName}' (ID: ${newProjectId}) ${projectWasExisting ? 'found and used' : 'processed'}. `;
-            finalStatus += `${tasksCreatedCount} tasks created. `;
-            if (tasksFailedCount > 0) {
-                finalStatus += `${tasksFailedCount} tasks failed. Check console for details.`;
-            }
-            setImportStatus(finalStatus);
 
+            setImportStatus(`Import complete! ${tasksImportedCount} tasks added to project '${newProject?.name}'.`);
             fetchTasks();
             fetchProjects();
-            fetchAgents();
+            setTimeout(() => { onImportPlanClose(); setJsonPasteContent(''); setImportStatus(''); }, 2000);
 
         } catch (error) {
-            console.error("Error during import:", error);
-            setImportStatus(`Error: ${error instanceof Error ? error.message : String(error)}`);
+            const message = error instanceof Error ? error.message : "An unknown error occurred during import.";
+            console.error("Import failed:", error);
+            setImportStatus(`Error: ${message}`);
+        } finally {
+            setIsImporting(false);
         }
-        setIsImporting(false);
     };
 
     useEffect(() => {
@@ -361,19 +357,6 @@ export default function Home() {
                     <Heading size="lg" mb={4} color="text.heading" textAlign={{ base: 'center', md: 'left' }}>
                         Project Manager
                     </Heading>
-                    <Flex 
-                        justifyContent="space-between" 
-                        alignItems="center" 
-                        wrap="wrap" 
-                        gap={2} 
-                        p={4} 
-                        bg="bg.header"
-                        borderRadius="md"
-                        borderWidth="1px"
-                        borderColor="border.primary"
-                    >
-                        <ThemeToggleButton />
-                    </Flex>
                     <HStack 
                         align="flex-start" 
                         spacing={8} 
@@ -395,6 +378,7 @@ export default function Home() {
                                 onAddProjectOpen={onAddProjectOpen} 
                                 onAddAgentOpen={onAddAgentOpen} 
                                 onImportPlanOpen={onImportPlanOpen} 
+                                onOpenDevTools={onOpenDevTools} 
                                 activeView={activeView} 
                                 setActiveView={setActiveView} 
                             />
@@ -412,6 +396,7 @@ export default function Home() {
                                             onAddProjectOpen={() => { onAddProjectOpen(); onDrawerClose(); }} 
                                             onAddAgentOpen={() => { onAddAgentOpen(); onDrawerClose(); }} 
                                             onImportPlanOpen={() => { onImportPlanOpen(); onDrawerClose(); }} 
+                                            onOpenDevTools={onOpenDevTools} 
                                             activeView={activeView} 
                                             setActiveView={(view) => { setActiveView(view); onDrawerClose(); }} 
                                         />
@@ -520,6 +505,24 @@ export default function Home() {
                     </ModalBody>
                 </ModalContent>
             </Modal>
+
+            <Drawer 
+                isOpen={isDevToolsOpen} 
+                placement='right' 
+                onClose={onCloseDevTools} 
+                size='lg'
+            >
+                <DrawerOverlay />
+                <DrawerContent>
+                    <DrawerCloseButton />
+                    <DrawerHeader borderBottomWidth='1px' borderColor="border.primary">
+                        MCP Dev Tools
+                    </DrawerHeader>
+                    <DrawerBody>
+                        <MCPDevTools />
+                    </DrawerBody>
+                </DrawerContent>
+            </Drawer>
 
         </Box>
     );

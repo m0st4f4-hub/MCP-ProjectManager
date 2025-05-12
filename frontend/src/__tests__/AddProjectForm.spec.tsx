@@ -5,7 +5,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import AddProjectForm from '../components/AddProjectForm'; // Adjust path as necessary
-import { ProjectContext } from '../../contexts/ProjectContext'; // Adjust path
+import { ProjectProvider, useProjects } from '@/contexts/ProjectContext'; // New path using alias
 
 // Mock the ProjectContext
 const mockAddProject = jest.fn();
@@ -14,7 +14,7 @@ const mockRefreshProjects = jest.fn();
 describe('AddProjectForm', () => {
   const renderForm = () => {
     return render(
-      <ProjectContext.Provider value={{
+      <ProjectProvider value={{
         projects: [],
         loading: false,
         error: null,
@@ -26,7 +26,7 @@ describe('AddProjectForm', () => {
         fetchProjects: jest.fn() // Added fetchProjects to match context type
       }}>
         <AddProjectForm onClose={jest.fn()} />
-      </ProjectContext.Provider>
+      </ProjectProvider>
     );
   };
 

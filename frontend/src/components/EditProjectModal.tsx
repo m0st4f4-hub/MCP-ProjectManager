@@ -109,26 +109,20 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
       size="lg"
     >
       <FormControl isRequired>
-        <FormLabel color="text.secondary">Name</FormLabel>
+        <FormLabel>Name</FormLabel>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Project Name"
-          bg="bg.default"
-          borderColor="border.default"
-          focusBorderColor="brand.primary"
         />
       </FormControl>
 
       <FormControl>
-        <FormLabel color="text.secondary">Description</FormLabel>
+        <FormLabel>Description</FormLabel>
         <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Project Description"
-          bg="bg.default"
-          borderColor="border.default"
-          focusBorderColor="brand.primary"
         />
       </FormControl>
     </EditModalBase>

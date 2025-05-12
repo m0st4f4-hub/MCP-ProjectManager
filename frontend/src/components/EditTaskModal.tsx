@@ -132,83 +132,53 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
         >
             {/* Pass all form fields as children */}
             <FormControl isRequired>
-                <FormLabel color="text.secondary">Title</FormLabel>
+                <FormLabel>Title</FormLabel>
                 <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Task Title"
-                    bg="bg.input"
-                    color="text.primary"
-                    borderColor="border.input"
-                    _hover={{ borderColor: "border.input_hover" }}
-                    _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
-                    _placeholder={{ color: "text.placeholder" }}
                 />
             </FormControl>
 
             <FormControl>
-                <FormLabel color="text.secondary">Description</FormLabel>
+                <FormLabel>Description</FormLabel>
                 <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Task Description"
-                    bg="bg.input"
-                    color="text.primary"
-                    borderColor="border.input"
-                    _hover={{ borderColor: "border.input_hover" }}
-                    _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
-                    _placeholder={{ color: "text.placeholder" }}
                 />
             </FormControl>
 
             <FormControl>
-                <FormLabel color="text.secondary">Project</FormLabel>
+                <FormLabel>Project</FormLabel>
                 <Select 
                     placeholder="-- Select Project --"
                     value={projectId}
                     onChange={(e) => setProjectId(e.target.value)}
-                    bg="bg.input"
-                    color="text.primary"
-                    borderColor="border.input"
-                    _hover={{ borderColor: "border.input_hover" }}
-                    _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
-                    _placeholder={{ color: "text.placeholder" }}
                 >
-                    <option value="">-- Clear Project --</option> {/* Option to clear */}
+                    <option value="">-- Clear Project --</option>
                     {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </Select>
             </FormControl>
 
             <FormControl>
-                <FormLabel color="text.secondary">Agent</FormLabel>
+                <FormLabel>Agent</FormLabel>
                 <Select 
                     placeholder="-- Select Agent --"
                     value={agentName}
                     onChange={(e) => setAgentName(e.target.value)}
-                    bg="bg.input"
-                    color="text.primary"
-                    borderColor="border.input"
-                    _hover={{ borderColor: "border.input_hover" }}
-                    _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
-                    _placeholder={{ color: "text.placeholder" }}
                 >
-                     <option value="">-- Clear Agent --</option> {/* Option to clear */}
+                     <option value="">-- Clear Agent --</option>
                     {agents.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
                 </Select>
             </FormControl>
 
             <FormControl>
-                <FormLabel color="text.secondary">Parent Task</FormLabel>
+                <FormLabel>Parent Task</FormLabel>
                 <Select 
                     placeholder="-- No Parent --"
                     value={parentTaskId}
                     onChange={(e) => setParentTaskId(e.target.value)}
-                    bg="bg.input"
-                    color="text.primary"
-                    borderColor="border.input"
-                    _hover={{ borderColor: "border.input_hover" }}
-                    _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
-                    _placeholder={{ color: "text.placeholder" }}
                 >
                     {potentialParents.map(p => (
                         <option key={p.id} value={p.id}>
@@ -222,17 +192,6 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
                 <Checkbox
                     isChecked={completed}
                     onChange={(e) => setCompleted(e.target.checked)}
-                    borderColor="border.checkbox"
-                    mr={3}
-                    sx={{
-                        '.chakra-checkbox__control[data-checked]': {
-                            bg: 'bg.checkbox.checked',
-                            borderColor: 'border.checkbox.checked',
-                        },
-                        '.chakra-checkbox__control:focus-visible': {
-                            boxShadow: 'outline', 
-                        }
-                    }}
                  >
                     Completed
                 </Checkbox>

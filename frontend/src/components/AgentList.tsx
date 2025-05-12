@@ -263,24 +263,38 @@ const AgentList: React.FC = () => {
                                     </Badge>
                                 </HStack>
                                 <Text fontSize="xs" color="text.muted">ID: {agent.id}</Text>
-                                <HStack 
-                                    spacing={{ base: 2, md: 4 }}
-                                    mt={1} 
-                                    flexWrap="wrap" 
-                                    direction={{ base: 'row', md: 'row' }}
-                                    align={{ base: 'center', md: 'center' }}
-                                >
-                                    <HStack spacing={1} align="center">
-                                        <Text fontSize="xs" color="text.muted">Tasks: {stats.totalTasks}</Text>
-                                    </HStack>
-                                    <HStack spacing={1} align="center">
-                                        <Text fontSize="xs" color="text.muted">Completed: {stats.completedTasks}</Text>
-                                    </HStack>
-                                    <HStack spacing={1} align="center">
-                                        <Text fontSize="xs" color="text.muted">Projects: {stats.activeProjects}</Text>
-                                    </HStack>
-                                </HStack>
                             </VStack>
+
+                            <HStack 
+                                spacing={3} 
+                                wrap="wrap" 
+                                justify={{ base: 'flex-start', md: 'flex-end' }} 
+                                align="center"
+                                ml={{ md: 4 }}
+                            >
+                                <Badge 
+                                    variant="subtle"
+                                    bg={stats.totalTasks > 0 ? "badge.bg.info" : "badge.bg.neutral"}
+                                    color={stats.totalTasks > 0 ? "badge.text.info" : "badge.text.neutral"}
+                                >
+                                    Tasks: {stats.totalTasks}
+                                </Badge>
+                                <Badge 
+                                    variant="subtle"
+                                    bg={stats.completedTasks > 0 ? "badge.bg.success" : "badge.bg.neutral"}
+                                    color={stats.completedTasks > 0 ? "badge.text.success" : "badge.text.neutral"}
+                                >
+                                    Completed: {stats.completedTasks}
+                                </Badge>
+                                <Badge 
+                                    variant="subtle"
+                                    bg={stats.activeProjects > 0 ? "badge.bg.info" : "badge.bg.neutral"}
+                                    color={stats.activeProjects > 0 ? "badge.text.info" : "badge.text.neutral"}
+                                >
+                                    Projects: {stats.activeProjects}
+                                </Badge>
+                            </HStack>
+
                             <Menu placement="bottom-end">
                                 <MenuButton
                                     as={IconButton}

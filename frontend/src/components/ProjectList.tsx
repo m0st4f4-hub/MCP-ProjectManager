@@ -168,7 +168,7 @@ const ProjectList: React.FC = () => {
                         variant="outline" 
                         color="text.link"
                         borderColor="border.focus"
-                        _hover={{ bg: 'brand.50', _dark: { bg: 'brand.900' } }}
+                        _hover={{ bg: "bg.hover.nav" }}
                     >
                         Add Project
                     </Button>
@@ -234,8 +234,8 @@ const ProjectList: React.FC = () => {
                                         px={2} 
                                         py={0.5} 
                                         borderRadius="md"
-                                        bg={isCompleted ? 'bg.status.success.subtle' : (isInProgress ? 'bg.status.info.subtle' : 'bg.subtle')} 
-                                        color={isCompleted ? 'text.status.success' : (isInProgress ? 'text.status.info' : 'text.secondary')}
+                                        bg={isCompleted ? 'badge.bg.success' : (isInProgress ? 'badge.bg.info' : 'badge.bg.neutral')} 
+                                        color={isCompleted ? 'badge.text.success' : (isInProgress ? 'badge.text.info' : 'badge.text.neutral')}
                                     >
                                         {isCompleted ? "Completed" : (isInProgress ? "In Progress" : "Idle")}
                                     </Badge>
@@ -278,9 +278,16 @@ const ProjectList: React.FC = () => {
                         <Progress
                             value={progress}
                             size="xs"
-                            colorScheme="brand"
-                            rounded="full"
-                            bg="bg.subtle"
+                            hasStripe={isInProgress}
+                            isAnimated={isInProgress}
+                            mt={3}
+                            borderRadius="full"
+                            bg="progress.track.bg"
+                            sx={{
+                                "& > div[role=progressbar]": {
+                                    bg: "progress.filledTrack.bg"
+                                }
+                            }}
                         />
                         <Flex justify="space-between" mt={2}>
                             <Text fontSize="xs" color="text.secondary">

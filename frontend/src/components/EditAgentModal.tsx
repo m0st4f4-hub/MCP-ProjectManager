@@ -105,14 +105,11 @@ const EditAgentModal: React.FC<EditAgentModalProps> = ({
         size="lg"
     >
         <FormControl isRequired>
-          <FormLabel color="text.secondary">Name</FormLabel>
+          <FormLabel>Name</FormLabel>
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Agent Name"
-            bg="bg.default"
-            borderColor="border.default"
-            focusBorderColor="brand.primary"
           />
         </FormControl>
     </EditModalBase>

@@ -353,16 +353,15 @@ const TaskList: React.FC = () => {
                     <AccordionItem border="none" mb={4} key={group.id}>
                     <h2>
                         <AccordionButton 
-                            bg="gray.750" 
-                            _hover={{ bg: 'gray.700' }} 
-                            rounded="md"
-                            py={3}
-                            px={4}
+                            _hover={{
+                                bg: 'interaction.hover'
+                            }}
+                            borderRadius="md"
                         >
-                            <Box flex={1} textAlign="left">
-                                    <Heading size="sm" color="whiteAlpha.900">{group.name}</Heading>
+                            <Box flex="1" textAlign="left">
+                                <Heading size="sm" color="text.primary">{group.name}</Heading>
                             </Box>
-                            <AccordionIcon color="whiteAlpha.900" />
+                            <AccordionIcon color="text.primary" />
                         </AccordionButton>
                     </h2>
                     <AccordionPanel pb={4} pt={2} px={0}>
@@ -380,7 +379,7 @@ const TaskList: React.FC = () => {
                                 ))}
                                 </VStack>
                         ) : (
-                                <Text color="gray.400" p={4} textAlign="center">No tasks in this group.</Text>
+                                <Text color="text.muted" p={4} textAlign="center">No tasks in this group.</Text>
                         )}
                     </AccordionPanel>
                 </AccordionItem>
@@ -388,14 +387,14 @@ const TaskList: React.FC = () => {
             </Accordion>
 
             {isAddTaskModalOpen && (
-                <Modal isOpen={isAddTaskModalOpen} onClose={handleCloseAddTaskModal} size="xl">
-                    <ModalOverlay backdropFilter="blur(2px)" />
-                    <ModalContent bg="gray.800" color="white" borderColor="gray.700" borderWidth="1px">
-                        <ModalHeader borderBottomWidth="1px" borderColor="gray.700">
+                <Modal isOpen={isAddTaskModalOpen} onClose={handleCloseAddTaskModal} size={isMobile ? 'full' : 'xl'} isCentered={!isMobile}>
+                    <ModalOverlay />
+                    <ModalContent bg="bg.modal" color="text.primary" borderColor="border.base" borderWidth="1px">
+                        <ModalHeader borderBottomWidth="1px" borderColor="border.base">
                             {editingTask ? 'Edit Task' : 'Add New Task'}
                         </ModalHeader>
-                        <ModalCloseButton color="gray.300" _hover={{ bg: "gray.700", color: "white" }} />
-                        <ModalBody pb={6}>
+                        <ModalCloseButton color="text.secondary" _hover={{ bg: "interaction.hover", color: "text.primary" }} />
+                        <ModalBody py={6}>
                             <AddTaskForm 
                                 initialParentId={parentTaskForNewTask}
                                 onClose={handleCloseAddTaskModal} 

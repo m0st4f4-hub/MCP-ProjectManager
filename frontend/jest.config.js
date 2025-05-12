@@ -27,15 +27,25 @@ const customJestConfig = {
 
     // Handle image imports
     // https://jestjs.io/docs/webpack#handling-static-assets
-    '^.+\\\\.(png|jpg|jpeg|gif|webp|avif|ico|bmp|svg)$/i': \`<rootDir>/__mocks__/fileMock.js\`,
+    '^.+\\.(png|jpg|jpeg|gif|webp|avif|ico|bmp|svg)$/i': '<rootDir>/__mocks__/fileMock.js',
 
     // Handle module aliases (if you have them in your tsconfig.json)
     '^@/components/(.*)$': '<rootDir>/src/components/$1',
     '^@/app/(.*)$': '<rootDir>/src/app/$1',
+    '^@/contexts/(.*)$': '<rootDir>/src/contexts/$1',
+    '^@/store/(.*)$': '<rootDir>/src/store/$1',
+    '^@/lib/(.*)$': '<rootDir>/src/lib/$1',
+    '^@/types/(.*)$': '<rootDir>/src/types/$1',
     // Add other aliases here if needed
   },
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,
+  // Add ignore patterns
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/.next/',
+    '<rootDir>/tests-e2e/' // Exclude Playwright tests
+  ],
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
