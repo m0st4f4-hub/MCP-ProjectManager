@@ -15,7 +15,8 @@ import {
     Text,
     Divider,
     useColorModeValue,
-    Icon
+    Icon,
+    useTheme
 } from '@chakra-ui/react';
 import { useTaskStore } from '@/store/taskStore';
 import { useProjectStore } from '@/store/projectStore';
@@ -36,26 +37,29 @@ import {
     LabelList
 } from 'recharts';
 
-const StatCard = ({ icon, label, value, helpText, colorScheme }: {
+const StatCard = ({ icon, label, value, helpText, iconToken }: {
     icon: React.ElementType;
     label: string;
     value: string | number;
     helpText?: string;
-    colorScheme?: string;
+    iconToken: string;
 }) => {
-    const cardBgColor = useColorModeValue('gray.700', 'gray.700');
-    const cardTextColor = useColorModeValue('whiteAlpha.900', 'whiteAlpha.900');
-    const iconColor = colorScheme ? `${colorScheme}.300` : 'blue.300';
-
     return (
-        <Box p={5} shadow="md" borderWidth="1px" borderRadius="lg" bg={cardBgColor} borderColor="gray.600">
+        <Box 
+            p={5} 
+            shadow="md" 
+            borderWidth="1px" 
+            borderRadius="lg" 
+            bg="bg.card"
+            borderColor="border.primary"
+        >
             <HStack spacing={4}>
-                <Icon as={icon} w={8} h={8} color={iconColor} />
+                <Icon as={icon} w={8} h={8} color={iconToken} />
                 <Stat>
                     <VStack align="start" spacing={0}>
-                        <StatLabel color="gray.400" fontSize="sm">{label}</StatLabel>
-                        <StatNumber fontSize="2xl" fontWeight="medium" color={cardTextColor}>{value}</StatNumber>
-                        {helpText && <StatHelpText color="gray.500" fontSize="xs">{helpText}</StatHelpText>}
+                        <StatLabel color="text.secondary" fontSize="sm">{label}</StatLabel>
+                        <StatNumber fontSize="2xl" fontWeight="medium" color="text.primary">{value}</StatNumber>
+                        {helpText && <StatHelpText color="text.muted" fontSize="xs">{helpText}</StatHelpText>}
                     </VStack>
                 </Stat>
             </HStack>
@@ -67,18 +71,24 @@ const Dashboard: React.FC = () => {
     const { tasks, fetchTasks, loading: isLoadingTasks, error: tasksError } = useTaskStore();
     const { projects, fetchProjects, loading: isLoadingProjects, error: projectsError } = useProjectStore();
     const { agents, fetchAgents, loading: isLoadingAgents, error: agentsError } = useAgentStore();
+    const theme = useTheme();
+
+    const headingColor = useColorModeValue(theme.semanticTokens.colors['text.heading']?._light ?? 'neutral.900', theme.semanticTokens.colors['text.heading']?._dark ?? 'whiteAlpha.900');
+    const textColor = useColorModeValue(theme.semanticTokens.colors['text.secondary']?._light ?? 'neutral.600', theme.semanticTokens.colors['text.secondary']?._dark ?? 'neutral.400');
+    const chartTextColor = useColorModeValue(theme.semanticTokens.colors['text.secondary']?._light ?? 'neutral.600', theme.semanticTokens.colors['text.secondary']?._dark ?? 'neutral.400');
+    const chartGridColor = useColorModeValue(theme.semanticTokens.colors['border.secondary']?._light ?? 'neutral.200', theme.semanticTokens.colors['border.secondary']?._dark ?? 'neutral.700');
+    const tooltipBg = useColorModeValue(theme.semanticTokens.colors['bg.tooltip']?._light ?? 'neutral.800', theme.semanticTokens.colors['bg.tooltip']?._dark ?? 'neutral.600');
+    const tooltipBorder = useColorModeValue(theme.semanticTokens.colors['border.primary']?._light ?? 'neutral.300', theme.semanticTokens.colors['border.primary']?._dark ?? 'neutral.600');
+    const tooltipLabelColor = useColorModeValue(theme.semanticTokens.colors['text.primary']?._light ?? 'neutral.900', theme.semanticTokens.colors['text.primary']?._dark ?? 'whiteAlpha.900');
+    const tooltipItemColor = useColorModeValue(theme.semanticTokens.colors['text.secondary']?._light ?? 'neutral.600', theme.semanticTokens.colors['text.secondary']?._dark ?? 'neutral.400');
+    const statusWarningColor = useColorModeValue(theme.semanticTokens.colors['status.warning']?._light ?? 'yellow.500', theme.semanticTokens.colors['status.warning']?._dark ?? 'yellow.300');
+    const statusSuccessColor = useColorModeValue(theme.semanticTokens.colors['status.success']?._light ?? 'green.500', theme.semanticTokens.colors['status.success']?._dark ?? 'green.300');
 
     useEffect(() => {
         fetchTasks();
         fetchProjects();
         fetchAgents();
     }, [fetchTasks, fetchProjects, fetchAgents]);
-
-    const bgColor = useColorModeValue('gray.800', 'gray.800');
-    const headingColor = useColorModeValue('whiteAlpha.900', 'whiteAlpha.900');
-    const textColor = useColorModeValue('gray.300', 'gray.300');
-    const chartCardBg = useColorModeValue('gray.700', 'gray.700');
-    const chartTextColor = useColorModeValue('gray.200', 'gray.200');
 
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(task => task.completed).length;
@@ -108,12 +118,12 @@ const Dashboard: React.FC = () => {
         { name: 'Completed', value: completedTasks },
     ], [pendingTasks, completedTasks]);
 
-    const COLORS = { Pending: '#ECC94B', Completed: '#48BB78' };
+    const COLORS = { Pending: statusWarningColor, Completed: statusSuccessColor };
 
     if (isLoadingTasks || isLoadingProjects || isLoadingAgents) {
         return (
             <VStack flex={1} justify="center" align="center" spacing={4} minH="400px">
-                <Spinner size="xl" color="blue.300" />
+                <Spinner size="xl" color="icon.primary" />
                 <Text color={textColor}>Loading dashboard data...</Text>
             </VStack>
         );
@@ -122,18 +132,18 @@ const Dashboard: React.FC = () => {
     if (tasksError || projectsError || agentsError) {
         return (
             <VStack flex={1} justify="center" align="center" spacing={4} minH="400px">
-                <Icon as={FaTasks} w={12} h={12} color="red.400" />
-                <Heading size="md" color="red.300">Error Loading Dashboard</Heading>
+                <Icon as={FaTasks} w={12} h={12} color="status.error" />
+                <Heading size="md" color="text.critical">Error Loading Dashboard</Heading>
                 <Text color={textColor}>There was an issue fetching data. Please try refreshing.</Text>
-                {tasksError && <Text color="red.400" fontSize="sm">Tasks: {tasksError}</Text>}
-                {projectsError && <Text color="red.400" fontSize="sm">Projects: {projectsError}</Text>}
-                {agentsError && <Text color="red.400" fontSize="sm">Agents: {agentsError}</Text>}
+                {tasksError && <Text color="text.critical" fontSize="sm">Tasks: {tasksError}</Text>}
+                {projectsError && <Text color="text.critical" fontSize="sm">Projects: {projectsError}</Text>}
+                {agentsError && <Text color="text.critical" fontSize="sm">Agents: {agentsError}</Text>}
             </VStack>
         );
     }
 
     return (
-        <Box bg={bgColor} p={6} borderRadius="lg" w="full">
+        <Box p={6} borderRadius="lg" w="full">
             <Heading size="lg" mb={6} color={headingColor}>Dashboard Overview</Heading>
             
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} mb={8}>
@@ -141,19 +151,19 @@ const Dashboard: React.FC = () => {
                     icon={FaProjectDiagram} 
                     label="Total Projects" 
                     value={projects.length} 
-                    colorScheme="purple"
+                    iconToken="icon.stat.project"
                 />
                 <StatCard 
                     icon={FaTasks} 
                     label="Total Tasks" 
                     value={totalTasks} 
-                    colorScheme="teal"
+                    iconToken="icon.stat.task"
                 />
                 <StatCard 
                     icon={FaUsersCog} 
                     label="Registered Agents" 
                     value={agents.length} 
-                    colorScheme="orange"
+                    iconToken="icon.stat.agent"
                 />
             </SimpleGrid>
 
@@ -164,38 +174,43 @@ const Dashboard: React.FC = () => {
                     label="Completed Tasks" 
                     value={completedTasks} 
                     helpText={`${totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : 0}% of total`} 
-                    colorScheme="green"
+                    iconToken="icon.stat.completed"
                 />
                 <StatCard 
                     icon={FaHourglassHalf} 
                     label="Pending Tasks" 
                     value={pendingTasks} 
                     helpText={`${totalTasks > 0 ? ((pendingTasks / totalTasks) * 100).toFixed(1) : 0}% of total`} 
-                    colorScheme="yellow"
+                    iconToken="icon.stat.pending"
                 />
             </SimpleGrid>
 
-            <Divider my={8} borderColor="gray.600" />
+            <Divider my={8} borderColor="border.divider" />
 
             <Text color={textColor} fontSize="sm">
                 Graphs and detailed workload charts will be added here in a future update.
             </Text>
 
             <Heading size="md" mt={8} mb={4} color={headingColor}>Tasks per Project</Heading>
-            <Box p={4} bg={chartCardBg} borderRadius="lg" shadow="md" mb={8} minH="300px">
+            <Box p={4} bg="bg.card" borderRadius="lg" shadow="md" mb={8} minH="300px">
                 {tasksPerProjectData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={tasksPerProjectData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
+                            <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
                             <XAxis dataKey="name" stroke={chartTextColor} fontSize="12px" />
                             <YAxis stroke={chartTextColor} fontSize="12px" allowDecimals={false}/>
                             <Tooltip 
-                                contentStyle={{ backgroundColor: '#2D3748', border: '1px solid #4A5568', borderRadius: 'md'}} 
-                                labelStyle={{ color: '#E2E8F0' }}
-                                itemStyle={{ color: '#A0AEC0' }}
+                                contentStyle={{ 
+                                    backgroundColor: tooltipBg,
+                                    borderColor: tooltipBorder,
+                                    borderWidth: '1px', 
+                                    borderRadius: theme.radii.md
+                                }}
+                                labelStyle={{ color: tooltipLabelColor }}
+                                itemStyle={{ color: tooltipItemColor }}
                             />
                             <Legend wrapperStyle={{ color: chartTextColor, fontSize: '12px' }}/>
-                            <Bar dataKey="tasks" fill="#805AD5" name="Tasks" />
+                            <Bar dataKey="tasks" fill={theme.colors.purple[500]} name="Tasks" />
                         </BarChart>
                     </ResponsiveContainer>
                 ) : (
@@ -204,20 +219,25 @@ const Dashboard: React.FC = () => {
             </Box>
 
             <Heading size="md" mb={4} color={headingColor}>Tasks per Agent</Heading>
-            <Box p={4} bg={chartCardBg} borderRadius="lg" shadow="md" mb={8} minH="300px">
+            <Box p={4} bg="bg.card" borderRadius="lg" shadow="md" mb={8} minH="300px">
                 {tasksPerAgentData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={tasksPerAgentData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#4A5568" />
+                            <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
                             <XAxis dataKey="name" stroke={chartTextColor} fontSize="12px" />
                             <YAxis stroke={chartTextColor} fontSize="12px" allowDecimals={false}/>
                             <Tooltip 
-                                contentStyle={{ backgroundColor: '#2D3748', border: '1px solid #4A5568', borderRadius: 'md'}} 
-                                labelStyle={{ color: '#E2E8F0' }}
-                                itemStyle={{ color: '#A0AEC0' }}
+                                contentStyle={{ 
+                                    backgroundColor: tooltipBg,
+                                    borderColor: tooltipBorder,
+                                    borderWidth: '1px', 
+                                    borderRadius: theme.radii.md
+                                }}
+                                labelStyle={{ color: tooltipLabelColor }}
+                                itemStyle={{ color: tooltipItemColor }}
                             />
                             <Legend wrapperStyle={{ color: chartTextColor, fontSize: '12px' }}/>
-                            <Bar dataKey="tasks" fill="#3182CE" name="Tasks" />
+                            <Bar dataKey="tasks" fill={theme.colors.brand[500]} name="Tasks" />
                         </BarChart>
                     </ResponsiveContainer>
                 ) : (
@@ -226,7 +246,7 @@ const Dashboard: React.FC = () => {
             </Box>
             
             <Heading size="md" mb={4} color={headingColor}>Task Status Distribution</Heading>
-            <Box p={4} bg={chartCardBg} borderRadius="lg" shadow="md" mb={8} minH="300px">
+            <Box p={4} bg="bg.card" borderRadius="lg" shadow="md" mb={8} minH="300px">
                  {(pendingTasks > 0 || completedTasks > 0) ? (
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
@@ -243,13 +263,18 @@ const Dashboard: React.FC = () => {
                                     <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS]} />
                                 ))}
                                 <LabelList dataKey="name" position="outside" fill={chartTextColor} stroke="none" fontSize={12} />
-                                <LabelList dataKey="value" position="inside" fill="#FFFFFF" stroke="none" fontSize={14} fontWeight="bold" formatter={(value: number) => `${((value / totalTasks) * 100).toFixed(0)}%`} />
+                                <LabelList dataKey="value" position="inside" fill="#FFFFFF" stroke="none" fontSize={14} fontWeight="bold" formatter={(value: number) => `${totalTasks > 0 ? ((value / totalTasks) * 100).toFixed(0) : 0}%`} />
 
                             </Pie>
                             <Tooltip 
-                                contentStyle={{ backgroundColor: '#2D3748', border: '1px solid #4A5568', borderRadius: 'md'}} 
-                                labelStyle={{ color: '#E2E8F0' }}
-                                itemStyle={{ color: '#A0AEC0' }}
+                                contentStyle={{ 
+                                    backgroundColor: tooltipBg,
+                                    borderColor: tooltipBorder,
+                                    borderWidth: '1px', 
+                                    borderRadius: theme.radii.md
+                                }}
+                                labelStyle={{ color: tooltipLabelColor }}
+                                itemStyle={{ color: tooltipItemColor }}
                             />
                         </PieChart>
                     </ResponsiveContainer>

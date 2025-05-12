@@ -17,6 +17,11 @@ import {
 import { useTaskStore } from '@/store/taskStore';
 import { TaskCreateData } from '@/types';
 
+// Task ID: <taskId_placeholder>
+// Agent Role: PresentationLayerSpecialist
+// Request ID: <requestId_placeholder>
+// Timestamp: <timestamp_placeholder>
+
 const AddTaskForm: React.FC<{ initialParentId?: string | null; onClose?: () => void }> = ({ initialParentId = null, onClose }) => {
     const addTask = useTaskStore(state => state.addTask);
     const projects = useTaskStore(state => state.projects);
@@ -89,60 +94,60 @@ const AddTaskForm: React.FC<{ initialParentId?: string | null; onClose?: () => v
         <Box 
             as="form" 
             onSubmit={handleSubmit} 
-            bg="gray.800" 
+            bg="bg.surface"
             p={6} 
             rounded="lg" 
             shadow="lg" 
             borderWidth="1px" 
-            borderColor="gray.700"
+            borderColor="border.base"
         >
             <VStack spacing={4}>
-                <Heading size="md" color="whiteAlpha.900" mb={2} textAlign="center">
+                <Heading size="md" color="text.primary" mb={2} textAlign="center">
                     Trigger New Work Item
                 </Heading>
 
                 <FormControl isRequired>
-                    <FormLabel color="gray.100">Title</FormLabel>
+                    <FormLabel color="text.primary">Title</FormLabel>
                     <Input
                         value={formData.title}
                         onChange={(e) => handleChange('title', e.target.value)}
                         placeholder="Enter task title"
-                        bg="gray.700"
-                        color="white"
-                        borderColor="gray.600"
-                        _hover={{ borderColor: "gray.500" }}
-                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                        _placeholder={{ color: "gray.400" }}
+                        bg="bg.input"
+                        color="text.primary"
+                        borderColor="border.input"
+                        _hover={{ borderColor: "border.input_hover" }}
+                        _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                        _placeholder={{ color: "text.placeholder" }}
                     />
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel color="gray.100">Description</FormLabel>
+                    <FormLabel color="text.primary">Description</FormLabel>
                     <Textarea
                         value={formData.description || ''}
                         onChange={(e) => handleChange('description', e.target.value || null)}
                         placeholder="Enter task description"
-                        bg="gray.700"
-                        color="white"
-                        borderColor="gray.600"
-                        _hover={{ borderColor: "gray.500" }}
-                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                        _placeholder={{ color: "gray.400" }}
+                        bg="bg.input"
+                        color="text.primary"
+                        borderColor="border.input"
+                        _hover={{ borderColor: "border.input_hover" }}
+                        _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                        _placeholder={{ color: "text.placeholder" }}
                     />
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel color="gray.100">Project</FormLabel>
+                    <FormLabel color="text.primary">Project</FormLabel>
                     <Select 
                         value={formData.project_id || ''}
                         onChange={(e) => handleChange('project_id', e.target.value || null)}
                         placeholder="Select project"
-                        bg="gray.700"
-                        color="white"
-                        borderColor="gray.600"
-                        _hover={{ borderColor: "gray.500" }}
-                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                        _placeholder={{ color: "gray.400" }}
+                        bg="bg.input"
+                        color="text.primary"
+                        borderColor="border.input"
+                        _hover={{ borderColor: "border.input_hover" }}
+                        _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                        _placeholder={{ color: "text.placeholder" }}
                     >
                         {projects.map(project => (
                             <option key={project.id} value={project.id}>
@@ -153,17 +158,17 @@ const AddTaskForm: React.FC<{ initialParentId?: string | null; onClose?: () => v
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel color="gray.100">Agent</FormLabel>
+                    <FormLabel color="text.primary">Agent</FormLabel>
                     <Select 
                         value={formData.agent_id || ''}
                         onChange={(e) => handleChange('agent_id', e.target.value || null)}
                         placeholder="Select agent"
-                        bg="gray.700"
-                        color="white"
-                        borderColor="gray.600"
-                        _hover={{ borderColor: "gray.500" }}
-                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                        _placeholder={{ color: "gray.400" }}
+                        bg="bg.input"
+                        color="text.primary"
+                        borderColor="border.input"
+                        _hover={{ borderColor: "border.input_hover" }}
+                        _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                        _placeholder={{ color: "text.placeholder" }}
                     >
                         {agents.map(agent => (
                             <option key={agent.id} value={agent.id}>
@@ -174,17 +179,17 @@ const AddTaskForm: React.FC<{ initialParentId?: string | null; onClose?: () => v
                 </FormControl>
 
                 <FormControl isDisabled={!!initialParentId}>
-                    <FormLabel color="gray.100">Parent Task (Optional)</FormLabel>
+                    <FormLabel color="text.primary">Parent Task (Optional)</FormLabel>
                     <Select 
                         value={formData.parent_task_id || ''}
                         onChange={(e) => handleChange('parent_task_id', e.target.value || null)}
                         placeholder="Select parent task"
-                        bg="gray.700"
-                        color="white"
-                        borderColor="gray.600"
-                        _hover={{ borderColor: "gray.500" }}
-                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                        _placeholder={{ color: "gray.400" }}
+                        bg="bg.input"
+                        color="text.primary"
+                        borderColor="border.input"
+                        _hover={{ borderColor: "border.input_hover" }}
+                        _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                        _placeholder={{ color: "text.placeholder" }}
                     >
                         {tasks.map(task => (
                             <option key={task.id} value={task.id}>
@@ -196,11 +201,11 @@ const AddTaskForm: React.FC<{ initialParentId?: string | null; onClose?: () => v
 
                 <Button 
                     type="submit" 
-                    colorScheme="blue" 
+                    bg="bg.button.primary"
+                    color="text.button.primary"
                     width="full"
                     size="lg"
-                    _hover={{ bg: "blue.500" }}
-                    _active={{ bg: "blue.600" }}
+                    _hover={{ bg: "bg.button.primary.hover" }}
                 >
                     Trigger New Work Item
                 </Button>

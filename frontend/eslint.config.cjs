@@ -6,10 +6,4 @@ const compat = new FlatCompat({
 
 module.exports = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
-  {
-    plugins: ["@next/next"],
-    rules: {
-      "@next/next/no-html-link-for-pages": ["error", "src/app"],
-    },
-  },
 ];

@@ -57,6 +57,7 @@ export interface TaskState { // Added export
     setFilters: (filters: TaskFilters) => void;
     startPolling: () => void;
     stopPolling: () => void;
+    deleteTask: (id: string) => Promise<void>;
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -81,40 +82,45 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     pollingIntervalId: null,
     
     fetchTasks: async () => {
+        const filters = get().filters;
+        set({ loading: true, error: null });
         try {
-            const tasksFromApi = await api.getTasks(get().filters);
-            set(state => ({ ...state, tasks: sortTasks(upsertTasks(tasksFromApi, state.tasks), state.sortOptions), error: null }));
-        } catch (error) {
-            set(state => ({ ...state, error: String(error) }));
+            console.log("[fetchTasks] Fetching with filters:", filters);
+            const tasks = await api.getTasks(filters);
+            set({ tasks, loading: false });
+        } catch (error: any) {
+            set({ error: error.message, loading: false });
         }
     },
 
     fetchProjectsAndAgents: async () => {
         try {
-            const [projects, agents] = await Promise.all([
-                api.getProjects(),
-                api.getAgents()
-            ]);
-            set(state => ({ ...state, projects, agents, error: null }));
-        } catch (error) {
-            set(state => ({ ...state, error: String(error) }));
+            console.log("[fetchProjectsAndAgents] Fetching projects and agents...");
+            const projects = await api.getProjects(); 
+            const agents = await api.getAgents();
+            set({ projects, agents });
+        } catch (error: any) {
+            set(state => ({ ...state, error: `Failed to fetch projects/agents: ${error.message}` }));
         }
     },
 
     startPolling: () => {
-        const { fetchTasks, fetchProjectsAndAgents, pollingIntervalId } = get();
+        const { fetchTasks, fetchProjectsAndAgents, pollingIntervalId, filters } = get();
         if (pollingIntervalId) {
             clearInterval(pollingIntervalId);
         }
         
         set({ loading: true });
-        Promise.all([fetchTasks(), fetchProjectsAndAgents()]).finally(() => {
+        Promise.all([
+            fetchTasks(),
+            fetchProjectsAndAgents()
+        ]).finally(() => {
             set({ loading: false });
         });
 
         const intervalId = setInterval(() => {
+            console.log("[Polling] Fetching tasks...");
             fetchTasks();
-            fetchProjectsAndAgents();
         }, 20000);
         set({ pollingIntervalId: intervalId });
     },
@@ -142,35 +148,63 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     },
 
     removeTask: async (id) => {
-        set(state => ({ ...state, loading: true, error: null }));
+        const originalTasks = get().tasks;
+        
+        // Optimistically remove the task and its descendants
+        const idsToRemove = new Set([id, ...getAllDescendantIds(id, originalTasks)]);
+        const remainingTasksOptimistic = originalTasks.filter(task => !idsToRemove.has(task.id));
+        
+        set(state => ({
+            ...state,
+            tasks: sortTasks(remainingTasksOptimistic, state.sortOptions), // Use sortTasks for consistency if needed
+            error: null // Clear previous errors for this action
+        }));
+        
         try {
+            // Make the API call
             await api.deleteTask(id);
-            set(state => {
-                const idsToRemove = new Set([id, ...getAllDescendantIds(id, state.tasks)]);
-                const remainingTasks = state.tasks.filter(task => !idsToRemove.has(task.id));
-                return {
-                    ...state,
-                    tasks: remainingTasks,
-                    loading: false
-                };
-            });
+            // If successful, no need to update state again as it's already removed optimistically
         } catch (error) {
-            set(state => ({ ...state, error: String(error), loading: false }));
+            // Revert to original state on error
+            set(state => ({
+                ...state,
+                tasks: sortTasks(originalTasks, state.sortOptions),
+                error: `Failed to delete task ${id}: ${String(error)}`
+            }));
         }
     },
 
     toggleTaskComplete: async (id, completed) => {
+        const originalTasks = get().tasks;
+        // Optimistically update the UI
+        const updatedTasksOptimistic = originalTasks.map(task => 
+            task.id === id ? { ...task, completed, updated_at: new Date().toISOString() } : task
+        );
+        set(state => ({
+            ...state,
+            tasks: sortTasks(updatedTasksOptimistic, state.sortOptions),
+            error: null // Clear previous errors for this action
+        }));
+
         try {
+            // Make the API call
             const updatedTaskFromApi = await api.updateTask(id, { completed });
+            // Sync with server state (optional if API returns the full updated task)
+            // If the API returns the full task, it's good to re-upsert to ensure consistency
             set(state => ({
                 ...state,
                 tasks: sortTasks(
-                    upsertTasks([updatedTaskFromApi], state.tasks),
+                    upsertTasks([updatedTaskFromApi], state.tasks), // Use upsert to ensure subtasks/etc. are handled if they were part of the response
                     state.sortOptions
                 ),
             }));
         } catch (error) {
-            set(state => ({ ...state, error: String(error) }));
+            // Revert to original state on error
+            set(state => ({
+                ...state,
+                tasks: sortTasks(originalTasks, state.sortOptions),
+                error: `Failed to update task ${id}: ${String(error)}`
+            }));
         }
     },
 
@@ -209,9 +243,28 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         }));
     },
 
-    setFilters: (filters) => {
-        set(state => ({ ...state, filters }));
+    setFilters: (newFilters: Partial<TaskFilters>) => {
+        set(state => ({
+            filters: { ...state.filters, ...newFilters }
+        }));
         get().fetchTasks();
+    },
+
+    deleteTask: async (id: string) => {
+        const originalTasks = get().tasks;
+        // Optimistic update
+        set(state => ({ tasks: state.tasks.filter(task => task.id !== id) }));
+
+        try {
+            await api.deleteTask(id);
+            // Fetch projects and agents again to update counts
+            get().fetchProjectsAndAgents(); 
+        } catch (error) {
+            console.error('Failed to delete task:', error);
+            // Revert optimistic update
+            set({ tasks: originalTasks });
+            throw error;
+        }
     }
 }));
 

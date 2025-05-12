@@ -6,8 +6,9 @@ export const taskSchema = z.object({
     title: z.string().min(1, 'Title is required'),
     description: z.string().nullable().optional(),
     completed: z.boolean(),
-    project_id: z.string().nullable().optional(),
+    project_id: z.string(),
     agent_id: z.string().nullable().optional(),
+    agent_name: z.string().nullable().optional(),
     parent_task_id: z.string().nullable().optional(),
     created_at: z.string(),
     updated_at: z.string().optional()

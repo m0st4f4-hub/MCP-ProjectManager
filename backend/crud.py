@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy import or_, func
 from . import models, schemas
 import datetime
 from typing import Optional, List
@@ -13,8 +14,8 @@ def get_task(db: Session, task_id: str):
         db.query(models.Task)
         .options(
             joinedload(models.Task.project),
-            joinedload(models.Task.agent),
-            selectinload(models.Task.subtasks) # UPDATED from children
+            joinedload(models.Task.agent)
+            # selectinload(models.Task.subtasks) # UPDATED from children # REMOVED
         )
         .filter(models.Task.id == task_id)
         .first()
@@ -25,43 +26,53 @@ def get_tasks(
     skip: int = 0, 
     limit: int = 10000, 
     project_id: Optional[str] = None, 
-    agent_id: Optional[str] = None
+    agent_id: Optional[str] = None,
+    agent_name: Optional[str] = None, # Added agent_name
+    search: Optional[str] = None,
+    status: Optional[str] = None
 ):
-    print(f"[CRUD get_tasks] Received project_id: {project_id}, agent_id: {agent_id}, skip: {skip}, limit: {limit}")
+    print(f"[CRUD get_tasks] Received project_id: {project_id}, agent_id: {agent_id}, agent_name: {agent_name}, search: {search}, status: {status}, skip: {skip}, limit: {limit}")
     
     effective_limit = limit
 
-    query = db.query(models.Task).options(selectinload(models.Task.project), selectinload(models.Task.agent), selectinload(models.Task.subtasks))
-    print(f"[CRUD get_tasks] Base query: {query}") # Log the base query
+    # query = db.query(models.Task).options(selectinload(models.Task.project), selectinload(models.Task.agent), selectinload(models.Task.subtasks)) # REMOVE subtasks loading
+    query = db.query(models.Task).options(selectinload(models.Task.project), selectinload(models.Task.agent)) # CORRECTED query
 
     if project_id:
         query = query.filter(models.Task.project_id == project_id)
-        print(f"[CRUD get_tasks] Applying project_id filter: {project_id}")
-        print(f"[CRUD get_tasks] Query after project_id filter: {query}") # Log query after project_id filter
-    
-    if agent_id: # Filter by agent_id
-        query = query.filter(models.Task.agent_id == agent_id)
-        print(f"[CRUD get_tasks] Applying agent_id filter: {agent_id}")
-        print(f"[CRUD get_tasks] Query after agent_id filter: {query}") # Log query after agent_id filter
 
-    results = query.offset(skip).limit(effective_limit).all()
-    print(f"[CRUD get_tasks] Number of results returned: {len(results)} (skip: {skip}, limit: {effective_limit})")
-    return results
+    if agent_id: # Keep agent_id for direct linking if provided
+        query = query.filter(models.Task.agent_id == agent_id)
+    elif agent_name: # Filter by agent_name if agent_id is not provided
+        # This requires a join with the Agent table
+        query = query.join(models.Agent).filter(models.Agent.name == agent_name)
+
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            or_(
+                models.Task.title.ilike(search_term),
+                models.Task.description.ilike(search_term)
+            )
+        )
+    
+    if status is not None:
+        if status == 'completed' or status == 'true':
+            query = query.filter(models.Task.completed == True)
+        elif status == 'pending' or status == 'false':
+            query = query.filter(models.Task.completed == False)
+        # 'all' status implies no filtering by completion, so do nothing
+
+    print(f"[CRUD get_tasks] Query before offset/limit: {query}")
+    
+    tasks_list = query.order_by(models.Task.created_at.desc()).offset(skip).limit(effective_limit).all()
+    print(f"[CRUD get_tasks] Number of results returned: {len(tasks_list)} (skip: {skip}, limit: {effective_limit})")
+    return tasks_list
 
 def create_task(db: Session, task: schemas.TaskCreate):
     # Validate project_id
     if not get_project(db, project_id=task.project_id):
         raise ValueError(f"Project with id {task.project_id} not found")
-
-    # Validate parent_task_id if provided
-    if task.parent_task_id:
-        # First check if parent_task_id points to a subtask
-        if db.query(models.Subtask).filter(models.Subtask.id == task.parent_task_id).first():
-            raise ValueError("Invalid parent_task_id: Cannot use a subtask as a parent task")
-        # Then check if the parent task exists
-        parent_task = get_task(db, task_id=task.parent_task_id)
-        if not parent_task:
-            raise ValueError(f"Parent task with id {task.parent_task_id} not found")
 
     agent_id_to_use = task.agent_id
     if not agent_id_to_use and task.agent_name:
@@ -81,7 +92,8 @@ def create_task(db: Session, task: schemas.TaskCreate):
     db.commit()
     db.refresh(db_task)
     # Eagerly load relationships that are expected in the response or subsequent use
-    db.refresh(db_task, attribute_names=['project', 'agent', 'subtasks'])
+    # db.refresh(db_task, attribute_names=['project', 'agent', 'subtasks']) # REMOVED 'subtasks'
+    db.refresh(db_task, attribute_names=['project', 'agent']) # CORRECTED
     return db_task
 
 def update_task(db: Session, task_id: str, task_update: schemas.TaskUpdate):
@@ -93,16 +105,6 @@ def update_task(db: Session, task_id: str, task_update: schemas.TaskUpdate):
     if task_update.project_id:
         if not get_project(db, project_id=task_update.project_id):
             raise ValueError(f"Project with id {task_update.project_id} not found")
-
-    # Validate parent_task_id if provided
-    if task_update.parent_task_id:
-        # First check if the parent_task_id points to a subtask
-        if db.query(models.Subtask).filter(models.Subtask.id == task_update.parent_task_id).first():
-            raise ValueError("Invalid parent_task_id: Cannot use a subtask as a parent task")
-        # Then check if the parent task exists
-        parent_task = get_task(db, task_id=task_update.parent_task_id)
-        if not parent_task:
-            raise ValueError(f"Parent task with id {task_update.parent_task_id} not found")
 
     # Validate agent_id if provided
     if task_update.agent_id:
@@ -120,7 +122,8 @@ def update_task(db: Session, task_id: str, task_update: schemas.TaskUpdate):
     db.commit()
     db.refresh(db_task)
     # Eagerly load relationships that are expected in the response
-    db.refresh(db_task, attribute_names=['project', 'agent', 'subtasks'])
+    # db.refresh(db_task, attribute_names=['project', 'agent', 'subtasks']) # REMOVED 'subtasks'
+    db.refresh(db_task, attribute_names=['project', 'agent']) # CORRECTED
     return db_task
 
 def delete_task(db: Session, task_id: str):
@@ -136,13 +139,60 @@ def delete_task(db: Session, task_id: str):
     return None
 
 def get_project(db: Session, project_id: str):
-    return db.query(models.Project).filter(models.Project.id == project_id).first()
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if project:
+        # Calculate total task count
+        total_task_count = db.query(func.count(models.Task.id)).filter(models.Task.project_id == project_id).scalar()
+        project.task_count = total_task_count if total_task_count is not None else 0
+        # Calculate completed task count
+        completed_task_count = db.query(func.count(models.Task.id)).filter(
+            models.Task.project_id == project_id, 
+            models.Task.completed == True
+        ).scalar()
+        project.completed_task_count = completed_task_count if completed_task_count is not None else 0
+    return project
 
 def get_project_by_name(db: Session, name: str):
-    return db.query(models.Project).filter(models.Project.name == name).first()
+    project = db.query(models.Project).filter(models.Project.name == name).first()
+    if project:
+        # Calculate total task count
+        total_task_count = db.query(func.count(models.Task.id)).filter(models.Task.project_id == project.id).scalar()
+        project.task_count = total_task_count if total_task_count is not None else 0
+        # Calculate completed task count
+        completed_task_count = db.query(func.count(models.Task.id)).filter(
+            models.Task.project_id == project.id, 
+            models.Task.completed == True
+        ).scalar()
+        project.completed_task_count = completed_task_count if completed_task_count is not None else 0
+    return project
 
-def get_projects(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Project).offset(skip).limit(limit).all()
+def get_projects(db: Session, skip: int = 0, limit: int = 100, search: Optional[str] = None, status: Optional[str] = None):
+    query = db.query(models.Project)
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            or_(
+                models.Project.name.ilike(search_term),
+                models.Project.description.ilike(search_term)
+            )
+        )
+    # Status filtering logic would go here if Project model had a status field
+    # if status:
+    #     query = query.filter(models.Project.status == status) # Example
+    projects = query.offset(skip).limit(limit).all()
+    
+    # Calculate task counts for each project
+    for project in projects:
+        total_task_count = db.query(func.count(models.Task.id)).filter(models.Task.project_id == project.id).scalar()
+        project.task_count = total_task_count if total_task_count is not None else 0
+        
+        completed_task_count = db.query(func.count(models.Task.id)).filter(
+            models.Task.project_id == project.id, 
+            models.Task.completed == True
+        ).scalar()
+        project.completed_task_count = completed_task_count if completed_task_count is not None else 0
+
+    return projects
 
 def create_project(db: Session, project: schemas.ProjectCreate):
     project_id = str(uuid.uuid4())
@@ -194,8 +244,15 @@ def get_agent(db: Session, agent_id: str):
 def get_agent_by_name(db: Session, name: str):
     return db.query(models.Agent).filter(models.Agent.name == name).first()
 
-def get_agents(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Agent).offset(skip).limit(limit).all()
+def get_agents(db: Session, skip: int = 0, limit: int = 100, search: Optional[str] = None, status: Optional[str] = None):
+    query = db.query(models.Agent)
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(models.Agent.name.ilike(search_term))
+    # Status filtering logic would go here if Agent model had a status field
+    # if status:
+    #     query = query.filter(models.Agent.status == status) # Example
+    return query.offset(skip).limit(limit).all()
 
 def create_agent(db: Session, agent: schemas.AgentCreate):
     agent_id_str = str(uuid.uuid4().hex)
@@ -228,76 +285,3 @@ def delete_agent(db: Session, agent_id: str):
         db.commit()
         return agent_data
     return None
-
-def list_subtasks_crud(db: Session, parent_task_id: str, skip: int = 0, limit: int = 100) -> List[models.Subtask]:
-    return (
-        db.query(models.Subtask)
-        .options(
-            selectinload(models.Subtask.task)
-        )
-        .filter(models.Subtask.task_id == parent_task_id)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-
-# CRUD operation to create a new subtask
-def create_subtask(db: Session, subtask: schemas.SubtaskClientCreate, parent_task_id: str):
-    # Verify the parent task exists
-    parent_task = get_task(db, task_id=parent_task_id)
-    if not parent_task:
-        raise ValueError(f"Parent task with id {parent_task_id} not found")
-
-    subtask_id_str = str(uuid.uuid4().hex) 
-    # Ensure we pass parent_task_id explicitly, it's not in SubTaskCreate directly for model_dump usually
-    db_subtask = models.Subtask(id=subtask_id_str, **subtask.model_dump(), task_id=parent_task_id) 
-    db.add(db_subtask)
-    db.commit()
-    db.refresh(db_subtask)
-    return db_subtask
-
-# CRUD operation to retrieve a specific subtask by its ID
-def get_subtask(db: Session, subtask_id: str) -> Optional[models.Subtask]:
-    return db.query(models.Subtask).filter(models.Subtask.id == subtask_id).first()
-
-# CRUD operation to update an existing subtask
-def update_subtask(db: Session, subtask_id: str, subtask_update: schemas.SubtaskUpdate) -> Optional[models.Subtask]:
-    db_subtask = get_subtask(db, subtask_id=subtask_id)
-    if not db_subtask:
-        return None
-
-    update_data = subtask_update.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(db_subtask, key, value)
-    
-    db_subtask.updated_at = datetime.datetime.now(datetime.timezone.utc)
-    db.add(db_subtask)
-    db.commit()
-    db.refresh(db_subtask)
-    return db_subtask
-
-# CRUD operation to delete a subtask
-def delete_subtask(db: Session, subtask_id: str) -> Optional[models.Subtask]:
-    db_subtask = get_subtask(db, subtask_id=subtask_id)
-    if not db_subtask:
-        return None
-    
-    # To ensure the returned object is the one deleted, we can model_validate before delete
-    # However, the typical pattern is to return the object data as it was.
-    # For consistency with other delete operations, let's create a schema instance
-    # before deleting. This might not be strictly necessary if the client only cares about the ID.
-    # For now, let's just return the object that was found and will be deleted.
-    # A more robust approach might be to return a schemas.Subtask instance.
-    # For simplicity and consistency with how project/agent/task deletes are, we will
-    # return the ORM object and let the endpoint handle schema validation if needed.
-
-    # If we need to return a schema object:
-    # subtask_data = schemas.Subtask.model_validate(db_subtask)
-    # db.delete(db_subtask)
-    # db.commit()
-    # return subtask_data
-    
-    # Simpler: return the ORM object, endpoint can decide how to respond
-    db.delete(db_subtask)
-    db.commit()
-    return db_subtask # The object is now detached but contains pre-delete state

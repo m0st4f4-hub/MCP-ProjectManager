@@ -3,71 +3,58 @@ from typing import Optional, List, Union, Any
 from datetime import datetime
 from pydantic import field_validator
 
+# Defines Pydantic schemas for data validation and serialization.
+#
+# These schemas are used by FastAPI endpoints to validate incoming request data
+# and to shape the structure of outgoing response data. They often correspond
+# to the SQLAlchemy models defined in `models.py` but provide the API interface.
+
 # --- Agent Schemas ---
 class AgentBase(BaseModel):
-    name: str
+    """Base schema for agent attributes."""
+    name: str = Field(..., description="The unique name of the agent.")
 
 class AgentCreate(AgentBase):
+    """Schema for creating a new agent. Inherits attributes from AgentBase."""
     pass
 
 # Schema for updating an agent (all fields optional)
 class AgentUpdate(BaseModel):
-    name: Optional[str] = None
+    """Schema for updating an existing agent. All fields are optional."""
+    name: Optional[str] = Field(None, description="New name for the agent.")
 
 class Agent(AgentBase):
-    id: str
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    """Schema for representing an agent in API responses (read operations)."""
+    id: str = Field(..., description="Unique identifier for the agent.")
+    created_at: datetime = Field(..., description="Timestamp when the agent was created.")
+    updated_at: Optional[datetime] = Field(None, description="Timestamp when the agent was last updated.")
 
     model_config = ConfigDict(from_attributes=True)
 
 
 # --- Project Schemas ---
 class ProjectBase(BaseModel):
-    name: str
-    description: Optional[str] = None
+    """Base schema for project attributes."""
+    name: str = Field(..., description="The unique name of the project.")
+    description: Optional[str] = Field(None, description="Optional text description of the project.")
 
 class ProjectCreate(ProjectBase):
+    """Schema for creating a new project."""
     pass
 
 # Schema for updating a project (all fields optional)
 class ProjectUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
+    """Schema for updating an existing project. All fields are optional."""
+    name: Optional[str] = Field(None, description="New name for the project.")
+    description: Optional[str] = Field(None, description="New description for the project.")
 
 class Project(ProjectBase):
-    id: str
-    created_at: datetime
-    updated_at: Optional[datetime] = None
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-# --- Subtask Schemas (Consolidated) ---
-
-# Base model for subtask attributes (used for creation and output)
-class SubtaskBase(BaseModel):
-    title: str
-    description: Optional[str] = None
-    completed: Optional[bool] = False
-
-# Model for creating a subtask (client provides these fields)
-# parent_task_id will come from the path parameter in the endpoint
-class SubtaskClientCreate(SubtaskBase):
-    pass
-
-# Model for updating a subtask
-class SubtaskUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    completed: Optional[bool] = None
-
-# Model for reading/returning a subtask (includes all fields)
-class Subtask(SubtaskBase):
-    id: str
-    task_id: str  # Foreign key to the parent Task
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    """Schema for representing a project in API responses."""
+    id: str = Field(..., description="Unique identifier for the project.")
+    created_at: datetime = Field(..., description="Timestamp when the project was created.")
+    updated_at: Optional[datetime] = Field(None, description="Timestamp when the project was last updated.")
+    task_count: int = Field(0, description="Number of tasks associated with this project.")
+    completed_task_count: int = Field(0, description="Number of completed tasks associated with this project.")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -76,49 +63,55 @@ class Subtask(SubtaskBase):
 
 # Base model for common attributes
 class TaskBase(BaseModel):
-    title: str
-    description: Optional[str] = None
-    completed: Optional[bool] = False
-    project_id: str
-    agent_id: Optional[str] = None
-    parent_task_id: Optional[str] = None
+    """Base schema for task attributes."""
+    title: str = Field(..., description="Title of the task.")
+    description: Optional[str] = Field(None, description="Optional description for the task.")
+    completed: Optional[bool] = Field(False, description="Completion status of the task.")
+    project_id: str = Field(..., description="Identifier of the project this task belongs to.")
+    agent_id: Optional[str] = Field(None, description="Identifier of the agent assigned to this task (optional).")
+    # parent_task_id is intentionally NOT included here, handled by Subtask relationship
+    # If supporting parent tasks directly on Task model, add it here.
+    # parent_task_id: Optional[str] = Field(None, description="Identifier of the parent task (optional, for hierarchical tasks).")
 
 
 # Model for creating a task (inherits from Base, specific for creation)
 class TaskCreate(TaskBase):
-    agent_name: Optional[str] = None # Added for convenience during creation
+    """Schema used for creating a new task.
+    Allows specifying agent by name for convenience during creation.
+    """
+    agent_name: Optional[str] = Field(None, description="Name of the agent to assign (alternative to agent_id).")
 
-    @field_validator('agent_id', 'agent_name')
-    def agent_id_or_name_optional(cls, v, values, **kwargs):
-        # This validator is tricky because it runs for each field independently.
-        # A root_validator would be better if we needed to ensure AT MOST one is provided, or XOR.
-        # For now, we'll let the CRUD logic prioritize agent_id if both are somehow passed.
-        return v
+    # Note: The validator below is currently basic. API logic handles precedence.
+    # @field_validator('agent_id', 'agent_name')
+    # def agent_id_or_name_optional(cls, v, values, **kwargs):
+    #     """Allows either agent_id or agent_name but not necessarily enforcing mutual exclusivity at schema level."""
+    #     return v
 
 # Model for updating a task (all fields optional)
 class TaskUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    completed: Optional[bool] = None
-    project_id: Optional[str] = None
-    agent_id: Optional[str] = None
-    parent_task_id: Optional[str] = None
+    """Schema for updating an existing task. All fields are optional."""
+    title: Optional[str] = Field(None, description="New title for the task.")
+    description: Optional[str] = Field(None, description="New description for the task.")
+    completed: Optional[bool] = Field(None, description="New completion status for the task.")
+    project_id: Optional[str] = Field(None, description="New project ID for the task.")
+    agent_id: Optional[str] = Field(None, description="New agent ID for the task.")
+    # parent_task_id: Optional[str] = Field(None, description="New parent task ID (if supported directly).")
 
 
 # --- Full Schemas (Output/Read) ---
 # Configure models to work with ORM
-class OrmConfig(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+# Note: OrmConfig class is not used directly here, config applied individually.
+# class OrmConfig(BaseModel):
+#     model_config = ConfigDict(from_attributes=True)
 
 class Task(TaskBase):
-    id: str
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    """Schema for representing a task in API responses, including relationships."""
+    id: str = Field(..., description="Unique identifier for the task.")
+    created_at: datetime = Field(..., description="Timestamp when the task was created.")
+    updated_at: Optional[datetime] = Field(None, description="Timestamp when the task was last updated.")
     
-    project: Optional[Project] = None # Populated by ORM
-    agent: Optional[Agent] = None     # Populated by ORM
-    subtasks: List[Subtask] = []      # MODIFIED: Ensured this points to the consolidated Subtask schema
-                                      # Populated by ORM, will contain Subtask schema objects
+    project: Optional[Project] = Field(None, description="The project this task belongs to (populated from ORM).")
+    agent: Optional[Agent] = Field(None, description="The agent assigned to this task (populated from ORM).")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -128,15 +121,3 @@ class Task(TaskBase):
 Project.model_rebuild()
 Agent.model_rebuild()
 Task.model_rebuild() # Task now refers to the consolidated Subtask
-Subtask.model_rebuild() # Rebuild the consolidated Subtask model
-
-# REMOVE THE DUPLICATE/OLD SubTaskBase and SubTaskCreate DEFINITIONS that were at the end
-# class SubTaskBase(BaseModel):
-# title: str
-# description: Optional[str] = None
-# completed: Optional[bool] = False
-# parent_task_id: str # Subtasks must have a parent
-
-
-# class SubTaskCreate(SubTaskBase):
-# pass

@@ -20,6 +20,8 @@ export interface AgentState extends BaseState, AgentActions {
     isEditModalOpen: boolean;
     sortOptions: AgentSortOptions;
     filters: AgentFilters;
+    loading: boolean;
+    error: string | null;
 }
 
 const initialAgentData: Omit<AgentState, keyof BaseState | keyof AgentActions> = {
@@ -33,6 +35,8 @@ const initialAgentData: Omit<AgentState, keyof BaseState | keyof AgentActions> =
     filters: {
         status: 'all'
     },
+    loading: false,
+    error: null,
 };
 
 const agentActionsCreator = (
@@ -40,32 +44,56 @@ const agentActionsCreator = (
     get: StoreApi<AgentState>['getState']
 ): AgentActions => ({
     fetchAgents: async (filters?: AgentFilters) => {
-        return withLoading(set, async () => {
+        set({ loading: true, error: null });
+        try {
             const effectiveFilters = filters || get().filters;
             const fetchedAgents = await api.getAgents(effectiveFilters);
             const sortedAgents = sortAgents(fetchedAgents, get().sortOptions);
-            set({ agents: sortedAgents } as Partial<AgentState>);
-        });
+            set({ agents: sortedAgents, loading: false });
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch agents';
+            set({ error: errorMessage, loading: false });
+            console.error('Error fetching agents:', err);
+        }
     },
     addAgent: async (agentData: AgentCreateData) => {
-        return withLoading(set, async () => {
+        const currentAgents = get().agents;
+        set({ loading: true, error: null });
+        try {
+            console.log(`[Store] Calling API to create agent: ${agentData.name}`);
             const newAgent = await api.createAgent(agentData);
+            console.log(`[Store] API returned new agent:`, newAgent);
             set((state) => ({
-                agents: sortAgents([newAgent, ...state.agents], state.sortOptions)
+                agents: sortAgents([newAgent, ...state.agents], state.sortOptions),
+                loading: false
             } as Partial<AgentState>));
-        });
+            console.log(`[Store] Agent added to state.`);
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to add agent';
+            set({ error: errorMessage, loading: false });
+            console.error('[Store] Error adding agent:', err);
+            throw err;
+        }
     },
     removeAgent: async (id: string) => {
-        return withLoading(set, async () => {
-            await api.deleteAgent(id);
-            set((state) => ({
-                agents: state.agents.filter(agent => agent.id !== id)
-            } as Partial<AgentState>));
-        });
+        set({ loading: true });
+        try {
+            await api.deleteAgentById(id);
+            set(state => ({
+                agents: state.agents.filter(agent => agent.id !== id),
+                loading: false
+            }));
+            console.log(`[Store] Agent ${id} removed locally (API call skipped).`);
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to remove agent';
+            set({ error: errorMessage });
+            console.error(`[Store] Error removing agent ${id}:`, err);
+            throw err;
+        }
     },
     editAgent: async (id: string, agentData: AgentUpdateData) => {
         return withLoading(set, async () => {
-            const updated = await api.updateAgent(id, agentData);
+            const updated = await api.updateAgentById(id, agentData);
             set((state) => ({
                 agents: sortAgents(
                     state.agents.map(agent => agent.id === id ? updated : agent),

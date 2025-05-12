@@ -112,8 +112,11 @@ app.add_middleware(
 
 @app.get("/", summary="Get API Root Message")
 async def get_root_message(): # MODIFIED to remove 'request: Request'
-    print("[Backend Log] Request received for /")
-    return {"message": "Welcome to the Project Manager API"} # REVERTED to simple message
+    print("[Backend Log] Request received for /") # EXISTING LOG
+    print("[Backend Log] Processing / endpoint...", flush=True) # ADDED LOG with flush
+    response_data = {"message": "Welcome to the Project Manager API"} # REVERTED to simple message
+    print("[Backend Log] Sending response for /...", flush=True) # ADDED LOG with flush
+    return response_data
 
 @app.get("/mcp-docs", summary="Get MCP Tools Documentation", tags=["MCP Documentation"])
 async def get_mcp_tool_documentation(request: Request):
@@ -215,10 +218,16 @@ def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db)
         raise HTTPException(status_code=400, detail="Project name already registered")
     return crud.create_project(db=db, project=project)
 
-@app.get("/projects/", response_model=List[schemas.Project], summary="Get Projects", tags=["Projects"], operation_id="get_projects")
-def get_project_list(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+@app.get("/projects/", response_model=List[schemas.Project], summary="List Projects", tags=["Projects"], operation_id="list_projects")
+def get_project_list(
+    skip: int = 0, 
+    limit: int = 100, 
+    search: Optional[str] = None,  # Added search parameter
+    status: Optional[str] = None,  # Added status parameter (though Project model doesn't have status yet)
+    db: Session = Depends(get_db)
+):
     """Retrieves a list of projects."""
-    projects = crud.get_projects(db, skip=skip, limit=limit)
+    projects = crud.get_projects(db, skip=skip, limit=limit, search=search, status=status) # Pass new params
     return projects
 
 @app.get("/projects/{project_id}", response_model=schemas.Project, summary="Get Project by ID", tags=["Projects"], operation_id="get_project_by_id")
@@ -242,9 +251,15 @@ def create_agent(agent: schemas.AgentCreate, db: Session = Depends(get_db)):
     return crud.create_agent(db=db, agent=agent)
 
 @app.get("/agents/", response_model=List[schemas.Agent], summary="Get Agents", tags=["Agents"], operation_id="get_agents")
-def get_agent_list(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def get_agent_list(
+    skip: int = 0, 
+    limit: int = 100, 
+    search: Optional[str] = None,  # Added search parameter
+    status: Optional[str] = None,  # Added status parameter (though Agent model doesn't have status yet)
+    db: Session = Depends(get_db)
+):
     """Retrieves a list of registered agents."""
-    agents = crud.get_agents(db, skip=skip, limit=limit)
+    agents = crud.get_agents(db, skip=skip, limit=limit, search=search, status=status) # Pass new params
     return agents
 
 @app.get("/agents/{agent_name}", response_model=schemas.Agent, summary="Get Agent by Name", tags=["Agents"], operation_id="get_agent_by_name")
@@ -279,22 +294,35 @@ def get_task_list(
     skip: int = 0,
     limit: int = 100,
     project_id: Optional[str] = None,
-    agent_name: Optional[str] = None
+    agent_name: Optional[str] = None,
+    search: Optional[str] = None,  # Added search parameter
+    status: Optional[str] = None   # Added status parameter
 ):
-    """Retrieve a list of tasks, with optional filtering."""
-    agent_id = None
+    """Retrieve a list of tasks, with optional filtering by project, agent, search term, and status.
+
+    - **project_id**: Filter tasks by project ID.
+    - **agent_name**: Filter tasks by agent name.
+    - **search**: Filter tasks by a search term in title or description (case-insensitive).
+    - **status**: Filter tasks by status (e.g., 'completed', 'pending', 'true', 'false').
+    """
+    # We need agent_id, not agent_name for CRUD filtering
+    agent_id: Optional[str] = None
     if agent_name:
         agent = crud.get_agent_by_name(db, name=agent_name)
-        if not agent:
-            return []  # Return empty list if agent doesn't exist
-        agent_id = agent.id
+        if agent:
+            agent_id = agent.id
+        else:
+            # If agent_name is provided but not found, return empty list
+            return [] 
 
     tasks = crud.get_tasks(
-        db,
-        skip=skip,
-        limit=limit,
-        project_id=project_id,
-        agent_id=agent_id
+        db, 
+        skip=skip, 
+        limit=limit, 
+        project_id=project_id, 
+        agent_id=agent_id, # Use derived agent_id
+        search=search,  # Pass search
+        status=status   # Pass status
     )
     return tasks
 
@@ -305,42 +333,6 @@ def get_task_by_id(task_id: str, db: Session = Depends(get_db)):
     if db_task is None:
         raise HTTPException(status_code=404, detail="Task not found")
     return db_task
-
-@app.get("/tasks/{parent_task_id}/subtasks/", response_model=List[schemas.Subtask], summary="List Subtasks for a Parent Task", tags=["Tasks"], operation_id="list_subtasks_for_parent")
-def list_subtasks(parent_task_id: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """List direct subtasks for a given parent task ID."""
-    # Check if parent task exists, still good practice
-    parent_task_check = crud.get_task(db, task_id=parent_task_id) 
-    if parent_task_check is None:
-        raise HTTPException(status_code=404, detail=f"Parent task with id {parent_task_id} not found")
-    
-    subtasks = crud.list_subtasks_crud(db, parent_task_id=parent_task_id, skip=skip, limit=limit)
-    return subtasks
-
-# --- Individual Subtask Endpoints (NEW) ---
-@app.get("/subtasks/{subtask_id}", response_model=schemas.Subtask, summary="Get Subtask by ID", tags=["Subtasks"], operation_id="get_subtask_by_id")
-def get_subtask_endpoint(subtask_id: str, db: Session = Depends(get_db)):
-    db_subtask = crud.get_subtask(db, subtask_id=subtask_id)
-    if db_subtask is None:
-        raise HTTPException(status_code=404, detail=f"Subtask with id {subtask_id} not found")
-    return db_subtask
-
-@app.put("/subtasks/{subtask_id}", response_model=schemas.Subtask, summary="Update Subtask by ID", tags=["Subtasks"], operation_id="update_subtask_by_id")
-def update_subtask_endpoint(subtask_id: str, subtask_update: schemas.SubtaskUpdate, db: Session = Depends(get_db)):
-    db_subtask = crud.update_subtask(db, subtask_id=subtask_id, subtask_update=subtask_update)
-    if db_subtask is None:
-        raise HTTPException(status_code=404, detail=f"Subtask with id {subtask_id} not found for update")
-    return db_subtask
-
-@app.delete("/subtasks/{subtask_id}", response_model=schemas.Subtask, summary="Delete Subtask by ID", tags=["Subtasks"], operation_id="delete_subtask_by_id")
-def delete_subtask_endpoint(subtask_id: str, db: Session = Depends(get_db)):
-    # The crud.delete_subtask currently returns the ORM model before deletion.
-    # The response_model=schemas.Subtask will attempt to validate this.
-    # This is consistent with how other delete endpoints in this API behave.
-    db_subtask_deleted = crud.delete_subtask(db, subtask_id=subtask_id)
-    if db_subtask_deleted is None:
-        raise HTTPException(status_code=404, detail=f"Subtask with id {subtask_id} not found for deletion")
-    return db_subtask_deleted
 
 # --- Define UNSAFE Endpoints Last ---
 
@@ -489,26 +481,6 @@ Instructions:
 """
     
     return PlanningResponse(prompt=prompt_content)
-
-# Endpoint to create a subtask for a given task
-# MODIFIED: Added explicit operation_id
-@app.post("/tasks/{parent_task_id}/subtasks/", response_model=schemas.Subtask, summary="Create Subtask for Task", tags=["Subtasks"], operation_id="create_subtask")
-def create_subtask(parent_task_id: str, subtask: schemas.SubtaskClientCreate, db: Session = Depends(get_db)):
-    """
-    Create a new subtask for a given parent task.
-    """
-    # Verify parent task exists
-    parent_task = crud.get_task(db=db, task_id=parent_task_id)
-    if parent_task is None:
-        raise HTTPException(status_code=404, detail="Parent task not found")
-
-    # Create the subtask using CRUD operation
-    # Make sure schemas.SubtaskClientCreate aligns with crud.create_subtask expectations
-    db_subtask = crud.create_subtask(db=db, subtask=subtask, parent_task_id=parent_task_id)
-    if db_subtask is None:
-        # This might happen if DB operation fails, e.g., constraint violation
-        raise HTTPException(status_code=500, detail="Failed to create subtask in database")
-    return db_subtask
 
 # --- MOVE FastApiMCP setup TO HERE (END OF FILE) ---
 # Ensure this block is after ALL @app.route definitions

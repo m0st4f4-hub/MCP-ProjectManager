@@ -137,9 +137,12 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Task Title"
-                    bg="bg.default"
-                    borderColor="border.default"
-                    focusBorderColor="brand.primary"
+                    bg="bg.input"
+                    color="text.primary"
+                    borderColor="border.input"
+                    _hover={{ borderColor: "border.input_hover" }}
+                    _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                    _placeholder={{ color: "text.placeholder" }}
                 />
             </FormControl>
 
@@ -149,9 +152,12 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Task Description"
-                    bg="bg.default"
-                    borderColor="border.default"
-                    focusBorderColor="brand.primary"
+                    bg="bg.input"
+                    color="text.primary"
+                    borderColor="border.input"
+                    _hover={{ borderColor: "border.input_hover" }}
+                    _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                    _placeholder={{ color: "text.placeholder" }}
                 />
             </FormControl>
 
@@ -161,9 +167,12 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
                     placeholder="-- Select Project --"
                     value={projectId}
                     onChange={(e) => setProjectId(e.target.value)}
-                    bg="bg.default"
-                    borderColor="border.default"
-                    focusBorderColor="brand.primary"
+                    bg="bg.input"
+                    color="text.primary"
+                    borderColor="border.input"
+                    _hover={{ borderColor: "border.input_hover" }}
+                    _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                    _placeholder={{ color: "text.placeholder" }}
                 >
                     <option value="">-- Clear Project --</option> {/* Option to clear */}
                     {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -176,9 +185,12 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
                     placeholder="-- Select Agent --"
                     value={agentName}
                     onChange={(e) => setAgentName(e.target.value)}
-                    bg="bg.default"
-                    borderColor="border.default"
-                    focusBorderColor="brand.primary"
+                    bg="bg.input"
+                    color="text.primary"
+                    borderColor="border.input"
+                    _hover={{ borderColor: "border.input_hover" }}
+                    _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                    _placeholder={{ color: "text.placeholder" }}
                 >
                      <option value="">-- Clear Agent --</option> {/* Option to clear */}
                     {agents.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
@@ -191,9 +203,12 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
                     placeholder="-- No Parent --"
                     value={parentTaskId}
                     onChange={(e) => setParentTaskId(e.target.value)}
-                    bg="bg.default"
-                    borderColor="border.default"
-                    focusBorderColor="brand.primary"
+                    bg="bg.input"
+                    color="text.primary"
+                    borderColor="border.input"
+                    _hover={{ borderColor: "border.input_hover" }}
+                    _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                    _placeholder={{ color: "text.placeholder" }}
                 >
                     {potentialParents.map(p => (
                         <option key={p.id} value={p.id}>
@@ -207,9 +222,17 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
                 <Checkbox
                     isChecked={completed}
                     onChange={(e) => setCompleted(e.target.checked)}
-                    colorScheme="green" // Or brand color
-                    borderColor="border.default"
+                    borderColor="border.checkbox"
                     mr={3}
+                    sx={{
+                        '.chakra-checkbox__control[data-checked]': {
+                            bg: 'bg.checkbox.checked',
+                            borderColor: 'border.checkbox.checked',
+                        },
+                        '.chakra-checkbox__control:focus-visible': {
+                            boxShadow: 'outline', 
+                        }
+                    }}
                  >
                     Completed
                 </Checkbox>

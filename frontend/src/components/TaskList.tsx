@@ -14,32 +14,46 @@ import {
     AccordionButton,
     AccordionPanel,
     AccordionIcon,
-    SimpleGrid,
+    List,
+    ListItem,
+    Button,
     Spinner,
     Select,
     Flex,
     Divider,
     HStack,
-    Button,
     Modal,
     ModalOverlay,
     ModalContent,
     ModalHeader,
     ModalBody,
-    ModalCloseButton
+    ModalCloseButton,
+    Menu,
+    MenuButton,
+    MenuList,
+    MenuItem,
+    IconButton,
+    useBreakpointValue,
+    useDisclosure,
+    Input,
+    InputGroup,
+    InputLeftElement,
+    Icon,
 } from '@chakra-ui/react';
 import { useTaskStore } from '@/store/taskStore';
 import { Task, TaskUpdateData, Project, Agent } from '@/types';
 import { formatDisplayName } from '@/lib/utils';
 import AddTaskForm from './AddTaskForm';
-import { useDisclosure } from '@chakra-ui/react';
+import { AddIcon, SearchIcon } from '@chakra-ui/icons';
+import { useProjectStore } from '@/store/projectStore';
+import { useAgentStore } from '@/store/agentStore';
 
 type GroupByType = 'status' | 'project' | 'agent' | 'parent';
 
 const TaskList: React.FC = () => {
     const tasks = useTaskStore(state => state.tasks);
-    const projects = useTaskStore(state => state.projects);
-    const agents = useTaskStore(state => state.agents);
+    const projects = useProjectStore(state => state.projects);
+    const agents = useAgentStore(state => state.agents);
     const loading = useTaskStore(state => state.loading);
     const error = useTaskStore(state => state.error);
     const fetchTasks = useTaskStore(state => state.fetchTasks);
@@ -47,10 +61,16 @@ const TaskList: React.FC = () => {
     const removeTask = useTaskStore(state => state.removeTask);
     const editTask = useTaskStore(state => state.editTask);
     const fetchProjectsAndAgents = useTaskStore(state => state.fetchProjectsAndAgents);
+    const filters = useTaskStore(state => state.filters);
+    const { updateTask, deleteTask, addTask } = useTaskStore();
 
     const [groupBy, setGroupBy] = useState<GroupByType>('status');
     const { isOpen: isAddTaskModalOpen, onOpen: onOpenAddTaskModal, onClose: onCloseAddTaskModal } = useDisclosure();
-    const [initialParentIdForNewTask, setInitialParentIdForNewTask] = useState<string | null>(null);
+    const [editingTask, setEditingTask] = useState<Task | null>(null);
+    const [parentTaskForNewTask, setParentTaskForNewTask] = useState<string | null>(null);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+    const isMobile = useBreakpointValue({ base: true, md: false });
 
     useEffect(() => {
         console.log("Tasks from store in TaskList:", JSON.stringify(tasks, null, 2));
@@ -61,38 +81,54 @@ const TaskList: React.FC = () => {
         fetchProjectsAndAgents();
     }, [fetchTasks, fetchProjectsAndAgents]);
 
-    const handleToggle = useCallback((id: string, completed: boolean) => {
-        toggleTaskComplete(id, completed);
-    }, [toggleTaskComplete]);
+    useEffect(() => {
+        // After the first successful load (tasks length > 0), set initial load to false
+        if (isInitialLoad && tasks.length > 0) {
+            setIsInitialLoad(false);
+        }
+    }, [tasks, isInitialLoad]);
 
-    const handleDelete = useCallback((id: string) => {
-        removeTask(id);
-    }, [removeTask]);
-
-    const handleEdit = useCallback((editedTask: Task) => {
-        const updateData: TaskUpdateData = {
-            title: editedTask.title,
-            description: editedTask.description,
-            completed: editedTask.completed,
-            project_id: editedTask.project_id,
-            agent_id: editedTask.agent_id,
-            parent_task_id: editedTask.parent_task_id
-        };
-        editTask(editedTask.id, updateData);
-    }, [editTask]);
-
-    const handleOpenAddTaskModalForNewTopLevelTask = () => {
-        setInitialParentIdForNewTask(null);
-        onOpenAddTaskModal();
-    };
-
-    const handleOpenAddTaskModalForSubtask = useCallback((parentId: string) => {
-        setInitialParentIdForNewTask(parentId);
+    const handleOpenAddTaskModal = useCallback((parentId: string | null = null) => {
+        setEditingTask(null);
+        setParentTaskForNewTask(parentId);
         onOpenAddTaskModal();
     }, [onOpenAddTaskModal]);
 
+    const handleOpenEditTaskModal = useCallback((task: Task) => {
+        setEditingTask(task);
+        setParentTaskForNewTask(null);
+        onOpenAddTaskModal();
+    }, [onOpenAddTaskModal]);
+
+    const handleCloseAddTaskModal = useCallback(() => {
+        onCloseAddTaskModal();
+        setEditingTask(null);
+        setParentTaskForNewTask(null);
+    }, [onCloseAddTaskModal]);
+
+    // Filter tasks based on global filters
+    const filteredTasks = useMemo(() => {
+        const currentFilters = useTaskStore.getState().filters;
+        return tasks.filter(task => {
+            if (currentFilters.projectId && task.project_id !== currentFilters.projectId) return false;
+            if (currentFilters.agentId && task.agent_id !== currentFilters.agentId) return false;
+            if (currentFilters.status && currentFilters.status !== 'all') {
+                const isCompleted = task.completed;
+                if (currentFilters.status === 'completed' && !isCompleted) return false;
+                if (currentFilters.status === 'active' && isCompleted) return false;
+            }
+            if (currentFilters.search) {
+                const searchTermLower = currentFilters.search.toLowerCase();
+                const titleMatch = task.title?.toLowerCase().includes(searchTermLower);
+                const descriptionMatch = task.description?.toLowerCase().includes(searchTermLower);
+                if (!titleMatch && !descriptionMatch) return false;
+            }
+            return true;
+        });
+    }, [tasks]);
+
     const groupedAndFilteredTasks = useMemo(() => {
-    const topLevelTasks = tasks.filter(task => !task.parent_task_id);
+        const topLevelTasks = filteredTasks.filter(task => !task.parent_task_id);
 
         if (groupBy === 'status') {
             return {
@@ -172,13 +208,13 @@ const TaskList: React.FC = () => {
         }
         
         if (groupBy === 'parent') {
-             return {
+            return {
                 type: 'parent',
                 groups: [
                     {
                         id: 'all_tasks',
-                        name: `All Tasks (${tasks.filter(t => !t.parent_task_id).length})`,
-                        tasks: tasks.filter(t => !t.parent_task_id)
+                        name: `All Tasks (${filteredTasks.filter(t => !t.parent_task_id).length})`,
+                        tasks: filteredTasks.filter(t => !t.parent_task_id)
                     }
                 ]
             };
@@ -186,26 +222,26 @@ const TaskList: React.FC = () => {
 
         return { type: 'status', groups: [] };
 
-    }, [tasks, projects, agents, groupBy]);
+    }, [filteredTasks, projects, agents, groupBy]);
 
-    if (loading) {
+    if (loading && isInitialLoad) {
         return (
             <Container maxW="container.lg" p={4}>
                 <Box 
-                    bg="gray.800" 
+                    bg="bg.elevated"
                     p={6} 
-                    rounded="xl" 
-                    shadow="lg" 
+                    rounded="radius.xl"
+                    shadow="shadow.lg"
                     borderWidth="1px" 
-                    borderColor="gray.700"
+                    borderColor="border.base"
                     height="400px"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
                 >
                     <VStack spacing={6}>
-                        <Spinner size="xl" color="blue.400" thickness="4px" speed="0.65s" />
-                        <Text color="gray.300">Loading tasks...</Text>
+                        <Spinner size="xl" color="icon.primary" />
+                        <Text color="text.muted">Loading tasks...</Text>
                     </VStack>
                 </Box>
             </Container>
@@ -215,118 +251,159 @@ const TaskList: React.FC = () => {
     if (error) {
         return (
             <Container maxW="container.lg" p={4}>
-                <Box textAlign="center" py={12} px={6} bg="red.900" rounded="xl" shadow="lg" borderWidth="1px" borderColor="red.700">
-                    <Text fontSize="xl" fontWeight="medium" color="white">Error loading tasks</Text>
-                    <Text fontSize="sm" color="red.200" mt={2}>{error}</Text>
+                <Box 
+                    bg="bg.elevated"
+                    p={6} 
+                    rounded="radius.xl"
+                    shadow="shadow.lg"
+                    borderWidth="1px" 
+                    borderColor="border.base"
+                    height="400px"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                >
+                    <VStack spacing={6}>
+                        <Icon as={AddIcon} w={12} h={12} color="status.error" />
+                        <Heading size="md" color="status.error">Error Loading Tasks</Heading>
+                        <Text color="text.muted">{error}</Text>
+                    </VStack>
                 </Box>
             </Container>
         );
     }
 
-    if (!tasks.length && !loading) {
+    if (groupedAndFilteredTasks.groups.every(group => group.tasks.length === 0) && !loading) {
         return (
             <Container maxW="container.lg" p={4}>
                 <Box 
-                    textAlign="center" 
-                    py={12} 
-                    px={6}
-                    bg="gray.800" 
-                    rounded="xl" 
-                    shadow="lg"
+                    bg="bg.surface" 
+                    p={6} 
+                    rounded="radius.lg"
+                    shadow="shadow.md"
                     borderWidth="1px"
-                    borderColor="gray.700"
+                    borderColor="border.base"
+                    textAlign="center"
                 >
-                    <Text fontSize="xl" fontWeight="medium" color="gray.100">No tasks found</Text>
-                    <Text fontSize="sm" color="gray.400" mt={2}>Create a new task to get started</Text>
+                    <Heading size="md" color="text.heading" mb={3}>No Tasks Found</Heading>
+                    <Text color="text.secondary" mb={4}>
+                        There are no tasks matching your current filters, or no tasks have been created yet.
+                    </Text>
+                    <Button
+                        leftIcon={<AddIcon />}
+                        bg="bg.button.accent"
+                        color="text.button.accent"
+                        _hover={{ bg: "bg.button.accent.hover" }}
+                        onClick={() => handleOpenAddTaskModal()}
+                        size="md"
+                    >
+                        Add Your First Task
+                    </Button>
                 </Box>
             </Container>
         );
     }
 
     return (
-        <Container maxW="container.lg" p={0}>
-            <VStack spacing={4} align="stretch" w="full">
-                <Flex justifyContent="space-between" alignItems="center" p={4} pb={2}>
-                    <Heading size="md" color="whiteAlpha.900">Tasks</Heading>
-                    <HStack spacing={4}>
-                        <Select 
-                            value={groupBy}
-                            onChange={(e) => setGroupBy(e.target.value as GroupByType)}
-                            bg="gray.700"
-                            borderColor="gray.600"
-                            color="white"
-                            w="200px"
-                            size="sm"
-                                    rounded="md"
-                                >
-                            <option value="status">Group by Status</option>
-                            <option value="project">Group by Project</option>
-                            <option value="agent">Group by Agent</option>
-                            <option value="parent">View All (Hierarchical)</option>
-                        </Select>
-                        <Button colorScheme="green" onClick={handleOpenAddTaskModalForNewTopLevelTask} size="sm">
-                            Add New Task
-                        </Button>
-                    </HStack>
-                </Flex>
-                <Divider borderColor="gray.700" />
+        <Container maxW="container.lg" p={4} >
+            <Heading size="lg" mb={6} color="text.heading">
+                Task Workboard
+            </Heading>
 
-                {groupedAndFilteredTasks.groups.length > 0 ? (
-                    <Accordion allowMultiple defaultIndex={groupedAndFilteredTasks.groups.map((_, i) => i)} w="full" key={groupBy}>
-                        {groupedAndFilteredTasks.groups.map(group => (
-                            <AccordionItem border="none" mb={4} key={group.id}>
-                            <h2>
-                                <AccordionButton 
-                                    bg="gray.750" 
-                                    _hover={{ bg: 'gray.700' }} 
-                                    rounded="md"
-                                    py={3}
-                                    px={4}
-                                >
-                                    <Box flex={1} textAlign="left">
-                                            <Heading size="sm" color="whiteAlpha.900">{group.name}</Heading>
-                                    </Box>
-                                    <AccordionIcon color="whiteAlpha.900" />
-                                </AccordionButton>
-                            </h2>
-                            <AccordionPanel pb={4} pt={2} px={0}>
-                                    {group.tasks.length > 0 ? (
-                                        <VStack spacing={4} align="stretch">
-                                            {group.tasks.map(task => (
-                                            <TaskItem
-                                                key={task.id}
-                                                task={task}
-                                                onToggle={handleToggle}
-                                                onDelete={handleDelete}
-                                                onEdit={handleEdit}
-                                                    onAddSubtask={handleOpenAddTaskModalForSubtask}
-                                            />
-                                        ))}
-                                        </VStack>
-                                ) : (
-                                        <Text color="gray.400" p={4} textAlign="center">No tasks in this group.</Text>
-                                )}
-                            </AccordionPanel>
-                        </AccordionItem>
-                        ))}
-                    </Accordion>
-                ) : (
-                     <Text color="gray.400" p={4} textAlign="center">No tasks to display for the current grouping.</Text>
-                )}
-            </VStack>
+            {/* Controls Section */}
+            <Flex 
+                mb={6} 
+                justifyContent="space-between" 
+                alignItems="center"
+                bg="bg.surface"
+                p={4}
+                borderRadius="md"
+            >
+                <HStack spacing={4}>
+                    <Text fontSize="sm" fontWeight="medium" color="text.secondary">Group by:</Text>
+                    <Select 
+                        size="sm" 
+                        value={groupBy}
+                        onChange={(e) => setGroupBy(e.target.value as GroupByType)}
+                        w="150px"
+                        bg="bg.input"
+                        borderColor="border.input"
+                        _hover={{ borderColor: 'border.input_hover' }}
+                    >
+                        <option value="status">Status</option>
+                        <option value="project">Project</option>
+                        <option value="agent">Agent</option>
+                        <option value="parent">Parent Task</option>
+                    </Select>
+                </HStack>
+                <Button 
+                    leftIcon={<AddIcon />} 
+                    bg="bg.button.primary" 
+                    color="text.button.primary"
+                    _hover={{ bg: 'brand.600' }}
+                    size="sm"
+                    onClick={() => handleOpenAddTaskModal()}
+                >
+                    Add Task
+                </Button>
+            </Flex>
 
-            <Modal isOpen={isAddTaskModalOpen} onClose={onCloseAddTaskModal} size="xl">
-                <ModalOverlay backdropFilter="blur(2px)" />
-                <ModalContent bg="gray.800" color="white" borderColor="gray.700" borderWidth="1px">
-                    <ModalHeader borderBottomWidth="1px" borderColor="gray.700">
-                        {initialParentIdForNewTask ? 'Add New Sub-task' : 'Add New Task'}
-                    </ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody pb={6}>
-                        <AddTaskForm initialParentId={initialParentIdForNewTask} onClose={onCloseAddTaskModal} />
-                    </ModalBody>
-                </ModalContent>
-            </Modal>
+            <Accordion allowMultiple defaultIndex={[0]}>
+                {groupedAndFilteredTasks.groups.map((group) => (
+                    <AccordionItem border="none" mb={4} key={group.id}>
+                    <h2>
+                        <AccordionButton 
+                            bg="gray.750" 
+                            _hover={{ bg: 'gray.700' }} 
+                            rounded="md"
+                            py={3}
+                            px={4}
+                        >
+                            <Box flex={1} textAlign="left">
+                                    <Heading size="sm" color="whiteAlpha.900">{group.name}</Heading>
+                            </Box>
+                            <AccordionIcon color="whiteAlpha.900" />
+                        </AccordionButton>
+                    </h2>
+                    <AccordionPanel pb={4} pt={2} px={0}>
+                            {group.tasks.length > 0 ? (
+                                <VStack spacing={4} align="stretch">
+                                    {group.tasks.map(task => (
+                                    <TaskItem
+                                        key={task.id}
+                                        task={task}
+                                        onToggle={toggleTaskComplete}
+                                        onDelete={removeTask}
+                                        onEdit={editTask}
+                                        onAddSubtask={() => handleOpenAddTaskModal(task.id)}
+                                    />
+                                ))}
+                                </VStack>
+                        ) : (
+                                <Text color="gray.400" p={4} textAlign="center">No tasks in this group.</Text>
+                        )}
+                    </AccordionPanel>
+                </AccordionItem>
+                ))}
+            </Accordion>
+
+            {isAddTaskModalOpen && (
+                <Modal isOpen={isAddTaskModalOpen} onClose={handleCloseAddTaskModal} size="xl">
+                    <ModalOverlay backdropFilter="blur(2px)" />
+                    <ModalContent bg="gray.800" color="white" borderColor="gray.700" borderWidth="1px">
+                        <ModalHeader borderBottomWidth="1px" borderColor="gray.700">
+                            {editingTask ? 'Edit Task' : 'Add New Task'}
+                        </ModalHeader>
+                        <ModalCloseButton color="gray.300" _hover={{ bg: "gray.700", color: "white" }} />
+                        <ModalBody pb={6}>
+                            <AddTaskForm 
+                                initialParentId={parentTaskForNewTask}
+                                onClose={handleCloseAddTaskModal} 
+                            />
+                        </ModalBody>
+                    </ModalContent>
+                </Modal>
+            )}
         </Container>
     );
 };

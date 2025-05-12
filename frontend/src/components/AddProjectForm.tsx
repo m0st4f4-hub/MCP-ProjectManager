@@ -10,33 +10,36 @@ import {
     Textarea,
     VStack,
     useToast,
-    Heading
+    Heading,
+    FormErrorMessage
 } from '@chakra-ui/react';
 import { useProjectStore } from '@/store/projectStore';
 import { ProjectCreateData } from '@/types';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { projectCreateSchema } from '@/types/project';
 
-const AddProjectForm: React.FC = () => {
-    const addProject = useProjectStore(state => state.addProject);
+interface AddProjectFormProps {
+    onSubmit: (data: ProjectCreateData) => Promise<void>;
+    onClose: () => void;
+}
+
+const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit, onClose }) => {
     const toast = useToast();
-    const [formData, setFormData] = useState<ProjectCreateData>({
-        name: '',
-        description: null
+    const [isLoading, setIsLoading] = useState(false);
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<ProjectCreateData>({
+        resolver: zodResolver(projectCreateSchema),
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleFormSubmit: SubmitHandler<ProjectCreateData> = async (data) => {
+        setIsLoading(true);
         try {
-            await addProject(formData);
-            setFormData({
-                name: '',
-                description: null
-            });
-            toast({
-                title: 'Project added successfully',
-                status: 'success',
-                duration: 3000,
-                isClosable: true,
-            });
+            await onSubmit(data);
+            onClose(); // Close modal on success
         } catch (error) {
             toast({
                 title: 'Error adding project',
@@ -45,66 +48,67 @@ const AddProjectForm: React.FC = () => {
                 duration: 5000,
                 isClosable: true,
             });
+        } finally {
+            setIsLoading(false);
         }
-    };
-
-    const handleChange = (field: keyof ProjectCreateData, value: string | null) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
     };
 
     return (
         <Box 
             as="form" 
-            onSubmit={handleSubmit} 
-            bg="gray.800" 
+            onSubmit={handleSubmit(handleFormSubmit)} 
+            bg="bg.surface"
             p={6} 
             rounded="lg" 
             shadow="lg" 
             borderWidth="1px" 
-            borderColor="gray.700"
+            borderColor="border.base"
         >
             <VStack spacing={4}>
-                <Heading size="md" color="whiteAlpha.900" mb={2} textAlign="center">
+                <Heading size="md" color="text.primary" mb={2} textAlign="center">
                     Define New Initiative
                 </Heading>
 
-                <FormControl isRequired>
-                    <FormLabel color="gray.100">Name</FormLabel>
+                <FormControl isInvalid={!!errors.name}>
+                    <FormLabel color="text.primary">Name</FormLabel>
                     <Input
-                        value={formData.name}
-                        onChange={(e) => handleChange('name', e.target.value)}
+                        id="name"
+                        {...register('name')}
                         placeholder="Enter project name"
-                        bg="gray.700"
-                        color="white"
-                        borderColor="gray.600"
-                        _hover={{ borderColor: "gray.500" }}
-                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                        _placeholder={{ color: "gray.400" }}
+                        bg="bg.input"
+                        color="text.primary"
+                        borderColor="border.input"
+                        _hover={{ borderColor: "border.input_hover" }}
+                        _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                        _placeholder={{ color: "text.placeholder" }}
                     />
+                    <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
                 </FormControl>
 
-                <FormControl>
-                    <FormLabel color="gray.100">Description</FormLabel>
+                <FormControl isInvalid={!!errors.description}>
+                    <FormLabel color="text.primary">Description</FormLabel>
                     <Textarea
-                        value={formData.description || ''}
-                        onChange={(e) => handleChange('description', e.target.value || null)}
+                        id="description"
+                        {...register('description')}
                         placeholder="Enter project description"
-                        bg="gray.700"
-                        color="white"
-                        borderColor="gray.600"
-                        _hover={{ borderColor: "gray.500" }}
-                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
-                        _placeholder={{ color: "gray.400" }}
+                        bg="bg.input"
+                        color="text.primary"
+                        borderColor="border.input"
+                        _hover={{ borderColor: "border.input_hover" }}
+                        _focus={{ borderColor: "border.focus", boxShadow: "outline" }}
+                        _placeholder={{ color: "text.placeholder" }}
                     />
+                    <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
                 </FormControl>
 
                 <Button 
                     type="submit" 
-                    colorScheme="blue" 
+                    bg="bg.button.primary"
+                    color="text.button.primary"
+                    _hover={{ bg: "bg.button.primary.hover" }}
                     width="full"
                     size="lg"
-                    _hover={{ bg: "blue.500" }}
-                    _active={{ bg: "blue.600" }}
+                    isLoading={isLoading}
                 >
                     Define New Initiative
                 </Button>

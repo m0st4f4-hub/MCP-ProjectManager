@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     VStack,
     Box,
@@ -8,29 +8,51 @@ import {
     Badge,
     IconButton,
     HStack,
-    Spacer,
     useToast,
     Menu,
     MenuButton,
     MenuList,
-    MenuItem
+    MenuItem,
+    Flex,
+    useBreakpointValue,
+    Heading,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalCloseButton,
+    Button,
+    useDisclosure,
 } from '@chakra-ui/react';
-import { DeleteIcon, HamburgerIcon, CopyIcon, CheckCircleIcon, ViewIcon } from '@chakra-ui/icons';
+import { DeleteIcon, HamburgerIcon, CopyIcon, CheckCircleIcon, ViewIcon, AddIcon, EditIcon } from '@chakra-ui/icons';
 import { useAgentStore } from '@/store/agentStore';
 import { useTaskStore } from '@/store/taskStore';
 import { Agent } from '@/types';
 import { formatDisplayName } from '@/lib/utils';
+import AddAgentForm from './AddAgentForm';
+import EditAgentForm from './EditAgentForm';
 
 const ACCENT_COLOR = "#dad2cc";
 
 const AgentList: React.FC = () => {
-    const agents = useAgentStore(state => state.agents);
-    const loading = useAgentStore(state => state.loading);
-    const fetchAgents = useAgentStore(state => state.fetchAgents);
-    const removeAgent = useAgentStore(state => state.removeAgent);
+    const {
+        agents,
+        loading: agentsLoading,
+        error: agentsError,
+        fetchAgents,
+        removeAgent,
+        addAgent,
+        editAgent,
+    } = useAgentStore();
     const tasks = useTaskStore(state => state.tasks);
     const globalFilters = useTaskStore(state => state.filters);
     const toast = useToast();
+    const isMobile = useBreakpointValue({ base: true, md: false });
+
+    const { isOpen: isAddOpen, onOpen: onAddOpen, onClose: onAddClose } = useDisclosure();
+    const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure();
+    const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
 
     useEffect(() => {
         fetchAgents();
@@ -46,24 +68,62 @@ const AgentList: React.FC = () => {
         };
     };
 
-    const handleDelete = async (agent: Agent) => {
+    const handleAddAgentSubmit = async (name: string) => {
         try {
-            await removeAgent(agent.id);
+            await addAgent({ name });
             toast({
-                title: 'Agent deleted',
+                title: "Agent registered.",
+                description: `Agent '${name}' has been added.`,
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+            onAddClose();
+        } catch (error) {
+            console.error("[AgentList] Failed to add agent:", error);
+        }
+    };
+
+    const handleEditAgentSubmit = async (agentId: string, newName: string) => {
+        try {
+            await editAgent(agentId, { name: newName });
+            toast({
+                title: "Agent updated.",
+                description: `Agent updated to name '${newName}'.`,
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+            onEditClose();
+        } catch (error) {
+            console.error("[AgentList] Failed to edit agent:", error);
+        }
+    };
+
+    const handleAgentDelete = async (id: string, name: string) => {
+        try {
+            await removeAgent(id);
+            toast({
+                title: 'Agent Deleted',
+                description: `Agent ${name} (${id}) has been deleted.`,
                 status: 'success',
                 duration: 3000,
                 isClosable: true,
             });
         } catch (error) {
             toast({
-                title: 'Error deleting agent',
-                description: error instanceof Error ? error.message : 'An error occurred',
+                title: 'Error Deleting Agent',
+                description: error instanceof Error ? error.message : `Could not delete agent ${name}.`,
                 status: 'error',
                 duration: 5000,
                 isClosable: true,
             });
         }
+    };
+
+    const handleOpenEditModal = (agent: Agent) => {
+        setSelectedAgent(agent);
+        onEditOpen();
     };
 
     const filteredAgents = React.useMemo(() => {
@@ -101,29 +161,49 @@ const AgentList: React.FC = () => {
         });
     }, [agents, globalFilters, tasks]);
 
-    if (loading) {
-        return (
-            <VStack spacing={4} align="stretch">
-                {[1, 2, 3].map(i => (
-                    <Box key={i} p={4} bg="gray.700" rounded="lg" shadow="lg" borderWidth="1px" borderColor="gray.600">
-                        <Box height="20px" width="60%" bg="gray.600" rounded="md" mb={2} />
-                        <Box height="8px" width="40%" bg="gray.600" rounded="md" />
-                    </Box>
-                ))}
-            </VStack>
-        );
-    }
-
-    if (!filteredAgents.length && !loading) {
-        return (
-            <Box textAlign="center" py={8} bg="gray.700" rounded="lg" shadow="lg" borderWidth="1px" borderColor="gray.600">
-                <Text color="gray.300">No agents found</Text>
-            </Box>
-        );
-    }
+    if (agentsLoading) return <Text color="text.muted">Loading agents...</Text>;
+    if (agentsError) return <Text color="text.critical">Error loading agents: {agentsError}</Text>;
 
     return (
         <VStack spacing={4} align="stretch">
+            <Flex justify="space-between" align="center" mb={4} px={1}>
+                <Heading size="md" color="text.heading">Registry</Heading>
+                {isMobile ? (
+                    <Menu>
+                        <MenuButton
+                            as={IconButton}
+                            aria-label='Agent Actions'
+                            icon={<HamburgerIcon />}
+                            size="sm"
+                            variant="ghost"
+                            color="icon.secondary"
+                            _hover={{ bg: "bg.hover.nav", color: "text.primary" }}
+                        />
+                        <MenuList bg="bg.card" borderColor="border.secondary">
+                            <MenuItem 
+                                icon={<AddIcon />} 
+                                bg="bg.card"
+                                _hover={{ bg: "bg.hover.nav" }}
+                                onClick={onAddOpen}
+                            >
+                                Register Agent
+                            </MenuItem>
+                        </MenuList>
+                    </Menu>
+                ) : (
+                    <Button 
+                        leftIcon={<AddIcon />} 
+                        bg="bg.button.primary"
+                        color="text.button.primary"
+                        _hover={{ bg: "bg.button.primary.hover" }}
+                        onClick={onAddOpen}
+                        size="sm"
+                    >
+                        Register Agent
+                    </Button>
+                )}
+            </Flex>
+
             {filteredAgents.map(agent => {
                 const stats = getAgentStats(agent.name);
                 const isActive = stats.totalTasks > 0 || stats.activeProjects > 0;
@@ -131,14 +211,14 @@ const AgentList: React.FC = () => {
                     <Box
                         key={agent.id}
                         p={4}
-                        bg="gray.700"
+                        bg="bg.card"
                         rounded="lg"
                         shadow="lg"
                         borderWidth="1px"
-                        borderColor="gray.600"
+                        borderColor="border.secondary"
                         _hover={{ 
                             shadow: "xl", 
-                            borderColor: isActive ? ACCENT_COLOR : "gray.500", 
+                            borderColor: isActive ? 'border.accent' : "border.primary",
                             transform: "translateY(-1px)" 
                         }}
                         transition="all 0.2s ease-in-out"
@@ -151,76 +231,119 @@ const AgentList: React.FC = () => {
                             left: 0,
                             right: 0,
                             height: "4px",
-                            bg: isActive ? ACCENT_COLOR : "transparent",
+                            bg: isActive ? 'accent.active' : "transparent",
                             opacity: 0.9
                         }}
                     >
-                        <HStack mb={2} align="start">
-                            <VStack align="start" spacing={0.5} flex={1}>
+                        <HStack 
+                            mb={2} 
+                            align={{ base: 'flex-start', md: 'start' }}
+                            direction={{ base: 'column', md: 'row' }}
+                        >
+                            <VStack align="start" spacing={0.5} flex={1} mb={{ base: 2, md: 0 }}>
                                 <Text 
                                     fontWeight="semibold" 
                                     fontSize="lg"
-                                    color="whiteAlpha.900"
+                                    color="text.primary"
                                 >
                                     {formatDisplayName(agent.name)}
                                 </Text>
                                 <HStack>
-                                    <Text fontSize="xs" color="gray.300" fontWeight="medium">Status: </Text>
+                                    <Text fontSize="xs" color="text.secondary" fontWeight="medium">Status: </Text>
                                     <Badge 
-                                        colorScheme={isActive ? 'green' : 'gray'} 
                                         variant="subtle"
                                         size="sm"
                                         px={2} 
                                         py={0.5} 
                                         borderRadius="md"
+                                        bg={isActive ? 'bg.status.success.subtle' : 'bg.subtle'} 
+                                        color={isActive ? 'text.status.success' : 'text.secondary'}
                                     >
-                                        {isActive ? "Active" : "Idle"}
+                                        {isActive ? 'Active' : 'Idle'}
                                     </Badge>
                                 </HStack>
+                                <Text fontSize="xs" color="text.muted">ID: {agent.id}</Text>
+                                <HStack 
+                                    spacing={{ base: 2, md: 4 }}
+                                    mt={1} 
+                                    flexWrap="wrap" 
+                                    direction={{ base: 'row', md: 'row' }}
+                                    align={{ base: 'center', md: 'center' }}
+                                >
+                                    <HStack spacing={1} align="center">
+                                        <Text fontSize="xs" color="text.muted">Tasks: {stats.totalTasks}</Text>
+                                    </HStack>
+                                    <HStack spacing={1} align="center">
+                                        <Text fontSize="xs" color="text.muted">Completed: {stats.completedTasks}</Text>
+                                    </HStack>
+                                    <HStack spacing={1} align="center">
+                                        <Text fontSize="xs" color="text.muted">Projects: {stats.activeProjects}</Text>
+                                    </HStack>
+                                </HStack>
                             </VStack>
-                            <Spacer />
                             <Menu placement="bottom-end">
                                 <MenuButton
                                     as={IconButton}
                                     aria-label="Options"
                                     icon={<HamburgerIcon />}
                                     variant="ghost"
-                                    color="gray.400"
-                                    _hover={{ bg: "gray.600", color: "white" }}
+                                    color="icon.secondary"
+                                    _hover={{ bg: "bg.hover.nav", color: "text.primary" }}
                                     size="sm"
                                 />
-                                <MenuList bg="gray.700" borderColor="gray.600">
+                                <MenuList bg="bg.card" borderColor="border.secondary">
+                                    <MenuItem 
+                                        icon={<EditIcon />} 
+                                        onClick={() => handleOpenEditModal(agent)}
+                                        bg="bg.card"
+                                        _hover={{ bg: "bg.hover.nav" }}
+                                    >
+                                        Edit Agent
+                                    </MenuItem>
                                     <MenuItem 
                                         icon={<DeleteIcon />} 
-                                        onClick={() => handleDelete(agent)}
-                                        bg="gray.700"
-                                        color="red.300"
-                                        _hover={{ bg: "gray.600", color: "red.200" }}
+                                        onClick={() => handleAgentDelete(agent.id, agent.name)}
+                                        color="text.danger"
+                                        bg="bg.card"
+                                        _hover={{ bg: "bg.danger.hover" }}
                                     >
-                                        Delete
+                                        Delete Agent
                                     </MenuItem>
                                 </MenuList>
                             </Menu>
                         </HStack>
-                        <HStack spacing={4} mt={3} flexWrap="wrap">
-                            <HStack spacing={1} align="center">
-                                <CopyIcon color={ACCENT_COLOR} boxSize="14px" />
-                                <Text fontSize="xs" color="gray.200">Tasks: {stats.totalTasks}</Text>
-                            </HStack>
-                            <HStack spacing={1} align="center">
-                                <CheckCircleIcon color={stats.completedTasks > 0 ? ACCENT_COLOR : "gray.500"} boxSize="14px" />
-                                <Text fontSize="xs" color="gray.200">Completed: {stats.completedTasks}</Text>
-                            </HStack>
-                            <HStack spacing={1} align="center">
-                                <ViewIcon color={stats.activeProjects > 0 ? ACCENT_COLOR : "gray.500"} boxSize="14px" /> 
-                                <Text fontSize="xs" color="gray.200">Projects: {stats.activeProjects}</Text>
-                            </HStack>
-                        </HStack>
                     </Box>
                 );
             })}
+
+            <Modal isOpen={isAddOpen} onClose={onAddClose} size="xl">
+                <ModalOverlay backdropFilter="blur(2px)" />
+                <ModalContent bg="bg.modal" color="text.primary" borderColor="border.modal" borderWidth="1px">
+                    <ModalHeader>Register New Agent</ModalHeader>
+                    <ModalCloseButton color="icon.secondary" _hover={{ bg: "button.hover.secondary"}} />
+                    <ModalBody pb={6}>
+                        <AddAgentForm onSubmit={handleAddAgentSubmit} />
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+
+            <Modal isOpen={isEditOpen} onClose={onEditClose} size="xl">
+                <ModalOverlay backdropFilter="blur(2px)" />
+                <ModalContent bg="bg.modal" color="text.primary" borderColor="border.modal" borderWidth="1px">
+                    <ModalHeader>Edit Agent: {selectedAgent ? formatDisplayName(selectedAgent.name) : ''}</ModalHeader>
+                    <ModalCloseButton color="icon.secondary" _hover={{ bg: "button.hover.secondary"}} />
+                    <ModalBody pb={6}>
+                        {selectedAgent && (
+                            <EditAgentForm
+                                agent={selectedAgent}
+                                onSubmit={(newName) => handleEditAgentSubmit(selectedAgent.id, newName)}
+                            />
+                        )}
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
         </VStack>
     );
 };
 
-export default React.memo(AgentList); 
+export default AgentList; 

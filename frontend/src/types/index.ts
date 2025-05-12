@@ -1,7 +1,6 @@
-export * from './task';
 export * from './project';
 export * from './agent';
-export * from './subtask';
+export * from './task';
 
 // Common types used across the application
 export type SortDirection = 'asc' | 'desc';
@@ -37,16 +36,4 @@ export interface ToastMessage {
     type: ToastType;
     message: string;
     duration?: number;
-}
-
-export interface TaskFilters {
-    status?: 'all' | 'completed' | 'active' | null;
-    projectId?: number | null;
-    agentName?: string | null;
-    searchTerm?: string | null;
-}
-
-export interface TaskSortOptions {
-    field: 'title' | 'created_at' | 'updated_at' | 'priority' | 'status' | string;
-    direction: SortDirection;
 } 

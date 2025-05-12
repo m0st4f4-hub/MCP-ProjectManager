@@ -9,21 +9,22 @@ import {
     Badge,
     IconButton,
     HStack,
-    Spacer,
     useToast,
     Menu,
     MenuButton,
     MenuList,
-    MenuItem
+    MenuItem,
+    Flex,
+    useBreakpointValue,
+    Heading,
+    Button,
 } from '@chakra-ui/react';
-import { DeleteIcon, HamburgerIcon, CheckCircleIcon, CopyIcon, StarIcon } from '@chakra-ui/icons';
+import { DeleteIcon, HamburgerIcon, AddIcon } from '@chakra-ui/icons';
 import { useProjectStore } from '@/store/projectStore';
 import { useTaskStore } from '@/store/taskStore';
 import { Project } from '@/types';
+import { TaskFilters } from '@/types/task';
 import { formatDisplayName } from '@/lib/utils';
-
-const ACCENT_COLOR = "#dad2cc";
-const COMPLETED_COLOR_SUBTLE = "gray.500"; // For completed items, less prominent than accent
 
 const ProjectList: React.FC = () => {
     const projects = useProjectStore(state => state.projects);
@@ -31,14 +32,15 @@ const ProjectList: React.FC = () => {
     const fetchProjects = useProjectStore(state => state.fetchProjects);
     const removeProject = useProjectStore(state => state.removeProject);
     const tasks = useTaskStore(state => state.tasks);
-    const globalFilters = useTaskStore(state => state.filters);
+    const globalFilters: TaskFilters = useTaskStore(state => state.filters);
     const toast = useToast();
+    const isMobile = useBreakpointValue({ base: true, md: false });
 
     useEffect(() => {
         fetchProjects();
     }, [fetchProjects]);
 
-    const getProjectStats = (projectId: number) => {
+    const getProjectStats = (projectId: string) => {
         const projectTasks = tasks.filter(task => task.project_id === projectId);
         const completedTasks = projectTasks.filter(task => task.completed);
         const progress = projectTasks.length ? (completedTasks.length / projectTasks.length) * 100 : 0;
@@ -73,32 +75,33 @@ const ProjectList: React.FC = () => {
         if (!projects) return [];
         return projects.filter(project => {
             if (!project) return false;
+            const totalTasks = project.task_count ?? 0;
+            const completedTasks = project.completed_task_count ?? 0;
 
             // Search Term Filter (Project Name and Description)
-            if (globalFilters.searchTerm) {
-                const searchTermLower = globalFilters.searchTerm.toLowerCase();
+            if (globalFilters.search) {
+                const searchTermLower = globalFilters.search.toLowerCase();
                 const nameMatch = project.name?.toLowerCase().includes(searchTermLower);
                 const descriptionMatch = project.description?.toLowerCase().includes(searchTermLower);
                 if (!nameMatch && !descriptionMatch) return false;
             }
 
             // Agent Filter (Projects the agent is working on)
-            if (globalFilters.agentName) {
+            if (globalFilters.agentId) {
                 const agentTasksInProject = tasks.filter(task => 
-                    task.project_id === project.id && task.agent_name === globalFilters.agentName
+                    task.project_id === project.id && task.agent_id === globalFilters.agentId
                 );
                 if (agentTasksInProject.length === 0) return false;
             }
 
-            // Status Filter (Based on project's tasks completion)
+            // Status Filter (Based on project's task counts)
             if (globalFilters.status && globalFilters.status !== 'all') {
-                const projectTasks = tasks.filter(task => task.project_id === project.id);
-                if (projectTasks.length === 0 && globalFilters.status === 'active') return false; // No tasks, not active
-                if (projectTasks.length === 0 && globalFilters.status === 'completed') return true; // No tasks, can be considered completed for filtering if desired or false
+                if (totalTasks === 0 && globalFilters.status === 'active') return false; // No tasks, not active
+                if (totalTasks === 0 && globalFilters.status === 'completed') return true; // No tasks, can be considered completed
 
-                const allCompleted = projectTasks.every(task => task.completed);
+                const allCompleted = totalTasks > 0 && completedTasks === totalTasks;
                 if (globalFilters.status === 'completed' && !allCompleted) return false;
-                if (globalFilters.status === 'active' && allCompleted && projectTasks.length > 0) return false;
+                if (globalFilters.status === 'active' && allCompleted) return false;
             }
 
             // Project ID filter from globalFilters doesn't make sense for filtering the project list itself,
@@ -116,9 +119,9 @@ const ProjectList: React.FC = () => {
         return (
             <VStack spacing={4} align="stretch">
                 {[1, 2, 3].map(i => (
-                    <Box key={i} p={4} bg="gray.700" rounded="lg" shadow="lg" borderWidth="1px" borderColor="gray.600">
-                        <Box height="20px" width="60%" bg="gray.600" rounded="md" mb={2} />
-                        <Box height="8px" bg="gray.600" rounded="full" />
+                    <Box key={i} p={4} bg="bg.card" rounded="lg" shadow="md" borderWidth="1px" borderColor="border.secondary">
+                        <Box height="20px" width="60%" bg="bg.subtle" rounded="md" mb={2} />
+                        <Box height="8px" bg="bg.subtle" rounded="full" />
                     </Box>
                 ))}
             </VStack>
@@ -127,32 +130,72 @@ const ProjectList: React.FC = () => {
 
     if (!filteredProjects.length && !loading) {
         return (
-            <Box textAlign="center" py={8} bg="gray.700" rounded="lg" shadow="lg" borderWidth="1px" borderColor="gray.600">
-                <Text color="gray.300">No projects found</Text>
+            <Box textAlign="center" py={8} bg="bg.content" rounded="lg" shadow="md" borderWidth="1px" borderColor="border.secondary">
+                <Text color="text.secondary">No projects found</Text>
             </Box>
         );
     }
 
     return (
         <VStack spacing={4} align="stretch">
+            <Flex justify="space-between" align="center" mb={4} px={1}>
+                <Heading size="md" color="text.heading">Portfolio</Heading>
+                {isMobile ? (
+                    <Menu>
+                        <MenuButton
+                            as={IconButton}
+                            aria-label='Project Actions'
+                            icon={<HamburgerIcon />}
+                            size="sm"
+                            variant="ghost"
+                            color="icon.secondary"
+                            _hover={{ bg: "bg.hover.nav", color: "text.primary" }}
+                        />
+                        <MenuList bg="bg.card" borderColor="border.secondary">
+                            <MenuItem 
+                                icon={<AddIcon />} 
+                                bg="bg.card" 
+                                _hover={{ bg: "bg.hover.nav" }}
+                            >
+                                Add Project
+                            </MenuItem>
+                        </MenuList>
+                    </Menu>
+                ) : (
+                    <Button 
+                        leftIcon={<AddIcon />} 
+                        size="sm" 
+                        variant="outline" 
+                        color="text.link"
+                        borderColor="border.focus"
+                        _hover={{ bg: 'brand.50', _dark: { bg: 'brand.900' } }}
+                    >
+                        Add Project
+                    </Button>
+                )}
+            </Flex>
             {filteredProjects.map(project => {
-                const stats = getProjectStats(project.id);
-                const isCompleted = stats.progress === 100;
-                const isInProgress = stats.totalTasks > 0 && !isCompleted;
+                const totalTasks = project.task_count ?? 0;
+                const completedTasks = project.completed_task_count ?? 0;
+                const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+                
+                const isCompleted = progress === 100 && totalTasks > 0;
+                const isInProgress = totalTasks > 0 && !isCompleted;
+                const isIdle = totalTasks === 0;
 
                 return (
                     <Box
                         key={project.id}
                         p={4}
-                        bg="gray.700"
+                        bg="bg.card"
                         rounded="lg"
-                        shadow="lg"
+                        shadow="md"
                         borderWidth="1px"
-                        borderColor="gray.600"
-                        _hover={{ 
-                            shadow: "xl", 
-                            borderColor: isInProgress ? ACCENT_COLOR : (isCompleted ? COMPLETED_COLOR_SUBTLE : "gray.500"), 
-                            transform: "translateY(-1px)" 
+                        borderColor="border.secondary"
+                        _hover={{
+                            shadow: "lg",
+                            borderColor: isInProgress ? 'accent.active' : (isCompleted ? 'border.subtle' : 'border.primary'),
+                            transform: "translateY(-1px)"
                         }}
                         transition="all 0.2s ease-in-out"
                         position="relative"
@@ -164,51 +207,57 @@ const ProjectList: React.FC = () => {
                             left: 0,
                             right: 0,
                             height: "4px",
-                            bg: isInProgress ? ACCENT_COLOR : "transparent",
+                            bg: isInProgress ? 'accent.active' : "transparent",
                             opacity: 0.9
                         }}
                     >
-                        <HStack mb={2} align="start">
-                            <VStack align="start" spacing={0.5} flex={1}>
+                        <HStack 
+                            mb={2} 
+                            align={{ base: 'flex-start', md: 'start' }}
+                            direction={{ base: 'column', md: 'row' }}
+                        >
+                            <VStack align="start" spacing={0.5} flex={1} mb={{ base: 2, md: 0 }}>
                                 <Text 
                                     fontWeight="semibold"
                                     fontSize="lg"
-                                    color="whiteAlpha.900"
+                                    color="text.primary"
                                 >
                                     {formatDisplayName(project.name)}
                                 </Text>
                                 <HStack>
-                                     <Text fontSize="xs" color="gray.300" fontWeight="medium">Status: </Text>
-                                     <Badge 
-                                        colorScheme={isCompleted ? 'green' : (isInProgress ? 'blue' : 'gray')} 
+                                    <Text fontSize="xs" color="text.secondary" fontWeight="medium">
+                                        Tasks: {totalTasks}
+                                    </Text>
+                                    <Badge 
                                         variant="subtle"
                                         size="sm"
                                         px={2} 
                                         py={0.5} 
                                         borderRadius="md"
+                                        bg={isCompleted ? 'bg.status.success.subtle' : (isInProgress ? 'bg.status.info.subtle' : 'bg.subtle')} 
+                                        color={isCompleted ? 'text.status.success' : (isInProgress ? 'text.status.info' : 'text.secondary')}
                                     >
                                         {isCompleted ? "Completed" : (isInProgress ? "In Progress" : "Idle")}
                                     </Badge>
                                 </HStack>
                             </VStack>
-                            <Spacer />
                             <Menu placement="bottom-end">
                                 <MenuButton
                                     as={IconButton}
                                     aria-label="Options"
                                     icon={<HamburgerIcon />}
                                     variant="ghost"
-                                    color="gray.400"
-                                    _hover={{ bg: "gray.600", color: "white" }}
+                                    color="icon.secondary"
+                                    _hover={{ bg: "bg.hover.nav", color: "text.primary" }}
                                     size="sm"
                                 />
-                                <MenuList bg="gray.700" borderColor="gray.600">
+                                <MenuList bg="bg.card" borderColor="border.secondary">
                                     <MenuItem 
                                         icon={<DeleteIcon />} 
                                         onClick={() => handleDelete(project)}
-                                        bg="gray.700"
-                                        color="red.300"
-                                        _hover={{ bg: "gray.600", color: "red.200" }}
+                                        bg="bg.card"
+                                        color="danger.text"
+                                        _hover={{ bg: "danger.bgHover", color: "danger.text" }}
                                     >
                                         Delete
                                     </MenuItem>
@@ -217,7 +266,7 @@ const ProjectList: React.FC = () => {
                         </HStack>
                         {project.description && (
                             <Text 
-                                color="gray.300" 
+                                color="text.secondary" 
                                 fontSize="sm"
                                 fontWeight="normal"
                                 mb={2} 
@@ -227,31 +276,17 @@ const ProjectList: React.FC = () => {
                             </Text>
                         )}
                         <Progress
-                            value={stats.progress}
-                            size="sm"
+                            value={progress}
+                            size="xs"
+                            colorScheme="brand"
                             rounded="full"
-                            mb={2}
-                            bg="gray.600"
-                            sx={{
-                                '& > div:first-of-type': {
-                                    bg: isCompleted ? COMPLETED_COLOR_SUBTLE : (isInProgress ? ACCENT_COLOR : "gray.500")
-                                }
-                            }}
+                            bg="bg.subtle"
                         />
-                        <HStack spacing={4} mt={3} flexWrap="wrap">
-                            <HStack spacing={1} align="center">
-                                <CopyIcon color={ACCENT_COLOR} boxSize="14px" /> 
-                                <Text fontSize="xs" color="gray.200">Tasks: {stats.totalTasks}</Text>
-                            </HStack>
-                            <HStack spacing={1} align="center">
-                                <CheckCircleIcon color={stats.completedTasks > 0 ? ACCENT_COLOR : "gray.500"} boxSize="14px" />
-                                <Text fontSize="xs" color="gray.200">Completed: {stats.completedTasks}</Text>
-                            </HStack>
-                            <HStack spacing={1} align="center">
-                                <StarIcon color={isInProgress ? ACCENT_COLOR : (isCompleted ? COMPLETED_COLOR_SUBTLE : "gray.500")} boxSize="14px" /> 
-                                <Text fontSize="xs" color="gray.200">Progress: {Math.round(stats.progress)}%</Text>
-                            </HStack>
-                        </HStack>
+                        <Flex justify="space-between" mt={2}>
+                            <Text fontSize="xs" color="text.secondary">
+                                {completedTasks} / {totalTasks} tasks
+                            </Text>
+                        </Flex>
                     </Box>
                 );
             })}
@@ -259,4 +294,4 @@ const ProjectList: React.FC = () => {
     );
 };
 
-export default React.memo(ProjectList); 
+export default ProjectList; 

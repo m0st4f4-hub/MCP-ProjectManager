@@ -31,8 +31,11 @@ Base = declarative_base()
 
 # Dependency to get DB session
 def get_db():
+    print("[get_db] Creating database session...")
     db = SessionLocal()
     try:
+        print("[get_db] Yielding database session...")
         yield db
     finally:
+        print("[get_db] Closing database session...")
         db.close()

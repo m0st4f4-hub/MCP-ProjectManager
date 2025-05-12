@@ -14,13 +14,15 @@ import {
     AgentUpdateData as AgentUpdateDataType, // Alias
     AgentFilters, // Imported
 } from "@/types";
+import axios from 'axios';
+import { AgentTaskCount, ProjectTaskCount } from '@/types';
 
 // Remove local Agent interface definitions
 // interface Agent { ... }
 // interface AgentCreateData { ... }
 // interface AgentUpdateData { ... }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 // Helper function to handle API requests
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -53,7 +55,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
 export const getTasks = (filters?: TaskFilters): Promise<Task[]> => {
   const queryParams = new URLSearchParams();
   if (filters?.projectId) queryParams.append('project_id', filters.projectId);
-  if (filters?.agentId) queryParams.append('agent_id', filters.agentId); 
+  if (filters?.agentName) queryParams.append('agent_name', filters.agentName);
   if (filters?.status && filters.status !== 'all') queryParams.append('status', filters.status.toString());
   if (filters?.search) queryParams.append('search', filters.search);
 
@@ -63,8 +65,8 @@ export const getTasks = (filters?: TaskFilters): Promise<Task[]> => {
 };
 
 // Fetch a single task by ID
-export const getTaskById = (id: string): Promise<Task> => { // id: string
-  return request<Task>(`${API_BASE_URL}/tasks/${id}`);
+export const getTaskById = (task_id: string): Promise<Task> => { // Changed id to task_id
+  return request<Task>(`${API_BASE_URL}/tasks/${task_id}`); // Use task_id
 };
 
 // Create a new task
@@ -73,13 +75,13 @@ export const createTask = (taskData: TaskCreateData): Promise<Task> => {
 };
 
 // Update an existing task
-export const updateTask = (id: string, taskData: TaskUpdateData): Promise<Task> => { // id: string
-  return request<Task>(`${API_BASE_URL}/tasks/${id}`, { method: 'PUT', body: JSON.stringify(taskData) });
+export const updateTask = (task_id: string, taskData: TaskUpdateData): Promise<Task> => { // Changed id to task_id
+  return request<Task>(`${API_BASE_URL}/tasks/${task_id}`, { method: 'PUT', body: JSON.stringify(taskData) }); // Use task_id
 };
 
 // Delete a task
-export const deleteTask = (id: string): Promise<Task> => { // id: string, Backend returns deleted task
-  return request<Task>(`${API_BASE_URL}/tasks/${id}`, { method: 'DELETE' });
+export const deleteTask = (task_id: string): Promise<Task> => { // Changed id to task_id
+  return request<Task>(`${API_BASE_URL}/tasks/${task_id}`, { method: 'DELETE' }); // Use task_id
 };
 
 // Fetch all projects
@@ -96,13 +98,13 @@ export const createProject = (projectData: ProjectCreateData): Promise<Project> 
 };
 
 // Update an existing project
-export const updateProject = (id: string, projectData: ProjectUpdateData): Promise<Project> => { // id: string
-  return request<Project>(`${API_BASE_URL}/projects/${id}`, { method: 'PUT', body: JSON.stringify(projectData) });
+export const updateProject = (project_id: string, projectData: ProjectUpdateData): Promise<Project> => { // Changed id to project_id
+  return request<Project>(`${API_BASE_URL}/projects/${project_id}`, { method: 'PUT', body: JSON.stringify(projectData) }); // Use project_id
 };
 
 // Delete a project
-export const deleteProject = (id: string): Promise<Project> => { // id: string
-  return request<Project>(`${API_BASE_URL}/projects/${id}`, { method: 'DELETE' });
+export const deleteProject = (project_id: string): Promise<Project> => { // Changed id to project_id
+  return request<Project>(`${API_BASE_URL}/projects/${project_id}`, { method: 'DELETE' }); // Use project_id
 };
 
 // Fetch all agents
@@ -114,28 +116,55 @@ export const getAgents = (filters?: AgentFilters): Promise<Agent[]> => { // Uses
 };
 
 // Fetch agent by ID
-export const getAgentById = (id: string): Promise<Agent> => { // id: string
-  return request<Agent>(`${API_BASE_URL}/agents/id/${id}`);
+export const getAgentById = (agent_id: string): Promise<Agent> => { // Changed id to agent_id
+  return request<Agent>(`${API_BASE_URL}/agents/${agent_id}`); // Changed path and use agent_id
 };
 
 // Fetch agent by Name
-export const getAgentByName = (name: string): Promise<Agent> => {
-  return request<Agent>(`${API_BASE_URL}/agents/${name}`);
+export const getAgentByName = (agent_name: string): Promise<Agent> => { // Changed name to agent_name
+  return request<Agent>(`${API_BASE_URL}/agents/name/${agent_name}`); // Changed path to match backend
 };
 
-// Create a new agent
-export const createAgent = (agentData: AgentCreateDataType): Promise<Agent> => { // Uses aliased type
-  return request<Agent>(`${API_BASE_URL}/agents/`, { method: 'POST', body: JSON.stringify(agentData) });
+// Function to create a new agent
+export const createAgent = async (name: string): Promise<Agent> => {
+    console.log(`[API Service] Attempting to create agent with name: ${name}`);
+    try {
+        const response = await fetch(`${API_BASE_URL}/agents/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name }),
+        });
+        console.log(`[API Service] Create agent response status: ${response.status}`);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+            console.error('[API Service] Create agent failed:', errorData);
+            throw new Error(errorData.detail || `HTTP error ${response.status}`);
+        }
+        const newAgent: Agent = await response.json();
+        console.log('[API Service] Agent created successfully:', newAgent);
+        return newAgent;
+    } catch (error) {
+        console.error('[API Service] Error in createAgent:', error);
+        throw error; // Re-throw the error to be handled by the store
+    }
 };
 
-// Update an existing agent
-export const updateAgent = (id: string, agentData: AgentUpdateDataType): Promise<Agent> => { // id: string, uses aliased type
-  return request<Agent>(`${API_BASE_URL}/agents/${id}`, { method: 'PUT', body: JSON.stringify(agentData) });
+// Function to update an agent (Placeholder - Not implemented yet)
+// ...
+
+// Function to delete an agent (Placeholder - Not implemented yet)
+// ...
+
+// UPDATE Agent by ID
+export const updateAgentById = (agent_id: string, agentData: AgentUpdateDataType): Promise<Agent> => {
+  return request<Agent>(`${API_BASE_URL}/agents/${agent_id}`, { method: 'PUT', body: JSON.stringify(agentData) });
 };
 
-// Delete an agent
-export const deleteAgent = (id: string): Promise<Agent> => { // id: string
-  return request<Agent>(`${API_BASE_URL}/agents/${id}`, { method: 'DELETE' });
+// DELETE Agent by ID
+export const deleteAgentById = (agent_id: string): Promise<null> => { // DELETE might return 204 No Content
+  return request<null>(`${API_BASE_URL}/agents/${agent_id}`, { method: 'DELETE' });
 };
 
 // --- Planning Prompt Interfaces ---
@@ -156,3 +185,16 @@ export const generateProjectManagerPlanningPrompt = (data: PlanningRequestData):
     body: JSON.stringify(data),
   });
 };
+
+// Define TaskUpdateData based on Task but make fields optional and exclude read-only ones
+export type TaskUpdateData = Partial<Omit<Task, 'id' | 'created_at' | 'updated_at'>>;
+export type TaskCreateData = Omit<Task, 'id' | 'created_at' | 'updated_at'>;
+export type ProjectUpdateData = Partial<Omit<Project, 'id' | 'created_at' | 'updated_at' | 'task_count'>>;
+export type ProjectCreateData = Omit<Project, 'id' | 'created_at' | 'updated_at' | 'task_count'>;
+export type AgentUpdateData = Partial<Omit<Agent, 'id' | 'created_at' | 'updated_at' | 'task_count'>>;
+// export type AgentCreateDataType = Omit<Agent, 'id' | 'created_at' | 'updated_at' | 'task_count'>; // Removed unused type
+
+// Define TaskFilters - same as in store/taskStore.ts for consistency
+export interface TaskFilters {
+// ... existing code ...
+}

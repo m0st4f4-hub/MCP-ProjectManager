@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -10,20 +10,37 @@ import {
     VStack,
     useToast,
 } from '@chakra-ui/react';
+import { Agent } from '@/types'; // Assuming Agent type is available
 
-interface AddAgentFormProps {
+interface EditAgentFormProps {
+    agent: Agent | null; // Agent to edit, null if none selected
     onClose: () => void;
-    onSubmit: (name: string) => Promise<void>; // Parent (AgentList) provides this
-    initialData: { name: string };
+    onSubmit: (agentId: string, newName: string) => Promise<void>; 
+    initialAgentName?: string;
 }
 
-const AddAgentForm: React.FC<AddAgentFormProps> = ({ onClose, onSubmit, initialData }) => {
-    const [name, setName] = useState(initialData.name);
+const EditAgentForm: React.FC<EditAgentFormProps> = ({ agent, onClose, onSubmit, initialAgentName }) => {
+    const [name, setName] = useState(initialAgentName || '');
     const [isLoading, setIsLoading] = useState(false);
     const toast = useToast();
 
+    useEffect(() => {
+        if (agent) {
+            setName(agent.name);
+        }
+    }, [agent]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!agent) {
+            toast({
+                title: 'No agent selected for editing.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            });
+            return;
+        }
         if (!name.trim()) {
             toast({
                 title: 'Agent name cannot be empty.',
@@ -35,15 +52,12 @@ const AddAgentForm: React.FC<AddAgentFormProps> = ({ onClose, onSubmit, initialD
         }
         setIsLoading(true);
         try {
-            await onSubmit(name.trim()); // Call the onSubmit passed from props
-            // Success handling (like closing modal) is done by the parent
-            // via the promise resolution or state change
-            // No need to call onClose directly here if parent handles it
+            await onSubmit(agent.id, name.trim());
+            // Parent component (AgentList modal) will handle closing and success toast
         } catch (error) {
-            // Error is caught and displayed here, error is re-thrown from store
             toast({
-                title: 'Error registering agent',
-                description: error instanceof Error ? error.message : 'Could not register agent.',
+                title: 'Error updating agent',
+                description: error instanceof Error ? error.message : 'Could not update agent.',
                 status: 'error',
                 duration: 5000,
                 isClosable: true,
@@ -52,6 +66,12 @@ const AddAgentForm: React.FC<AddAgentFormProps> = ({ onClose, onSubmit, initialD
             setIsLoading(false);
         }
     };
+
+    if (!agent) {
+        // Optionally, render a loading state or null if no agent is passed yet
+        // This case should ideally be handled by the parent controlling the modal visibility
+        return <Box>Loading agent data...</Box>; 
+    }
 
     return (
         <Box
@@ -76,19 +96,19 @@ const AddAgentForm: React.FC<AddAgentFormProps> = ({ onClose, onSubmit, initialD
 
                 <Button
                     type="submit"
-                    bg="bg.button.primary"
-                    color="text.button.primary"
-                    _hover={{ bg: "bg.button.primary.hover" }}
+                    bg="bg.button.accent"
+                    color="text.button.accent"
+                    _hover={{ bg: "bg.button.accent.hover" }}
                     width="full"
                     size="lg"
                     isLoading={isLoading}
                     mt={4}
                 >
-                    Register Agent
+                    Update Agent
                 </Button>
             </VStack>
         </Box>
     );
 };
 
-export default AddAgentForm; 
+export default EditAgentForm; 

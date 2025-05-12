@@ -76,66 +76,75 @@ const FilterSidebar: React.FC = () => {
 
     return (
         <VStack spacing={4} align="stretch" w="full">
-            <Heading size="sm" color="whiteAlpha.800" mb={1} mt={3} borderTopWidth="1px" borderColor="gray.700" pt={3}>
+            <Heading size="sm" color="text.secondary" mb={1} mt={3} borderTopWidth="1px" borderColor="border.divider" pt={3}>
                 Filters & Search
             </Heading>
             
             <FormControl>
-                <FormLabel color="gray.200" fontSize="xs" mb={1}>Search</FormLabel>
+                <FormLabel color="text.secondary" fontSize="xs" mb={1}>Search</FormLabel>
                 <InputGroup size="sm">
                     <InputLeftElement pointerEvents="none">
-                        <SearchIcon color="gray.500" />
+                        <SearchIcon color="icon.secondary" />
                     </InputLeftElement>
                     <Input
                         value={filters.searchTerm || ''}
                         onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
                         placeholder="Search tasks..."
-                        bg="gray.700"
-                        color="white"
-                        borderColor="gray.600"
+                        bg="bg.input"
+                        color="text.primary"
+                        borderColor="border.input"
                         borderRadius="md"
                         fontSize="sm"
-                        _hover={{ borderColor: "gray.500" }}
-                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                        _hover={{ borderColor: "border.input.hover" }}
+                        _focus={{ 
+                            borderColor: "border.focus",
+                            boxShadow: "outline"
+                        }}
                     />
                 </InputGroup>
             </FormControl>
 
             <FormControl>
-                <FormLabel color="gray.200" fontSize="xs" mb={1}>Status</FormLabel>
+                <FormLabel color="text.secondary" fontSize="xs" mb={1}>Status</FormLabel>
                 <Select
                     value={filters.status || 'all'}
                     onChange={(e) => handleFilterChange('status', e.target.value === 'all' ? null : e.target.value)}
-                    bg="gray.700"
-                    color="white"
-                    borderColor="gray.600"
+                    bg="bg.input"
+                    color="text.primary"
+                    borderColor="border.input"
                     size="sm"
                     borderRadius="md"
-                    _hover={{ borderColor: "gray.500" }}
-                    _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                    _hover={{ borderColor: "border.input.hover" }}
+                    _focus={{ 
+                        borderColor: "border.focus",
+                        boxShadow: "outline"
+                    }}
                 >
-                    <option style={{ backgroundColor: '#2D3748' }} value="all">All</option>
-                    <option style={{ backgroundColor: '#2D3748' }} value="active">Active</option>
-                    <option style={{ backgroundColor: '#2D3748' }} value="completed">Completed</option>
+                    <option value="all">All</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
                 </Select>
             </FormControl>
 
             <FormControl>
-                <FormLabel color="gray.200" fontSize="xs" mb={1}>Project</FormLabel>
+                <FormLabel color="text.secondary" fontSize="xs" mb={1}>Project</FormLabel>
                 <Select
                     value={filters.projectId || ''}
                     onChange={(e) => handleFilterChange('projectId', e.target.value)}
                     placeholder="All Projects"
-                    bg="gray.700"
-                    color="white"
-                    borderColor="gray.600"
+                    bg="bg.input"
+                    color="text.primary"
+                    borderColor="border.input"
                     size="sm"
                     borderRadius="md"
-                    _hover={{ borderColor: "gray.500" }}
-                    _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                    _hover={{ borderColor: "border.input.hover" }}
+                    _focus={{ 
+                        borderColor: "border.focus",
+                        boxShadow: "outline"
+                    }}
                 >
                     {projects.map(project => (
-                        <option style={{ backgroundColor: '#2D3748' }} key={project.id} value={project.id}>
+                        <option key={project.id} value={project.id}>
                             {formatDisplayName(project.name)}
                         </option>
                     ))}
@@ -143,21 +152,24 @@ const FilterSidebar: React.FC = () => {
             </FormControl>
 
             <FormControl>
-                <FormLabel color="gray.200" fontSize="xs" mb={1}>Agent</FormLabel>
+                <FormLabel color="text.secondary" fontSize="xs" mb={1}>Agent</FormLabel>
                 <Select
                     value={filters.agentName || ''}
                     onChange={(e) => handleFilterChange('agentName', e.target.value)}
                     placeholder="All Agents"
-                    bg="gray.700"
-                    color="white"
-                    borderColor="gray.600"
+                    bg="bg.input"
+                    color="text.primary"
+                    borderColor="border.input"
                     size="sm"
                     borderRadius="md"
-                    _hover={{ borderColor: "gray.500" }}
-                    _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                    _hover={{ borderColor: "border.input.hover" }}
+                    _focus={{ 
+                        borderColor: "border.focus",
+                        boxShadow: "outline"
+                    }}
                 >
                     {uniqueAgentsForDropdown.map(agentEntry => (
-                        <option style={{ backgroundColor: '#2D3748' }} key={agentEntry.value} value={agentEntry.value}>
+                        <option key={agentEntry.value} value={agentEntry.value}>
                             {agentEntry.display}
                         </option>
                     ))}
@@ -165,41 +177,45 @@ const FilterSidebar: React.FC = () => {
             </FormControl>
 
             {/* Sort Options */}
-            <Box w="full" mt={2} pt={3} borderTopWidth="1px" borderColor="gray.700">
-                <Heading size="sm" color="whiteAlpha.800" mb={2}>
+            <Box w="full" mt={2} pt={3} borderTopWidth="1px" borderColor="border.divider">
+                <Heading size="sm" color="text.secondary" mb={2}>
                     Sort Options
                 </Heading>
                 <FormControl>
                     <HStack spacing={2}>
                         <Select
-                            value={sortOptions.field || 'created_at'} // Default to created_at or first valid option
+                            value={sortOptions.field || 'created_at'}
                             onChange={(e) => handleSortChange(e.target.value as TaskSortOptions['field'], null)}
-                            bg="gray.700"
-                            color="white"
-                            borderColor="gray.600"
+                            bg="bg.input"
+                            color="text.primary"
+                            borderColor="border.input"
                             size="sm"
                             borderRadius="md"
-                            _hover={{ borderColor: "gray.500" }}
-                            _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                            _hover={{ borderColor: "border.input.hover" }}
+                            _focus={{ 
+                                borderColor: "border.focus",
+                                boxShadow: "outline"
+                            }}
                         >
-                            <option style={{ backgroundColor: '#2D3748' }} value="created_at">Date Created</option>
-                            <option style={{ backgroundColor: '#2D3748' }} value="title">Title</option>
-                            {/* Add other sortable fields from TaskSortOptions['field'] as needed */}
-                            {/* e.g., <option value="priority">Priority</option> */}
+                            <option value="created_at">Date Created</option>
+                            <option value="title">Title</option>
                         </Select>
                         <Select
                             value={sortOptions.direction || 'desc'}
                             onChange={(e) => handleSortChange(null, e.target.value as TaskSortOptions['direction'])}
-                            bg="gray.700"
-                            color="white"
-                            borderColor="gray.600"
+                            bg="bg.input"
+                            color="text.primary"
+                            borderColor="border.input"
                             size="sm"
                             borderRadius="md"
-                            _hover={{ borderColor: "gray.500" }}
-                            _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                            _hover={{ borderColor: "border.input.hover" }}
+                            _focus={{ 
+                                borderColor: "border.focus",
+                                boxShadow: "outline"
+                            }}
                         >
-                            <option style={{ backgroundColor: '#2D3748' }} value="asc">Asc</option>
-                            <option style={{ backgroundColor: '#2D3748' }} value="desc">Desc</option>
+                            <option value="asc">Asc</option>
+                            <option value="desc">Desc</option>
                         </Select>
                     </HStack>
                 </FormControl>

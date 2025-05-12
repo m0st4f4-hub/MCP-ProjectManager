@@ -114,11 +114,11 @@ function EditModalBase<T extends EntityWithIdAndName>({
     <>
       <Modal isOpen={isOpen} onClose={onClose} isCentered size={size}>
         <ModalOverlay />
-        <ModalContent bg="bg.surface" color="text.default">
-          <ModalHeader borderBottomWidth="1px" borderColor="border.default">
+        <ModalContent bg="bg.modal" color="text.primary">
+          <ModalHeader borderBottomWidth="1px" borderColor="border.divider">
             Edit {entityName}: {entityDisplayName}
           </ModalHeader>
-          <ModalCloseButton />
+          <ModalCloseButton color="icon.secondary" _hover={{ bg: "button.hover.secondary"}}/>
           <ModalBody pb={6} pt={4}>
             {/* Render the specific form fields passed as children */}
             <VStack spacing={4} align="stretch">
@@ -126,32 +126,34 @@ function EditModalBase<T extends EntityWithIdAndName>({
             </VStack>
           </ModalBody>
 
-          <ModalFooter borderTopWidth="1px" borderColor="border.default">
+          <ModalFooter borderTopWidth="1px" borderColor="border.divider">
             <Flex justify="space-between" width="100%">
-              {/* Delete Button (Optional) */}
               {!hideDeleteButton && onDelete ? (
                 <Button
-                  colorScheme="red"
                   variant="outline"
+                  bg="transparent"
+                  color="text.danger"
+                  borderColor="border.danger"
+                  _hover={{ bg: "bg.danger.hover", color: "text.critical" }}
                   onClick={onAlertOpen}
                   isLoading={isLoadingDelete}
                   loadingText="Deleting..."
                 >
                   Delete
                 </Button>
-              ) : <div />} {/* Placeholder to maintain spacing */}
-
-              {/* Cancel and Save Buttons */}
+              ) : <div />}
               <Flex>
-                <Button variant="ghost" onClick={onClose} mr={3} isDisabled={isLoadingSave || isLoadingDelete}>
+                <Button variant="ghost" onClick={onClose} mr={3} isDisabled={isLoadingSave || isLoadingDelete} color="text.secondary">
                   Cancel
                 </Button>
                 <Button
-                  colorScheme="blue"
+                  bg="bg.button.primary"
+                  color="text.button.primary"
+                  _hover={{ bg: "bg.button.primary.hover" }}
                   onClick={handleSave}
                   isLoading={isLoadingSave}
                   loadingText="Saving..."
-                  isDisabled={isLoadingDelete} // Disable save if deleting
+                  isDisabled={isLoadingDelete}
                 >
                   Save Changes
                 </Button>
@@ -161,7 +163,6 @@ function EditModalBase<T extends EntityWithIdAndName>({
         </ModalContent>
       </Modal>
 
-      {/* Delete Confirmation Dialog */}
       {onDelete && (
           <AlertDialog
             isOpen={isAlertOpen}
@@ -170,18 +171,26 @@ function EditModalBase<T extends EntityWithIdAndName>({
             isCentered
           >
           <AlertDialogOverlay>
-            <AlertDialogContent bg="bg.surface" color="text.default">
-              <AlertDialogHeader fontSize="lg" fontWeight="bold" borderBottomWidth="1px" borderColor="border.default">
+            <AlertDialogContent bg="bg.modal" color="text.primary">
+              <AlertDialogHeader fontSize="lg" fontWeight="bold" borderBottomWidth="1px" borderColor="border.divider">
                 Delete {entityName}
               </AlertDialogHeader>
               <AlertDialogBody py={4}>
-                Are you sure you want to delete the {entityName.toLowerCase()} &quot;<Text as="span" fontWeight="bold">{entityDisplayName}</Text>&quot;? This action cannot be undone.
+                Are you sure you want to delete the {entityName.toLowerCase()} &quot;<Text as="span" fontWeight="bold" color="text.danger">{entityDisplayName}</Text>&quot;? This action cannot be undone.
               </AlertDialogBody>
-              <AlertDialogFooter borderTopWidth="1px" borderColor="border.default">
-                <Button variant="ghost" ref={cancelRef} onClick={onAlertClose} isDisabled={isLoadingDelete}>
+              <AlertDialogFooter borderTopWidth="1px" borderColor="border.divider">
+                <Button variant="ghost" ref={cancelRef} onClick={onAlertClose} isDisabled={isLoadingDelete} color="text.secondary">
                   Cancel
                 </Button>
-                <Button colorScheme="red" onClick={handleDeleteConfirm} ml={3} isLoading={isLoadingDelete} loadingText="Deleting...">
+                <Button 
+                    bg="bg.button.danger"
+                    color="text.button.primary"
+                    _hover={{ bg: "bg.button.danger.hover" }}
+                    onClick={handleDeleteConfirm} 
+                    ml={3} 
+                    isLoading={isLoadingDelete} 
+                    loadingText="Deleting..."
+                >
                   Delete
                 </Button>
               </AlertDialogFooter>

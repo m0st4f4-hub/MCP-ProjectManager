@@ -7,7 +7,9 @@ export const projectSchema = z.object({
     name: z.string().min(1, 'Name is required'),
     description: z.string().nullable().optional(),
     created_at: z.string(),
-    updated_at: z.string().optional()
+    updated_at: z.string().optional(),
+    task_count: z.number().optional(),
+    completed_task_count: z.number().optional()
 });
 
 // Runtime type for Project
@@ -17,7 +19,8 @@ export type Project = z.infer<typeof projectSchema>;
 export const projectCreateSchema = projectSchema.omit({ 
     id: true, 
     created_at: true, 
-    updated_at: true 
+    updated_at: true, 
+    task_count: true
 });
 
 export type ProjectCreateData = z.infer<typeof projectCreateSchema>;
@@ -26,7 +29,8 @@ export type ProjectCreateData = z.infer<typeof projectCreateSchema>;
 export const projectUpdateSchema = projectSchema.partial().omit({ 
     id: true, 
     created_at: true, 
-    updated_at: true 
+    updated_at: true, 
+    task_count: true
 });
 
 export type ProjectUpdateData = z.infer<typeof projectUpdateSchema>;
