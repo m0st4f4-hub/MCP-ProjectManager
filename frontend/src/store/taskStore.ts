@@ -3,7 +3,36 @@ import { Task, TaskCreateData, TaskUpdateData, TaskFilters, TaskSortOptions, Pro
 import { create } from 'zustand';
 import * as api from '@/services/api';
 
-interface TaskState {
+// Helper function to get all descendant task IDs
+const getAllDescendantIds = (taskId: string, tasks: Task[]): string[] => {
+    const descendants: string[] = [];
+    const children = tasks.filter(task => task.parent_task_id === taskId);
+    for (const child of children) {
+        descendants.push(child.id);
+        descendants.push(...getAllDescendantIds(child.id, tasks));
+    }
+    return descendants;
+};
+
+// Helper function to upsert tasks (and their subtasks recursively) into a flat list
+const upsertTasks = (tasksToUpsert: Task[], existingTasks: Task[]): Task[] => {
+    const taskMap = new Map(existingTasks.map(task => [task.id, task]));
+
+    const tasksToProcess = [...tasksToUpsert];
+    while (tasksToProcess.length > 0) {
+        const currentTask = tasksToProcess.pop();
+        if (!currentTask) continue;
+
+        taskMap.set(currentTask.id, currentTask); // Add or update the task
+
+        if (currentTask.subtasks && currentTask.subtasks.length > 0) {
+            tasksToProcess.push(...currentTask.subtasks); // Add subtasks to the processing queue
+        }
+    }
+    return Array.from(taskMap.values());
+};
+
+export interface TaskState { // Added export
     tasks: Task[];
     loading: boolean;
     error: string | null;
@@ -19,9 +48,9 @@ interface TaskState {
     fetchTasks: () => Promise<void>;
     fetchProjectsAndAgents: () => Promise<void>;
     addTask: (taskData: TaskCreateData) => Promise<void>;
-    removeTask: (id: number) => Promise<void>;
-    toggleTaskComplete: (id: number, completed: boolean) => Promise<void>;
-    editTask: (id: number, taskData: TaskUpdateData) => Promise<void>;
+    removeTask: (id: string) => Promise<void>;
+    toggleTaskComplete: (id: string, completed: boolean) => Promise<void>;
+    editTask: (id: string, taskData: TaskUpdateData) => Promise<void>;
     openEditModal: (task: Task) => void;
     closeEditModal: () => void;
     setSortOptions: (options: TaskSortOptions) => void;
@@ -43,8 +72,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     filters: {
         status: 'all',
         projectId: null,
-        agentName: null,
-        searchTerm: null
+        agentId: null,
+        searchTerm: null,
+        top_level_only: true,
     },
     projects: [],
     agents: [],
@@ -52,8 +82,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     
     fetchTasks: async () => {
         try {
-            const tasks = await api.getTasks(get().filters);
-            set(state => ({ ...state, tasks: sortTasks(tasks, state.sortOptions), error: null }));
+            const tasksFromApi = await api.getTasks(get().filters);
+            set(state => ({ ...state, tasks: sortTasks(upsertTasks(tasksFromApi, state.tasks), state.sortOptions), error: null }));
         } catch (error) {
             set(state => ({ ...state, error: String(error) }));
         }
@@ -100,10 +130,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     addTask: async (taskData) => {
         set(state => ({ ...state, loading: true, error: null }));
         try {
-            const newTask = await api.createTask(taskData);
+            const newTaskFromApi = await api.createTask(taskData);
             set(state => ({ 
                 ...state,
-                tasks: sortTasks([newTask, ...state.tasks], state.sortOptions),
+                tasks: sortTasks(upsertTasks([newTaskFromApi], state.tasks), state.sortOptions),
                 loading: false 
             }));
         } catch (error) {
@@ -115,11 +145,15 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         set(state => ({ ...state, loading: true, error: null }));
         try {
             await api.deleteTask(id);
-            set(state => ({
-                ...state,
-                tasks: state.tasks.filter(task => task.id !== id),
-                loading: false
-            }));
+            set(state => {
+                const idsToRemove = new Set([id, ...getAllDescendantIds(id, state.tasks)]);
+                const remainingTasks = state.tasks.filter(task => !idsToRemove.has(task.id));
+                return {
+                    ...state,
+                    tasks: remainingTasks,
+                    loading: false
+                };
+            });
         } catch (error) {
             set(state => ({ ...state, error: String(error), loading: false }));
         }
@@ -127,11 +161,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
     toggleTaskComplete: async (id, completed) => {
         try {
-            const updated = await api.updateTask(id, { completed });
-        set(state => ({
+            const updatedTaskFromApi = await api.updateTask(id, { completed });
+            set(state => ({
                 ...state,
                 tasks: sortTasks(
-                    state.tasks.map(task => task.id === id ? updated : task),
+                    upsertTasks([updatedTaskFromApi], state.tasks),
                     state.sortOptions
                 ),
             }));
@@ -143,11 +177,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     editTask: async (id, taskData) => {
         set(state => ({ ...state, loading: true, error: null }));
         try {
-            const updated = await api.updateTask(id, taskData);
+            const updatedTaskFromApi = await api.updateTask(id, taskData);
             set(state => ({
                 ...state,
                 tasks: sortTasks(
-                    state.tasks.map(task => task.id === id ? updated : task),
+                    upsertTasks([updatedTaskFromApi], state.tasks),
                     state.sortOptions
                 ),
                 editingTask: null,

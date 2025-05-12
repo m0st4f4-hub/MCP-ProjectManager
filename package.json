@@ -1,22 +1,39 @@
 {
-  "name": "project-manager-monorepo-runner",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Runs FastAPI backend and Next.js frontend concurrently",
+  "name": "project-manager-cli",
+  "version": "1.0.1",
+  "description": "MCP + WebGUI = Collaborative Agent & Human Project Management Platform. Where agents and humans manage projects—together.",
+  "bin": {
+    "project-manager": "./cli.js"
+  },
   "scripts": {
-    "dev:backend": ".\\backend\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000",
-    "watch:backend": "nodemon --watch backend --ext py --exec \"backend\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000\"",
+    "predev": "powershell -NoProfile -Command \"$ports = @(8080, 3000); foreach ($port in $ports) { try { $process = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue; if ($process) { Stop-Process -Id $process.OwningProcess -Force -ErrorAction SilentlyContinue; Write-Host ('Killed process on port ' + $port) } else { Write-Host ('No process found on port ' + $port) } } catch { Write-Host $_.Exception.Message } }; exit 0\"",
+    "start": "node cli.js",
+    "dev:backend": ".\\backend\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8080",
+    "watch:backend": "nodemon --delay 2s --watch backend --ext py --exec \".\\backend\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8080\"",
     "dev:frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm:watch:backend\" \"npm:dev:frontend\""
+    "dev": "concurrently \"npm:watch:backend\" \"npm:dev:frontend\"",
+    "watch:pack": "nodemon --watch cli.js --watch package.json --watch .npmignore --watch .cursor/rules --ext js,json,mdc --exec \"npm pack\""
   },
-  "devDependencies": {
-    "concurrently": "^8.2.2",
-    "delay-cli": "^2.0.0",
-    "nodemon": "^3.1.10"
-  },
+  "keywords": [
+    "project-management",
+    "MCP",
+    "webgui",
+    "collaborative",
+    "agent",
+    "automation",
+    "AI",
+    "cli"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^4.1.2",
+    "commander": "^11.0.0",
+    "concurrently": "^8.2.2",
+    "delay-cli": "^2.0.0",
+    "detect-port": "^2.1.0",
+    "nodemon": "^3.1.10",
+    "ora": "^5.4.1",
     "react-window": "^1.8.11",
     "recharts": "^2.15.3"
   }

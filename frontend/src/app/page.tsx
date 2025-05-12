@@ -27,20 +27,22 @@ import ProjectList from '@/components/ProjectList';
 import AddProjectForm from '@/components/AddProjectForm';
 import AgentList from '@/components/AgentList';
 import AddAgentForm from '@/components/AddAgentForm';
-import { useTaskStore } from '@/store/taskStore';
-import { useProjectStore } from '@/store/projectStore';
-import { useAgentStore } from '@/store/agentStore';
+import { useTaskStore, TaskState } from '@/store/taskStore'; // Added TaskState
+import { useProjectStore, ProjectState } from '@/store/projectStore'; // Added ProjectState
+import { useAgentStore, AgentState } from '@/store/agentStore'; // Added AgentState
 import FilterSidebar from '@/components/common/FilterSidebar';
-import { createProject, createTask, ProjectCreateData, TaskCreateData, getProjects } from '@/services/api';
+import { createProject, createTask, getProjects } from '@/services/api';
+import { ProjectCreateData } from '@/types/project'; // Or just '@/types' if it re-exports
+import { TaskCreateData } from '@/types/task'; // Or just '@/types' if it re-exports
 import Dashboard from '@/components/Dashboard';
 
 export default function Home() {
-    const error = useTaskStore(state => state.error);
-    const fetchTasks = useTaskStore(state => state.fetchTasks);
-    const startPolling = useTaskStore(state => state.startPolling);
-    const stopPolling = useTaskStore(state => state.stopPolling);
-    const fetchProjects = useProjectStore(state => state.fetchProjects);
-    const fetchAgents = useAgentStore(state => state.fetchAgents);
+    const error = useTaskStore((state: TaskState) => state.error);
+    const fetchTasks = useTaskStore((state: TaskState) => state.fetchTasks);
+    const startPolling = useTaskStore((state: TaskState) => state.startPolling);
+    const stopPolling = useTaskStore((state: TaskState) => state.stopPolling);
+    const fetchProjects = useProjectStore((state: ProjectState) => state.fetchProjects);
+    const fetchAgents = useAgentStore((state: AgentState) => state.fetchAgents);
     const toast = useToast();
     const [activeView, setActiveView] = useState('Dashboard');
 
@@ -59,7 +61,7 @@ export default function Home() {
         return () => {
             stopPolling();
         };
-    }, []);
+    }, [startPolling, stopPolling]);
 
     useEffect(() => {
         if (error) {
@@ -129,7 +131,7 @@ export default function Home() {
                 const newProject = await createProject(projectData);
                 newProjectId = newProject.id;
                 setImportStatus(`Project '${plan.projectName}' created with ID: ${newProjectId}. Creating tasks...`);
-            } catch (projectCreationError: any) {
+            } catch (projectCreationError: unknown) {
                 const errorMessage = projectCreationError?.message?.toLowerCase() || '';
                 // Check for typical "already exists" error messages. Adjust keywords if needed.
                 if (errorMessage.includes("already exist") || errorMessage.includes("duplicate") || errorMessage.includes("already registered") || errorMessage.includes("unique constraint failed")) {
@@ -145,7 +147,7 @@ export default function Home() {
                             // Project creation failed (e.g. "already exists") but couldn't find it by name.
                             throw new Error(`Project creation failed (duplicate?) but could not find '${plan.projectName}' by name to confirm.`);
                         }
-                    } catch (fetchExistingError: any) {
+                    } catch (fetchExistingError: unknown) {
                         console.error("Error fetching or finding existing project:", fetchExistingError);
                         setImportStatus(`Error: Project '${plan.projectName}' may already exist but failed to retrieve its details. ${fetchExistingError.message}`);
                         setIsImporting(false);

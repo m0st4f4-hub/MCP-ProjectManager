@@ -1,7 +1,8 @@
-'use client'; // This needs to be a client component
+'use client';
 
 import { ChakraProvider } from '@chakra-ui/react';
-import theme from '@/theme'; // Import our custom theme
+import theme from '@/theme';
+import ModalProvider from './ModalProvider';
 
 interface ChakraProviderWrapperProps {
   children: React.ReactNode;
@@ -10,7 +11,9 @@ interface ChakraProviderWrapperProps {
 export default function ChakraProviderWrapper({ children }: ChakraProviderWrapperProps) {
   return (
     <ChakraProvider theme={theme}>
-      {children}
+      <ModalProvider>
+        {children}
+      </ModalProvider>
     </ChakraProvider>
   );
 } 

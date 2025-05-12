@@ -43,18 +43,18 @@ const StatCard = ({ icon, label, value, helpText, colorScheme }: {
     helpText?: string;
     colorScheme?: string;
 }) => {
-    const bgColor = useColorModeValue('gray.700', 'gray.700');
-    const textColor = useColorModeValue('whiteAlpha.900', 'whiteAlpha.900');
+    const cardBgColor = useColorModeValue('gray.700', 'gray.700');
+    const cardTextColor = useColorModeValue('whiteAlpha.900', 'whiteAlpha.900');
     const iconColor = colorScheme ? `${colorScheme}.300` : 'blue.300';
 
     return (
-        <Box p={5} shadow="md" borderWidth="1px" borderRadius="lg" bg={bgColor} borderColor="gray.600">
+        <Box p={5} shadow="md" borderWidth="1px" borderRadius="lg" bg={cardBgColor} borderColor="gray.600">
             <HStack spacing={4}>
                 <Icon as={icon} w={8} h={8} color={iconColor} />
                 <Stat>
                     <VStack align="start" spacing={0}>
                         <StatLabel color="gray.400" fontSize="sm">{label}</StatLabel>
-                        <StatNumber fontSize="2xl" fontWeight="medium" color={textColor}>{value}</StatNumber>
+                        <StatNumber fontSize="2xl" fontWeight="medium" color={cardTextColor}>{value}</StatNumber>
                         {helpText && <StatHelpText color="gray.500" fontSize="xs">{helpText}</StatHelpText>}
                     </VStack>
                 </Stat>
@@ -64,9 +64,9 @@ const StatCard = ({ icon, label, value, helpText, colorScheme }: {
 };
 
 const Dashboard: React.FC = () => {
-    const { tasks, fetchTasks, isLoading: isLoadingTasks, error: tasksError } = useTaskStore();
-    const { projects, fetchProjects, isLoading: isLoadingProjects, error: projectsError } = useProjectStore();
-    const { agents, fetchAgents, isLoading: isLoadingAgents, error: agentsError } = useAgentStore();
+    const { tasks, fetchTasks, loading: isLoadingTasks, error: tasksError } = useTaskStore();
+    const { projects, fetchProjects, loading: isLoadingProjects, error: projectsError } = useProjectStore();
+    const { agents, fetchAgents, loading: isLoadingAgents, error: agentsError } = useAgentStore();
 
     useEffect(() => {
         fetchTasks();
@@ -77,6 +77,38 @@ const Dashboard: React.FC = () => {
     const bgColor = useColorModeValue('gray.800', 'gray.800');
     const headingColor = useColorModeValue('whiteAlpha.900', 'whiteAlpha.900');
     const textColor = useColorModeValue('gray.300', 'gray.300');
+    const chartCardBg = useColorModeValue('gray.700', 'gray.700');
+    const chartTextColor = useColorModeValue('gray.200', 'gray.200');
+
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(task => task.completed).length;
+    const pendingTasks = totalTasks - completedTasks;
+
+    const tasksPerProjectData = useMemo(() => {
+        const projectTaskCounts: { [projectName: string]: number } = {};
+        tasks.forEach(task => {
+            const project = projects.find(p => p.id === task.project_id);
+            const projectName = project?.name || (task.project_id ? `Project ID: ${task.project_id}` : 'Unassigned');
+            projectTaskCounts[projectName] = (projectTaskCounts[projectName] || 0) + 1;
+        });
+        return Object.entries(projectTaskCounts).map(([name, count]) => ({ name, tasks: count }));
+    }, [tasks, projects]);
+
+    const tasksPerAgentData = useMemo(() => {
+        const agentTaskCounts: { [agentName: string]: number } = {};
+        tasks.forEach(task => {
+            const agentName = task.agent_name || 'Unassigned';
+            agentTaskCounts[agentName] = (agentTaskCounts[agentName] || 0) + 1;
+        });
+        return Object.entries(agentTaskCounts).map(([name, count]) => ({ name, tasks: count }));
+    }, [tasks]);
+
+    const taskStatusData = useMemo(() => [
+        { name: 'Pending', value: pendingTasks },
+        { name: 'Completed', value: completedTasks },
+    ], [pendingTasks, completedTasks]);
+
+    const COLORS = { Pending: '#ECC94B', Completed: '#48BB78' };
 
     if (isLoadingTasks || isLoadingProjects || isLoadingAgents) {
         return (
@@ -99,39 +131,6 @@ const Dashboard: React.FC = () => {
             </VStack>
         );
     }
-
-    const totalTasks = tasks.length;
-    const completedTasks = tasks.filter(task => task.completed).length;
-    const pendingTasks = totalTasks - completedTasks;
-
-    // Data for Charts
-    const tasksPerProjectData = useMemo(() => {
-        const projectTaskCounts: { [projectName: string]: number } = {};
-        tasks.forEach(task => {
-            const projectName = task.project?.name || 'Unassigned';
-            projectTaskCounts[projectName] = (projectTaskCounts[projectName] || 0) + 1;
-        });
-        return Object.entries(projectTaskCounts).map(([name, count]) => ({ name, tasks: count }));
-    }, [tasks]);
-
-    const tasksPerAgentData = useMemo(() => {
-        const agentTaskCounts: { [agentName: string]: number } = {};
-        tasks.forEach(task => {
-            const agentName = task.agent?.name || 'Unassigned';
-            agentTaskCounts[agentName] = (agentTaskCounts[agentName] || 0) + 1;
-        });
-        return Object.entries(agentTaskCounts).map(([name, count]) => ({ name, tasks: count }));
-    }, [tasks]);
-
-    const taskStatusData = useMemo(() => [
-        { name: 'Pending', value: pendingTasks },
-        { name: 'Completed', value: completedTasks },
-    ], [pendingTasks, completedTasks]);
-
-    const COLORS = { Pending: '#ECC94B', Completed: '#48BB78' }; // Yellow for Pending, Green for Completed
-
-    const chartCardBg = useColorModeValue('gray.700', 'gray.700');
-    const chartTextColor = useColorModeValue('gray.200', 'gray.200');
 
     return (
         <Box bg={bgColor} p={6} borderRadius="lg" w="full">
@@ -181,9 +180,6 @@ const Dashboard: React.FC = () => {
             <Text color={textColor} fontSize="sm">
                 Graphs and detailed workload charts will be added here in a future update.
             </Text>
-
-            {/* Placeholder for future charts */}
-            {/* E.g., Tasks per Project, Tasks per Agent */}
 
             <Heading size="md" mt={8} mb={4} color={headingColor}>Tasks per Project</Heading>
             <Box p={4} bg={chartCardBg} borderRadius="lg" shadow="md" mb={8} minH="300px">
@@ -255,7 +251,6 @@ const Dashboard: React.FC = () => {
                                 labelStyle={{ color: '#E2E8F0' }}
                                 itemStyle={{ color: '#A0AEC0' }}
                             />
-                            {/* <Legend wrapperStyle={{ color: chartTextColor, fontSize: '12px', paddingTop: '10px' }}/> */}
                         </PieChart>
                     </ResponsiveContainer>
                 ) : (

@@ -1,13 +1,16 @@
 import { z } from 'zod';
+import { subtaskSchema } from './subtask';
 
 // Base Task schema for validation
 export const taskSchema = z.object({
-    id: z.number(),
+    id: z.string(),
     title: z.string().min(1, 'Title is required'),
     description: z.string().nullable().optional(),
     completed: z.boolean(),
-    project_id: z.number().nullable().optional(),
-    agent_name: z.string().nullable().optional(),
+    project_id: z.string().nullable().optional(),
+    agent_id: z.string().nullable().optional(),
+    parent_task_id: z.string().nullable().optional(),
+    subtasks: z.array(subtaskSchema).nullable().optional(),
     created_at: z.string(),
     updated_at: z.string().optional()
 });
@@ -42,11 +45,13 @@ export interface TaskWithMeta extends Task {
 
 // Task filter options
 export interface TaskFilters {
-    projectId?: number;
-    agentName?: string;
+    projectId?: string;
+    agentId?: string;
     status?: 'all' | 'completed' | 'active';
     priority?: 'low' | 'medium' | 'high';
     search?: string;
+    parent_task_id?: string;
+    top_level_only?: boolean;
 }
 
 // Task sort options

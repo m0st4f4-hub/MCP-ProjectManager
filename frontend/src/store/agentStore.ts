@@ -1,26 +1,28 @@
+import { StoreApi } from 'zustand';
 import { Agent, AgentCreateData, AgentUpdateData, AgentFilters, AgentSortOptions } from '@/types/agent';
 import { createBaseStore, BaseState, withLoading } from './baseStore';
 import * as api from '@/services/api';
 
-interface AgentState extends BaseState {
+type AgentActions = {
+    fetchAgents: (filters?: AgentFilters) => Promise<void>;
+    addAgent: (agentData: AgentCreateData) => Promise<void>;
+    removeAgent: (id: string) => Promise<void>;
+    editAgent: (id: string, agentData: AgentUpdateData) => Promise<void>;
+    openEditModal: (agent: Agent) => void;
+    closeEditModal: () => void;
+    setSortOptions: (options: AgentSortOptions) => void;
+    setFilters: (filters: AgentFilters) => void;
+};
+
+export interface AgentState extends BaseState, AgentActions {
     agents: Agent[];
     editingAgent: Agent | null;
     isEditModalOpen: boolean;
     sortOptions: AgentSortOptions;
     filters: AgentFilters;
-    
-    // Actions
-    fetchAgents: (filters?: AgentFilters) => Promise<void>;
-    addAgent: (agentData: AgentCreateData) => Promise<void>;
-    removeAgent: (id: number) => Promise<void>;
-    editAgent: (id: number, agentData: AgentUpdateData) => Promise<void>;
-    openEditModal: (agent: Agent) => void;
-    closeEditModal: () => void;
-    setSortOptions: (options: AgentSortOptions) => void;
-    setFilters: (filters: AgentFilters) => void;
 }
 
-const initialState: Omit<AgentState, keyof BaseState> = {
+const initialAgentData: Omit<AgentState, keyof BaseState | keyof AgentActions> = {
     agents: [],
     editingAgent: null,
     isEditModalOpen: false,
@@ -31,89 +33,73 @@ const initialState: Omit<AgentState, keyof BaseState> = {
     filters: {
         status: 'all'
     },
-    
-    // These will be implemented in the store
-    fetchAgents: async () => {},
-    addAgent: async () => {},
-    removeAgent: async () => {},
-    editAgent: async () => {},
-    openEditModal: () => {},
-    closeEditModal: () => {},
-    setSortOptions: () => {},
-    setFilters: () => {}
 };
 
-export const useAgentStore = createBaseStore<AgentState>(
-    initialState,
-    { name: 'agent-store', persist: true }
-);
-
-// Initialize the store with actions
-useAgentStore.setState((state) => ({
-    ...state,
-    
+const agentActionsCreator = (
+    set: StoreApi<AgentState>['setState'], 
+    get: StoreApi<AgentState>['getState']
+): AgentActions => ({
     fetchAgents: async (filters?: AgentFilters) => {
-        return withLoading(useAgentStore.setState, async () => {
-            const fetchedAgents = await api.getAgents();
-            const sortedAgents = sortAgents(fetchedAgents, state.sortOptions);
-            useAgentStore.setState({ agents: sortedAgents });
+        return withLoading(set, async () => {
+            const effectiveFilters = filters || get().filters;
+            const fetchedAgents = await api.getAgents(effectiveFilters);
+            const sortedAgents = sortAgents(fetchedAgents, get().sortOptions);
+            set({ agents: sortedAgents } as Partial<AgentState>);
         });
     },
-
     addAgent: async (agentData: AgentCreateData) => {
-        return withLoading(useAgentStore.setState, async () => {
+        return withLoading(set, async () => {
             const newAgent = await api.createAgent(agentData);
-            useAgentStore.setState((state) => ({
+            set((state) => ({
                 agents: sortAgents([newAgent, ...state.agents], state.sortOptions)
-            }));
+            } as Partial<AgentState>));
         });
     },
-
-    removeAgent: async (id: number) => {
-        return withLoading(useAgentStore.setState, async () => {
+    removeAgent: async (id: string) => {
+        return withLoading(set, async () => {
             await api.deleteAgent(id);
-            useAgentStore.setState((state) => ({
+            set((state) => ({
                 agents: state.agents.filter(agent => agent.id !== id)
-            }));
+            } as Partial<AgentState>));
         });
     },
-
-    editAgent: async (id: number, agentData: AgentUpdateData) => {
-        return withLoading(useAgentStore.setState, async () => {
+    editAgent: async (id: string, agentData: AgentUpdateData) => {
+        return withLoading(set, async () => {
             const updated = await api.updateAgent(id, agentData);
-            useAgentStore.setState((state) => ({
+            set((state) => ({
                 agents: sortAgents(
                     state.agents.map(agent => agent.id === id ? updated : agent),
                     state.sortOptions
                 ),
                 editingAgent: null,
                 isEditModalOpen: false
-            }));
+            } as Partial<AgentState>));
         });
     },
-
     openEditModal: (agent: Agent) => {
-        useAgentStore.setState({ editingAgent: agent, isEditModalOpen: true });
+        set({ editingAgent: agent, isEditModalOpen: true } as Partial<AgentState>);
     },
-
     closeEditModal: () => {
-        useAgentStore.setState({ editingAgent: null, isEditModalOpen: false });
+        set({ editingAgent: null, isEditModalOpen: false } as Partial<AgentState>);
     },
-
     setSortOptions: (options: AgentSortOptions) => {
-        useAgentStore.setState((state) => ({
+        set((state) => ({
             sortOptions: options,
             agents: sortAgents(state.agents, options)
-        }));
+        } as Partial<AgentState>));
     },
-
     setFilters: (filters: AgentFilters) => {
-        useAgentStore.setState({ filters });
-        state.fetchAgents(filters);
+        set({ filters } as Partial<AgentState>);
+        get().fetchAgents(filters);
     }
-}));
+});
 
-// Helper function to sort agents
+export const useAgentStore = createBaseStore<AgentState, AgentActions>(
+    initialAgentData,
+    agentActionsCreator,
+    { name: 'agent-store', persist: true }
+);
+
 const sortAgents = (agents: Agent[], options: AgentSortOptions): Agent[] => {
     return [...agents].sort((a, b) => {
         if (options.field === 'created_at') {
@@ -121,13 +107,11 @@ const sortAgents = (agents: Agent[], options: AgentSortOptions): Agent[] => {
             const dateB = new Date(b.created_at).getTime();
             return options.direction === 'asc' ? dateA - dateB : dateB - dateA;
         }
-        
         if (options.field === 'name') {
             return options.direction === 'asc'
                 ? a.name.localeCompare(b.name)
                 : b.name.localeCompare(a.name);
         }
-        
         return 0;
     });
-}; 
+};

@@ -3,7 +3,7 @@ import { Task } from './task';
 
 // Base Project schema for validation
 export const projectSchema = z.object({
-    id: z.number(),
+    id: z.string(),
     name: z.string().min(1, 'Name is required'),
     description: z.string().nullable().optional(),
     created_at: z.string(),
@@ -43,7 +43,7 @@ export interface ProjectWithMeta extends Project {
 // Project filter options
 export interface ProjectFilters {
     search?: string;
-    status?: 'all' | 'not_started' | 'in_progress' | 'completed';
+    status?: 'all' | 'active' | 'completed';
 }
 
 // Project sort options

@@ -17,10 +17,12 @@ import {
 import { useTaskStore } from '@/store/taskStore';
 import { TaskCreateData } from '@/types';
 
-const AddTaskForm: React.FC = () => {
+const AddTaskForm: React.FC<{ initialParentId?: string | null; onClose?: () => void }> = ({ initialParentId = null, onClose }) => {
     const addTask = useTaskStore(state => state.addTask);
     const projects = useTaskStore(state => state.projects);
     const agents = useTaskStore(state => state.agents);
+    const tasks = useTaskStore(state => state.tasks);
+    const fetchTasks = useTaskStore(state => state.fetchTasks);
     const fetchProjectsAndAgents = useTaskStore(state => state.fetchProjectsAndAgents);
     const toast = useToast();
     
@@ -29,12 +31,20 @@ const AddTaskForm: React.FC = () => {
         description: null,
         completed: false,
         project_id: null,
-        agent_name: null
+        agent_id: null,
+        parent_task_id: initialParentId
     });
 
     useEffect(() => {
         fetchProjectsAndAgents();
-    }, [fetchProjectsAndAgents]);
+        fetchTasks();
+    }, [fetchProjectsAndAgents, fetchTasks]);
+
+    useEffect(() => {
+        if (initialParentId) {
+            setFormData(prev => ({ ...prev, parent_task_id: initialParentId }));
+        }
+    }, [initialParentId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,7 +55,8 @@ const AddTaskForm: React.FC = () => {
                 description: null,
                 completed: false,
                 project_id: null,
-                agent_name: null
+                agent_id: null,
+                parent_task_id: initialParentId
             });
             toast({
                 title: 'Task added successfully',
@@ -53,6 +64,9 @@ const AddTaskForm: React.FC = () => {
                 duration: 3000,
                 isClosable: true,
             });
+            if (onClose) {
+                onClose();
+            }
         } catch (error) {
             toast({
                 title: 'Error adding task',
@@ -64,10 +78,10 @@ const AddTaskForm: React.FC = () => {
         }
     };
 
-    const handleChange = (field: keyof TaskCreateData, value: string | number | null) => {
+    const handleChange = (field: keyof TaskCreateData, value: string | number | null | boolean) => {
         setFormData(prev => ({
             ...prev,
-            [field]: field === 'project_id' ? (value ? Number(value) : null) : value
+            [field]: value
         }));
     };
 
@@ -141,8 +155,8 @@ const AddTaskForm: React.FC = () => {
                 <FormControl>
                     <FormLabel color="gray.100">Agent</FormLabel>
                     <Select 
-                        value={formData.agent_name || ''}
-                        onChange={(e) => handleChange('agent_name', e.target.value || null)}
+                        value={formData.agent_id || ''}
+                        onChange={(e) => handleChange('agent_id', e.target.value || null)}
                         placeholder="Select agent"
                         bg="gray.700"
                         color="white"
@@ -152,8 +166,29 @@ const AddTaskForm: React.FC = () => {
                         _placeholder={{ color: "gray.400" }}
                     >
                         {agents.map(agent => (
-                            <option key={agent.id} value={agent.name}>
+                            <option key={agent.id} value={agent.id}>
                                 {agent.name}
+                            </option>
+                        ))}
+                    </Select>
+                </FormControl>
+
+                <FormControl isDisabled={!!initialParentId}>
+                    <FormLabel color="gray.100">Parent Task (Optional)</FormLabel>
+                    <Select 
+                        value={formData.parent_task_id || ''}
+                        onChange={(e) => handleChange('parent_task_id', e.target.value || null)}
+                        placeholder="Select parent task"
+                        bg="gray.700"
+                        color="white"
+                        borderColor="gray.600"
+                        _hover={{ borderColor: "gray.500" }}
+                        _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                        _placeholder={{ color: "gray.400" }}
+                    >
+                        {tasks.map(task => (
+                            <option key={task.id} value={task.id}>
+                                {task.title} (ID: {task.id})
                             </option>
                         ))}
                     </Select>

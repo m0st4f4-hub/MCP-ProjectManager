@@ -19,12 +19,11 @@ import {
 import { DeleteIcon, HamburgerIcon, CheckCircleIcon, CopyIcon, StarIcon } from '@chakra-ui/icons';
 import { useProjectStore } from '@/store/projectStore';
 import { useTaskStore } from '@/store/taskStore';
-import { Project, TaskFilters } from '@/types';
+import { Project } from '@/types';
 import { formatDisplayName } from '@/lib/utils';
 
 const ACCENT_COLOR = "#dad2cc";
 const COMPLETED_COLOR_SUBTLE = "gray.500"; // For completed items, less prominent than accent
-const COMPLETED_TEXT_COLOR = "gray.400";
 
 const ProjectList: React.FC = () => {
     const projects = useProjectStore(state => state.projects);
@@ -178,13 +177,19 @@ const ProjectList: React.FC = () => {
                                 >
                                     {formatDisplayName(project.name)}
                                 </Text>
-                                <Text
-                                    fontSize="xs"
-                                    color={isCompleted ? COMPLETED_TEXT_COLOR : (isInProgress ? ACCENT_COLOR : "gray.400")}
-                                    fontWeight="medium"
-                                >
-                                    Status: {isCompleted ? "Completed" : (isInProgress ? "In Progress" : "Idle")}
-                                </Text>
+                                <HStack>
+                                     <Text fontSize="xs" color="gray.300" fontWeight="medium">Status: </Text>
+                                     <Badge 
+                                        colorScheme={isCompleted ? 'green' : (isInProgress ? 'blue' : 'gray')} 
+                                        variant="subtle"
+                                        size="sm"
+                                        px={2} 
+                                        py={0.5} 
+                                        borderRadius="md"
+                                    >
+                                        {isCompleted ? "Completed" : (isInProgress ? "In Progress" : "Idle")}
+                                    </Badge>
+                                </HStack>
                             </VStack>
                             <Spacer />
                             <Menu placement="bottom-end">

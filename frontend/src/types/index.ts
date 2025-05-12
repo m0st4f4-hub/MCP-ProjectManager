@@ -1,6 +1,7 @@
 export * from './task';
 export * from './project';
 export * from './agent';
+export * from './subtask';
 
 // Common types used across the application
 export type SortDirection = 'asc' | 'desc';
@@ -46,5 +47,6 @@ export interface TaskFilters {
 }
 
 export interface TaskSortOptions {
-    // ... rest of the file
+    field: 'title' | 'created_at' | 'updated_at' | 'priority' | 'status' | string;
+    direction: SortDirection;
 } 

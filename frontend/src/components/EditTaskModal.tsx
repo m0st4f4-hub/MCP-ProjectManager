@@ -1,7 +1,7 @@
 // D:\mcp\task-manager\frontend\src\components\EditTaskModal.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     FormControl,
     FormLabel,
@@ -33,12 +33,32 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
     const [completed, setCompleted] = useState(false);
     const [projectId, setProjectId] = useState<string>('');
     const [agentName, setAgentName] = useState<string>('');
+    const [parentTaskId, setParentTaskId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const toast = useToast();
 
-    // Get projects, agents from store (remove scopes)
+    // Get projects, agents, and all tasks from store
     const projects = useTaskStore((state) => state.projects);
     const agents = useTaskStore((state) => state.agents);
+    const allTasks = useTaskStore((state) => state.tasks);
+
+    // Helper function to get all descendant task IDs (copied from taskStore)
+    const getAllDescendantIds = useCallback((taskIdToScan: number, tasks: Task[]): number[] => {
+        const descendants: number[] = [];
+        const children = tasks.filter(t => t.parent_task_id === taskIdToScan);
+        for (const child of children) {
+            descendants.push(child.id);
+            descendants.push(...getAllDescendantIds(child.id, tasks)); // Recursive call
+        }
+        return descendants;
+    }, []); // Empty dependency array as it's a pure function not relying on component scope vars (except its own params)
+
+    const potentialParents = useMemo(() => {
+        if (!task) return []; // Early return if task is null
+        const descendantIds = getAllDescendantIds(task.id, allTasks);
+        const selfAndDescendants = new Set([task.id, ...descendantIds]);
+        return allTasks.filter(t => !selfAndDescendants.has(t.id));
+    }, [task, allTasks, getAllDescendantIds]);
 
     useEffect(() => {
         if (task) {
@@ -47,6 +67,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
             setCompleted(task.completed);
             setProjectId(task.project_id?.toString() || '');
             setAgentName(task.agent_name || '');
+            setParentTaskId(task.parent_task_id?.toString() || '');
         } else {
             // Reset form when modal is closed or task is null
             setTitle('');
@@ -54,6 +75,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
             setCompleted(false);
             setProjectId('');
             setAgentName('');
+            setParentTaskId('');
         }
     }, [task, isOpen]); // Rerun effect when task or isOpen changes
 
@@ -66,6 +88,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
             completed,
             project_id: projectId ? parseInt(projectId, 10) : undefined,
             agent_name: agentName || undefined,
+            parent_task_id: parentTaskId ? parseInt(parentTaskId, 10) : null,
         };
 
         try {
@@ -159,6 +182,24 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
                 >
                      <option value="">-- Clear Agent --</option> {/* Option to clear */}
                     {agents.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+                </Select>
+            </FormControl>
+
+            <FormControl>
+                <FormLabel color="text.secondary">Parent Task</FormLabel>
+                <Select 
+                    placeholder="-- No Parent --"
+                    value={parentTaskId}
+                    onChange={(e) => setParentTaskId(e.target.value)}
+                    bg="bg.default"
+                    borderColor="border.default"
+                    focusBorderColor="brand.primary"
+                >
+                    {potentialParents.map(p => (
+                        <option key={p.id} value={p.id}>
+                            {p.title} (ID: {p.id})
+                        </option>
+                    ))}
                 </Select>
             </FormControl>
 

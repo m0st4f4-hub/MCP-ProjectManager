@@ -18,11 +18,10 @@ import {
 import { DeleteIcon, HamburgerIcon, CopyIcon, CheckCircleIcon, ViewIcon } from '@chakra-ui/icons';
 import { useAgentStore } from '@/store/agentStore';
 import { useTaskStore } from '@/store/taskStore';
-import { Agent, TaskFilters } from '@/types';
+import { Agent } from '@/types';
 import { formatDisplayName } from '@/lib/utils';
 
 const ACCENT_COLOR = "#dad2cc";
-const IDLE_TEXT_COLOR = "gray.400";
 
 const AgentList: React.FC = () => {
     const agents = useAgentStore(state => state.agents);
@@ -165,13 +164,19 @@ const AgentList: React.FC = () => {
                                 >
                                     {formatDisplayName(agent.name)}
                                 </Text>
-                                <Text
-                                    fontSize="xs"
-                                    color={isActive ? ACCENT_COLOR : IDLE_TEXT_COLOR} 
-                                    fontWeight="medium"
-                                >
-                                    Status: {isActive ? "Active" : "Idle"}
-                                </Text>
+                                <HStack>
+                                    <Text fontSize="xs" color="gray.300" fontWeight="medium">Status: </Text>
+                                    <Badge 
+                                        colorScheme={isActive ? 'green' : 'gray'} 
+                                        variant="subtle"
+                                        size="sm"
+                                        px={2} 
+                                        py={0.5} 
+                                        borderRadius="md"
+                                    >
+                                        {isActive ? "Active" : "Idle"}
+                                    </Badge>
+                                </HStack>
                             </VStack>
                             <Spacer />
                             <Menu placement="bottom-end">

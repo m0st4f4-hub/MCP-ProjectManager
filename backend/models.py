@@ -1,40 +1,64 @@
-from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from .database import Base
-import datetime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from datetime import datetime, timezone
+from typing import List, Optional
+import uuid
 
-# New Project Model
+from .database import Base # Import Base from database.py
+
 class Project(Base):
     __tablename__ = "projects"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True, nullable=False)
-    description = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String, index=True, unique=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=True)
 
-    tasks = relationship("Task", back_populates="project")
+    tasks: Mapped[List["Task"]] = relationship(back_populates="project", cascade="all, delete-orphan")
 
-# New Agent Model (Simplified: just using name as identifier for now)
 class Agent(Base):
     __tablename__ = "agents"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String, index=True, unique=True) # Assuming agent names should be unique
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=True)
+
+    tasks: Mapped[List["Task"]] = relationship(back_populates="agent", cascade="all, delete-orphan")
+
 
 class Task(Base):
     __tablename__ = "tasks"
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True, nullable=False)
-    description = Column(String, index=True, nullable=True)
-    completed = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, onupdate=datetime.datetime.utcnow, nullable=True)
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String, index=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=True)
+    
+    project_id: Mapped[str] = mapped_column(String(32), ForeignKey("projects.id"))
+    agent_id: Mapped[Optional[str]] = mapped_column(String(32), ForeignKey("agents.id"), nullable=True)
 
-    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True, index=True)
-    agent_name = Column(String, ForeignKey("agents.name"), nullable=True, index=True)
+    project: Mapped["Project"] = relationship(back_populates="tasks")
+    agent: Mapped[Optional["Agent"]] = relationship(back_populates="tasks")
+    
+    # Relationship to the new Subtask model
+    subtasks: Mapped[List["Subtask"]] = relationship("Subtask", back_populates="task", cascade="all, delete-orphan")
 
-    project = relationship("Project", back_populates="tasks")
-    agent = relationship("Agent")
+
+class Subtask(Base):
+    __tablename__ = "subtasks"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String, index=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=True)
+
+    task_id: Mapped[str] = mapped_column(String(32), ForeignKey("tasks.id")) # Foreign key to the parent Task
+    task: Mapped["Task"] = relationship("Task", back_populates="subtasks")
+
+# Base.metadata.create_all(bind=engine) # REMOVED This is typically handled by Alembic

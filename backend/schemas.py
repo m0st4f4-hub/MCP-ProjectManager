@@ -1,5 +1,5 @@
-from pydantic import BaseModel, ConfigDict
-from typing import Optional, List, Union
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Optional, List, Union, Any
 from datetime import datetime
 from pydantic import field_validator
 
@@ -13,6 +13,13 @@ class AgentCreate(AgentBase):
 # Schema for updating an agent (all fields optional)
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
+
+class Agent(AgentBase):
+    id: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Project Schemas ---
@@ -28,6 +35,42 @@ class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
 
+class Project(ProjectBase):
+    id: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# --- Subtask Schemas (Consolidated) ---
+
+# Base model for subtask attributes (used for creation and output)
+class SubtaskBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    completed: Optional[bool] = False
+
+# Model for creating a subtask (client provides these fields)
+# parent_task_id will come from the path parameter in the endpoint
+class SubtaskClientCreate(SubtaskBase):
+    pass
+
+# Model for updating a subtask
+class SubtaskUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    completed: Optional[bool] = None
+
+# Model for reading/returning a subtask (includes all fields)
+class Subtask(SubtaskBase):
+    id: str
+    task_id: str  # Foreign key to the parent Task
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 # --- Task Schemas (Updated) ---
 
@@ -35,62 +78,65 @@ class ProjectUpdate(BaseModel):
 class TaskBase(BaseModel):
     title: str
     description: Optional[str] = None
-    completed: bool = False
-    # Add new fields related to project/agent
-    project_id: Optional[Union[int, str]] = None
-    agent_name: Optional[str] = None
+    completed: Optional[bool] = False
+    project_id: str
+    agent_id: Optional[str] = None
+    parent_task_id: Optional[str] = None
 
-    @field_validator('project_id', mode='before')
-    @classmethod
-    def project_id_must_be_int_or_none(cls, v: any) -> Optional[Union[int, str]]:
-        if v is None:
-            return None
-        if isinstance(v, float) and v.is_integer():
-            return int(v)
-        # If v is already an int, Pydantic will handle it.
-        # If v is a string like "2", Pydantic will handle it for Optional[int].
-        # If it's a non-integer float or other incompatible type, 
-        # Pydantic's default validation for Optional[int] will raise the error.
-        return v
 
 # Model for creating a task (inherits from Base, specific for creation)
 class TaskCreate(TaskBase):
-    pass # No extra fields needed for creation beyond base
+    agent_name: Optional[str] = None # Added for convenience during creation
+
+    @field_validator('agent_id', 'agent_name')
+    def agent_id_or_name_optional(cls, v, values, **kwargs):
+        # This validator is tricky because it runs for each field independently.
+        # A root_validator would be better if we needed to ensure AT MOST one is provided, or XOR.
+        # For now, we'll let the CRUD logic prioritize agent_id if both are somehow passed.
+        return v
 
 # Model for updating a task (all fields optional)
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     completed: Optional[bool] = None
-    project_id: Optional[Union[int, str]] = None # Allow updating project
-    agent_name: Optional[str] = None # Allow updating agent
+    project_id: Optional[str] = None
+    agent_id: Optional[str] = None
+    parent_task_id: Optional[str] = None
 
-# If we wanted tasks listed under project:
-# Project.model_rebuild() # Needed if Task was defined before Project and used in List['Task']
 
 # --- Full Schemas (Output/Read) ---
 # Configure models to work with ORM
 class OrmConfig(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-class Project(ProjectBase, OrmConfig):
-    id: int
-    created_at: datetime
-    # tasks: List[Task] = [] # Avoid circular dependency if Task includes Project
-
-class Agent(AgentBase, OrmConfig):
-    id: int
-    created_at: datetime
-    # tasks: List[Task] = [] # Example if needed
-
-class Task(TaskBase, OrmConfig):
-    id: int
-    completed: bool
+class Task(TaskBase):
+    id: str
     created_at: datetime
     updated_at: Optional[datetime] = None
-    project: Optional[Project] = None # Include related project details
-    agent: Optional[Agent] = None     # Include related agent details
+    
+    project: Optional[Project] = None # Populated by ORM
+    agent: Optional[Agent] = None     # Populated by ORM
+    subtasks: List[Subtask] = []      # MODIFIED: Ensured this points to the consolidated Subtask schema
+                                      # Populated by ORM, will contain Subtask schema objects
 
-# Resolve forward references if using older Pydantic/Python
-# Task.model_rebuild()
-# SubTask.model_rebuild()
+    model_config = ConfigDict(from_attributes=True)
+
+# Rebuild models to resolve forward references for relationships
+# This is crucial if you have List['ModelName'] type hints in your schemas
+# that are part of relationships.
+Project.model_rebuild()
+Agent.model_rebuild()
+Task.model_rebuild() # Task now refers to the consolidated Subtask
+Subtask.model_rebuild() # Rebuild the consolidated Subtask model
+
+# REMOVE THE DUPLICATE/OLD SubTaskBase and SubTaskCreate DEFINITIONS that were at the end
+# class SubTaskBase(BaseModel):
+# title: str
+# description: Optional[str] = None
+# completed: Optional[bool] = False
+# parent_task_id: str # Subtasks must have a parent
+
+
+# class SubTaskCreate(SubTaskBase):
+# pass

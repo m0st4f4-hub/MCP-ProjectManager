@@ -3,7 +3,7 @@ import { Task } from './task';
 
 // Base Agent schema for validation
 export const agentSchema = z.object({
-    id: z.number(),
+    id: z.string(),
     name: z.string().min(1, 'Name is required'),
     created_at: z.string(),
     updated_at: z.string().optional()

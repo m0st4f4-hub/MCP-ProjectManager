@@ -128,3 +128,77 @@ The frontend application will be available at `http://localhost:3000`.
 7.  **CORS middleware** in FastAPI allows the frontend (on port 3000) to communicate with the backend (on port 8000).
 8.  Data is stored in the **SQLite database** (`sql_app.db`) by default, or PostgreSQL if configured.
 
+# Project Manager CLI
+
+**MCP + WebGUI = Collaborative Agent & Human Project Management Platform**
+
+> Where agents and humans manage projects—together.
+
+Project Manager CLI is a next-generation platform that seamlessly combines autonomous agent orchestration (via the Model Context Protocol, MCP) with a modern web-based GUI. It empowers both human users and AI agents to collaboratively manage, automate, and execute complex projects—end-to-end.
+
+- **MCP (Model Context Protocol):** Enables robust, rule-driven agent workflows, automation, and task delegation.
+- **WebGUI:** Provides an intuitive, real-time interface for humans to interact, monitor, and guide projects.
+- **Collaborative:** Agents and humans work together, leveraging the strengths of both for maximum productivity and reliability.
+- **Plug & Play:** One-command setup via `npx`, with auto-restart, smart port selection, and built-in rules for agent behavior.
+
+---
+
+## Prerequisites
+
+- Node.js (v14 or higher)
+- Python (v3.8 or higher)
+- npm (comes with Node.js)
+
+## Installation
+
+You can run the MCP Task Manager directly using npx:
+
+```bash
+npx mcp-task-manager-cli start
+```
+
+Or install it globally:
+
+```bash
+npm install -g mcp-task-manager-cli
+mcp-task-manager start
+```
+
+## Features
+
+- One-command installation and startup
+- Automatic dependency installation for both backend and frontend
+- Auto-restart on failure
+- Cross-platform support (Windows, macOS, Linux)
+- Real-time logging with color-coded output
+- Automatic port management
+
+## What it Does
+
+When you run the CLI tool, it:
+
+1. Checks for required dependencies (Node.js and Python)
+2. Sets up the Python virtual environment for the backend
+3. Installs all necessary backend dependencies
+4. Installs all frontend dependencies
+5. Starts both services with auto-restart capability
+6. Provides real-time logging of both services
+
+## Configuration
+
+The services will run on the following default ports:
+- Backend: http://localhost:8000
+- Frontend: http://localhost:3000
+
+## Troubleshooting
+
+If you encounter any issues:
+
+1. Make sure both Node.js and Python are installed and in your PATH
+2. Check if the ports 8000 and 3000 are available
+3. If services fail to start, check the logs for detailed error messages
+
+## License
+
+ISC
+

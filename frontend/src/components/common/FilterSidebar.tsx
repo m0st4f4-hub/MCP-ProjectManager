@@ -163,6 +163,48 @@ const FilterSidebar: React.FC = () => {
                     ))}
                 </Select>
             </FormControl>
+
+            {/* Sort Options */}
+            <Box w="full" mt={2} pt={3} borderTopWidth="1px" borderColor="gray.700">
+                <Heading size="sm" color="whiteAlpha.800" mb={2}>
+                    Sort Options
+                </Heading>
+                <FormControl>
+                    <HStack spacing={2}>
+                        <Select
+                            value={sortOptions.field || 'created_at'} // Default to created_at or first valid option
+                            onChange={(e) => handleSortChange(e.target.value as TaskSortOptions['field'], null)}
+                            bg="gray.700"
+                            color="white"
+                            borderColor="gray.600"
+                            size="sm"
+                            borderRadius="md"
+                            _hover={{ borderColor: "gray.500" }}
+                            _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                        >
+                            <option style={{ backgroundColor: '#2D3748' }} value="created_at">Date Created</option>
+                            <option style={{ backgroundColor: '#2D3748' }} value="title">Title</option>
+                            {/* Add other sortable fields from TaskSortOptions['field'] as needed */}
+                            {/* e.g., <option value="priority">Priority</option> */}
+                        </Select>
+                        <Select
+                            value={sortOptions.direction || 'desc'}
+                            onChange={(e) => handleSortChange(null, e.target.value as TaskSortOptions['direction'])}
+                            bg="gray.700"
+                            color="white"
+                            borderColor="gray.600"
+                            size="sm"
+                            borderRadius="md"
+                            _hover={{ borderColor: "gray.500" }}
+                            _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)" }}
+                        >
+                            <option style={{ backgroundColor: '#2D3748' }} value="asc">Asc</option>
+                            <option style={{ backgroundColor: '#2D3748' }} value="desc">Desc</option>
+                        </Select>
+                    </HStack>
+                </FormControl>
+            </Box>
+
             {/* Search box and sorting can be added here later */}
         </VStack>
     );

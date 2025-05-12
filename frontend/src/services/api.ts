@@ -1,88 +1,46 @@
 // D:\mcp\task-manager\frontend\src\services\api.ts
-import { TaskFilters } from "@/types"; // Ensure TaskFilters is imported if not already
+import { 
+    TaskFilters, 
+    Task, 
+    TaskCreateData, 
+    TaskUpdateData, 
+    Project, 
+    ProjectCreateData, 
+    ProjectUpdateData,
+    ProjectFilters, // Added ProjectFilters here
+    // Agent related types are now imported
+    Agent,
+    AgentCreateData as AgentCreateDataType, // Alias to avoid naming conflict if local types were kept
+    AgentUpdateData as AgentUpdateDataType, // Alias
+    AgentFilters, // Imported
+    // Subtask related types
+    Subtask,
+    SubtaskCreateData,
+    SubtaskUpdateData
+} from "@/types";
 
-// Define the structure of a Task object based on backend schema
-export interface Task {
-  id: number;
-  title: string;
-  description: string | null;
-  completed: boolean;
-  created_at: string; // Keep as string for simplicity, can parse if needed
-  updated_at: string | null; // Keep as string
-  project_id: number | null;
-  agent_name: string | null;
-  project: Project | null; // Include nested project
-  agent: Agent | null; // Add nested agent
-  [key: string]: unknown; // Add index signature
-}
-
-// Define the structure for creating a Task
-export interface TaskCreateData {
-  title: string;
-  description?: string;
-  project_id?: number;
-  agent_name?: string;
-  completed?: boolean; // Allow setting initial completed state
-}
-
-// Define the structure for updating a Task (all fields optional)
-export interface TaskUpdateData {
-  title?: string;
-  description?: string;
-  completed?: boolean;
-  project_id?: number;
-  agent_name?: string;
-}
-
-// Define the structure of a Project object based on backend schema
-export interface Project {
-  id: number;
-  name: string;
-  description: string | null;
-  created_at: string;
-  [key: string]: unknown; // Add index signature
-  // tasks: Task[]; // If you need to show tasks under a project
-}
-
-// Define types for creating and updating Projects
-export interface ProjectCreateData {
-  name: string;
-  description?: string;
-}
-
-export interface ProjectUpdateData {
-  name?: string;
-  description?: string;
-}
-
-// Define the structure of an Agent object based on backend schema
-export interface Agent {
-  id: number;
-  name: string;
-  created_at: string;
-  [key: string]: unknown; // Use unknown instead of any for better type safety
-  // tasks: Task[]; // Example, if needed
-}
-
-// Define types for creating and updating Agents
-export interface AgentCreateData {
-  name: string;
-}
-
-export interface AgentUpdateData {
-  name?: string;
-}
+// Remove local Agent interface definitions
+// interface Agent { ... }
+// interface AgentCreateData { ... }
+// interface AgentUpdateData { ... }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Helper function to handle API requests
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const headers: HeadersInit = {
+    ...(options.headers || {}),
+  };
+
+  // Conditionally add Content-Type for methods that typically have a body
+  const method = options.method?.toUpperCase();
+  if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const response = await fetch(url, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
+    headers, // Use the modified headers object
   });
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ detail: response.statusText }));
@@ -98,15 +56,18 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
 // Fetch all tasks
 export const getTasks = (filters?: TaskFilters): Promise<Task[]> => {
   const queryParams = new URLSearchParams();
-  if (filters?.projectId) queryParams.append('project_id', filters.projectId.toString());
-  if (filters?.agentName) queryParams.append('agent_name', filters.agentName);
-  if (filters?.status && filters.status !== 'all') queryParams.append('status', filters.status);
-  if (filters?.searchTerm) queryParams.append('search', filters.searchTerm); // Assuming backend uses 'search' for searchTerm
-  return request<Task[]>(`${API_BASE_URL}/tasks/?${queryParams.toString()}`);
+  if (filters?.projectId) queryParams.append('project_id', filters.projectId);
+  if (filters?.agentId) queryParams.append('agent_id', filters.agentId); 
+  if (filters?.status && filters.status !== 'all') queryParams.append('status', filters.status.toString());
+  if (filters?.search) queryParams.append('search', filters.search);
+
+  const queryString = queryParams.toString();
+  const url = `${API_BASE_URL}/tasks/${queryString ? `?${queryString}` : ''}`;
+  return request<Task[]>(url);
 };
 
 // Fetch a single task by ID
-export const getTaskById = (id: number): Promise<Task> => {
+export const getTaskById = (id: string): Promise<Task> => { // id: string
   return request<Task>(`${API_BASE_URL}/tasks/${id}`);
 };
 
@@ -116,18 +77,21 @@ export const createTask = (taskData: TaskCreateData): Promise<Task> => {
 };
 
 // Update an existing task
-export const updateTask = (id: number, taskData: TaskUpdateData): Promise<Task> => {
+export const updateTask = (id: string, taskData: TaskUpdateData): Promise<Task> => { // id: string
   return request<Task>(`${API_BASE_URL}/tasks/${id}`, { method: 'PUT', body: JSON.stringify(taskData) });
 };
 
 // Delete a task
-export const deleteTask = (id: number): Promise<Task> => { // Backend returns deleted task
+export const deleteTask = (id: string): Promise<Task> => { // id: string, Backend returns deleted task
   return request<Task>(`${API_BASE_URL}/tasks/${id}`, { method: 'DELETE' });
 };
 
 // Fetch all projects
-export const getProjects = (): Promise<Project[]> => {
-  return request<Project[]>(`${API_BASE_URL}/projects/`);
+export const getProjects = (filters?: ProjectFilters): Promise<Project[]> => {
+  const queryParams = new URLSearchParams();
+  if (filters?.search) queryParams.append('search', filters.search);
+  if (filters?.status && filters.status !== 'all') queryParams.append('status', filters.status);
+  return request<Project[]>(`${API_BASE_URL}/projects/?${queryParams.toString()}`);
 };
 
 // Create a new project
@@ -136,22 +100,25 @@ export const createProject = (projectData: ProjectCreateData): Promise<Project> 
 };
 
 // Update an existing project
-export const updateProject = (id: number, projectData: ProjectUpdateData): Promise<Project> => {
+export const updateProject = (id: string, projectData: ProjectUpdateData): Promise<Project> => { // id: string
   return request<Project>(`${API_BASE_URL}/projects/${id}`, { method: 'PUT', body: JSON.stringify(projectData) });
 };
 
 // Delete a project
-export const deleteProject = (id: number): Promise<Project> => {
+export const deleteProject = (id: string): Promise<Project> => { // id: string
   return request<Project>(`${API_BASE_URL}/projects/${id}`, { method: 'DELETE' });
 };
 
 // Fetch all agents
-export const getAgents = (): Promise<Agent[]> => {
-  return request<Agent[]>(`${API_BASE_URL}/agents/`);
+export const getAgents = (filters?: AgentFilters): Promise<Agent[]> => { // Uses imported AgentFilters
+  const queryParams = new URLSearchParams();
+  if (filters?.search) queryParams.append('search', filters.search);
+  if (filters?.status && filters.status !== 'all') queryParams.append('status', filters.status);
+  return request<Agent[]>(`${API_BASE_URL}/agents/?${queryParams.toString()}`);
 };
 
 // Fetch agent by ID
-export const getAgentById = (id: number): Promise<Agent> => {
+export const getAgentById = (id: string): Promise<Agent> => { // id: string
   return request<Agent>(`${API_BASE_URL}/agents/id/${id}`);
 };
 
@@ -161,17 +128,17 @@ export const getAgentByName = (name: string): Promise<Agent> => {
 };
 
 // Create a new agent
-export const createAgent = (agentData: AgentCreateData): Promise<Agent> => {
+export const createAgent = (agentData: AgentCreateDataType): Promise<Agent> => { // Uses aliased type
   return request<Agent>(`${API_BASE_URL}/agents/`, { method: 'POST', body: JSON.stringify(agentData) });
 };
 
 // Update an existing agent
-export const updateAgent = (id: number, agentData: AgentUpdateData): Promise<Agent> => {
+export const updateAgent = (id: string, agentData: AgentUpdateDataType): Promise<Agent> => { // id: string, uses aliased type
   return request<Agent>(`${API_BASE_URL}/agents/${id}`, { method: 'PUT', body: JSON.stringify(agentData) });
 };
 
 // Delete an agent
-export const deleteAgent = (id: number): Promise<Agent> => {
+export const deleteAgent = (id: string): Promise<Agent> => { // id: string
   return request<Agent>(`${API_BASE_URL}/agents/${id}`, { method: 'DELETE' });
 };
 
@@ -189,4 +156,37 @@ export const generatePlanningPrompt = (goal: string): Promise<PlanningResponseDa
         method: 'POST',
         body: JSON.stringify({ goal } as PlanningRequestData),
     });
+};
+
+// --- Subtask API Functions ---
+
+// List all subtasks for a parent task
+export const listSubtasks = (parentTaskId: string): Promise<Subtask[]> => {
+  return request<Subtask[]>(`${API_BASE_URL}/tasks/${parentTaskId}/subtasks`);
+};
+
+// Create a new subtask for a parent task
+export const createSubtask = (parentTaskId: string, data: SubtaskCreateData): Promise<Subtask> => {
+  return request<Subtask>(`${API_BASE_URL}/tasks/${parentTaskId}/subtasks/`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+// Fetch a single subtask by its ID
+export const getSubtask = (subtaskId: string): Promise<Subtask> => {
+  return request<Subtask>(`${API_BASE_URL}/subtasks/${subtaskId}`);
+};
+
+// Update an existing subtask
+export const updateSubtask = (subtaskId: string, data: SubtaskUpdateData): Promise<Subtask> => {
+  return request<Subtask>(`${API_BASE_URL}/subtasks/${subtaskId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+};
+
+// Delete a subtask
+export const deleteSubtask = (subtaskId: string): Promise<void> => { // Assuming void for now, adjust if backend returns deleted subtask
+  return request<void>(`${API_BASE_URL}/subtasks/${subtaskId}`, { method: 'DELETE' });
 };

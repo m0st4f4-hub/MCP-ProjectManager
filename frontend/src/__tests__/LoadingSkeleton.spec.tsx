@@ -29,9 +29,9 @@ describe('LoadingSkeleton', () => {
     // Add data-testid="skeleton-item" to the repeating element in LoadingSkeleton.tsx for robust testing.
     // For example: <div data-testid="skeleton-item" key={i} className="...">...</div>
     // Then query: screen.getAllByTestId('skeleton-item');
-    // expect(skeletonItems.length).toBe(count);
+    expect(skeletonItems.length).toBe(count);
     // For now, let's just check if it renders without crashing.
-    expect(screen.getByTestId('loading-skeleton-container')).toBeInTheDocument(); // Assuming a container testid
+    // expect(screen.getByTestId('loading-skeleton-container')).toBeInTheDocument(); // Assuming a container testid
   });
 
   it('renders without crashing if count is zero', () => {
