@@ -6,3 +6,4 @@ sql_app.db
 backend/sql_app.db
 backend/*.db
 *.db
+sql_app.db
