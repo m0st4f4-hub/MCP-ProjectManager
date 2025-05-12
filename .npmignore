@@ -1,0 +1,19 @@
+# Exclude everything by default
+*
+
+# But include the CLI, package.json, and README
+!cli.js
+!package.json
+!README.md
+
+# Include all rules files
+!.cursor/rules/*.mdc
+
+# Exclude database files
+sql_app.db
+backend/sql_app.db
+backend/*.db
+*.db
+
+# If you have template files for backend/frontend generation, include them here
+# !templates/** 

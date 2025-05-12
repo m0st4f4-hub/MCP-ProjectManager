@@ -1,3 +1,8 @@
 node_modules/
 .cursor/
 sql_app.db
+
+# Ignore database files
+backend/sql_app.db
+backend/*.db
+*.db
