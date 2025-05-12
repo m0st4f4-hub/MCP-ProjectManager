@@ -26,15 +26,12 @@ import {
     MenuButton,
     MenuList,
     MenuItem,
-    Collapse
 } from '@chakra-ui/react';
-import { DeleteIcon, EditIcon, HamburgerIcon, AtSignIcon, TagLeftIcon, TimeIcon, ChevronDownIcon, ChevronRightIcon, InfoOutlineIcon, CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
-import { Task, Subtask, SubtaskCreateData, SubtaskUpdateData } from '@/types';
+import { DeleteIcon, EditIcon, HamburgerIcon, AtSignIcon, TagLeftIcon, TimeIcon, InfoOutlineIcon, CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
+import { Task } from '@/types';
 import { useTaskStore } from '@/store/taskStore';
 import { formatDisplayName } from '@/lib/utils';
-import SubtaskList from './subtasks/SubtaskList';
-import SubtaskForm from './subtasks/SubtaskForm';
-import { updateTask, createSubtask, updateSubtask as apiUpdateSubtask, deleteTask, listSubtasks } from '@/services/api';
+import { updateTask, deleteTask } from '@/services/api';
 
 interface TaskItemProps {
     task: Task;
@@ -52,13 +49,6 @@ const ACTIVE_BORDER_COLOR = ACCENT_COLOR;
 const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete, onEdit, isSubtask = false }) => {
     const { isOpen: isEditTaskModalOpen, onOpen: onOpenEditTaskModal, onClose: onCloseEditTaskModal } = useDisclosure();
     const [editedTask, setEditedTask] = React.useState<Task>(task);
-    const [isExpanded, setIsExpanded] = useState(false);
-
-    const [isSubtaskFormOpen, setIsSubtaskFormOpen] = useState(false);
-    const [editingSubtask, setEditingSubtask] = useState<Subtask | null>(null);
-    const [subtaskFormError, setSubtaskFormError] = useState<string | null>(null);
-    const [subtasksData, setSubtasksData] = useState<{subtasks: Subtask[], isLoading: boolean, error: string | null}>({ subtasks: [], isLoading: true, error: null });
-    const [subtaskListKey, setSubtaskListKey] = useState(Date.now()); // Added for forcing SubtaskList re-render
 
     const projects = useTaskStore(state => state.projects);
     const agents = useTaskStore(state => state.agents);
@@ -73,27 +63,6 @@ const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete
     React.useEffect(() => {
         setEditedTask(task);
     }, [task]);
-
-    const fetchAndSetSubtasks = useCallback(async () => {
-      if (!task.id) {
-        setSubtasksData({ subtasks: [], isLoading: false, error: null });
-        return;
-      }
-      // console.log(`TaskItem (${task.title}): Fetching subtasks, trigger: ${refreshSubtaskTrigger}`);
-      setSubtasksData(prev => ({ ...prev, isLoading: true, error: null }));
-      try {
-        const fetchedSubtasks = await listSubtasks(task.id);
-        // console.log(`TaskItem (${task.title}): Fetched subtasks:`, fetchedSubtasks);
-        setSubtasksData({ subtasks: fetchedSubtasks || [], isLoading: false, error: null });
-      } catch (err) {
-        console.error(`TaskItem (${task.title}): Failed to fetch subtasks:`, err);
-        setSubtasksData({ subtasks: [], isLoading: false, error: 'Failed to load subtasks for item.' });
-      }
-    }, [task.id]); // refreshSubtaskTrigger is implicitly handled by being in parent useEffect's dep array
-
-    useEffect(() => {
-      fetchAndSetSubtasks();
-    }, [task.id, fetchAndSetSubtasks]);
 
     const handleSubmitEditTask = useCallback((e: React.FormEvent) => {
         e.preventDefault();
@@ -120,54 +89,6 @@ const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete
         const agent = agents.find(a => a.id === task.agent_id);
         return agent ? formatDisplayName(agent.name) : `Agent ID: ${task.agent_id}`;
     }, [task.agent_id, agents]);
-
-    const handleOpenAddSubtaskForm = useCallback(() => {
-        setIsExpanded(true);
-        setEditingSubtask(null);
-        setIsSubtaskFormOpen(true);
-        setSubtaskFormError(null);
-        console.log('Add Subtask clicked');
-    }, []);
-
-    const handleOpenEditSubtaskForm = useCallback((subtaskToEdit: Subtask) => {
-        setEditingSubtask(subtaskToEdit);
-        setIsSubtaskFormOpen(true);
-        setSubtaskFormError(null);
-    }, []);
-
-    const handleCloseSubtaskForm = useCallback(() => {
-        setIsSubtaskFormOpen(false);
-        setEditingSubtask(null);
-        setSubtaskFormError(null);
-        // It might be beneficial to trigger a refresh here too,
-        // in case the form was opened for edit but nothing changed,
-        // or if a creation was cancelled after some optimistic UI elsewhere.
-        // However, the main refresh trigger is after successful submit.
-    }, []);
-
-    const handleSubtaskFormSubmit = useCallback(async (data: SubtaskCreateData | SubtaskUpdateData, subtaskId?: string) => {
-        console.log('TaskItem: handleSubtaskFormSubmit called', data, subtaskId);
-        setSubtaskFormError(null);
-        try {
-            if (subtaskId && editingSubtask) { // Edit mode
-                await apiUpdateSubtask(subtaskId, data as SubtaskUpdateData, task.id);
-            } else { // Create mode
-                console.log('Calling createSubtask with', task.id, data);
-                const result = await createSubtask(task.id, data as SubtaskCreateData);
-                console.log('createSubtask result', result);
-            }
-            await fetchAndSetSubtasks();
-            setSubtaskListKey(Date.now()); // Update key to force re-render of SubtaskList
-            handleCloseSubtaskForm();
-            // Optionally, call onEdit for the parent task if subtask changes affect it
-            // onEdit(task); // This might cause a full re-render, consider if needed
-        } catch (error) {
-            console.error("Failed to save subtask:", error);
-            setSubtaskFormError("Failed to save subtask. Please try again.");
-            await fetchAndSetSubtasks(); // Refresh data even on error
-        }
-    }, [task.id, editingSubtask, handleCloseSubtaskForm, fetchAndSetSubtasks]);
-    
 
     const modalContent = useMemo(() => (
         <Modal isOpen={isEditTaskModalOpen} onClose={onCloseEditTaskModal} size="xl">
@@ -288,8 +209,6 @@ const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete
         </Modal>
     ), [isEditTaskModalOpen, onCloseEditTaskModal, editedTask, handleSubmitEditTask, projects, agents, handleInputChange]);
 
-    const hasSubtasks = useMemo(() => task.subtasks && task.subtasks.length > 0, [task.subtasks]);
-
     const TaskStatusIcon = useMemo(() => {
         if (task.completed) return <CheckCircleIcon color="green.400" />;
         if (task.status === 'IN_PROGRESS') return <TimeIcon color="yellow.400" />;
@@ -345,17 +264,6 @@ const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete
                     </VStack>
                         </HStack>
                 <HStack spacing={1}>
-                    {!isSubtask && (
-                         <IconButton
-                            aria-label={isExpanded ? "Collapse subtasks" : "Expand subtasks"}
-                            icon={isExpanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            color="gray.400"
-                            _hover={{ bg: "gray.700" }}
-                        />
-                    )}
                     <Menu>
                             <MenuButton
                                 as={IconButton}
@@ -409,34 +317,6 @@ const TaskItem: React.FC<TaskItemProps> = React.memo(({ task, onToggle, onDelete
             )}
 
             {modalContent}
-
-            {(
-                <SubtaskForm
-                    isOpen={isSubtaskFormOpen}
-                    parentTaskId={task.id}
-                    subtask={editingSubtask}
-                    onSubmit={handleSubtaskFormSubmit}
-                    onClose={handleCloseSubtaskForm}
-                    errorMessage={subtaskFormError}
-                />
-            )}
-
-            {!isSubtask && (
-                <Collapse in={isExpanded} animateOpacity>
-                    <Box mt={isExpanded ? 4 : 0} pl={0} borderLeftWidth={0} borderColor="gray.700">
-                        <SubtaskList
-                            key={subtaskListKey}
-                            parentTaskId={task.id}
-                            passedSubtasks={subtasksData.subtasks}
-                            isLoading={subtasksData.isLoading}
-                            error={subtasksData.error}
-                            onAddSubtaskRequest={handleOpenAddSubtaskForm}
-                            onEditSubtaskRequest={handleOpenEditSubtaskForm}
-                            onRequestRefresh={fetchAndSetSubtasks}
-                        />
-                    </Box>
-                </Collapse>
-            )}
         </Box>
     );
 });

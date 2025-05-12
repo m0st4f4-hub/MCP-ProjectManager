@@ -8,10 +8,8 @@
   "scripts": {
     "predev": "powershell -NoProfile -Command \"$ports = @(8080, 3000); foreach ($port in $ports) { try { $process = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue; if ($process) { Stop-Process -Id $process.OwningProcess -Force -ErrorAction SilentlyContinue; Write-Host ('Killed process on port ' + $port) } else { Write-Host ('No process found on port ' + $port) } } catch { Write-Host $_.Exception.Message } }; exit 0\"",
     "start": "node cli.js",
-    "dev:backend": ".\\backend\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8080",
-    "watch:backend": "nodemon --delay 2s --watch backend --ext py --exec \".\\backend\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8080\"",
+    "dev:backend": ".\\backend\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8080 --reload",
     "dev:frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm:watch:backend\" \"npm:dev:frontend\"",
     "watch:pack": "nodemon --watch cli.js --watch package.json --watch .npmignore --watch .cursor/rules --ext js,json,mdc --exec \"npm pack\""
   },
   "keywords": [

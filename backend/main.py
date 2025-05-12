@@ -38,37 +38,56 @@ logger = logging.getLogger(__name__)
 
 # Lifespan context manager for logging startup and shutdown
 @asynccontextmanager
-async def app_lifespan(app_instance: FastAPI):
+async def lifespan(app: FastAPI):
     print("[LIFESPAN] Application startup...")
+    # print("[LIFESPAN] Initializing Database...") # REMOVED - Assumes DB is managed by migrations (Alembic)
+    # await init_db() # REMOVED - Assumes DB is managed by migrations (Alembic)
+    # print("[LIFESPAN] Database initialized.") # REMOVED
+
+    # --- FastApiMCP Integration ---
+    print("[LIFESPAN] Initializing FastApiMCP...")
+    # Instantiate MCP inside the lifespan
+    mcp_instance = FastApiMCP(app) # Create instance HERE
+    print("[LIFESPAN] FastApiMCP instance created.")
+
+    app.state.mcp_instance = mcp_instance # Assign the created instance
+    print(f"[LIFESPAN] Stored MCP instance in app.state.mcp_instance")
+
+    print(f"[LIFESPAN] Calling mcp_instance.setup_server()...")
+    mcp_instance.setup_server() # Mounts routes - Pass app if needed by your setup_server version
+    print(f"[LIFESPAN] mcp_instance.setup_server() called.")
+
+    print(f"[LIFESPAN] Calling mcp_instance.mount()...")
+    mcp_instance.mount() # This might have internal async init
+    print(f"[LIFESPAN] mcp_instance.mount() called. MCP endpoint should be available.")
+
+    print("[LIFESPAN] Adding a small delay to allow MCP internal tasks to fully initialize...")
+    await asyncio.sleep(1) # Reduced delay slightly
+    print("[LIFESPAN] Delay finished.")
+    # End --- FastApiMCP Integration ---
+
     yield
     print("[LIFESPAN] Application shutdown...")
+    # Perform cleanup here if needed for mcp_instance
+    # For example, if mcp_instance has a shutdown method:
+    # await mcp_instance.shutdown()
 
 app = FastAPI(
     title="Task Manager API",
     description="API for managing projects, agents, tasks, and subtasks.",
     version="0.2.0",
-    # lifespan=app_lifespan # MODIFIED: Will be assigned after MCP mount, if needed
+    lifespan=lifespan
 )
 
-# Initialize and mount FastApiMCP *before* assigning lifespan # COMMENTED OUT - MOVED TO END
-# mcp = FastApiMCP(app)
-# mcp.mount()
-# print(">>> FastApiMCP initialized and mounted globally.")
-
-# Assign lifespan *after* MCP mount # COMMENTED OUT - MOVED TO END (or will be assigned to app directly)
-# app.router.lifespan_context = app_lifespan
-# print(">>> Lifespan context assigned to app router.")
-
-# Middleware to check MCP initialization state # REMOVED
-# @app.middleware("http") # REMOVED
-# async def check_mcp_initialization(request: Request, call_next): # REMOVED
-#     if request.url.path.startswith("/mcp") and not mcp_initialized: # REMOVED
-#         return JSONResponse( # REMOVED
-#             status_code=503, # REMOVED
-#             content={"detail": "MCP server is initializing, please try again in a few seconds"} # REMOVED
-#         ) # REMOVED
-#     print(f"[Middleware] Request to: {request.url.path}") # Log all requests # REMOVED
-#     return await call_next(request) # REMOVED
+# --- NEW: Add Logging Middleware FIRST ---
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    print(f"[Connection Log] Incoming request from {request.client.host} for {request.url.path}", flush=True)
+    response = await call_next(request)
+    # You could add response status logging here too if needed
+    # print(f"[Connection Log] Response status: {response.status_code}")
+    return response
+# --- END Logging Middleware ---
 
 # --- CORS Configuration ---
 # Adjust origins for production deployments
@@ -101,12 +120,15 @@ async def get_mcp_tool_documentation(request: Request):
     """Get documentation for all MCP tools."""
     logger.info("Request received for /mcp-docs")
     
-    # Get MCP instance from app state or global variable
+    # Get MCP instance reliably from app state
     mcp_instance = getattr(request.app.state, 'mcp_instance', None)
     if mcp_instance is None:
-        # Fallback to global 'mcp' if not in app.state
-        global mcp
-        mcp_instance = mcp
+        # Log an error or raise an exception if MCP instance is not found
+        logger.error("MCP instance not found in app.state during /mcp-docs request.")
+        raise HTTPException(
+            status_code=500,
+            detail="MCP integration not properly initialized or found in application state."
+        )
     
     tools_dict = {}
     try:
@@ -440,50 +462,60 @@ class PlanningRequest(BaseModel):
 class PlanningResponse(BaseModel):
     prompt: str
 
-@app.post("/planning/generate-prompt", response_model=PlanningResponse, summary="Generate Overmind Planning Prompt", tags=["Planning"], operation_id="gen_overmind_planning_prompt")
-async def generate_overmind_planning_prompt(request: PlanningRequest):
-    # This is a simplified direct implementation. 
-    # In a full system, this might call a service or use a more complex generation logic.
-    # For now, we'll just echo back a formatted string for demonstration.
+# MODIFIED: Renamed function, updated route, added DB dependency, enhanced prompt
+@app.post("/projects/generate-planning-prompt", response_model=PlanningResponse, summary="Generate Project Manager Planning Prompt", tags=["Projects", "Planning"], operation_id="generate_project_manager_planning_prompt")
+async def generate_project_manager_planning_prompt(request: PlanningRequest, db: Session = Depends(get_db)):
+    """Generates a planning prompt instructing an LLM to utilize available agents."""
     
-    # Example of constructing a more detailed prompt (can be expanded)
-    prompt_content = f"Goal: {request.goal}\n\nPlease generate a detailed plan for the Overmind agent to achieve this goal. Consider breaking down the goal into smaller, manageable tasks. Identify potential challenges and suggest mitigation strategies."
+    # Fetch available agents
+    agents = crud.get_agents(db=db, skip=0, limit=200) # Fetch a reasonable number of agents
+    agent_list_str = "\n".join([f"- {agent.name} (ID: {agent.id})" for agent in agents])
+    if not agent_list_str:
+        agent_list_str = "- No agents found in the database."
+
+    # Construct the enhanced prompt
+    prompt_content = f"""Goal: {request.goal}
+
+Please generate a detailed, step-by-step plan to achieve the stated goal. 
+
+Available Project Manager Agents:
+{agent_list_str}
+
+Instructions:
+1.  Break down the goal into smaller, manageable tasks suitable for assignment.
+2.  For each task, suggest which of the available agents listed above would be most appropriate to assign it to, considering their likely roles or specializations based on their names.
+3.  Identify potential challenges or dependencies between tasks.
+4.  Structure the output clearly as a plan.
+"""
     
     return PlanningResponse(prompt=prompt_content)
 
-# Initialize and mount FastApiMCP *after* all routes are defined
-mcp = FastApiMCP(app)
-mcp.setup_server() # ADDED explicit call to setup_server()
-print(">>> FastApiMCP setup_server() called.")
-mcp.mount()
-print(">>> FastApiMCP initialized and mounted globally after all routes.")
-
-# Assign lifespan context directly to the app *before* MCP mount if it's for the whole app
-# Or, ensure app_lifespan is compatible if FastApiMCP handles its own lifespan aspects.
-# For now, let's re-add it directly to the app as it was originally.
-app.router.lifespan_context = app_lifespan 
-print(">>> Lifespan context assigned to app router.")
-
-# It's good practice to ensure that uvicorn is only run when the script is executed directly.
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="0.0.0.0", port=8000)
-
 # Endpoint to create a subtask for a given task
-@app.post("/tasks/{parent_task_id}/subtasks/", response_model=schemas.Subtask, summary="Create Subtask for Task", tags=["Subtasks"], operation_id="create_subtask_for_parent")
-def create_subtask_for_task(parent_task_id: str, subtask: schemas.SubtaskClientCreate, db: Session = Depends(get_db)):
-    """Creates a new subtask under the specified parent task.
-    The `parent_task_id` is taken from the path.
-    The request body should contain the subtask's `title`, `description` (optional), and `completed` status (optional, defaults to false).
+# MODIFIED: Added explicit operation_id
+@app.post("/tasks/{parent_task_id}/subtasks/", response_model=schemas.Subtask, summary="Create Subtask for Task", tags=["Subtasks"], operation_id="create_subtask")
+def create_subtask(parent_task_id: str, subtask: schemas.SubtaskClientCreate, db: Session = Depends(get_db)):
     """
-    try:
-        # parent_task_id from path is passed directly to crud.create_subtask
-        return crud.create_subtask(db=db, subtask=subtask, parent_task_id=parent_task_id)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print(f"Error in create_subtask_for_task: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+    Create a new subtask for a given parent task.
+    """
+    # Verify parent task exists
+    parent_task = crud.get_task(db=db, task_id=parent_task_id)
+    if parent_task is None:
+        raise HTTPException(status_code=404, detail="Parent task not found")
 
-# Endpoint to get a specific subtask by its ID # REMOVED COMMENT
-# (Assuming a get_subtask function exists in crud.py and Subtask schema is defined) # REMOVED COMMENT
+    # Create the subtask using CRUD operation
+    # Make sure schemas.SubtaskClientCreate aligns with crud.create_subtask expectations
+    db_subtask = crud.create_subtask(db=db, subtask=subtask, parent_task_id=parent_task_id)
+    if db_subtask is None:
+        # This might happen if DB operation fails, e.g., constraint violation
+        raise HTTPException(status_code=500, detail="Failed to create subtask in database")
+    return db_subtask
+
+# --- MOVE FastApiMCP setup TO HERE (END OF FILE) ---
+# Ensure this block is after ALL @app.route definitions
+# print("\n>>> Initializing and mounting FastApiMCP at the end of the file...")
+# mcp_instance_at_end = FastApiMCP(app)
+# mcp_instance_at_end.setup_server()
+# print(">>> FastApiMCP setup_server() called (at end).")
+# mcp_instance_at_end.mount()
+# print(">>> FastApiMCP mounted (at end). MCP endpoint should be available.")
+# --- END REMOVED BLOCK ---

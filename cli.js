@@ -6,7 +6,10 @@ const ora = require('ora');
 const { spawn, execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const detect = require('detect-port');
+let detect = require('detect-port');
+if (detect && typeof detect !== 'function' && detect.default) {
+  detect = detect.default;
+}
 
 // Utility function to run commands with spinner
 async function runWithSpinner(command, args, options, spinnerText) {
@@ -319,7 +322,9 @@ export default function RootLayout({
         prefixColor: 'blue'
       },
       {
-        command: `cd frontend && ${npmCmd} run dev -- --port ${frontendPort}`,
+        command: process.platform === 'win32'
+          ? `cd frontend && set NODE_OPTIONS=--max-old-space-size=2048 && npx next dev --port ${frontendPort}`
+          : `cd frontend && NODE_OPTIONS=--max-old-space-size=2048 npx next dev --port ${frontendPort}`,
         name: 'frontend',
         prefixColor: 'green'
       }

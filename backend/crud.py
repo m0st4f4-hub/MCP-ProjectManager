@@ -199,7 +199,8 @@ def get_agents(db: Session, skip: int = 0, limit: int = 100):
 
 def create_agent(db: Session, agent: schemas.AgentCreate):
     agent_id_str = str(uuid.uuid4().hex)
-    db_agent = models.Agent(id=agent_id_str, **agent.model_dump())
+    # FIX: Explicitly pass the generated ID
+    db_agent = models.Agent(id=agent_id_str, **agent.model_dump()) 
     db.add(db_agent)
     db.commit()
     db.refresh(db_agent)

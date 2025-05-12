@@ -6,17 +6,13 @@ import {
     TaskUpdateData, 
     Project, 
     ProjectCreateData, 
-    ProjectUpdateData,
+    ProjectUpdateData, 
     ProjectFilters, // Added ProjectFilters here
     // Agent related types are now imported
     Agent,
     AgentCreateData as AgentCreateDataType, // Alias to avoid naming conflict if local types were kept
     AgentUpdateData as AgentUpdateDataType, // Alias
     AgentFilters, // Imported
-    // Subtask related types
-    Subtask,
-    SubtaskCreateData,
-    SubtaskUpdateData
 } from "@/types";
 
 // Remove local Agent interface definitions
@@ -24,7 +20,7 @@ import {
 // interface AgentCreateData { ... }
 // interface AgentUpdateData { ... }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
 // Helper function to handle API requests
 async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -151,42 +147,12 @@ export interface PlanningResponseData {
     prompt: string;
 }
 
-export const generatePlanningPrompt = (goal: string): Promise<PlanningResponseData> => {
-    return request<PlanningResponseData>(`${API_BASE_URL}/planning/generate-prompt`, {
-        method: 'POST',
-        body: JSON.stringify({ goal } as PlanningRequestData),
-    });
-};
+// generatePlanningPrompt (removed as unused)
 
-// --- Subtask API Functions ---
-
-// List all subtasks for a parent task
-export const listSubtasks = (parentTaskId: string): Promise<Subtask[]> => {
-  return request<Subtask[]>(`${API_BASE_URL}/tasks/${parentTaskId}/subtasks`);
-};
-
-// Create a new subtask for a parent task
-export const createSubtask = (parentTaskId: string, data: SubtaskCreateData): Promise<Subtask> => {
-  return request<Subtask>(`${API_BASE_URL}/tasks/${parentTaskId}/subtasks/`, {
+// New function for Project Manager Planning Prompt
+export const generateProjectManagerPlanningPrompt = (data: PlanningRequestData): Promise<PlanningResponseData> => {
+  return request<PlanningResponseData>(`${API_BASE_URL}/projects/generate-planning-prompt`, {
     method: 'POST',
     body: JSON.stringify(data),
   });
-};
-
-// Fetch a single subtask by its ID
-export const getSubtask = (subtaskId: string): Promise<Subtask> => {
-  return request<Subtask>(`${API_BASE_URL}/subtasks/${subtaskId}`);
-};
-
-// Update an existing subtask
-export const updateSubtask = (subtaskId: string, data: SubtaskUpdateData): Promise<Subtask> => {
-  return request<Subtask>(`${API_BASE_URL}/subtasks/${subtaskId}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
-};
-
-// Delete a subtask
-export const deleteSubtask = (subtaskId: string): Promise<void> => { // Assuming void for now, adjust if backend returns deleted subtask
-  return request<void>(`${API_BASE_URL}/subtasks/${subtaskId}`, { method: 'DELETE' });
 };

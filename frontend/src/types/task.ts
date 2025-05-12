@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { subtaskSchema } from './subtask';
 
 // Base Task schema for validation
 export const taskSchema = z.object({
@@ -10,7 +9,6 @@ export const taskSchema = z.object({
     project_id: z.string().nullable().optional(),
     agent_id: z.string().nullable().optional(),
     parent_task_id: z.string().nullable().optional(),
-    subtasks: z.array(subtaskSchema).nullable().optional(),
     created_at: z.string(),
     updated_at: z.string().optional()
 });
