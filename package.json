@@ -1,6 +1,6 @@
 {
   "name": "project-manager-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP + WebGUI = Collaborative Agent & Human Project Management Platform. Where agents and humans manage projects—together.",
   "bin": {
     "project-manager": "./cli.js"
