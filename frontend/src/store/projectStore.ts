@@ -12,13 +12,13 @@ import {
     ProjectFilters 
 } from '@/types/project';
 
-interface ProjectState {
+export interface ProjectState {
     projects: Project[];
     loading: boolean;
     error: string | null;
     filters: ProjectFilters;
     fetchProjects: (filters?: ProjectFilters) => Promise<void>;
-    addProject: (projectData: ProjectCreateData) => Promise<void>; 
+    addProject: (projectData: ProjectCreateData) => Promise<void>;
     editProject: (id: string, projectData: ProjectUpdateData) => Promise<void>;
     removeProject: (id: string) => Promise<void>;
     setFilters: (filters: Partial<ProjectFilters>) => void;

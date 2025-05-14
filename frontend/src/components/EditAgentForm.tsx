@@ -54,6 +54,8 @@ const EditAgentForm: React.FC<EditAgentFormProps> = ({ agent, onClose, onSubmit,
         try {
             await onSubmit(agent.id, name.trim());
             // Parent component (AgentList modal) will handle closing and success toast
+            // Call onClose after successful submission
+            onClose(); 
         } catch (error) {
             toast({
                 title: 'Error updating agent',

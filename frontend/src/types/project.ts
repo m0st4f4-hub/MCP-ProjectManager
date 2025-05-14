@@ -48,6 +48,7 @@ export interface ProjectWithMeta extends Project {
 export interface ProjectFilters {
     search?: string;
     status?: 'all' | 'active' | 'completed';
+    agentId?: string | null;
 }
 
 // Project sort options

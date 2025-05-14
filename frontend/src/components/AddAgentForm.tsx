@@ -36,9 +36,8 @@ const AddAgentForm: React.FC<AddAgentFormProps> = ({ onClose, onSubmit, initialD
         setIsLoading(true);
         try {
             await onSubmit(name.trim()); // Call the onSubmit passed from props
-            // Success handling (like closing modal) is done by the parent
-            // via the promise resolution or state change
-            // No need to call onClose directly here if parent handles it
+            // Call onClose after successful submission
+            onClose(); 
         } catch (error) {
             // Error is caught and displayed here, error is re-thrown from store
             toast({

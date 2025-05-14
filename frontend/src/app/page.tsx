@@ -26,7 +26,6 @@ import {
     DrawerContent,
     DrawerCloseButton,
     IconButton,
-    Flex,
 } from '@chakra-ui/react';
 import { AddIcon, ArrowUpIcon, CopyIcon, HamburgerIcon, SettingsIcon } from '@chakra-ui/icons';
 import TaskList from '@/components/TaskList';
@@ -39,20 +38,44 @@ import { useTaskStore, TaskState } from '@/store/taskStore';
 import { useProjectStore, ProjectState } from '@/store/projectStore';
 import { useAgentStore, AgentState } from '@/store/agentStore';
 import FilterSidebar from '@/components/common/FilterSidebar';
-import { createProject, createTask, getProjects } from '@/services/api';
+import { createProject, createTask } from '@/services/api';
 import { ProjectCreateData } from '@/types/project';
 import { TaskCreateData } from '@/types/task';
 import Dashboard from '@/components/Dashboard';
 import { ThemeToggleButton } from '@/components/ThemeToggleButton';
 import MCPDevTools from '@/components/MCPDevTools';
 
-const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProjectOpen, onAddAgentOpen, onImportPlanOpen, onOpenDevTools }) => (
+interface ImportedPlanTask {
+    title: string;
+    description?: string;
+    agentName?: string;
+    completed?: boolean;
+}
+
+interface ImportedPlan {
+    projectName: string;
+    projectDescription?: string;
+    projectAgentName?: string;
+    tasks: ImportedPlanTask[];
+}
+
+interface SidebarContentProps {
+    activeView: string;
+    setActiveView: (view: string) => void;
+    onAddTaskOpen: () => void;
+    onAddProjectOpen: () => void;
+    onAddAgentOpen: () => void;
+    onImportPlanOpen: () => void;
+    onOpenDevTools: () => void;
+}
+
+const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProjectOpen, onAddAgentOpen, onImportPlanOpen, onOpenDevTools }: SidebarContentProps) => (
     <>
         <HStack justify="space-between" align="center" w="full" pb={3} borderBottomWidth="1px" borderColor="border.primary">
             <Heading size="md" color="text.heading">
                 Workflow Console
             </Heading>
-            <ThemeToggleButton size="sm" />
+            <ThemeToggleButton />
         </HStack>
         <Button
             justifyContent="flex-start"
@@ -212,10 +235,11 @@ export default function Home() {
 
     useEffect(() => {
         startPolling();
+        fetchAgents();
         return () => {
             stopPolling();
         };
-    }, [startPolling, stopPolling]);
+    }, [startPolling, stopPolling, fetchAgents]);
 
     useEffect(() => {
         if (error) {
@@ -254,72 +278,59 @@ export default function Home() {
     };
 
     const handleJsonImport = async () => {
-        if (!jsonPasteContent.trim()) {
-            setImportStatus("Error: JSON content cannot be empty.");
+        if (!jsonPasteContent) {
+            setImportStatus("Error: No JSON content provided.");
             return;
         }
-
         setIsImporting(true);
-        setImportStatus("Parsing pasted JSON...");
+        setImportStatus("Importing...");
         try {
-            const plan = JSON.parse(jsonPasteContent);
+            const data: ImportedPlan = JSON.parse(jsonPasteContent);
 
-            setImportStatus("Plan parsed. Validating structure...");
-            if (!plan.projectName || !Array.isArray(plan.tasks)) {
-                throw new Error("Invalid plan structure: Missing projectName or tasks array.");
+            if (!data.projectName || typeof data.projectName !== 'string') {
+                throw new Error("Missing or invalid 'projectName' in JSON.");
+            }
+            if (!Array.isArray(data.tasks)) {
+                throw new Error("Missing or invalid 'tasks' array in JSON.");
             }
 
-            let newProjectId: number | undefined;
-            let newProject: any | null = null;
+            let importLog = "";
 
-            const existingProjects = await getProjects();
-            const foundProject = existingProjects.find(p => p.name === plan.projectName);
+            const projectPayload: ProjectCreateData = {
+                name: data.projectName,
+                description: data.projectDescription,
+            };
+            const newProject = await createProject(projectPayload);
+            importLog += `Created project: ${newProject.name} (ID: ${newProject.id})\n`;
 
-            if (foundProject) {
-                setImportStatus(`Project '${plan.projectName}' already exists. Adding tasks to existing project (ID: ${foundProject.id}).`);
-                newProjectId = foundProject.id;
-                newProject = foundProject;
-            } else {
-                setImportStatus(`Creating new project: '${plan.projectName}'...`);
-                const projectData: ProjectCreateData = {
-                    name: plan.projectName,
-                    description: plan.projectDescription || undefined
-                };
-                const createdProject = await createProject(projectData);
-                if (!createdProject || !createdProject.id) {
-                    throw new Error("Failed to create project or project ID is missing.");
-                }
-                newProjectId = createdProject.id;
-                newProject = createdProject;
-                setImportStatus(`Project '${createdProject.name}' created (ID: ${newProjectId}). Now importing tasks...`);
-            }
-
-            let tasksImportedCount = 0;
-            for (const taskData of plan.tasks) {
-                if (!taskData.title) {
-                    console.warn("Skipping task due to missing title:", taskData);
+            for (const task of data.tasks) {
+                if (!task.title || typeof task.title !== 'string') {
+                    importLog += `Skipping task: Missing or invalid title.\n`;
                     continue;
                 }
-                const newTaskData: TaskCreateData = {
-                    project_id: newProjectId!,
-                    title: taskData.title,
-                    description: taskData.description || undefined,
-                    agent_name: taskData.agentName || plan.projectAgentName || undefined,
-                    completed: taskData.completed === true
+                const taskPayload: TaskCreateData = {
+                    title: task.title,
+                    description: task.description,
+                    project_id: newProject.id,
+                    agent_name: task.agentName ?? data.projectAgentName,
+                    completed: task.completed ?? false,
                 };
-                await createTask(newTaskData);
-                tasksImportedCount++;
+                try {
+                    const newTask = await createTask(taskPayload);
+                    importLog += `  - Created task: ${newTask.title} (ID: ${newTask.id})\n`;
+                } catch (taskError) {
+                    importLog += `  - Failed to create task '${task.title}': ${taskError instanceof Error ? taskError.message : String(taskError)}\n`;
+                }
             }
 
-            setImportStatus(`Import complete! ${tasksImportedCount} tasks added to project '${newProject?.name}'.`);
-            fetchTasks();
+            setImportStatus(`Import successful!\n${importLog}`);
+            setJsonPasteContent("");
             fetchProjects();
-            setTimeout(() => { onImportPlanClose(); setJsonPasteContent(''); setImportStatus(''); }, 2000);
+            fetchTasks();
 
-        } catch (error) {
-            const message = error instanceof Error ? error.message : "An unknown error occurred during import.";
-            console.error("Import failed:", error);
-            setImportStatus(`Error: ${message}`);
+        } catch (err) {
+            console.error("Import failed:", err);
+            setImportStatus(`Import failed: ${err instanceof Error ? err.message : String(err)}. Check JSON structure and console.`);
         } finally {
             setIsImporting(false);
         }

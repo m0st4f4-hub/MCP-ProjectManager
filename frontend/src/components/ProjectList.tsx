@@ -23,7 +23,6 @@ import { DeleteIcon, HamburgerIcon, AddIcon } from '@chakra-ui/icons';
 import { useProjectStore } from '@/store/projectStore';
 import { useTaskStore } from '@/store/taskStore';
 import { Project } from '@/types';
-import { TaskFilters } from '@/types/task';
 import { formatDisplayName } from '@/lib/utils';
 
 const ProjectList: React.FC = () => {
@@ -31,25 +30,14 @@ const ProjectList: React.FC = () => {
     const loading = useProjectStore(state => state.loading);
     const fetchProjects = useProjectStore(state => state.fetchProjects);
     const removeProject = useProjectStore(state => state.removeProject);
+    const projectFilters = useProjectStore(state => state.filters);
     const tasks = useTaskStore(state => state.tasks);
-    const globalFilters: TaskFilters = useTaskStore(state => state.filters);
     const toast = useToast();
     const isMobile = useBreakpointValue({ base: true, md: false });
 
     useEffect(() => {
         fetchProjects();
     }, [fetchProjects]);
-
-    const getProjectStats = (projectId: string) => {
-        const projectTasks = tasks.filter(task => task.project_id === projectId);
-        const completedTasks = projectTasks.filter(task => task.completed);
-        const progress = projectTasks.length ? (completedTasks.length / projectTasks.length) * 100 : 0;
-        return {
-            totalTasks: projectTasks.length,
-            completedTasks: completedTasks.length,
-            progress
-        };
-    };
 
     const handleDelete = async (project: Project) => {
         try {
@@ -78,42 +66,43 @@ const ProjectList: React.FC = () => {
             const totalTasks = project.task_count ?? 0;
             const completedTasks = project.completed_task_count ?? 0;
 
-            // Search Term Filter (Project Name and Description)
-            if (globalFilters.search) {
-                const searchTermLower = globalFilters.search.toLowerCase();
+            // Search Term Filter (Project Name and Description) - Uses projectFilters
+            if (projectFilters.search) {
+                const searchTermLower = projectFilters.search.toLowerCase();
                 const nameMatch = project.name?.toLowerCase().includes(searchTermLower);
                 const descriptionMatch = project.description?.toLowerCase().includes(searchTermLower);
                 if (!nameMatch && !descriptionMatch) return false;
             }
 
-            // Agent Filter (Projects the agent is working on)
-            if (globalFilters.agentId) {
+            // Agent Filter (Projects the agent is working on) - Uses projectFilters.agentId
+            // This now relies on ProjectFilters having agentId and API supporting it.
+            if (projectFilters.agentId) { 
                 const agentTasksInProject = tasks.filter(task => 
-                    task.project_id === project.id && task.agent_id === globalFilters.agentId
+                    task.project_id === project.id && task.agent_id === projectFilters.agentId
                 );
                 if (agentTasksInProject.length === 0) return false;
             }
 
-            // Status Filter (Based on project's task counts)
-            if (globalFilters.status && globalFilters.status !== 'all') {
-                if (totalTasks === 0 && globalFilters.status === 'active') return false; // No tasks, not active
-                if (totalTasks === 0 && globalFilters.status === 'completed') return true; // No tasks, can be considered completed
+            // Status Filter (Based on project's task counts) - Uses projectFilters
+            if (projectFilters.status && projectFilters.status !== 'all') {
+                if (totalTasks === 0 && projectFilters.status === 'active') return false;
+                if (totalTasks === 0 && projectFilters.status === 'completed') return true;
 
                 const allCompleted = totalTasks > 0 && completedTasks === totalTasks;
-                if (globalFilters.status === 'completed' && !allCompleted) return false;
-                if (globalFilters.status === 'active' && allCompleted) return false;
+                if (projectFilters.status === 'completed' && !allCompleted) return false;
+                if (projectFilters.status === 'active' && allCompleted) return false;
             }
 
             // Project ID filter from globalFilters doesn't make sense for filtering the project list itself,
             // unless it means to show only that specific project.
-            if (globalFilters.projectId && project.id !== globalFilters.projectId) {
+            if (projectFilters.projectId && project.id !== projectFilters.projectId) {
                 // This would make the filter very restrictive, essentially singling out a project.
                 // return false; // Uncomment if this specific behavior is desired.
             }
 
             return true;
         });
-    }, [projects, globalFilters, tasks]);
+    }, [projects, projectFilters, tasks]);
 
     if (loading) {
         return (
@@ -181,7 +170,6 @@ const ProjectList: React.FC = () => {
                 
                 const isCompleted = progress === 100 && totalTasks > 0;
                 const isInProgress = totalTasks > 0 && !isCompleted;
-                const isIdle = totalTasks === 0;
 
                 return (
                     <Box

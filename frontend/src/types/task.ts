@@ -11,7 +11,8 @@ export const taskSchema = z.object({
     agent_name: z.string().nullable().optional(),
     parent_task_id: z.string().nullable().optional(),
     created_at: z.string(),
-    updated_at: z.string().optional()
+    updated_at: z.string().optional(),
+    status: z.string().nullable().optional()
 });
 
 // Runtime type for Task

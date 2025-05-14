@@ -16,6 +16,7 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
 
     const TaskSkeleton = () => (
         <Box
+            data-testid="skeleton-item"
             p={4}
             bg="bg.card"
             rounded="lg"
@@ -39,6 +40,7 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
 
     const ProjectSkeleton = () => (
         <Box
+            data-testid="skeleton-item"
             p={4}
             bg="bg.card"
             rounded="lg"
@@ -68,6 +70,7 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
 
     const AgentSkeleton = () => (
         <Box
+            data-testid="skeleton-item"
             p={4}
             bg="bg.card"
             rounded="lg"

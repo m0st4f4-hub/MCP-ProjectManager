@@ -9,8 +9,24 @@ import LoadingSkeleton from '../components/LoadingSkeleton'; // Adjust path as n
 import { ChakraProvider } from '@chakra-ui/react'; // Import ChakraProvider
 import theme from '../theme'; // Import theme
 
+// Mock Chakra UI Skeleton components
+jest.mock('@chakra-ui/react', () => {
+  const originalChakra = jest.requireActual('@chakra-ui/react');
+  return {
+    ...originalChakra,
+    Skeleton: ({ children }: React.PropsWithChildren<{ 'data-testid'?: string }>) => <div data-testid="mock-skeleton">{children}</div>,
+    SkeletonText: ({ children }: React.PropsWithChildren<{ 'data-testid'?: string }>) => <div data-testid="mock-skeleton-text">{children}</div>,
+    Box: ({ children, 'data-testid': dataTestid }: React.PropsWithChildren<{ 'data-testid'?: string }>) => (
+      <div data-testid={dataTestid}>{children}</div>
+    ),
+    Stack: ({ children, 'data-testid': dataTestid }: React.PropsWithChildren<{ 'data-testid'?: string }>) => (
+      <div data-testid={dataTestid}>{children}</div>
+    ),
+  };
+});
+
 describe('LoadingSkeleton', () => {
-  it('renders the correct number of skeleton items by default', () => {
+  it('renders the correct number of skeleton items by default', async () => {
     render(
       <ChakraProvider theme={theme}> {/* Wrap component */}
         <LoadingSkeleton />
@@ -19,13 +35,14 @@ describe('LoadingSkeleton', () => {
     // Assuming the skeleton renders a list of items with a specific role or test ID
     // For this example, let's assume each skeleton item has a role 'status' (aria-live might set this)
     // or a more specific testid like 'skeleton-item' would be better.
-    // Without knowing the internals of LoadingSkeleton, this is a guess.
-    // A better approach would be to add data-testid to the repeated element in LoadingSkeleton.
-    // For now, let's assume it renders 5 items if no count is passed.
-    const skeletonItems = screen.queryAllByRole('status'); // This is a guess
+    // Use the added data-testid for robust querying
+    // await waitFor needed if the items appear asynchronously due to internal state changes or effects in LoadingSkeleton
+    // but LoadingSkeleton appears synchronous. If tests still fail, this might need re-evaluation.
+    const skeletonItems = screen.getAllByTestId('skeleton-item');
     // If a specific count is expected by default, assert it. Otherwise, assert it renders at least one.
     // expect(skeletonItems.length).toBe(5); // Example if default is 5
-    expect(skeletonItems.length).toBeGreaterThanOrEqual(1); // A more robust general check
+    // The component defaults to count=3
+    expect(skeletonItems.length).toBe(3);
   });
 
   it('renders a specified number of skeleton items via count prop', () => {
@@ -35,11 +52,8 @@ describe('LoadingSkeleton', () => {
         <LoadingSkeleton count={count} />
       </ChakraProvider>
     );
-    const skeletonItems = screen.queryAllByRole('status'); // Guessing role again
-    // If the component doesn't use roles that are easily queryable, this will fail.
-    // Add data-testid="skeleton-item" to the repeating element in LoadingSkeleton.tsx for robust testing.
-    // For example: <div data-testid="skeleton-item" key={i} className="...">...</div>
-    // Then query: screen.getAllByTestId('skeleton-item');
+    // Use the added data-testid
+    const skeletonItems = screen.getAllByTestId('skeleton-item');
     expect(skeletonItems.length).toBe(count);
     // For now, let's just check if it renders without crashing.
     // expect(screen.getByTestId('loading-skeleton-container')).toBeInTheDocument(); // Assuming a container testid
@@ -53,7 +67,8 @@ describe('LoadingSkeleton', () => {
     );
     // Add a container testid to make this assertion reliable
     // expect(screen.getByTestId('loading-skeleton-container')).toBeInTheDocument();
-    const skeletonItems = screen.queryAllByRole('status');
+    // Use the added data-testid (query because we expect 0)
+    const skeletonItems = screen.queryAllByTestId('skeleton-item');
     expect(skeletonItems.length).toBe(0);
   });
 });

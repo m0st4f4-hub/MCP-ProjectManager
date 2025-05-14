@@ -1,7 +1,7 @@
 // D:\mcp\task-manager\frontend\src\components\EditTaskModal.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FormControl,
     FormLabel,
@@ -40,25 +40,6 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
     // Get projects, agents, and all tasks from store
     const projects = useTaskStore((state) => state.projects);
     const agents = useTaskStore((state) => state.agents);
-    const allTasks = useTaskStore((state) => state.tasks);
-
-    // Helper function to get all descendant task IDs (copied from taskStore)
-    const getAllDescendantIds = useCallback((taskIdToScan: number, tasks: Task[]): number[] => {
-        const descendants: number[] = [];
-        const children = tasks.filter(t => t.parent_task_id === taskIdToScan);
-        for (const child of children) {
-            descendants.push(child.id);
-            descendants.push(...getAllDescendantIds(child.id, tasks)); // Recursive call
-        }
-        return descendants;
-    }, []); // Empty dependency array as it's a pure function not relying on component scope vars (except its own params)
-
-    const potentialParents = useMemo(() => {
-        if (!task) return []; // Early return if task is null
-        const descendantIds = getAllDescendantIds(task.id, allTasks);
-        const selfAndDescendants = new Set([task.id, ...descendantIds]);
-        return allTasks.filter(t => !selfAndDescendants.has(t.id));
-    }, [task, allTasks, getAllDescendantIds]);
 
     useEffect(() => {
         if (task) {
@@ -170,21 +151,6 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
                 >
                      <option value="">-- Clear Agent --</option>
                     {agents.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
-                </Select>
-            </FormControl>
-
-            <FormControl>
-                <FormLabel>Parent Task</FormLabel>
-                <Select 
-                    placeholder="-- No Parent --"
-                    value={parentTaskId}
-                    onChange={(e) => setParentTaskId(e.target.value)}
-                >
-                    {potentialParents.map(p => (
-                        <option key={p.id} value={p.id}>
-                            {p.title} (ID: {p.id})
-                        </option>
-                    ))}
                 </Select>
             </FormControl>
 

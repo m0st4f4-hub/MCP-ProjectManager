@@ -10,17 +10,9 @@ import {
     ProjectFilters, // Added ProjectFilters here
     // Agent related types are now imported
     Agent,
-    AgentCreateData as AgentCreateDataType, // Alias to avoid naming conflict if local types were kept
     AgentUpdateData as AgentUpdateDataType, // Alias
     AgentFilters, // Imported
 } from "@/types";
-import axios from 'axios';
-import { AgentTaskCount, ProjectTaskCount } from '@/types';
-
-// Remove local Agent interface definitions
-// interface Agent { ... }
-// interface AgentCreateData { ... }
-// interface AgentUpdateData { ... }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
@@ -41,8 +33,21 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
     headers, // Use the modified headers object
   });
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
-    throw new Error(errorData.detail || 'API request failed');
+    console.error(`API request failed for URL: ${url}`, { status: response.status, options });
+    let errorDetail = `API request failed with status ${response.status} for ${url}`; // Default generic message
+    try {
+      const errorData = await response.json();
+      if (errorData && errorData.detail) {
+        errorDetail = errorData.detail;
+      } else {
+        errorDetail = response.statusText || errorDetail; // Use statusText if detail is not present
+      }
+    } catch (e) {
+      // JSON parsing failed, stick with the more generic error or statusText
+      console.warn(`Failed to parse error response as JSON for URL: ${url}`, e);
+      errorDetail = response.statusText || errorDetail;
+    }
+    throw new Error(errorDetail);
   }
   // For DELETE requests, backend might return the deleted object or no content
   if (response.status === 204) { 
@@ -55,9 +60,10 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
 export const getTasks = (filters?: TaskFilters): Promise<Task[]> => {
   const queryParams = new URLSearchParams();
   if (filters?.projectId) queryParams.append('project_id', filters.projectId);
-  if (filters?.agentName) queryParams.append('agent_name', filters.agentName);
+  if (filters?.agentId) queryParams.append('agent_id', filters.agentId);
   if (filters?.status && filters.status !== 'all') queryParams.append('status', filters.status.toString());
   if (filters?.search) queryParams.append('search', filters.search);
+  if (filters?.top_level_only !== undefined) queryParams.append('top_level_only', String(filters.top_level_only));
 
   const queryString = queryParams.toString();
   const url = `${API_BASE_URL}/tasks/${queryString ? `?${queryString}` : ''}`;
@@ -89,6 +95,7 @@ export const getProjects = (filters?: ProjectFilters): Promise<Project[]> => {
   const queryParams = new URLSearchParams();
   if (filters?.search) queryParams.append('search', filters.search);
   if (filters?.status && filters.status !== 'all') queryParams.append('status', filters.status);
+  if (filters?.agentId) queryParams.append('agent_id', filters.agentId);
   return request<Project[]>(`${API_BASE_URL}/projects/?${queryParams.toString()}`);
 };
 
@@ -112,6 +119,7 @@ export const getAgents = (filters?: AgentFilters): Promise<Agent[]> => { // Uses
   const queryParams = new URLSearchParams();
   if (filters?.search) queryParams.append('search', filters.search);
   if (filters?.status && filters.status !== 'all') queryParams.append('status', filters.status);
+  if (filters?.projectId) queryParams.append('project_id', filters.projectId); // Added project_id parameter
   return request<Agent[]>(`${API_BASE_URL}/agents/?${queryParams.toString()}`);
 };
 
@@ -128,27 +136,11 @@ export const getAgentByName = (agent_name: string): Promise<Agent> => { // Chang
 // Function to create a new agent
 export const createAgent = async (name: string): Promise<Agent> => {
     console.log(`[API Service] Attempting to create agent with name: ${name}`);
-    try {
-        const response = await fetch(`${API_BASE_URL}/agents/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name }),
-        });
-        console.log(`[API Service] Create agent response status: ${response.status}`);
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ detail: response.statusText }));
-            console.error('[API Service] Create agent failed:', errorData);
-            throw new Error(errorData.detail || `HTTP error ${response.status}`);
-        }
-        const newAgent: Agent = await response.json();
-        console.log('[API Service] Agent created successfully:', newAgent);
-        return newAgent;
-    } catch (error) {
-        console.error('[API Service] Error in createAgent:', error);
-        throw error; // Re-throw the error to be handled by the store
-    }
+    // Now uses the centralized request helper
+    return request<Agent>(`${API_BASE_URL}/agents/`, {
+        method: 'POST',
+        body: JSON.stringify({ name }),
+    });
 };
 
 // Function to update an agent (Placeholder - Not implemented yet)
@@ -192,9 +184,10 @@ export type TaskCreateData = Omit<Task, 'id' | 'created_at' | 'updated_at'>;
 export type ProjectUpdateData = Partial<Omit<Project, 'id' | 'created_at' | 'updated_at' | 'task_count'>>;
 export type ProjectCreateData = Omit<Project, 'id' | 'created_at' | 'updated_at' | 'task_count'>;
 export type AgentUpdateData = Partial<Omit<Agent, 'id' | 'created_at' | 'updated_at' | 'task_count'>>;
-// export type AgentCreateDataType = Omit<Agent, 'id' | 'created_at' | 'updated_at' | 'task_count'>; // Removed unused type
+export type AgentCreateData = Omit<Agent, 'id' | 'created_at' | 'updated_at' | 'task_count'>; // Use this instead of alias
 
 // Define TaskFilters - same as in store/taskStore.ts for consistency
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TaskFilters {
 // ... existing code ...
 }

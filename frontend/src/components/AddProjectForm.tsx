@@ -13,7 +13,6 @@ import {
     Heading,
     FormErrorMessage
 } from '@chakra-ui/react';
-import { useProjectStore } from '@/store/projectStore';
 import { ProjectCreateData } from '@/types';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -70,7 +69,7 @@ const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit, onClose }) =>
                 </Heading>
 
                 <FormControl isInvalid={!!errors.name}>
-                    <FormLabel color="text.primary">Name</FormLabel>
+                    <FormLabel htmlFor="name" color="text.primary">Name</FormLabel>
                     <Input
                         id="name"
                         {...register('name')}
@@ -86,7 +85,7 @@ const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit, onClose }) =>
                 </FormControl>
 
                 <FormControl isInvalid={!!errors.description}>
-                    <FormLabel color="text.primary">Description</FormLabel>
+                    <FormLabel htmlFor="description" color="text.primary">Description</FormLabel>
                     <Textarea
                         id="description"
                         {...register('description')}

@@ -2,53 +2,62 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import TaskItem from './TaskItem';
+// import TaskItem from './TaskItem'; // No longer directly used here
 import {
-    Box,
-    Text,
-    Heading,
-    VStack,
     Container,
-    Accordion,
-    AccordionItem,
-    AccordionButton,
-    AccordionPanel,
-    AccordionIcon,
-    List,
-    ListItem,
-    Button,
-    Spinner,
-    Select,
-    Flex,
-    Divider,
-    HStack,
     Modal,
     ModalOverlay,
     ModalContent,
     ModalHeader,
     ModalBody,
     ModalCloseButton,
-    Menu,
-    MenuButton,
-    MenuList,
-    MenuItem,
-    IconButton,
     useBreakpointValue,
     useDisclosure,
-    Input,
-    InputGroup,
-    InputLeftElement,
-    Icon,
+    Box,
+    Text,
+    Button,
 } from '@chakra-ui/react';
-import { useTaskStore } from '@/store/taskStore';
-import { Task, TaskUpdateData, Project, Agent } from '@/types';
+import { useTaskStore, sortTasks } from '@/store/taskStore';
+import { Task } from '@/types';
 import { formatDisplayName } from '@/lib/utils';
 import AddTaskForm from './AddTaskForm';
-import { AddIcon, SearchIcon } from '@chakra-ui/icons';
+// Icons are no longer directly used by TaskList:
+// import { AddIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { useProjectStore } from '@/store/projectStore';
 import { useAgentStore } from '@/store/agentStore';
+import ListView from './ListView';
+import TaskControls from './TaskControls';
+import NoTasks from './NoTasks'; // Import the new component
+import TaskLoading from './TaskLoading'; // Import the new component
+import TaskError from './TaskError'; // Import the new component
+import KanbanView from './KanbanView'; // Import KanbanView
 
 type GroupByType = 'status' | 'project' | 'agent' | 'parent';
+type ViewMode = 'list' | 'kanban';
+// type StatusType = 'To Do' | 'In Progress' | 'Blocked' | 'Completed'; // For Kanban later
+// type ColorMap = { // For Kanban later
+//     [K in StatusType]: string;
+// };
+
+interface TaskGroup {
+    id: string;
+    name: string;
+    tasks?: Task[];
+    subgroups?: TaskSubgroup[];
+    status?: string;
+}
+
+interface TaskSubgroup {
+    id: string;
+    name: string;
+    tasks: Task[];
+    status?: string;
+}
+
+interface GroupedTasks {
+    type: GroupByType;
+    groups: TaskGroup[];
+}
 
 const TaskList: React.FC = () => {
     const tasks = useTaskStore(state => state.tasks);
@@ -57,24 +66,32 @@ const TaskList: React.FC = () => {
     const loading = useTaskStore(state => state.loading);
     const error = useTaskStore(state => state.error);
     const fetchTasks = useTaskStore(state => state.fetchTasks);
-    const toggleTaskComplete = useTaskStore(state => state.toggleTaskComplete);
-    const removeTask = useTaskStore(state => state.removeTask);
-    const editTask = useTaskStore(state => state.editTask);
     const fetchProjectsAndAgents = useTaskStore(state => state.fetchProjectsAndAgents);
-    const filters = useTaskStore(state => state.filters);
-    const { updateTask, deleteTask, addTask } = useTaskStore();
+    const sortOptions = useTaskStore(state => state.sortOptions);
+    const editTask = useTaskStore(state => state.editTask);
+    const deleteTask = useTaskStore(state => state.deleteTask);
 
     const [groupBy, setGroupBy] = useState<GroupByType>('status');
     const { isOpen: isAddTaskModalOpen, onOpen: onOpenAddTaskModal, onClose: onCloseAddTaskModal } = useDisclosure();
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [parentTaskForNewTask, setParentTaskForNewTask] = useState<string | null>(null);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [viewMode, setViewMode] = useState<ViewMode>('list');
+    const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
 
-    const isMobile = useBreakpointValue({ base: true, md: false });
+    const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;
 
-    useEffect(() => {
-        console.log("Tasks from store in TaskList:", JSON.stringify(tasks, null, 2));
-    }, [tasks]);
+    // const boardRef = useRef<HTMLDivElement>(null); // For Kanban later
+    // const [isCompact, setIsCompact] = useState(false); // For Kanban later
+    // const [brand500, statusInProgress, statusBlocked, statusCompleted, borderBase, bgSurface, bgCard] = useToken('colors', [
+    //     'brand.500',
+    //     'status.inprogress',
+    //     'status.blocked',
+    //     'status.success',
+    //     'border.base',
+    //     'bg.surface',
+    //     'bg.card',
+    // ]); // For Kanban later
 
     useEffect(() => {
         fetchTasks();
@@ -82,31 +99,34 @@ const TaskList: React.FC = () => {
     }, [fetchTasks, fetchProjectsAndAgents]);
 
     useEffect(() => {
-        // After the first successful load (tasks length > 0), set initial load to false
         if (isInitialLoad && tasks.length > 0) {
             setIsInitialLoad(false);
         }
     }, [tasks, isInitialLoad]);
 
-    const handleOpenAddTaskModal = useCallback((parentId: string | null = null) => {
-        setEditingTask(null);
+    // useEffect(() => { // For Kanban later
+    //     const handleResize = () => {
+    //         if (boardRef.current) {
+    //             setIsCompact(boardRef.current.offsetWidth < 900);
+    //         }
+    //     };
+    //     window.addEventListener('resize', handleResize);
+    //     handleResize();
+    //     return () => window.removeEventListener('resize', handleResize);
+    // }, []);
+
+    const handleOpenAddTaskModalCallback = useCallback((taskToEdit: Task | null = null, parentId: string | null = null) => {
+        setEditingTask(taskToEdit);
         setParentTaskForNewTask(parentId);
         onOpenAddTaskModal();
-    }, [onOpenAddTaskModal]);
+    }, [onOpenAddTaskModal, setEditingTask, setParentTaskForNewTask]);
 
-    const handleOpenEditTaskModal = useCallback((task: Task) => {
-        setEditingTask(task);
-        setParentTaskForNewTask(null);
-        onOpenAddTaskModal();
-    }, [onOpenAddTaskModal]);
-
-    const handleCloseAddTaskModal = useCallback(() => {
+    const handleCloseAddTaskModalCallback = useCallback(() => {
         onCloseAddTaskModal();
         setEditingTask(null);
         setParentTaskForNewTask(null);
-    }, [onCloseAddTaskModal]);
+    }, [onCloseAddTaskModal, setEditingTask, setParentTaskForNewTask]);
 
-    // Filter tasks based on global filters
     const filteredTasks = useMemo(() => {
         const currentFilters = useTaskStore.getState().filters;
         return tasks.filter(task => {
@@ -127,24 +147,27 @@ const TaskList: React.FC = () => {
         });
     }, [tasks]);
 
-    const groupedAndFilteredTasks = useMemo(() => {
+    const groupedAndFilteredTasks: GroupedTasks = useMemo(() => {
         const topLevelTasks = filteredTasks.filter(task => !task.parent_task_id);
+        const getStatusSubgroups = (currentTasks: Task[]) => ([
+            {
+                id: 'active',
+                name: `Active Tasks (${currentTasks.filter(t => !t.completed).length})`,
+                tasks: sortTasks(currentTasks.filter(t => !t.completed), sortOptions),
+                status: 'active',
+            },
+            {
+                id: 'completed',
+                name: `Completed Tasks (${currentTasks.filter(t => t.completed).length})`,
+                tasks: sortTasks(currentTasks.filter(t => t.completed), sortOptions),
+                status: 'completed',
+            }
+        ]);
 
         if (groupBy === 'status') {
             return {
                 type: 'status',
-                groups: [
-                    {
-                        id: 'active',
-                        name: `Active Tasks (${topLevelTasks.filter(t => !t.completed).length})`,
-                        tasks: topLevelTasks.filter(t => !t.completed)
-                    },
-                    {
-                        id: 'completed',
-                        name: `Completed Tasks (${topLevelTasks.filter(t => t.completed).length})`,
-                        tasks: topLevelTasks.filter(t => t.completed)
-                    }
-                ]
+                groups: getStatusSubgroups(topLevelTasks)
             };
         }
 
@@ -161,17 +184,16 @@ const TaskList: React.FC = () => {
                     unassignedTasks.push(task);
                 }
             });
-
             const projectGroups = projects.map(project => ({
                 id: project.id,
                 name: `${formatDisplayName(project.name)} (${(tasksByProject[project.id] || []).length})`,
-                tasks: tasksByProject[project.id] || []
+                subgroups: getStatusSubgroups(tasksByProject[project.id] || [])
             }));
             if (unassignedTasks.length > 0) {
                 projectGroups.push({
                     id: 'unassigned_project',
                     name: `Unassigned to Project (${unassignedTasks.length})`,
-                    tasks: unassignedTasks
+                    subgroups: getStatusSubgroups(unassignedTasks)
                 });
             }
             return { type: 'project', groups: projectGroups };
@@ -190,18 +212,16 @@ const TaskList: React.FC = () => {
                     unassignedTasks.push(task);
                 }
             });
-
             const agentGroups = agents.map(agent => ({
                 id: agent.id,
                 name: `${formatDisplayName(agent.name)} (${(tasksByAgent[agent.id] || []).length})`,
-                tasks: tasksByAgent[agent.id] || []
+                subgroups: getStatusSubgroups(tasksByAgent[agent.id] || [])
             }));
-
             if (unassignedTasks.length > 0) {
                 agentGroups.push({
                     id: 'unassigned_agent',
                     name: `Unassigned to Agent (${unassignedTasks.length})`,
-                    tasks: unassignedTasks
+                    subgroups: getStatusSubgroups(unassignedTasks)
                 });
             }
             return { type: 'agent', groups: agentGroups };
@@ -210,201 +230,99 @@ const TaskList: React.FC = () => {
         if (groupBy === 'parent') {
             return {
                 type: 'parent',
-                groups: [
-                    {
-                        id: 'all_tasks',
-                        name: `All Tasks (${filteredTasks.filter(t => !t.parent_task_id).length})`,
-                        tasks: filteredTasks.filter(t => !t.parent_task_id)
-                    }
-                ]
+                groups: getStatusSubgroups(filteredTasks.filter(t => !t.parent_task_id))
             };
         }
 
         return { type: 'status', groups: [] };
 
-    }, [filteredTasks, projects, agents, groupBy]);
+    }, [filteredTasks, projects, agents, groupBy, sortOptions]);
 
     if (loading && isInitialLoad) {
-        return (
-            <Container maxW="container.lg" p={4}>
-                <Box 
-                    bg="bg.elevated"
-                    p={6} 
-                    rounded="radius.xl"
-                    shadow="shadow.lg"
-                    borderWidth="1px" 
-                    borderColor="border.base"
-                    height="400px"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                >
-                    <VStack spacing={6}>
-                        <Spinner size="xl" color="icon.primary" />
-                        <Text color="text.muted">Loading tasks...</Text>
-                    </VStack>
-                </Box>
-            </Container>
-        );
+        return <TaskLoading />;
     }
 
     if (error) {
-        return (
-            <Container maxW="container.lg" p={4}>
-                <Box 
-                    bg="bg.elevated"
-                    p={6} 
-                    rounded="radius.xl"
-                    shadow="shadow.lg"
-                    borderWidth="1px" 
-                    borderColor="border.base"
-                    height="400px"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                >
-                    <VStack spacing={6}>
-                        <Icon as={AddIcon} w={12} h={12} color="status.error" />
-                        <Heading size="md" color="status.error">Error Loading Tasks</Heading>
-                        <Text color="text.muted">{error}</Text>
-                    </VStack>
-                </Box>
-            </Container>
-        );
+        return <TaskError error={error as string} />; // Added 'as string' to satisfy prop type if error can be other types
     }
 
-    if (groupedAndFilteredTasks.groups.every(group => group.tasks.length === 0) && !loading) {
-        return (
-            <Container maxW="container.lg" p={4}>
-                <Box 
-                    bg="bg.surface" 
-                    p={6} 
-                    rounded="radius.lg"
-                    shadow="shadow.md"
-                    borderWidth="1px"
-                    borderColor="border.base"
-                    textAlign="center"
-                >
-                    <Heading size="md" color="text.heading" mb={3}>No Tasks Found</Heading>
-                    <Text color="text.secondary" mb={4}>
-                        There are no tasks matching your current filters, or no tasks have been created yet.
-                    </Text>
-                    <Button
-                        leftIcon={<AddIcon />}
-                        bg="bg.button.accent"
-                        color="text.button.accent"
-                        _hover={{ bg: "bg.button.accent.hover" }}
-                        onClick={() => handleOpenAddTaskModal()}
-                        size="md"
-                    >
-                        Add Your First Task
-                    </Button>
-                </Box>
-            </Container>
-        );
+    const noTasksToShow = groupedAndFilteredTasks.groups.every(group => {
+        if (group.tasks?.length) return false; 
+        if (group.subgroups?.every(sub => !sub.tasks.length)) return true; 
+        if (group.subgroups && group.subgroups.length > 0 && !group.subgroups.some(sub => sub.tasks.length > 0)) return true; 
+        if (!group.tasks && !group.subgroups) return true; 
+        return false; 
+      }) && !loading && !isInitialLoad;
+
+    if (noTasksToShow) {
+        return <NoTasks onAddTask={() => handleOpenAddTaskModalCallback(null, null)} />;
     }
+
+    const handleBulkComplete = async () => {
+        await Promise.all(selectedTaskIds.map((taskId) => editTask(taskId, { completed: true })));
+        setSelectedTaskIds([]);
+    };
+
+    const handleBulkDelete = async () => {
+        await Promise.all(selectedTaskIds.map((taskId) => deleteTask(taskId)));
+        setSelectedTaskIds([]);
+    };
 
     return (
-        <Container maxW="container.lg" p={4} >
-            <Heading size="lg" mb={6} color="text.heading">
-                Task Workboard
-            </Heading>
+        <Container maxW="container.lg" p={4}>
+             <TaskControls 
+                groupBy={groupBy}
+                setGroupBy={setGroupBy}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                onAddTask={() => handleOpenAddTaskModalCallback(null, null)}
+             />
 
-            {/* Controls Section */}
-            <Flex 
-                mb={6} 
-                justifyContent="space-between" 
-                alignItems="center"
-                bg="bg.surface"
-                p={4}
-                borderRadius="md"
-            >
-                <HStack spacing={4}>
-                    <Text fontSize="sm" fontWeight="medium" color="text.secondary">Group by:</Text>
-                    <Select 
-                        size="sm" 
-                        value={groupBy}
-                        onChange={(e) => setGroupBy(e.target.value as GroupByType)}
-                        w="150px"
-                        bg="bg.input"
-                        borderColor="border.input"
-                        _hover={{ borderColor: 'border.input_hover' }}
-                    >
-                        <option value="status">Status</option>
-                        <option value="project">Project</option>
-                        <option value="agent">Agent</option>
-                        <option value="parent">Parent Task</option>
-                    </Select>
-                </HStack>
-                <Button 
-                    leftIcon={<AddIcon />} 
-                    bg="bg.button.primary" 
-                    color="text.button.primary"
-                    _hover={{ bg: 'brand.600' }}
-                    size="sm"
-                    onClick={() => handleOpenAddTaskModal()}
-                >
-                    Add Task
-                </Button>
-            </Flex>
+            {viewMode === 'list' ? (
+                <ListView 
+                    groupedTasks={groupedAndFilteredTasks}
+                    isLoading={loading || isInitialLoad}
+                    isMobile={isMobile}
+                />
+            ) : (
+                <KanbanView 
+                    filteredTasks={filteredTasks} 
+                    compactView={isMobile}
+                    />
+                )}
 
-            <Accordion allowMultiple defaultIndex={[0]}>
-                {groupedAndFilteredTasks.groups.map((group) => (
-                    <AccordionItem border="none" mb={4} key={group.id}>
-                    <h2>
-                        <AccordionButton 
-                            _hover={{
-                                bg: 'interaction.hover'
-                            }}
-                            borderRadius="md"
-                        >
-                            <Box flex="1" textAlign="left">
-                                <Heading size="sm" color="text.primary">{group.name}</Heading>
-                            </Box>
-                            <AccordionIcon color="text.primary" />
-                        </AccordionButton>
-                    </h2>
-                    <AccordionPanel pb={4} pt={2} px={0}>
-                            {group.tasks.length > 0 ? (
-                                <VStack spacing={4} align="stretch">
-                                    {group.tasks.map(task => (
-                                    <TaskItem
-                                        key={task.id}
-                                        task={task}
-                                        onToggle={toggleTaskComplete}
-                                        onDelete={removeTask}
-                                        onEdit={editTask}
-                                        onAddSubtask={() => handleOpenAddTaskModal(task.id)}
-                                    />
-                                ))}
-                                </VStack>
-                        ) : (
-                                <Text color="text.muted" p={4} textAlign="center">No tasks in this group.</Text>
-                        )}
-                    </AccordionPanel>
-                </AccordionItem>
-                ))}
-            </Accordion>
+                {isAddTaskModalOpen && (
+                <Modal isOpen={isAddTaskModalOpen} onClose={handleCloseAddTaskModalCallback} size={isMobile ? 'full' : 'xl'} isCentered={!isMobile}>
+                        <ModalOverlay />
+                        <ModalContent bg="bg.modal" color="text.primary" borderColor="border.base" borderWidth="1px">
+                            <ModalHeader borderBottomWidth="1px" borderColor="border.base">
+                            {editingTask ? 'Edit Task' : parentTaskForNewTask ? 'Add Subtask' : 'Add New Task'}
+                            </ModalHeader>
+                            <ModalCloseButton color="text.secondary" _hover={{ bg: "interaction.hover", color: "text.primary" }} />
+                            <ModalBody py={6}>
+                                <AddTaskForm 
+                                    initialParentId={parentTaskForNewTask}
+                                onClose={handleCloseAddTaskModalCallback} 
+                                />
+                            </ModalBody>
+                        </ModalContent>
+                    </Modal>
+                )}
 
-            {isAddTaskModalOpen && (
-                <Modal isOpen={isAddTaskModalOpen} onClose={handleCloseAddTaskModal} size={isMobile ? 'full' : 'xl'} isCentered={!isMobile}>
-                    <ModalOverlay />
-                    <ModalContent bg="bg.modal" color="text.primary" borderColor="border.base" borderWidth="1px">
-                        <ModalHeader borderBottomWidth="1px" borderColor="border.base">
-                            {editingTask ? 'Edit Task' : 'Add New Task'}
-                        </ModalHeader>
-                        <ModalCloseButton color="text.secondary" _hover={{ bg: "interaction.hover", color: "text.primary" }} />
-                        <ModalBody py={6}>
-                            <AddTaskForm 
-                                initialParentId={parentTaskForNewTask}
-                                onClose={handleCloseAddTaskModal} 
-                            />
-                        </ModalBody>
-                    </ModalContent>
-                </Modal>
-            )}
-        </Container>
+                {/* Bulk Actions Bar */}
+                {selectedTaskIds.length > 0 && (
+                    <Box bg="gray.100" p={2} mb={2} borderRadius="md" display="flex" alignItems="center" gap={2}>
+                        <Text>{selectedTaskIds.length} selected</Text>
+                        <Button size="sm" colorScheme="green" onClick={() => handleBulkComplete()}>
+                            Mark as Complete
+                        </Button>
+                        <Button size="sm" colorScheme="red" onClick={() => handleBulkDelete()}>
+                            Delete Selected
+                        </Button>
+                    </Box>
+                )}
+            </Container>
     );
-};
+}
 
-export default React.memo(TaskList);
+export default TaskList;

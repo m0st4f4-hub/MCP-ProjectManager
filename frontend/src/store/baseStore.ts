@@ -1,4 +1,3 @@
-
 import { create, StoreApi } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -41,7 +40,7 @@ export const createBaseStore = <
     });
 
     if (options.persist && typeof window !== 'undefined') {
-        return create<TState>(persist(store, { name: options.name, version: options.version || 1 }) as any); 
+        return create<TState>(persist(store, { name: options.name, version: options.version || 1 })); 
     }
     return create<TState>(store);
 };
@@ -67,7 +66,7 @@ export const withLoading = async <T>(
         const result = await asyncFn(); // store result
         set({ loading: false }); // set loading false before returning
         return result; // return result
-    } catch (err: any) { 
+    } catch (err: unknown) { 
         const errorMessage = handleApiError(err); // Use handleApiError
         set({ loading: false, error: errorMessage });
         // console.error("Operation failed:", errorMessage, err); // console.error moved to calling action

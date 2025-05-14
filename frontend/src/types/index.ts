@@ -36,4 +36,11 @@ export interface ToastMessage {
     type: ToastType;
     message: string;
     duration?: number;
+}
+
+export type TaskSortField = 'created_at' | 'title' | 'status' | 'agent';
+
+export interface TaskSortOptions {
+    field: TaskSortField;
+    direction: 'asc' | 'desc';
 } 

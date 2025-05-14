@@ -57,7 +57,6 @@ const agentActionsCreator = (
         }
     },
     addAgent: async (agentData: AgentCreateData) => {
-        const currentAgents = get().agents;
         set({ loading: true, error: null });
         try {
             console.log(`[Store] Calling API to create agent: ${agentData.name}`);

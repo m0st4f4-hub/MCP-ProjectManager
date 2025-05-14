@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     VStack,
     Box,
@@ -24,31 +24,31 @@ import {
     ModalCloseButton,
     Button,
     useDisclosure,
+    Icon,
+    Tooltip,
 } from '@chakra-ui/react';
-import { DeleteIcon, HamburgerIcon, CopyIcon, CheckCircleIcon, ViewIcon, AddIcon, EditIcon } from '@chakra-ui/icons';
+import { DeleteIcon, HamburgerIcon, CopyIcon, CheckCircleIcon, EditIcon, AddIcon } from '@chakra-ui/icons';
 import { useAgentStore } from '@/store/agentStore';
 import { useTaskStore } from '@/store/taskStore';
 import { Agent } from '@/types';
 import { formatDisplayName } from '@/lib/utils';
 import AddAgentForm from './AddAgentForm';
 import EditAgentForm from './EditAgentForm';
-
-const ACCENT_COLOR = "#dad2cc";
+import { useProjectStore } from "../store/projectStore";
 
 const AgentList: React.FC = () => {
-    const {
-        agents,
-        loading: agentsLoading,
-        error: agentsError,
-        fetchAgents,
-        removeAgent,
-        addAgent,
-        editAgent,
-    } = useAgentStore();
-    const tasks = useTaskStore(state => state.tasks);
-    const globalFilters = useTaskStore(state => state.filters);
+    const agents = useAgentStore(state => state.agents);
+    const agentsLoading = useAgentStore(state => state.loading);
+    const agentsError = useAgentStore(state => state.error);
+    const fetchAgents = useAgentStore(state => state.fetchAgents);
+    const removeAgent = useAgentStore(state => state.removeAgent);
+    const addAgent = useAgentStore(state => state.addAgent);
+    const editAgent = useAgentStore(state => state.editAgent);
+    const agentFilters = useAgentStore(state => state.filters);
+    const { tasks } = useTaskStore(state => ({ tasks: state.tasks }));
     const toast = useToast();
     const isMobile = useBreakpointValue({ base: true, md: false });
+    const { projects } = useProjectStore();
 
     const { isOpen: isAddOpen, onOpen: onAddOpen, onClose: onAddClose } = useDisclosure();
     const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure();
@@ -58,13 +58,27 @@ const AgentList: React.FC = () => {
         fetchAgents();
     }, [fetchAgents]);
 
-    const getAgentStats = (agentName: string) => {
-        const agentTasks = tasks.filter(task => task.agent_name === agentName);
-        const completedTasks = agentTasks.filter(task => task.completed);
+    const getAgentStats = (agentId: string) => {
+        // Get all tasks assigned to this agent
+        const agentTasks = tasks.filter((task) => task.agent_id === agentId);
+        const taskCount = agentTasks.length;
+
+        // Get unique project IDs from these tasks
+        const projectIds = Array.from(new Set(agentTasks.map((task) => task.project_id).filter(Boolean)));
+        const projectCount = projectIds.length;
+        const projectNames = projectIds
+            .map((pid) => projects.find((p) => p.id === pid)?.name)
+            .filter((name): name is string => !!name);
+
+        // Determine status: Active if any incomplete tasks, Idle otherwise
+        const isActive = agentTasks.some((task) => !task.completed);
+        const status = isActive ? "Active" : "Idle";
+
         return {
-            totalTasks: agentTasks.length,
-            completedTasks: completedTasks.length,
-            activeProjects: new Set(agentTasks.map(task => task.project_id).filter(Boolean)).size
+            taskCount,
+            projectCount,
+            projectNames,
+            status,
         };
     };
 
@@ -126,40 +140,39 @@ const AgentList: React.FC = () => {
         onEditOpen();
     };
 
+    const handleCopyAgentId = (id: string) => {
+        navigator.clipboard.writeText(id);
+        toast({
+            title: "Agent ID Copied",
+            status: "info",
+            duration: 2000,
+            isClosable: true,
+        });
+    };
+
     const filteredAgents = React.useMemo(() => {
         if (!agents) return [];
         return agents.filter(agent => {
             if (!agent) return false;
 
-            if (globalFilters.searchTerm) {
-                const searchTermLower = globalFilters.searchTerm.toLowerCase();
+            if (agentFilters.search) {
+                const searchTermLower = agentFilters.search.toLowerCase();
                 if (!agent.name?.toLowerCase().includes(searchTermLower)) return false;
             }
 
-            if (globalFilters.projectId) {
-                const agentTasksInProject = tasks.filter(task => 
-                    task.agent_name === agent.name && task.project_id === globalFilters.projectId
-                );
-                if (agentTasksInProject.length === 0) return false;
-            }
-
-            if (globalFilters.status && globalFilters.status !== 'all') {
-                const agentTasks = tasks.filter(task => task.agent_name === agent.name);
-                if (agentTasks.length === 0 && globalFilters.status === 'active') return false;
-                if (agentTasks.length === 0 && globalFilters.status === 'completed') return true;
-
-                const allAgentTasksCompleted = agentTasks.every(task => task.completed);
-                if (globalFilters.status === 'completed' && !allAgentTasksCompleted) return false;
-                if (globalFilters.status === 'active' && allAgentTasksCompleted && agentTasks.length > 0) return false;
-            }
-
-            if (globalFilters.agentName && agent.name !== globalFilters.agentName) {
-                // return false; // Uncomment if this specific behavior is desired.
+            if (agentFilters.status && agentFilters.status !== 'all') {
+                const agentTasks = tasks.filter(task => task.agent_name === agent.name || task.agent_id === agent.id);
+                const isActive = agentTasks.some(task => !task.completed);
+                const currentStatus = isActive ? 'busy' : (agentTasks.length > 0 ? 'available' : 'offline');
+                
+                if (agentFilters.status === 'available' && (currentStatus !== 'available' && currentStatus !== 'offline')) return false;
+                if (agentFilters.status === 'busy' && currentStatus !== 'busy') return false;
+                if (agentFilters.status === 'offline' && currentStatus !== 'offline') return false;
             }
 
             return true;
         });
-    }, [agents, globalFilters, tasks]);
+    }, [agents, agentFilters, tasks]);
 
     if (agentsLoading) return <Text color="text.muted">Loading agents...</Text>;
     if (agentsError) return <Text color="text.critical">Error loading agents: {agentsError}</Text>;
@@ -205,8 +218,7 @@ const AgentList: React.FC = () => {
             </Flex>
 
             {filteredAgents.map(agent => {
-                const stats = getAgentStats(agent.name);
-                const isActive = stats.totalTasks > 0 || stats.activeProjects > 0;
+                const stats = getAgentStats(agent.id);
                 return (
                     <Box
                         key={agent.id}
@@ -218,7 +230,7 @@ const AgentList: React.FC = () => {
                         borderColor="border.secondary"
                         _hover={{ 
                             shadow: "xl", 
-                            borderColor: isActive ? 'border.accent' : "border.primary",
+                            borderColor: stats.status === 'Active' ? 'border.accent' : 'border.highlight',
                             transform: "translateY(-1px)" 
                         }}
                         transition="all 0.2s ease-in-out"
@@ -231,16 +243,24 @@ const AgentList: React.FC = () => {
                             left: 0,
                             right: 0,
                             height: "4px",
-                            bg: isActive ? 'accent.active' : "transparent",
+                            bg: stats.status === 'Active' ? 'border.accent' : "transparent",
                             opacity: 0.9
                         }}
                     >
                         <HStack 
                             mb={2} 
-                            align={{ base: 'flex-start', md: 'start' }}
-                            direction={{ base: 'column', md: 'row' }}
+                            align={{ base: 'flex-start', md: 'center' }}
+                            spacing={4}
+                            w="full"
                         >
-                            <VStack align="start" spacing={0.5} flex={1} mb={{ base: 2, md: 0 }}>
+                            <Icon 
+                                as={CheckCircleIcon} 
+                                color={stats.status === 'Active' ? 'icon.accent' : 'icon.muted'} 
+                                boxSize={6} 
+                                title={stats.status === 'Active' ? 'Active' : 'Idle'}
+                                mr={1}
+                            />
+                            <VStack align="start" spacing={1} flex={1} >
                                 <Text 
                                     fontWeight="semibold" 
                                     fontSize="lg"
@@ -256,75 +276,65 @@ const AgentList: React.FC = () => {
                                         px={2} 
                                         py={0.5} 
                                         borderRadius="md"
-                                        bg={isActive ? 'bg.status.success.subtle' : 'bg.subtle'} 
-                                        color={isActive ? 'text.status.success' : 'text.secondary'}
+                                        bg={stats.status === 'Active' ? 'bg.status.success.subtle' : 'bg.subtle'} 
+                                        color={stats.status === 'Active' ? 'text.status.success' : 'text.secondary'}
                                     >
-                                        {isActive ? 'Active' : 'Idle'}
+                                        {stats.status}
                                     </Badge>
                                 </HStack>
-                                <Text fontSize="xs" color="text.muted">ID: {agent.id}</Text>
+                                <Text color="text.secondary" fontSize="sm" >ID: {agent.id}</Text>
                             </VStack>
 
-                            <HStack 
-                                spacing={3} 
-                                wrap="wrap" 
-                                justify={{ base: 'flex-start', md: 'flex-end' }} 
-                                align="center"
-                                ml={{ md: 4 }}
+                            <VStack 
+                                spacing={1}
+                                fontSize="sm" 
+                                color="text.secondary"
+                                alignSelf="center"
+                                textAlign="right"
+                                minW="120px"
                             >
-                                <Badge 
-                                    variant="subtle"
-                                    bg={stats.totalTasks > 0 ? "badge.bg.info" : "badge.bg.neutral"}
-                                    color={stats.totalTasks > 0 ? "badge.text.info" : "badge.text.neutral"}
-                                >
-                                    Tasks: {stats.totalTasks}
-                                </Badge>
-                                <Badge 
-                                    variant="subtle"
-                                    bg={stats.completedTasks > 0 ? "badge.bg.success" : "badge.bg.neutral"}
-                                    color={stats.completedTasks > 0 ? "badge.text.success" : "badge.text.neutral"}
-                                >
-                                    Completed: {stats.completedTasks}
-                                </Badge>
-                                <Badge 
-                                    variant="subtle"
-                                    bg={stats.activeProjects > 0 ? "badge.bg.info" : "badge.bg.neutral"}
-                                    color={stats.activeProjects > 0 ? "badge.text.info" : "badge.text.neutral"}
-                                >
-                                    Projects: {stats.activeProjects}
-                                </Badge>
-                            </HStack>
+                                <Text>TASKS: {stats.taskCount}</Text>
+                                <Text>PROJECTS: {stats.projectCount}</Text>
+                                {stats.projectCount > 0 && (
+                                    <Tooltip label={stats.projectNames.join(", ")} aria-label="Project Names" placement="top-start">
+                                        <Text fontSize="xs" color="text.secondary" cursor="pointer" _hover={{ textDecoration: 'underline' }}>
+                                            {stats.projectNames.length > 2
+                                                ? stats.projectNames.slice(0, 2).join(", ") + ` +${stats.projectNames.length - 2} more`
+                                                : stats.projectNames.join(", ")}
+                                        </Text>
+                                    </Tooltip>
+                                )}
+                            </VStack>
 
-                            <Menu placement="bottom-end">
-                                <MenuButton
-                                    as={IconButton}
-                                    aria-label="Options"
-                                    icon={<HamburgerIcon />}
+                            <HStack spacing={1} alignSelf="center">
+                                <IconButton
+                                    aria-label="Copy Agent ID"
+                                    icon={<CopyIcon />}
+                                    size="sm"
                                     variant="ghost"
                                     color="icon.secondary"
-                                    _hover={{ bg: "bg.hover.nav", color: "text.primary" }}
-                                    size="sm"
+                                    _hover={{ bg: 'interaction.hover', color: 'icon.primary' }}
+                                    onClick={() => handleCopyAgentId(agent.id)}
                                 />
-                                <MenuList bg="bg.card" borderColor="border.secondary">
-                                    <MenuItem 
-                                        icon={<EditIcon />} 
-                                        onClick={() => handleOpenEditModal(agent)}
-                                        bg="bg.card"
-                                        _hover={{ bg: "bg.hover.nav" }}
-                                    >
-                                        Edit Agent
-                                    </MenuItem>
-                                    <MenuItem 
-                                        icon={<DeleteIcon />} 
-                                        onClick={() => handleAgentDelete(agent.id, agent.name)}
-                                        color="text.danger"
-                                        bg="bg.card"
-                                        _hover={{ bg: "bg.danger.hover" }}
-                                    >
-                                        Delete Agent
-                                    </MenuItem>
-                                </MenuList>
-                            </Menu>
+                                <IconButton
+                                    aria-label="Edit Agent"
+                                    icon={<EditIcon />}
+                                    size="sm"
+                                    variant="ghost"
+                                    color="icon.secondary"
+                                    _hover={{ bg: 'interaction.hover', color: 'icon.primary' }}
+                                    onClick={() => handleOpenEditModal(agent)}
+                                />
+                                <IconButton
+                                    aria-label="Delete Agent"
+                                    icon={<DeleteIcon />}
+                                    size="sm"
+                                    variant="ghost"
+                                    color="icon.danger"
+                                    _hover={{ bg: 'interaction.danger.hover', color: 'icon.critical' }}
+                                    onClick={() => handleAgentDelete(agent.id, agent.name)}
+                                />
+                             </HStack>
                         </HStack>
                     </Box>
                 );

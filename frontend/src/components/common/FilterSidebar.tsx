@@ -11,11 +11,14 @@ import {
     Input,
     InputGroup,
     InputLeftElement,
-    HStack
+    HStack,
+    Button,
+    Switch,
+    FormHelperText
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { useTaskStore } from '@/store/taskStore';
-import { TaskFilters, TaskSortOptions } from '@/types';
+import { TaskFilters, TaskSortOptions, TaskSortField } from '@/types';
 import { formatDisplayName } from '@/lib/utils';
 
 const FilterSidebar: React.FC = () => {
@@ -23,16 +26,8 @@ const FilterSidebar: React.FC = () => {
     const setFilters = useTaskStore(state => state.setFilters);
     const projects = useTaskStore(state => state.projects);
     const agents = useTaskStore(state => state.agents);
-    const fetchProjectsAndAgents = useTaskStore(state => state.fetchProjectsAndAgents);
     const sortOptions = useTaskStore(state => state.sortOptions);
     const setSortOptions = useTaskStore(state => state.setSortOptions);
-
-    React.useEffect(() => {
-        // Fetch projects and agents if not already loaded, for dropdowns
-        if (!projects.length || !agents.length) {
-            fetchProjectsAndAgents();
-        }
-    }, [projects, agents, fetchProjectsAndAgents]);
 
     const uniqueAgentsForDropdown = React.useMemo(() => {
         const seenDisplayNames = new Set<string>();
@@ -71,6 +66,26 @@ const FilterSidebar: React.FC = () => {
         setSortOptions({
             field: field || sortOptions.field,
             direction: direction || sortOptions.direction
+        });
+    };
+
+    // Add handler to clear all filters
+    const handleClearFilters = () => {
+        setFilters({
+            status: 'all',
+            projectId: null,
+            agentName: null,
+            searchTerm: null,
+            top_level_only: true,
+        });
+    };
+
+    // Handler for show/hide completed toggle
+    const showCompleted = !filters.status || filters.status === 'all';
+    const handleToggleShowCompleted = () => {
+        setFilters({
+            ...filters,
+            status: showCompleted ? 'active' : 'all',
         });
     };
 
@@ -176,6 +191,23 @@ const FilterSidebar: React.FC = () => {
                 </Select>
             </FormControl>
 
+            <FormControl display="flex" alignItems="center" mt={2} mb={2}>
+                <Switch
+                    id="show-completed-toggle"
+                    isChecked={showCompleted}
+                    onChange={handleToggleShowCompleted}
+                    colorScheme="teal"
+                    mr={2}
+                    aria-label={showCompleted ? 'Hide Completed Tasks' : 'Show Completed Tasks'}
+                />
+                <FormLabel htmlFor="show-completed-toggle" mb="0" fontSize="sm" color="text.secondary">
+                    {showCompleted ? 'Hide Completed' : 'Show Completed'}
+                </FormLabel>
+                <FormHelperText fontSize="xs" color="text.tertiary" ml={2}>
+                    Toggle visibility of completed tasks
+                </FormHelperText>
+            </FormControl>
+
             {/* Sort Options */}
             <Box w="full" mt={2} pt={3} borderTopWidth="1px" borderColor="border.divider">
                 <Heading size="sm" color="text.secondary" mb={2}>
@@ -185,7 +217,7 @@ const FilterSidebar: React.FC = () => {
                     <HStack spacing={2}>
                         <Select
                             value={sortOptions.field || 'created_at'}
-                            onChange={(e) => handleSortChange(e.target.value as TaskSortOptions['field'], null)}
+                            onChange={(e) => handleSortChange(e.target.value as TaskSortField, null)}
                             bg="bg.input"
                             color="text.primary"
                             borderColor="border.input"
@@ -197,8 +229,9 @@ const FilterSidebar: React.FC = () => {
                                 boxShadow: "outline"
                             }}
                         >
-                            <option value="created_at">Date Created</option>
-                            <option value="title">Title</option>
+                            <option value="created_at">Created Date</option>
+                            <option value="status">Status</option>
+                            <option value="agent">Agent</option>
                         </Select>
                         <Select
                             value={sortOptions.direction || 'desc'}
@@ -220,6 +253,17 @@ const FilterSidebar: React.FC = () => {
                     </HStack>
                 </FormControl>
             </Box>
+
+            {/* Clear Filters Button */}
+            <Button
+                mt={6}
+                colorScheme="gray"
+                variant="outline"
+                onClick={handleClearFilters}
+                aria-label="Clear all filters"
+            >
+                Clear Filters
+            </Button>
 
             {/* Search box and sorting can be added here later */}
         </VStack>

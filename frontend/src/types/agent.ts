@@ -44,6 +44,7 @@ export interface AgentWithMeta extends Agent {
 export interface AgentFilters {
     search?: string;
     status?: 'all' | 'available' | 'busy' | 'offline';
+    projectId?: string | null;
 }
 
 // Agent sort options

@@ -240,6 +240,40 @@ const semanticTokens = {
     'task.item.completed.bg': { default: 'neutral.50',    _dark: 'neutral.800' },
     'task.item.flash.bg':     { default: 'yellow.100',    _dark: 'yellow.700' }, // Using warning scale
 
+    // --- Task Status Tokens ---
+    'status.completed.text':   { default: 'success.700', _dark: 'success.200' },
+    'status.completed.bg':     { default: 'success.50',  _dark: 'success.800' },
+    'status.inProgress.text':  { default: 'info.700',    _dark: 'info.200' },
+    'status.inProgress.bg':    { default: 'info.50',     _dark: 'info.800' },
+    'status.blocked.text':     { default: 'danger.700',  _dark: 'danger.200' },
+    'status.blocked.bg':       { default: 'danger.50',   _dark: 'danger.800' },
+    'status.todo.text':        { default: 'neutral.700', _dark: 'neutral.200' },
+    'status.todo.bg':          { default: 'neutral.100', _dark: 'neutral.700' },
+
+    // --- Task Priority Tokens ---
+    'priority.high.icon':      { default: 'danger.500',  _dark: 'danger.300' },
+    'priority.high.text':      { default: 'danger.700',  _dark: 'danger.200' },
+    'priority.high.bg':        { default: 'danger.50',   _dark: 'danger.800' },
+    'priority.medium.icon':    { default: 'warning.500', _dark: 'warning.300' },
+    'priority.medium.text':    { default: 'warning.700', _dark: 'warning.200' },
+    'priority.medium.bg':      { default: 'warning.50',  _dark: 'warning.800' },
+    'priority.low.icon':       { default: 'info.500',    _dark: 'info.300' },
+    'priority.low.text':       { default: 'info.700',    _dark: 'info.200' },
+    'priority.low.bg':         { default: 'info.50',     _dark: 'info.800' },
+
+    // --- Tag Tokens ---
+    'tag.project.bg':          { default: 'accent.100',  _dark: 'accent.700' },
+    'tag.project.text':        { default: 'accent.700',  _dark: 'accent.200' },
+    'tag.dueDate.bg':          { default: 'brand.100',   _dark: 'brand.700' },
+    'tag.dueDate.text':        { default: 'brand.700',   _dark: 'brand.200' },
+
+    // --- Task Item Hover ---
+    'taskItem.compact.hover.bg':  { default: 'neutral.100', _dark: 'neutral.800' },
+    'taskItem.default.hover.bg':  { default: 'neutral.50',  _dark: 'neutral.700' },
+
+    // --- Actions ---
+    'actions.danger.text':     { default: 'danger.600',  _dark: 'danger.300' },
+
     // ... add other specific component states as needed
   },
   space,

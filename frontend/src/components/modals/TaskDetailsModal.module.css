@@ -1,0 +1,19 @@
+/* Styles for TaskDetailsModal */
+.modalBody {
+    /* Example: Add specific padding if needed, though Chakra's ModalBody handles much of this */
+    /* padding: 1rem; */
+}
+
+.detailRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.detailLabel {
+    font-weight: bold;
+}
+
+.detailValue {
+    /* styles for values */
+} 

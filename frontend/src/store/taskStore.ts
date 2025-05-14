@@ -1,5 +1,5 @@
 // D:\mcp\task-manager\frontend\src\store\taskStore.ts
-import { Task, TaskCreateData, TaskUpdateData, TaskFilters, TaskSortOptions, Project, Agent } from '@/types';
+import { Task, TaskCreateData, TaskUpdateData, TaskFilters, TaskSortOptions, Project, Agent, TaskSortField } from '@/types';
 import { create } from 'zustand';
 import * as api from '@/services/api';
 
@@ -67,7 +67,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     editingTask: null,
     isEditModalOpen: false,
     sortOptions: {
-        field: 'created_at',
+        field: 'created_at' as TaskSortField,
         direction: 'desc'
     },
     filters: {
@@ -88,8 +88,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             console.log("[fetchTasks] Fetching with filters:", filters);
             const tasks = await api.getTasks(filters);
             set({ tasks, loading: false });
-        } catch (error: any) {
-            set({ error: error.message, loading: false });
+        } catch (error: unknown) {
+            let errorMessage = 'Failed to fetch tasks';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            set({ error: errorMessage, loading: false });
         }
     },
 
@@ -99,13 +105,19 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             const projects = await api.getProjects(); 
             const agents = await api.getAgents();
             set({ projects, agents });
-        } catch (error: any) {
-            set(state => ({ ...state, error: `Failed to fetch projects/agents: ${error.message}` }));
+        } catch (error: unknown) {
+            let errorMessage = 'Failed to fetch projects/agents';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }            
+            set(state => ({ ...state, error: `Failed to fetch projects/agents: ${errorMessage}` }));
         }
     },
 
     startPolling: () => {
-        const { fetchTasks, fetchProjectsAndAgents, pollingIntervalId, filters } = get();
+        const { fetchTasks, fetchProjectsAndAgents, pollingIntervalId } = get();
         if (pollingIntervalId) {
             clearInterval(pollingIntervalId);
         }
@@ -142,8 +154,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
                 tasks: sortTasks(upsertTasks([newTaskFromApi], state.tasks), state.sortOptions),
                 loading: false 
             }));
-        } catch (error) {
-            set(state => ({ ...state, error: String(error), loading: false }));
+        } catch (error: unknown) {
+            let errorMessage = 'Failed to add task';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            set(state => ({ ...state, error: errorMessage, loading: false }));
         }
     },
 
@@ -164,12 +182,20 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             // Make the API call
             await api.deleteTask(id);
             // If successful, no need to update state again as it's already removed optimistically
-        } catch (error) {
+        } catch (error: unknown) {
+            let errorMessage = `Failed to delete task ${id}`;
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            } else {
+                errorMessage = `Failed to delete task ${id}: An unknown error occurred`; // Specific message if not Error/string
+            }
             // Revert to original state on error
             set(state => ({
                 ...state,
                 tasks: sortTasks(originalTasks, state.sortOptions),
-                error: `Failed to delete task ${id}: ${String(error)}`
+                error: errorMessage
             }));
         }
     },
@@ -198,12 +224,20 @@ export const useTaskStore = create<TaskState>((set, get) => ({
                     state.sortOptions
                 ),
             }));
-        } catch (error) {
+        } catch (error: unknown) {
+            let errorMessage = `Failed to update task ${id}`;
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            } else {
+                errorMessage = `Failed to update task ${id}: An unknown error occurred`;
+            }
             // Revert to original state on error
             set(state => ({
                 ...state,
                 tasks: sortTasks(originalTasks, state.sortOptions),
-                error: `Failed to update task ${id}: ${String(error)}`
+                error: errorMessage
             }));
         }
     },
@@ -222,8 +256,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
                 isEditModalOpen: false,
                 loading: false
             }));
-        } catch (error) {
-            set(state => ({ ...state, error: String(error), loading: false }));
+        } catch (error: unknown) {
+            let errorMessage = 'Failed to edit task';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            set(state => ({ ...state, error: errorMessage, loading: false }));
         }
     },
 
@@ -259,17 +299,23 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             await api.deleteTask(id);
             // Fetch projects and agents again to update counts
             get().fetchProjectsAndAgents(); 
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Failed to delete task:', error);
+            let errorMessage = 'Error during task deletion in store';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
             // Revert optimistic update
-            set({ tasks: originalTasks });
-            throw error;
+            set({ tasks: originalTasks, error: errorMessage }); // also set error state
+            throw error; // Re-throw to allow UI to handle if needed
         }
     }
 }));
 
 // Helper function to sort tasks
-const sortTasks = (tasks: Task[], options: TaskSortOptions): Task[] => {
+export const sortTasks = (tasks: Task[], options: TaskSortOptions): Task[] => {
     if (!tasks) return [];
     return [...tasks].sort((a, b) => {
         if (!a || !b) return 0;
@@ -279,14 +325,27 @@ const sortTasks = (tasks: Task[], options: TaskSortOptions): Task[] => {
             const dateB = new Date(b.created_at).getTime();
             return options.direction === 'asc' ? dateA - dateB : dateB - dateA;
         }
-        
         if (options.field === 'title') {
             if (!a.title || !b.title) return 0;
             return options.direction === 'asc'
                 ? a.title.localeCompare(b.title)
                 : b.title.localeCompare(a.title);
         }
-        
+        if (options.field === 'status') {
+            if (a.status && b.status) {
+                return options.direction === 'asc'
+                    ? a.status.localeCompare(b.status)
+                    : b.status.localeCompare(a.status);
+            }
+            return 0;
+        }
+        if (options.field === 'agent') {
+            const agentA = typeof a.agent === 'string' ? a.agent : a.agent?.name || '';
+            const agentB = typeof b.agent === 'string' ? b.agent : b.agent?.name || '';
+            return options.direction === 'asc'
+                ? agentA.localeCompare(agentB)
+                : agentB.localeCompare(agentA);
+        }
         return 0;
     });
 };
