@@ -18,9 +18,21 @@ import {
     Box,
     Heading,
     Divider,
+    TagLeftIcon,
+    useToast,
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogOverlay,
+    useDisclosure,
+    Badge,
 } from '@chakra-ui/react';
 import { Task, getTaskById } from '@/services/api'; // Assuming getTaskById exists
 import { useTaskStore } from '@/store/taskStore'; // To potentially get project/agent names if not in task detail
+import { getDisplayableStatus, StatusID } from '@/lib/statusUtils'; // Added import
+import { DeleteIcon, DownloadIcon, RepeatClockIcon } from '@chakra-ui/icons'; // Added icons
 
 interface TaskDetailsModalProps {
     isOpen: boolean;
@@ -37,9 +49,21 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     
-    // Placeholder for projects and agents if needed for display
-    // const projects = useTaskStore((state) => state.projects);
-    // const agents = useTaskStore((state) => state.agents);
+    // Move Zustand hooks to top level
+    const projects = useTaskStore(state => state.projects);
+    const tasks = useTaskStore(state => state.tasks);
+    const agents = useTaskStore(state => state.agents);
+    const archiveTaskStore = useTaskStore(state => state.archiveTask);
+    const unarchiveTaskStore = useTaskStore(state => state.unarchiveTask);
+    const deleteTaskStore = useTaskStore(state => state.deleteTask);
+    const toast = useToast();
+
+    const { 
+        isOpen: isAlertOpen, 
+        onOpen: onAlertOpen, 
+        onClose: onAlertClose 
+    } = useDisclosure();
+    const cancelRef = React.useRef();
 
     useEffect(() => {
         if (isOpen && taskId !== null) {
@@ -47,23 +71,13 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 setIsLoading(true);
                 setError(null);
                 try {
-                    // TODO: This is a placeholder. The actual API call might be different.
-                    // We need to ensure getTaskById or a similar function exists and is correctly typed.
-                    // For now, we'll simulate fetching or assume the task object might be passed directly
-                    // or fetched using a method similar to other parts of the application.
-                    
-                    // const fetchedTask = await getTaskById(taskId); // Example API call
-                    // setTask(fetchedTask);
-                    
-                    // SIMULATED: In a real scenario, fetch from API or use a more robust store selector
-                    const storeTask = useTaskStore.getState().tasks.find(t => t.id === taskId); // taskId is now string
+                    // Use tasks from top-level hook
+                    const storeTask = tasks.find(t => t.id === taskId);
                     if (storeTask) {
                         setTask(storeTask);
                     } else {
-                        // setError('Task details not found in store, attempting fetch...');
-                         // Attempt to fetch if not in store - this requires getTaskById to be implemented
                         try {
-                            const fetchedTask = await getTaskById(taskId); // Call with string taskId
+                            const fetchedTask = await getTaskById(taskId);
                             setTask(fetchedTask);
                         } catch (fetchError) {
                             console.error('Failed to fetch task by ID:', fetchError);
@@ -71,7 +85,6 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                             setTask(null);
                         }
                     }
-
                 } catch (e) {
                     console.error('Failed to load task details:', e);
                     const message = e instanceof Error ? e.message : 'Could not load task details.';
@@ -83,16 +96,54 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             };
             fetchTaskDetails();
         } else {
-            // Reset state when modal is closed or taskId is null
             setTask(null);
             setIsLoading(false);
             setError(null);
         }
-    }, [isOpen, taskId]);
+    }, [isOpen, taskId, tasks]);
 
-    const getProjectName = (projectId: string | undefined | null) => { // projectId is string
+    const handleArchive = async () => {
+        if (!task) return;
+        try {
+            await archiveTaskStore(task.id);
+            toast({ title: 'Task archived', status: 'success', duration: 2000, isClosable: true });
+            onClose(); // Close modal after action
+        } catch (err) {
+            toast({ title: 'Error archiving task', description: err instanceof Error ? err.message : String(err), status: 'error', duration: 3000, isClosable: true });
+        }
+    };
+
+    const handleUnarchive = async () => {
+        if (!task) return;
+        try {
+            await unarchiveTaskStore(task.id);
+            toast({ title: 'Task unarchived', status: 'success', duration: 2000, isClosable: true });
+            onClose(); // Close modal after action
+        } catch (err) {
+            toast({ title: 'Error unarchiving task', description: err instanceof Error ? err.message : String(err), status: 'error', duration: 3000, isClosable: true });
+        }
+    };
+
+    const handleDeleteInitiate = () => {
+        onAlertOpen();
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!task) return;
+        try {
+            await deleteTaskStore(task.id);
+            toast({ title: task.is_archived ? 'Archived task permanently deleted' : 'Task deleted', status: 'success', duration: 2000, isClosable: true });
+            onAlertClose();
+            onClose(); // Close main modal after delete
+        } catch (err) {
+            toast({ title: 'Error deleting task', description: err instanceof Error ? err.message : String(err), status: 'error', duration: 3000, isClosable: true });
+        }
+    };
+
+    // Use projects from top-level hook
+    const getProjectName = (projectId: string | undefined | null) => {
         if (!projectId) return 'N/A';
-        const project = useTaskStore.getState().projects.find(p => p.id === projectId);
+        const project = projects.find(p => p.id === projectId);
         return project ? project.name : 'Unknown Project';
     };
 
@@ -102,69 +153,125 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     //     return agentName; // Or lookup in agents list if only ID was available
     // };
 
+    const agent = agents.find(a => a.id === task?.agent_id);
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>
+            <ModalOverlay backdropFilter="blur(2px)" />
+            <ModalContent bg="bg.modal" color="text.primary" borderColor="border.base" borderWidth="1px">
+                <ModalHeader borderBottomWidth="1px" borderColor="border.base" color="text.heading">
                     {task ? task.title : 'Task Details'}
-                    {isLoading && <Spinner size="sm" ml={3} />}
+                    {isLoading && <Spinner size="sm" ml={3} color="icon.primary" />}
+                    {task?.is_archived && (
+                        <Badge colorScheme="purple" variant="solid" ml={3} fontSize="0.8em">
+                            Archived
+                        </Badge>
+                    )}
                 </ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
+                <ModalCloseButton color="text.secondary" _hover={{ bg: "interaction.hover"}} />
+                <ModalBody py={6}>
                     {error && (
-                        <Box color="red.500" mb={4}>
+                        <Box color="status.error" mb={4}>
                             Error: {error}
                         </Box>
                     )}
-                    {isLoading && !task && !error && <Spinner />}
-                    {!isLoading && !task && !error && <Text>No task selected or details unavailable.</Text>}
+                    {isLoading && !task && !error && <Spinner color="icon.primary" />}
+                    {!isLoading && !task && !error && <Text color="text.secondary">No task selected or details unavailable.</Text>}
                     
                     {task && (
                         <VStack spacing={4} align="stretch">
                             <Box>
-                                <Heading size="sm" mb={1}>Description</Heading>
-                                <Text whiteSpace="pre-wrap">{task.description || 'No description provided.'}</Text>
+                                <Heading size="sm" mb={1} color="text.heading">Description</Heading>
+                                <Text whiteSpace="pre-wrap" maxWidth="80ch" color="text.secondary">{task.description || 'No description provided.'}</Text>
                             </Box>
-                            <Divider />
+                            <Divider borderColor="border.divider" />
                             <HStack justifyContent="space-between">
                                 <Box>
-                                    <Heading size="xs" textTransform="uppercase">Status</Heading>
-                                    <Tag colorScheme={task.completed ? 'green' : 'yellow'}>
-                                        {task.completed ? 'Completed' : 'Pending'}
-                                    </Tag>
+                                    <Heading size="xs" textTransform="uppercase" color="text.secondary">Status</Heading>
+                                    {(() => {
+                                        // Default to 'TO_DO' if task.status is null or undefined
+                                        const statusId = (task.status || 'TO_DO') as StatusID;
+                                        const { displayName, colorScheme, icon, dynamicValue } = getDisplayableStatus(statusId, task.title);
+                                        return (
+                                            <Tag
+                                                size="md"
+                                                borderRadius="md"
+                                                colorScheme={colorScheme}
+                                                variant="subtle" // Using subtle variant for consistency if desired
+                                            >
+                                                {icon && <TagLeftIcon as={icon} />}
+                                                <Text>{dynamicValue ? `${displayName} (${dynamicValue})` : displayName}</Text>
+                                            </Tag>
+                                        );
+                                    })()}
                                 </Box>
                                 <Box>
-                                    <Heading size="xs" textTransform="uppercase">Project</Heading>
-                                    <Text>{getProjectName(task.project_id)}</Text>
+                                    <Heading size="xs" textTransform="uppercase" color="text.secondary">Project</Heading>
+                                    <Text color="text.primary">{getProjectName(task.project_id)}</Text>
                                 </Box>
                             </HStack>
                             <HStack justifyContent="space-between">
                                 <Box>
-                                    <Heading size="xs" textTransform="uppercase">Agent</Heading>
-                                    <Text>{task.agent_name || 'Unassigned'}</Text>
-                                </Box>
-                                 <Box>
-                                    <Heading size="xs" textTransform="uppercase">Due Date</Heading>
-                                    {/* Due date is not available in the current Task type */}
-                                    <Text fontStyle="italic">Not available</Text>
+                                    <Heading size="xs" textTransform="uppercase" color="text.secondary">Agent</Heading>
+                                    <Text color="text.primary">{agent ? agent.name : (task?.agent_name || 'Unassigned')}</Text>
                                 </Box>
                             </HStack>
-                           
-                            <Divider />
-                             <Box>
-                                <Heading size="sm" mb={2}>Comments</Heading>
-                                {/* TODO: Implement Comments Section */}
-                                <Text fontStyle="italic">Comments section to be implemented.</Text>
-                                {/* This could be a list of comments, and an input to add a new comment */}
-                            </Box>
                         </VStack>
                     )}
                 </ModalBody>
-                <ModalFooter>
-                    <Button onClick={onClose}>Close</Button>
+                <ModalFooter borderTopWidth="1px" borderColor="border.base">
+                    {task && !task.is_archived && (
+                        <>
+                            <Button leftIcon={<DownloadIcon />} colorScheme="blue" variant="outline" onClick={handleArchive} mr={3}>
+                                Archive Task
+                            </Button>
+                            <Button leftIcon={<DeleteIcon />} colorScheme="red" variant="outline" onClick={handleDeleteInitiate} mr={3}>
+                                Delete Task
+                            </Button>
+                        </>
+                    )}
+                    {task && task.is_archived && (
+                        <>
+                            <Button leftIcon={<RepeatClockIcon />} colorScheme="teal" variant="outline" onClick={handleUnarchive} mr={3}>
+                                Unarchive Task
+                            </Button>
+                            <Button leftIcon={<DeleteIcon />} colorScheme="red" onClick={handleDeleteInitiate} mr={3}>
+                                Delete Permanently
+                            </Button>
+                        </>
+                    )}
+                    <Button variant="ghost" onClick={onClose} color="text.link">Close</Button>
                 </ModalFooter>
             </ModalContent>
+            {task && (
+                <AlertDialog
+                    isOpen={isAlertOpen}
+                    leastDestructiveRef={cancelRef}
+                    onClose={onAlertClose}
+                    isCentered
+                >
+                    <AlertDialogOverlay>
+                        <AlertDialogContent bg="bg.modal" color="text.primary">
+                            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                                {task.is_archived ? 'Delete Archived Task' : 'Delete Task'}
+                            </AlertDialogHeader>
+                            <AlertDialogBody>
+                                {task.is_archived
+                                    ? 'Are you sure you want to permanently delete this archived task? This action cannot be undone.'
+                                    : 'Are you sure you want to delete this task?'}
+                            </AlertDialogBody>
+                            <AlertDialogFooter>
+                                <Button ref={cancelRef} onClick={onAlertClose} variant="ghost">
+                                    Cancel
+                                </Button>
+                                <Button colorScheme="red" onClick={handleDeleteConfirm} ml={3}>
+                                    Delete
+                                </Button>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialogOverlay>
+                </AlertDialog>
+            )}
         </Modal>
     );
 };

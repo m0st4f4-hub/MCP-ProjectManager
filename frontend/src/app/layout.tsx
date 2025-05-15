@@ -10,8 +10,34 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
-  title: "Task Manager",
-  description: "MCP Task Manager Frontend",
+  title: "Project Manager",
+  description: "MCP Project Manager Suite",
+  icons: [
+    {
+      rel: "icon",
+      url: "/favicon_light_32.png",
+      sizes: "32x32",
+      media: "(prefers-color-scheme: light)",
+    },
+    {
+      rel: "icon",
+      url: "/favicon_dark_32.png",
+      sizes: "32x32",
+      media: "(prefers-color-scheme: dark)",
+    },
+    {
+      rel: "icon",
+      url: "/favicon_light_64.png",
+      sizes: "64x64",
+      media: "(prefers-color-scheme: light)",
+    },
+    {
+      rel: "icon",
+      url: "/favicon_dark_64.png",
+      sizes: "64x64",
+      media: "(prefers-color-scheme: dark)",
+    },
+  ],
 };
 
 export default function RootLayout({

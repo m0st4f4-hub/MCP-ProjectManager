@@ -8,7 +8,7 @@ from sqlalchemy.sql import func
 from .database import Base # Import Base from database.py
 
 class Project(Base):
-    """Represents a project in the task manager.
+    """Represents a project in the Project Manager.
 
     A project acts as a container for related tasks.
 
@@ -19,6 +19,7 @@ class Project(Base):
         created_at: Timestamp when the project was created.
         updated_at: Timestamp when the project was last updated.
         tasks: List of tasks associated with this project.
+        is_archived: Boolean flag indicating if the project is archived.
     """
     __tablename__ = "projects"
 
@@ -27,6 +28,7 @@ class Project(Base):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=True)
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     tasks: Mapped[List["Task"]] = relationship(back_populates="project", cascade="all, delete-orphan")
 
@@ -41,6 +43,7 @@ class Agent(Base):
         created_at: Timestamp when the agent was created/registered.
         updated_at: Timestamp when the agent was last updated.
         tasks: List of tasks currently assigned to this agent.
+        is_archived: Boolean flag indicating if the agent is archived.
     """
     __tablename__ = "agents"
 
@@ -51,9 +54,10 @@ class Agent(Base):
 
     tasks: Mapped[List["Task"]] = relationship(back_populates="agent", cascade="all, delete-orphan")
 
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 class Task(Base):
-    """Represents a single task in the task manager.
+    """Represents a single task in the Project Manager.
 
     Tasks belong to a Project and can optionally be assigned to an Agent.
     Tasks can also have Subtasks.
@@ -70,13 +74,14 @@ class Task(Base):
         project: ORM relationship to the parent Project.
         agent: ORM relationship to the assigned Agent (if any).
         subtasks: List of subtasks associated with this task.
+        status: The status of the task.
+        is_archived: Boolean flag indicating if the task is archived.
     """
     __tablename__ = "tasks"
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, index=True)
     title: Mapped[str] = mapped_column(String, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    completed: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=True)
     
@@ -85,5 +90,8 @@ class Task(Base):
 
     project: Mapped["Project"] = relationship(back_populates="tasks")
     agent: Mapped[Optional["Agent"]] = relationship(back_populates="tasks")
+
+    status: Mapped[str] = mapped_column(String, default="To Do")
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 # Base.metadata.create_all(bind=engine) # REMOVED This is typically handled by Alembic

@@ -37,6 +37,7 @@ class ProjectBase(BaseModel):
     """Base schema for project attributes."""
     name: str = Field(..., description="The unique name of the project.")
     description: Optional[str] = Field(None, description="Optional text description of the project.")
+    is_archived: bool = Field(False, description="Whether the project is archived.")
 
 class ProjectCreate(ProjectBase):
     """Schema for creating a new project."""
@@ -47,6 +48,7 @@ class ProjectUpdate(BaseModel):
     """Schema for updating an existing project. All fields are optional."""
     name: Optional[str] = Field(None, description="New name for the project.")
     description: Optional[str] = Field(None, description="New description for the project.")
+    is_archived: Optional[bool] = Field(None, description="Set the archived status of the project.")
 
 class Project(ProjectBase):
     """Schema for representing a project in API responses."""
@@ -54,8 +56,7 @@ class Project(ProjectBase):
     created_at: datetime = Field(..., description="Timestamp when the project was created.")
     updated_at: Optional[datetime] = Field(None, description="Timestamp when the project was last updated.")
     task_count: int = Field(0, description="Number of tasks associated with this project.")
-    completed_task_count: int = Field(0, description="Number of completed tasks associated with this project.")
-
+    # is_archived is inherited from ProjectBase
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -66,9 +67,10 @@ class TaskBase(BaseModel):
     """Base schema for task attributes."""
     title: str = Field(..., description="Title of the task.")
     description: Optional[str] = Field(None, description="Optional description for the task.")
-    completed: Optional[bool] = Field(False, description="Completion status of the task.")
+    status: Optional[str] = Field("To Do", description="Status of the task. One of: 'To Do', 'In Progress', 'Blocked', 'Completed'.")
     project_id: str = Field(..., description="Identifier of the project this task belongs to.")
     agent_id: Optional[str] = Field(None, description="Identifier of the agent assigned to this task (optional).")
+    is_archived: bool = Field(False, description="Whether the task is archived.")
     # parent_task_id is intentionally NOT included here, handled by Subtask relationship
     # If supporting parent tasks directly on Task model, add it here.
     # parent_task_id: Optional[str] = Field(None, description="Identifier of the parent task (optional, for hierarchical tasks).")
@@ -92,9 +94,10 @@ class TaskUpdate(BaseModel):
     """Schema for updating an existing task. All fields are optional."""
     title: Optional[str] = Field(None, description="New title for the task.")
     description: Optional[str] = Field(None, description="New description for the task.")
-    completed: Optional[bool] = Field(None, description="New completion status for the task.")
+    status: Optional[str] = Field(None, description="New status for the task. One of: 'To Do', 'In Progress', 'Blocked', 'Completed'.")
     project_id: Optional[str] = Field(None, description="New project ID for the task.")
     agent_id: Optional[str] = Field(None, description="New agent ID for the task.")
+    is_archived: Optional[bool] = Field(None, description="Set the archived status of the task.")
     # parent_task_id: Optional[str] = Field(None, description="New parent task ID (if supported directly).")
 
 
@@ -109,6 +112,7 @@ class Task(TaskBase):
     id: str = Field(..., description="Unique identifier for the task.")
     created_at: datetime = Field(..., description="Timestamp when the task was created.")
     updated_at: Optional[datetime] = Field(None, description="Timestamp when the task was last updated.")
+    # is_archived is inherited from TaskBase
     
     project: Optional[Project] = Field(None, description="The project this task belongs to (populated from ORM).")
     agent: Optional[Agent] = Field(None, description="The agent assigned to this task (populated from ORM).")

@@ -73,7 +73,7 @@ async def lifespan(app: FastAPI):
     # await mcp_instance.shutdown()
 
 app = FastAPI(
-    title="Task Manager API",
+    title="Project Manager API",
     description="API for managing projects, agents, tasks, and subtasks.",
     version="0.2.0",
     lifespan=lifespan
@@ -196,14 +196,9 @@ async def get_mcp_tool_documentation(request: Request):
         mcp_tool_docs_md += f"- **Description**: {route['description']}\n\n"
 
     if not tools_dict and not route_docs_added:
-        mcp_tool_docs_md += "No MCP project-manager tools found via route inspection or MCP router not fully initialized at the time of this request for the /mcp-docs path."
+        mcp_tool_docs_md += "No MCP Project Manager tools found via route inspection or MCP router not fully initialized at the time of this request for the /mcp-docs path."
 
-    return {
-        "message": "MCP Project Manager API - Tools Documentation",
-        "mcp_project_manager_tools_documentation": mcp_tool_docs_md,
-        "routes": routes,
-        "tools": tools_dict
-    }
+    return JSONResponse(content={"documentation": mcp_tool_docs_md})
 
 # --- Project Endpoints (SAFE) ---
 
@@ -222,21 +217,52 @@ def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db)
 def get_project_list(
     skip: int = 0, 
     limit: int = 100, 
-    search: Optional[str] = None,  # Added search parameter
+    search: Optional[str] = None,
     status: Optional[str] = None,  # Added status parameter (though Project model doesn't have status yet)
+    is_archived: Optional[bool] = Query(None, description="Filter by archived status. False for non-archived, True for archived, null/None for all."), # MODIFIED DEFAULT TO None
     db: Session = Depends(get_db)
 ):
     """Retrieves a list of projects."""
-    projects = crud.get_projects(db, skip=skip, limit=limit, search=search, status=status) # Pass new params
+    print(f"[API /projects] Received is_archived: {is_archived} (type: {type(is_archived)})") # ADD THIS LINE
+    projects = crud.get_projects(db, skip=skip, limit=limit, search=search, status=status, is_archived=is_archived) # Pass new params
     return projects
 
 @app.get("/projects/{project_id}", response_model=schemas.Project, summary="Get Project by ID", tags=["Projects"], operation_id="get_project_by_id")
-def get_project_by_id(project_id: str, db: Session = Depends(get_db)):
+def get_project_by_id_endpoint(project_id: str, is_archived: Optional[bool] = Query(False, description="Set to true to fetch if archived, null/None to fetch regardless of status."), db: Session = Depends(get_db)): # MODIFIED name and added param
     """Retrieves a specific project by its ID."""
-    db_project = crud.get_project(db, project_id=project_id)
+    db_project = crud.get_project(db, project_id=project_id, is_archived=is_archived)
     if db_project is None:
-        raise HTTPException(status_code=404, detail="Project not found")
+        # If specifically searching for archived or non-archived, and not found, detail the message.
+        status_search_message = ""
+        if is_archived is True:
+            status_search_message = " (archived)"
+        elif is_archived is False:
+            status_search_message = " (active)"
+        raise HTTPException(status_code=404, detail=f"Project not found{status_search_message}")
     return db_project
+
+@app.post("/projects/{project_id}/archive", response_model=schemas.Project, summary="Archive Project", tags=["Projects"], operation_id="archive_project")
+def archive_project_endpoint(project_id: str, db: Session = Depends(get_db)):
+    """Archives a project and all its active tasks."""
+    try:
+        return crud.archive_project(db, project_id)
+    except HTTPException as e: # Catch HTTPExceptions from CRUD
+        raise e
+    except Exception as e:
+        # Log the exception details for debugging
+        print(f"Error archiving project {project_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to archive project: {str(e)}")
+
+@app.post("/projects/{project_id}/unarchive", response_model=schemas.Project, summary="Unarchive Project", tags=["Projects"], operation_id="unarchive_project")
+def unarchive_project_endpoint(project_id: str, db: Session = Depends(get_db)):
+    """Unarchives a project and all its tasks."""
+    try:
+        return crud.unarchive_project(db, project_id)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(f"Error unarchiving project {project_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to unarchive project: {str(e)}")
 
 # --- Agent Endpoints (SAFE) ---
 
@@ -256,10 +282,11 @@ def get_agent_list(
     limit: int = 100, 
     search: Optional[str] = None,  # Added search parameter
     status: Optional[str] = None,  # Added status parameter (though Agent model doesn't have status yet)
-    db: Session = Depends(get_db)
+    is_archived: Optional[bool] = Query(False, description="Filter by archived status. False for non-archived, True for archived, null/None for all."), # ADDED
+    db: Session = Depends(get_db) # ADDED db session dependency
 ):
     """Retrieves a list of registered agents."""
-    agents = crud.get_agents(db, skip=skip, limit=limit, search=search, status=status) # Pass new params
+    agents = crud.get_agents(db, skip=skip, limit=limit, search=search, status=status, is_archived=is_archived) # Pass new params
     return agents
 
 @app.get("/agents/{agent_name}", response_model=schemas.Agent, summary="Get Agent by Name", tags=["Agents"], operation_id="get_agent_by_name")
@@ -289,16 +316,24 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 @app.get("/tasks/", response_model=List[schemas.Task], summary="Get Tasks with Filtering", tags=["Tasks"], operation_id="get_tasks")
-def get_task_list(
-    db: Session = Depends(get_db),
+async def get_tasks_list(
+    project_id: Optional[str] = Query(None, description="Filter tasks by project ID."),
+    agent_id: Optional[str] = Query(None, description="Filter tasks by agent ID."), # Added agent_id
+    agent_name: Optional[str] = Query(None, description="Filter tasks by agent name."), # Added agent_name
+    # parent_task_id: Optional[str] = Query(None, description="Filter tasks by parent task ID."), # TODO: Add parent_task_id to crud
+    top_level_only: Optional[bool] = Query(None, description="Filter for top-level tasks only (tasks with no parent_id)."),
+    search: Optional[str] = Query(None, description="Search term for task titles and descriptions."),
+    status: Optional[str] = Query(None, description="Filter tasks by status (e.g., 'completed', 'pending')."),
+    is_archived: Optional[bool] = Query(None, description="Filter by archived status. False for non-archived, True for archived, null/None for all."), # MODIFIED DEFAULT TO None
+    hide_completed: Optional[bool] = Query(False, description="Hide completed tasks."),
     skip: int = 0,
     limit: int = 100,
-    project_id: Optional[str] = None,
-    agent_name: Optional[str] = None,
-    search: Optional[str] = None,  # Added search parameter
-    status: Optional[str] = None   # Added status parameter
+    db: Session = Depends(get_db),
+    # TODO: Add more query parameters as needed, e.g., date ranges, priorities
+    # current_user: schemas.User = Depends(auth.get_current_active_user) # Example of protected route
 ):
-    """Retrieve a list of tasks, with optional filtering by project, agent, search term, and status.
+    """
+    Retrieve a list of tasks, with optional filtering by project, agent, search term, and status.
 
     - **project_id**: Filter tasks by project ID.
     - **agent_name**: Filter tasks by agent name.
@@ -322,17 +357,45 @@ def get_task_list(
         project_id=project_id, 
         agent_id=agent_id, # Use derived agent_id
         search=search,  # Pass search
-        status=status   # Pass status
+        status=status,   # Pass status
+        is_archived=is_archived # Pass is_archived
     )
     return tasks
 
 @app.get("/tasks/{task_id}", response_model=schemas.Task, summary="Get Task by ID with Project", tags=["Tasks"], operation_id="get_task_by_id")
-def get_task_by_id(task_id: str, db: Session = Depends(get_db)):
-    """Retrieves a specific task by ID, including project info."""
-    db_task = crud.get_task(db, task_id=task_id) # crud.get_task now eager loads project
+def get_task_by_id_endpoint(task_id: str, is_archived: Optional[bool] = Query(False, description="Set to true to fetch if archived, null/None to fetch regardless of status."), db: Session = Depends(get_db)): # MODIFIED name and added param
+    """Retrieves a specific task by ID."""
+    db_task = crud.get_task(db, task_id=task_id, is_archived=is_archived)
     if db_task is None:
-        raise HTTPException(status_code=404, detail="Task not found")
+        status_search_message = ""
+        if is_archived is True:
+            status_search_message = " (archived)"
+        elif is_archived is False:
+            status_search_message = " (active)"
+        raise HTTPException(status_code=404, detail=f"Task not found{status_search_message}")
     return db_task
+
+@app.post("/tasks/{task_id}/archive", response_model=schemas.Task, summary="Archive Task", tags=["Tasks"], operation_id="archive_task")
+def archive_task_endpoint(task_id: str, db: Session = Depends(get_db)):
+    """Archives a task."""
+    try:
+        return crud.archive_task(db, task_id)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(f"Error archiving task {task_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to archive task: {str(e)}")
+
+@app.post("/tasks/{task_id}/unarchive", response_model=schemas.Task, summary="Unarchive Task", tags=["Tasks"], operation_id="unarchive_task")
+def unarchive_task_endpoint(task_id: str, db: Session = Depends(get_db)):
+    """Unarchives a task."""
+    try:
+        return crud.unarchive_task(db, task_id)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(f"Error unarchiving task {task_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to unarchive task: {str(e)}")
 
 # --- Define UNSAFE Endpoints Last ---
 
@@ -399,7 +462,6 @@ def delete_agent(agent_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Agent not found")
     return db_agent # Return the deleted object
 
-
 # --- Task Update/Delete Endpoints ---
 @app.put("/tasks/{task_id}", response_model=schemas.Task, summary="Update Task (incl. Project/Agent)", tags=["Tasks"], operation_id="update_task_by_id")
 def update_task(task_id: str, task_update: schemas.TaskUpdate, db: Session = Depends(get_db)):
@@ -433,7 +495,6 @@ def delete_task(task_id: str, db: Session = Depends(get_db)):
         print(f"Unexpected error in DELETE /tasks/{task_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error during task deletion: Something went wrong")
 
-
 # --- MCP Integration (Old Placement - Removed) ---
 # try:
 #     print("Attempting to initialize and mount FastApiMCP...")
@@ -445,8 +506,6 @@ def delete_task(task_id: str, db: Session = Depends(get_db)):
 #     print("FastApiMCP integration might be incompatible or misconfigured.")
 # # --- End MCP Integration ---
 
-
-
 # --- Placeholder for future planning endpoint (if needed outside MCP) ---
 class PlanningRequest(BaseModel):
     goal: str
@@ -455,7 +514,11 @@ class PlanningResponse(BaseModel):
     prompt: str
 
 # MODIFIED: Renamed function, updated route, added DB dependency, enhanced prompt
-@app.post("/projects/generate-planning-prompt", response_model=PlanningResponse, summary="Generate Project Manager Planning Prompt", tags=["Projects", "Planning"], operation_id="generate_project_manager_planning_prompt")
+@app.post("/projects/generate-planning-prompt", 
+          response_model=PlanningResponse, 
+          summary="Generate Project Manager Planning Prompt", 
+          tags=["Projects", "Planning"], 
+          operation_id="generate_project_manager_planning_prompt")
 async def generate_project_manager_planning_prompt(request: PlanningRequest, db: Session = Depends(get_db)):
     """Generates a planning prompt instructing an LLM to utilize available agents."""
     

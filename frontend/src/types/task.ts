@@ -12,7 +12,8 @@ export const taskSchema = z.object({
     parent_task_id: z.string().nullable().optional(),
     created_at: z.string(),
     updated_at: z.string().optional(),
-    status: z.string().nullable().optional()
+    status: z.string().nullable().optional(),
+    is_archived: z.boolean().optional(),
 });
 
 // Runtime type for Task
@@ -40,7 +41,6 @@ export type TaskUpdateData = z.infer<typeof taskUpdateSchema>;
 export interface TaskWithMeta extends Task {
     isOverdue?: boolean;
     daysRemaining?: number;
-    priority?: 'low' | 'medium' | 'high';
 }
 
 // Task filter options
@@ -48,14 +48,15 @@ export interface TaskFilters {
     projectId?: string;
     agentId?: string;
     status?: 'all' | 'completed' | 'active';
-    priority?: 'low' | 'medium' | 'high';
     search?: string;
     parent_task_id?: string;
     top_level_only?: boolean;
+    hideCompleted?: boolean;
+    is_archived?: boolean | null;
 }
 
 // Task sort options
-export type TaskSortField = 'created_at' | 'title' | 'priority' | 'status';
+export type TaskSortField = 'created_at' | 'title' | 'status';
 export type SortDirection = 'asc' | 'desc';
 
 export interface TaskSortOptions {

@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11'] # Specify python versions to test against
+        node-version: [18.x, 20.x]       # Specify node versions to test against
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install backend dependencies
+      run: |
+        python -m venv backend/.venv
+        source backend/.venv/bin/activate
+        pip install -r backend/requirements.txt # Assuming requirements.txt exists or will be created
+        # If using Poetry or other dep manager, adjust accordingly e.g.:
+        # cd backend && poetry install --no-root
+        pip install flake8 pytest # Ensure linters/test runners are installed
+
+    - name: Lint with flake8 (Backend)
+      run: |
+        source backend/.venv/bin/activate
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 backend/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 backend/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Test with pytest (Backend)
+      run: |
+        source backend/.venv/bin/activate
+        pytest backend/tests/
+        # If tests are not in backend/tests, adjust path e.g. pytest backend/
+
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install frontend dependencies
+      run: cd frontend && npm ci
+
+    - name: Lint frontend
+      run: cd frontend && npm run lint
+
+    # Add a build step for frontend if applicable
+    # - name: Build frontend
+    #   run: cd frontend && npm run build 

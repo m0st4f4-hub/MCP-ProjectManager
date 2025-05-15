@@ -1,9 +1,9 @@
 {
-  "name": "project-manager-cli",
-  "version": "1.0.2",
+  "name": "mcp-project-manager-cli",
+  "version": "1.1.3",
   "description": "MCP + WebGUI = Collaborative Agent & Human Project Management Platform. Where agents and humans manage projects—together.",
   "bin": {
-    "project-manager": "./cli.js"
+    "mcp-project-manager": "./cli.js"
   },
   "scripts": {
     "predev": "powershell -NoProfile -Command \"$ports = @(8080, 3000); foreach ($port in $ports) { try { $process = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue; if ($process) { Stop-Process -Id $process.OwningProcess -Force -ErrorAction SilentlyContinue; Write-Host ('Killed process on port ' + $port) } else { Write-Host ('No process found on port ' + $port) } } catch { Write-Host $_.Exception.Message } }; exit 0\"",
@@ -31,6 +31,8 @@
     "concurrently": "^8.2.2",
     "delay-cli": "^2.0.0",
     "detect-port": "^2.1.0",
+    "framer-motion": "^12.11.3",
+    "lodash.debounce": "^4.0.8",
     "nodemon": "^3.1.10",
     "ora": "^5.4.1",
     "react-window": "^1.8.11",

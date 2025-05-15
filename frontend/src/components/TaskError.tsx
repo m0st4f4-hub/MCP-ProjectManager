@@ -1,7 +1,6 @@
 import React from 'react';
 import {
     Box,
-    Container,
     Heading,
     Icon,
     Text,
@@ -15,26 +14,28 @@ interface TaskErrorProps {
 
 const TaskError: React.FC<TaskErrorProps> = ({ error }) => {
     return (
-        <Container maxW="container.lg" p={4}>
+        <Box w="100%" minH="70vh" display="flex" alignItems="center" justifyContent="center" py={{ base: 4, md: 12 }}>
             <Box 
+                maxW="500px"
+                w="100%"
                 bg="bg.elevated"
-                p={6} 
-                rounded="radius.xl"
-                shadow="shadow.lg"
+                p={{ base: 4, md: 8 }}
+                rounded="2xl"
+                shadow="2xl"
                 borderWidth="1px" 
                 borderColor="border.base"
-                height="400px"
+                mt={{ base: 8, md: 16 }}
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
             >
-                <VStack spacing={6}>
+                <VStack spacing={6} w="100%">
                     <Icon as={AddIcon} w={12} h={12} color="status.error" /> {/* Consider WarningIcon from '@chakra-ui/icons' */}
                     <Heading size="md" color="status.error">Error Loading Tasks</Heading>
                     <Text color="text.muted">{error}</Text>
                 </VStack>
             </Box>
-        </Container>
+        </Box>
     );
 };
 

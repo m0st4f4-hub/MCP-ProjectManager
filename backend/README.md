@@ -1,8 +1,8 @@
-# Task Manager Backend
+# Project Manager Backend
 
 ## Overview
 
-This directory contains the backend service for the Task Manager application. It is built using FastAPI and SQLAlchemy, providing a RESTful API for managing projects, agents, tasks, and subtasks. It also integrates with MCP (Model Context Protocol) for enhanced agent capabilities.
+This directory contains the backend service for the Project Manager application. It is built using FastAPI and SQLAlchemy, providing a RESTful API for managing projects, agents, tasks, and subtasks. It also integrates with MCP (Model Context Protocol) for enhanced agent capabilities.
 
 ## Project Structure
 

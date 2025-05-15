@@ -132,25 +132,21 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
 
             <FormControl>
                 <FormLabel>Project</FormLabel>
-                <Select 
-                    placeholder="-- Select Project --"
-                    value={projectId}
-                    onChange={(e) => setProjectId(e.target.value)}
-                >
-                    <option value="">-- Clear Project --</option>
-                    {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                <Select value={projectId} onChange={e => setProjectId(e.target.value)}>
+                    <option value="">Select a project</option>
+                    {projects.map(project => (
+                        <option key={project.id} value={project.id}>{project.name}</option>
+                    ))}
                 </Select>
             </FormControl>
 
             <FormControl>
                 <FormLabel>Agent</FormLabel>
-                <Select 
-                    placeholder="-- Select Agent --"
-                    value={agentName}
-                    onChange={(e) => setAgentName(e.target.value)}
-                >
-                     <option value="">-- Clear Agent --</option>
-                    {agents.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+                <Select value={agentName} onChange={e => setAgentName(e.target.value)}>
+                    <option value="">Select an agent</option>
+                    {agents.map(agent => (
+                        <option key={agent.id} value={agent.name}>{agent.name}</option>
+                    ))}
                 </Select>
             </FormControl>
 
@@ -162,6 +158,18 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
                     Completed
                 </Checkbox>
             </FormControl>
+
+            <FormControl>
+                <FormLabel>Agent Name</FormLabel>
+                <Input value={agentName} isReadOnly />
+            </FormControl>
+
+            {parentTaskId && (
+                <FormControl>
+                    <FormLabel>Parent Task ID</FormLabel>
+                    <Input value={parentTaskId} isReadOnly />
+                </FormControl>
+            )}
         </EditModalBase>
     );
 };

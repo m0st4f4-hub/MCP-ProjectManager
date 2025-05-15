@@ -140,8 +140,8 @@ const motion = {
 const semanticTokens = {
   colors: {
     // Base & Layout
-    'bg.app':       { default: 'white',       _dark: 'neutral.900' },
-    'bg.surface':   { default: 'neutral.50',  _dark: 'neutral.800' },
+    'bg.app':       { default: 'neutral.50',       _dark: 'brand.900' },
+    'bg.surface':   { default: 'white',  _dark: 'neutral.800' },
     'bg.elevated':  { default: 'white',       _dark: 'neutral.700' },
     'bg.page':      { default: 'neutral.50',  _dark: 'neutral.900' },
     'bg.header':    { default: 'white',       _dark: 'neutral.800' },
@@ -157,7 +157,7 @@ const semanticTokens = {
     'text.muted':     { default: 'neutral.500', _dark: 'neutral.400' }, // Alias for secondary
     'text.placeholder':{ default: 'neutral.400', _dark: 'neutral.400' },
     'text.heading':   { default: 'neutral.900', _dark: 'whiteAlpha.900' },
-    'text.link':      { default: 'brand.600',   _dark: 'brand.300' },
+    'text.link':      { default: 'brand.600',   _dark: 'brand.400' },
     'text.inverted':  { default: 'white',       _dark: 'neutral.900' },
     'text.disabled':  { default: 'neutral.400', _dark: 'neutral.400' },
     'text.critical':  { default: 'danger.600',  _dark: 'danger.300' }, // Adjusted danger
@@ -170,7 +170,7 @@ const semanticTokens = {
     'border.divider': { default: 'neutral.200', _dark: 'neutral.700' }, // Alias for base
     'border.input':   { default: 'neutral.300', _dark: 'neutral.600' },
     'border.input_hover':{ default: 'neutral.400',_dark: 'neutral.500' },
-    'border.focus':   { default: 'brand.500',   _dark: 'brand.300' },
+    'border.focus':   { default: 'brand.500',   _dark: 'brand.500' },
     'border.accent':  { default: 'accent.500',  _dark: 'accent.300' },
     'border.danger':  { default: 'danger.300',  _dark: 'danger.400' }, // Adjusted danger
     'border.subtle':  { default: 'neutral.400', _dark: 'neutral.500' }, // Added for hover states etc.
@@ -198,10 +198,11 @@ const semanticTokens = {
     'interaction.active':{ default: 'neutral.200', _dark: 'whiteAlpha.200' },
     'interaction.disabled':{ default: 'neutral.100',_dark: 'whiteAlpha.100' },
     'bg.hover.nav':   { default: 'neutral.100', _dark: 'neutral.700' },
-    'bg.active.nav':  { default: 'brand.50',    _dark: 'brand.800' }, // Adjusted dark for contrast
+    'bg.active.nav':  { default: 'brand.100',    _dark: 'brand.700' },
     'bg.focus':       { default: 'rgba(66, 153, 225, 0.6)', _dark: 'rgba(66, 153, 225, 0.6)' },
     'bg.danger.hover':{ default: 'danger.100',  _dark: 'rgba(229, 62, 62, 0.2)' },
     'bg.danger.subtle':{ default: 'danger.50',   _dark: 'rgba(229, 62, 62, 0.1)' },
+    'bg.overlay':     { default: 'blackAlpha.600', _dark: 'blackAlpha.700' },
 
     // Statuses
     'status.success': { default: 'success.500', _dark: 'success.300' },
@@ -228,17 +229,29 @@ const semanticTokens = {
     // Misc
     'bg.tooltip':     { default: 'neutral.800', _dark: 'neutral.600' },
     'icon.default':   { default: 'neutral.500', _dark: 'neutral.400' },
-    'icon.primary':   { default: 'brand.500',   _dark: 'brand.300' },
+    'icon.primary':   { default: 'brand.500',   _dark: 'brand.400' },
     'icon.secondary': { default: 'neutral.400', _dark: 'neutral.500' },
     'icon.hover':     { default: 'brand.600',   _dark: 'brand.200' },
     'icon.disabled':  { default: 'neutral.300', _dark: 'neutral.600' },
     'icon.inverted':  { default: 'whiteAlpha.900', _dark: 'neutral.900' },
     'icon.accent':    { default: 'accent.500',  _dark: 'accent.300' },
-    'icon.active':    { default: 'brand.500',   _dark: 'brand.300' },
+    'icon.active':    { default: 'brand.500',   _dark: 'brand.400' },
     'accent.active':  { default: 'accent.500',  _dark: 'accent.300' }, // For active indicators
     'task.item.bg':           { default: 'white',         _dark: 'neutral.700' },
     'task.item.completed.bg': { default: 'neutral.50',    _dark: 'neutral.800' },
     'task.item.flash.bg':     { default: 'yellow.100',    _dark: 'yellow.700' }, // Using warning scale
+
+    // --- Form Specific Tokens ---
+    'form.label.text':         { default: 'text.secondary', _dark: 'text.secondary' },
+    'form.helperText.text':    { default: 'text.muted', _dark: 'text.muted' },
+
+    // --- Table Specific Tokens ---
+    'table.header.bg':         { default: 'neutral.100', _dark: 'neutral.700' },
+    'table.header.text':       { default: 'text.secondary', _dark: 'text.secondary' },
+    'table.row.bg':            { default: 'transparent', _dark: 'transparent' }, // Inherits from card/surface
+    'table.row.hover.bg':      { default: 'neutral.100', _dark: 'neutral.600' },
+    'table.row.striped.bg':    { default: 'neutral.50',  _dark: 'whiteAlpha.50' },
+    'table.cell.border':       { default: 'border.base', _dark: 'border.base' },
 
     // --- Task Status Tokens ---
     'status.completed.text':   { default: 'success.700', _dark: 'success.200' },
@@ -248,7 +261,7 @@ const semanticTokens = {
     'status.blocked.text':     { default: 'danger.700',  _dark: 'danger.200' },
     'status.blocked.bg':       { default: 'danger.50',   _dark: 'danger.800' },
     'status.todo.text':        { default: 'neutral.700', _dark: 'neutral.200' },
-    'status.todo.bg':          { default: 'neutral.100', _dark: 'neutral.700' },
+    'status.todo.bg':          { default: 'neutral.100', _dark: 'neutral.600' },
 
     // --- Task Priority Tokens ---
     'priority.high.icon':      { default: 'danger.500',  _dark: 'danger.300' },
@@ -264,8 +277,6 @@ const semanticTokens = {
     // --- Tag Tokens ---
     'tag.project.bg':          { default: 'accent.100',  _dark: 'accent.700' },
     'tag.project.text':        { default: 'accent.700',  _dark: 'accent.200' },
-    'tag.dueDate.bg':          { default: 'brand.100',   _dark: 'brand.700' },
-    'tag.dueDate.text':        { default: 'brand.700',   _dark: 'brand.200' },
 
     // --- Task Item Hover ---
     'taskItem.compact.hover.bg':  { default: 'neutral.100', _dark: 'neutral.800' },
@@ -273,6 +284,31 @@ const semanticTokens = {
 
     // --- Actions ---
     'actions.danger.text':     { default: 'danger.600',  _dark: 'danger.300' },
+
+    // Stat Card Icons (Dashboard Specific for now, can be generalized)
+    'icon.stat.project':   { default: 'accent.500',  _dark: 'accent.300' },   // Example: Indigo
+    'icon.stat.task':      { default: 'brand.500',   _dark: 'brand.300' },    // Example: Teal
+    'icon.stat.agent':     { default: 'purple.500',  _dark: 'purple.300' },   // Example: Purple
+    'icon.stat.completed': { default: 'success.500', _dark: 'success.300' },// Example: Green
+    'icon.stat.pending':   { default: 'warning.500', _dark: 'warning.300' },// Example: Yellow
+
+    // Chart Specific Colors
+    'chart.primary.fill':      { default: 'brand.500', _dark: 'brand.400'},
+    'chart.secondary.fill':    { default: 'accent.500',  _dark: 'accent.400' },
+    'chart.grid':              { default: 'neutral.200', _dark: 'neutral.700' }, // Already 'border.secondary' essentially
+    'chart.text':              { default: 'neutral.600', _dark: 'neutral.400' }, // Already 'text.secondary'
+    'chart.tooltip.bg':        { default: 'neutral.800', _dark: 'neutral.600' }, // Already 'bg.tooltip'
+    'chart.tooltip.border':    { default: 'neutral.300', _dark: 'neutral.600' }, // Already 'border.primary'
+    'chart.tooltip.label':     { default: 'neutral.900', _dark: 'whiteAlpha.900' }, // Already 'text.primary'
+    'chart.tooltip.item':      { default: 'neutral.600', _dark: 'neutral.400' }, // Already 'text.secondary'
+    'chart.pie.label.text':    { default: 'white', _dark: 'neutral.900' }, // For labels on pie charts (e.g. white on dark purple slice)
+
+    // Kanban specific (if needed, can be expanded)
+    'kanban.column.bg': { default: 'neutral.50', _dark: 'neutral.800' },
+
+    // NEW Tokens for subtle branding
+    'bg.brand.subtle':    { default: 'brand.50', _dark: 'rgba(20, 184, 166, 0.1)' }, // For light teal backgrounds
+    'border.brand.subtle':{ default: 'brand.200', _dark: 'brand.700' }, // For subtle brand-colored borders
 
     // ... add other specific component states as needed
   },
@@ -295,46 +331,40 @@ const semanticTokens = {
 }
 
 // --------------------------------------------------------------------------
-// 3. Global Styles & Accessibility
+// 3. Global Styles (Optional)
 // --------------------------------------------------------------------------
-const globalStyles = {
-  global: (props: StyleFunctionProps) => ({
-    'html, body': {
-      bg:   mode('bg.app','neutral.900')(props),
-      color:mode('text.base','neutral.100')(props),
-      fontFamily:'body',
-      lineHeight:'normal',
-      height:'100%', width:'100%',
-      overflowX:'hidden',
-    },
-    a: {
-      color:           mode('text.link','brand.300')(props),
-      textDecoration:  'none',
-      transition:      `color ${motion.duration.fast} ${motion.timing.out}`,
-      _hover:          { textDecoration:'underline' },
-      _focusVisible:   { boxShadow:'outline', outline:'none' },
-    },
-    '*:focus-visible': { boxShadow:'outline', outline:'none' },
-    '::selection':     { bg:'accent.300', color:'white' },
-    '*,*::before,*::after': { boxSizing:'border-box' },
-    '::-webkit-scrollbar':   { width:'8px', height:'8px' },
-    '::-webkit-scrollbar-track': { bg:mode('neutral.100','neutral.700')(props), borderRadius:'full' },
-    '::-webkit-scrollbar-thumb': {
-      bg:mode('neutral.400','neutral.500')(props),
-      borderRadius:'full',
-      '&:hover': { bg:mode('neutral.500','neutral.600')(props) },
-    },
-  }),
-}
 
 // --------------------------------------------------------------------------
-// 4. Component Recipes (Alert baseStyle fixed)
+// 4. Component Styles
 // --------------------------------------------------------------------------
 const menuHelper   = createMultiStyleConfigHelpers(['button','list','item','groupTitle','command','divider'])
 const Menu         = menuHelper.defineMultiStyleConfig({
-  baseStyle: menuHelper.definePartsStyle({
-    list:{ bg:'surface', border:'1px solid', borderColor:'border.base', py:1, minW:'10rem', boxShadow:'md' },
-    item:{ px:3, py:2, cursor:'pointer', _hover:{ bg:'interaction.hover' }, _focus:{ bg:'interaction.active' }, _disabled:{ color:'text.muted', cursor:'not-allowed' }},
+  baseStyle: (props: StyleFunctionProps) => ({
+    list:{
+      bg: mode('bg.card', 'bg.card')(props),
+      borderColor: mode('border.secondary', 'border.secondary')(props),
+      color: mode('text.primary', 'text.primary')(props),
+      py:1, 
+      minW:'10rem', 
+      boxShadow: mode('sm', 'dark-lg')(props),
+      borderWidth: '1px',
+      borderRadius: 'md',
+      zIndex: 'dropdown',
+    }, 
+    item:{ 
+      px:3, 
+      py:2, 
+      cursor:'pointer', 
+      bg: 'transparent', 
+      color: mode('text.primary', 'text.primary')(props),
+      _hover:{
+        bg: mode('bg.hover.nav', 'bg.hover.nav')(props),
+      }, 
+      _focus:{
+        bg: mode('bg.hover.nav', 'bg.hover.nav')(props),
+      },
+      _disabled:{ color:'text.muted', cursor:'not-allowed' }
+    },
   })
 })
 
@@ -342,62 +372,203 @@ const tabsHelper   = createMultiStyleConfigHelpers(['root','tablist','tab','tabp
 const Tabs         = tabsHelper.defineMultiStyleConfig({
   baseStyle: tabsHelper.definePartsStyle({
     tablist: { borderBottom:'1px solid', borderColor:'border.base' },
-    tab:     { px:4, py:2, fontWeight:'medium', _selected:{ color:'brand.600', borderColor:'brand.600', borderBottom:'2px solid' }},
+    tab:     {
+      px:4, 
+      py:2, 
+      fontWeight:'semibold',
+      color: 'text.secondary',
+      _selected:{
+        color:'brand.600', 
+        borderColor:'brand.500',
+        borderBottomWidth:'2px',
+        _dark: {
+          color: 'brand.300',
+          borderColor: 'brand.400',
+        }
+      },
+      _hover: {
+        color: 'brand.500',
+        bg: 'bg.hover.nav',
+      },
+      _disabled: {
+        color: 'text.disabled',
+        cursor: 'not-allowed',
+      }
+    },
     tabpanel:{ p:4 },
   }),
 })
 
 const alertHelper  = createMultiStyleConfigHelpers(['container','title','description','icon'])
 const Alert        = alertHelper.defineMultiStyleConfig({
-  baseStyle: alertHelper.definePartsStyle(() => ({
-    container:{ w:'100%', borderRadius:'md', display:'flex', alignItems:'center', gap:3, py:3, px:4 },
-    title:{ fontWeight:'bold', mr:2 },
-    description:{ flex:1 },
-    icon:{ mr:3 },
+  baseStyle: alertHelper.definePartsStyle(({ colorScheme='info' }) => ({
+    container:{ w:'100%', borderRadius:'md', display:'flex', alignItems:'flex-start', gap:3, py:3, px:4 },
+    title:{ fontWeight:'bold', mr:2, lineHeight: 'short' },
+    description:{ flex:1, fontSize: 'sm' },
+    icon:{ mr:3, mt: '0.125em' },
   })),
   variants: {
     subtle: alertHelper.definePartsStyle(({ colorScheme='info' }) => ({
-      container:{ bg:`${colorScheme}.50`, color:`${colorScheme}.700`, _dark:{ bg:`${colorScheme}.800`, color:`${colorScheme}.200`} }
+      container:{ 
+        bg: mode(`${colorScheme}.50`, `${colorScheme}.900`)(),
+        color: mode(`${colorScheme}.700`, `${colorScheme}.200`)(), 
+      }
     })),
     solid:  alertHelper.definePartsStyle(({ colorScheme='info' }) => ({
-      container:{ bg:`${colorScheme}.500`, color:'white', _dark:{ bg:`${colorScheme}.500`, color:'white'} }
+      container:{ 
+        bg:mode(`${colorScheme}.500`, `${colorScheme}.600`)(),
+        color:'white', 
+      } 
+    })),
+    'left-accent': alertHelper.definePartsStyle(({ colorScheme='info'}) => ({
+      container: {
+        borderLeftWidth: '4px',
+        borderLeftColor: mode(`${colorScheme}.500`, `${colorScheme}.300`)(),
+        bg: mode(`${colorScheme}.50`, `${colorScheme}.900`)(),
+        color: mode(`${colorScheme}.700`, `${colorScheme}.200`)(),
+      }
     })),
   },
-  defaultProps:{ variant:'subtle' },
+  defaultProps:{ variant:'subtle', colorScheme:'info' },
 })
 
 const tagHelper    = createMultiStyleConfigHelpers(['container','label','closeButton'])
 const Tag          = tagHelper.defineMultiStyleConfig({
-  baseStyle: tagHelper.definePartsStyle({ container:{ fontWeight:'medium', borderRadius:'sm' }}),
+  baseStyle: tagHelper.definePartsStyle({ container:{ fontWeight:'medium', borderRadius:'md' }}),
   sizes: {
-    sm: tagHelper.definePartsStyle({ container:{ fontSize:'xs', px:2, py:1 }}),
-    md: tagHelper.definePartsStyle({ container:{ fontSize:'sm', px:3, py:1 }}),
+    sm: tagHelper.definePartsStyle({ container:{ fontSize:'xs', px:2, py:0.5 }}),
+    md: tagHelper.definePartsStyle({ container:{ fontSize:'sm', px:2.5, py:1 }}),
+    lg: tagHelper.definePartsStyle({ container:{ fontSize:'md', px:3, py:1.5 }}),
   },
   variants: {
-    solid:  c=>tagHelper.definePartsStyle({ container:{ bg:`${c}.500`, color:'white' }}),
-    subtle: c=>tagHelper.definePartsStyle({ container:{ bg:`${c}.100`, color:`${c}.700` }}),
+    solid:  tagHelper.definePartsStyle((props) => {
+      const { colorScheme: c } = props;
+      return {
+        container: { 
+          bg: mode(`${c}.500`, `${c}.500`)(props), 
+          color: 'white', 
+          _dark: { 
+            bg: `${c}.500`,
+            color: (c === 'neutral' ? 'neutral.900' : 'white'),
+          }
+        }
+      }
+    }),
+    subtle: tagHelper.definePartsStyle((props) => {
+      const { colorScheme: c } = props;
+      return {
+        container: { 
+          bg: mode(`${c}.100`, `${c}.700`)(props), 
+          color: mode(`${c}.700`, `${c}.200`)(props), 
+          _dark: {
+            bg: `${c}.700`,
+            color: `${c}.100`,
+          }
+        }
+      }
+    }),
+    outline: tagHelper.definePartsStyle((props) => {
+      const { colorScheme: c } = props;
+      return {
+        container: {
+          color: mode(`${c}.600`, `${c}.300`)(props),
+          borderColor: mode(`${c}.500`, `${c}.300`)(props),
+          borderWidth: '1px',
+        }
+      }
+    }),
   },
-  defaultProps:{ size:'md', variant:'solid', colorScheme:'brand' },
+  defaultProps:{ size:'md', variant:'subtle', colorScheme:'brand' },
 })
 
 const badgeHelper  = createMultiStyleConfigHelpers(['label'])
 const Badge        = badgeHelper.defineMultiStyleConfig({
-  baseStyle: badgeHelper.definePartsStyle({ label:{ fontSize:'0.75rem', fontWeight:'bold', px:2, py:1, borderRadius:'full' }}),
+  baseStyle: badgeHelper.definePartsStyle({ 
+    label:{ 
+      fontSize:'xs',
+      fontWeight:'bold', 
+      px:2.5,
+      py:1,
+      borderRadius:'md',
+      textTransform: 'uppercase',
+      lineHeight: 'short'
+    }
+  }),
   variants: {
-    solid:   c=>badgeHelper.definePartsStyle({ label:{ bg:`${c}.600`, color:'white' }}),
-    outline: c=>badgeHelper.definePartsStyle({ label:{ border:'1px solid', borderColor:`${c}.500`, color:`${c}.500` }}),
+    solid:   badgeHelper.definePartsStyle((props) => {
+      const { colorScheme: c } = props;
+      return {
+        label:{ 
+          bg: mode(`${c}.500`, `${c}.500`)(props),
+          color: 'white', 
+          _dark: { 
+            bg: `${c}.500`,
+            color: (c === 'neutral' ? 'neutral.900' : 'white'),
+          }
+        }
+      }
+    }),
+    subtle: badgeHelper.definePartsStyle((props) => {
+      const { colorScheme: c } = props;
+      return {
+        label:{ 
+          bg: mode(`${c}.100`, `${c}.700`)(props),
+          color: mode(`${c}.700`, `${c}.200`)(props),
+          _dark: {
+            bg: `${c}.700`,
+            color: `${c}.100`,
+          }
+        }
+      }
+    }),
+    outline: badgeHelper.definePartsStyle((props) => {
+      const { colorScheme: c } = props;
+      return {
+        label:{ 
+          border:'1px solid', 
+          borderColor: mode(`${c}.500`, `${c}.300`)(props), 
+          color: mode(`${c}.600`, `${c}.300`)(props)
+        }
+      }
+    }),
   },
   defaultProps:{ variant:'solid', colorScheme:'brand' },
 })
 
 const cardHelper   = createMultiStyleConfigHelpers(['container','header','body','footer'])
 const Card         = cardHelper.defineMultiStyleConfig({
-  baseStyle: cardHelper.definePartsStyle({ container:{ bg:'elevated', boxShadow:'md', borderRadius:'container', p:4 }}),
+  baseStyle: cardHelper.definePartsStyle({
+    container: {
+      bg: 'bg.surface',
+      borderWidth: '1px',
+      borderColor: 'border.base',
+      boxShadow: 'sm',
+      borderRadius: 'lg', // Was 'container', using 'lg' for more rounded look
+      p:4
+    }
+  }),
   variants: {
-    elevated: cardHelper.definePartsStyle({ container:{ boxShadow:'lg' }}),
-    outlined: cardHelper.definePartsStyle({ container:{ border:'1px solid', borderColor:'border.base' }}),
+    elevated: cardHelper.definePartsStyle({
+      container: {
+        bg: 'bg.elevated',
+        boxShadow: 'lg'
+      }
+    }),
+    outlined: cardHelper.definePartsStyle({
+      container: {
+        borderColor: 'border.primary'
+      }
+    }),
+    brandHighlight: cardHelper.definePartsStyle({ // NEW Variant
+      container: {
+        borderTopWidth: '4px',
+        borderTopColor: 'brand.500',
+      }
+    }),
   },
-  defaultProps:{ variant:'elevated' },
+  defaultProps:{
+    variant:'elevated'
+  },
 })
 
 const switchHelper = createMultiStyleConfigHelpers(['container','track','thumb'])
@@ -408,13 +579,215 @@ const Switch       = switchHelper.defineMultiStyleConfig({
   }),
 })
 
+// NEW COMPONENT STYLES START
+const inputHelper = createMultiStyleConfigHelpers(['addon', 'field', 'element'])
+const Input = inputHelper.defineMultiStyleConfig({
+  baseStyle: inputHelper.definePartsStyle({
+    field: {
+      bg: 'bg.input',
+      borderColor: 'border.input',
+      color: 'text.primary',
+      _hover: {
+        borderColor: 'border.input_hover',
+      },
+      _focusVisible: { // Changed from _focus for better accessibility and consistency
+        borderColor: 'border.focus',
+        boxShadow: 'outline',
+      },
+      _placeholder: {
+        color: 'text.placeholder',
+      },
+      _disabled: {
+        opacity: 0.6,
+        cursor: 'not-allowed',
+        bg: 'neutral.100',
+        _dark: {
+          bg: 'neutral.700',
+        }
+      }
+    },
+  }),
+  variants: { // Define variants like outline, filled, unstyled if needed, or rely on baseStyle.
+    outline: inputHelper.definePartsStyle({ // Example for outline variant
+      field: {
+        borderWidth: '1px',
+        borderRadius: 'md', // or use radii.md
+      }
+    })
+  },
+  defaultProps: {
+    variant: 'outline', // Set a default variant
+  }
+})
+
+const Textarea = { // Textarea can often reuse Input styles or have its own
+  baseStyle: {
+    bg: 'bg.input',
+    borderColor: 'border.input',
+    color: 'text.primary',
+    borderRadius: 'md',
+    _hover: {
+      borderColor: 'border.input_hover',
+    },
+    _focusVisible: {
+      borderColor: 'border.focus',
+      boxShadow: 'outline',
+    },
+    _placeholder: {
+      color: 'text.placeholder',
+    },
+     _disabled: {
+        opacity: 0.6,
+        cursor: 'not-allowed',
+        bg: 'neutral.100',
+        _dark: {
+          bg: 'neutral.700',
+        }
+      }
+  },
+  defaultProps: {
+    variant: 'outline', // Assuming an outline variant is standard
+  }
+}
+
+const selectHelper = createMultiStyleConfigHelpers(['field', 'icon'])
+const Select = selectHelper.defineMultiStyleConfig({
+  baseStyle: selectHelper.definePartsStyle({
+    field: {
+      bg: 'bg.input',
+      borderColor: 'border.input',
+      color: 'text.primary',
+      borderRadius: 'md',
+      _hover: {
+        borderColor: 'border.input_hover',
+      },
+      _focusVisible: {
+        borderColor: 'border.focus',
+        boxShadow: 'outline',
+      },
+      _disabled: {
+        opacity: 0.6,
+        cursor: 'not-allowed',
+        bg: 'neutral.100',
+        _dark: {
+          bg: 'neutral.700',
+        }
+      }
+    },
+    icon: {
+      color: 'icon.secondary', // Color for the dropdown arrow
+      fontSize: 'xl', // Adjust size if needed
+    },
+  }),
+  defaultProps: {
+    variant: 'outline',
+  }
+})
+
+const checkboxHelper = createMultiStyleConfigHelpers(['container', 'control', 'label', 'icon'])
+const Checkbox = checkboxHelper.defineMultiStyleConfig({
+  baseStyle: checkboxHelper.definePartsStyle({
+    control: {
+      borderColor: 'border.checkbox',
+      bg: 'transparent', // Or bg.surface if preferred for unchecked state
+      _checked: {
+        bg: 'bg.checkbox.checked',
+        borderColor: 'border.checkbox.checked',
+        color: 'icon.inverted', // For the checkmark
+        _hover: {
+          bg: 'brand.600', // Slightly darker on hover when checked
+          borderColor: 'brand.600',
+        }
+      },
+      _hover: {
+        borderColor: 'border.input_hover', // Hover for unchecked state
+      },
+      _focusVisible: {
+        boxShadow: 'outline',
+      },
+      _disabled: {
+        bg: 'neutral.200',
+        borderColor: 'neutral.300',
+        _dark: {
+            bg: 'neutral.600',
+            borderColor: 'neutral.500',
+        }
+      }
+    },
+    label: {
+      color: 'text.primary',
+      ml: 2,
+      _disabled: {
+        color: 'text.disabled',
+      }
+    },
+  }),
+})
+
+const formLabelHelper = createMultiStyleConfigHelpers([]) // FormLabel is simple
+const FormLabel = formLabelHelper.defineMultiStyleConfig({
+    baseStyle:{
+        color: 'form.label.text', // text.secondary
+        fontWeight: 'medium', // A bit more emphasis than normal text
+        mb:1, // Default margin bottom
+        fontSize: 'sm',
+    }
+})
+// NEW COMPONENT STYLES END
+
+// Global Styles
+const styles = {
+  global: (props: StyleFunctionProps) => ({
+    body: {
+      fontFamily: 'body',
+      bg: 'bg.app',
+      color: 'text.primary',
+      lineHeight: 'base',
+      WebkitFontSmoothing: 'antialiased',
+      MozOsxFontSmoothing: 'grayscale',
+      transitionProperty: 'background-color, color',
+      transitionDuration: 'normal',
+    },
+    'html, body': {
+      height: '100%',
+    },
+    '#__next': {
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    a: {
+      color: 'link.primary',
+      _hover: {
+        color: 'link.hover',
+        textDecoration: 'underline',
+      },
+    },
+  }),
+  components: {
+    Menu,
+    Tabs,
+    Alert,
+    Tag,
+    Badge,
+    Card,
+    Switch,
+    Input,      // Added
+    Textarea,   // Added
+    Select,     // Added
+    Checkbox,   // Added
+    FormLabel,  // Added
+  },
+}
+
 // --------------------------------------------------------------------------
 // 5. Final Assembly
 // --------------------------------------------------------------------------
 const theme = extendTheme({
   config,
-  breakpoints,
+  styles,
   colors,
+  breakpoints,
   fonts,
   fontSizes,
   fontWeights,
@@ -430,16 +803,6 @@ const theme = extendTheme({
   filters,
   motion,
   semanticTokens,
-  styles: globalStyles,
-  components: {
-    Menu,
-    Tabs,
-    Alert,
-    Tag,
-    Badge,
-    Card,
-    Switch,
-  },
 })
 
 export type Theme = typeof theme

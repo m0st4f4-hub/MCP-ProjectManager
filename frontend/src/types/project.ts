@@ -9,7 +9,8 @@ export const projectSchema = z.object({
     created_at: z.string(),
     updated_at: z.string().optional(),
     task_count: z.number().optional(),
-    completed_task_count: z.number().optional()
+    completed_task_count: z.number().optional(),
+    is_archived: z.boolean().optional(),
 });
 
 // Runtime type for Project
@@ -49,6 +50,7 @@ export interface ProjectFilters {
     search?: string;
     status?: 'all' | 'active' | 'completed';
     agentId?: string | null;
+    is_archived?: boolean | null;
 }
 
 // Project sort options

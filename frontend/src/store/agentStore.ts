@@ -2,6 +2,9 @@ import { StoreApi } from 'zustand';
 import { Agent, AgentCreateData, AgentUpdateData, AgentFilters, AgentSortOptions } from '@/types/agent';
 import { createBaseStore, BaseState, withLoading } from './baseStore';
 import * as api from '@/services/api';
+import produce from 'immer';
+import shallow from 'zustand/shallow';
+import debounce from 'lodash.debounce';
 
 type AgentActions = {
     fetchAgents: (filters?: AgentFilters) => Promise<void>;
@@ -39,6 +42,42 @@ const initialAgentData: Omit<AgentState, keyof BaseState | keyof AgentActions> =
     error: null,
 };
 
+// Utility: Shallow equality for objects
+function shallowEqual<T extends object>(a: T, b: T): boolean {
+    if (a === b) return true;
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    if (aKeys.length !== bKeys.length) return false;
+    for (const key of aKeys) {
+        if (a[key as keyof T] !== b[key as keyof T]) return false;
+    }
+    return true;
+}
+
+// Improved upsertAgents: preserve references for unchanged items
+const upsertAgents = (fetchedAgents: Agent[], existingAgents: Agent[]): Agent[] => {
+    const agentMap = new Map(existingAgents.map(agent => [agent.id, agent]));
+    const result: Agent[] = [];
+    for (const newAgent of fetchedAgents) {
+        const oldAgent = agentMap.get(newAgent.id);
+        if (oldAgent && shallowEqual(oldAgent, newAgent)) {
+            result.push(oldAgent); // preserve reference
+        } else {
+            result.push(newAgent);
+        }
+    }
+    return result;
+};
+
+// Utility: Compare arrays of agents by id and shallow equality
+const areAgentsEqual = (a: Agent[], b: Agent[]): boolean => {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        if (a[i].id !== b[i].id || !shallowEqual(a[i], b[i])) return false;
+    }
+    return true;
+};
+
 const agentActionsCreator = (
     set: StoreApi<AgentState>['setState'], 
     get: StoreApi<AgentState>['getState']
@@ -48,8 +87,13 @@ const agentActionsCreator = (
         try {
             const effectiveFilters = filters || get().filters;
             const fetchedAgents = await api.getAgents(effectiveFilters);
-            const sortedAgents = sortAgents(fetchedAgents, get().sortOptions);
-            set({ agents: sortedAgents, loading: false });
+            set(state => {
+                const updatedAgents = upsertAgents(fetchedAgents, state.agents);
+                if (areAgentsEqual(updatedAgents, state.agents)) {
+                    return { loading: false };
+                }
+                return { agents: sortAgents(updatedAgents, state.sortOptions), loading: false };
+            });
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to fetch agents';
             set({ error: errorMessage, loading: false });

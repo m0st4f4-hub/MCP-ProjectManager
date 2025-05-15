@@ -14,8 +14,13 @@ export const ThemeToggleButton = () => {
       icon={isDark ? <FaSun /> : <FaMoon />}
       onClick={toggleColorMode}
       variant="ghost"
-      size="md"
-      fontSize="lg" // Adjust icon size if needed
+      size="lg"
+      fontSize="xl"
+      minW="48px"
+      minH="48px"
+      h="48px"
+      w="48px"
+      tabIndex={0}
     />
   );
 }; 
