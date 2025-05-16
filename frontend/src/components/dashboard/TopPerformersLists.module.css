@@ -1,41 +1,41 @@
 /* frontend/src/components/dashboard/TopPerformersLists.module.css */
 .performersGrid {
     display: grid;
-    gap: var(--chakra-space-8); /* spacing={8} */
+    gap: var(--spacing-8); /* Updated */
     grid-template-columns: repeat(1, minmax(0, 1fr)); /* base: 1 column */
 }
 
-@media (min-width: 48em) { /* md breakpoint */
+@media (min-width: var(--breakpoints-md)) { /* md breakpoint - already using token */
     .performersGrid {
         grid-template-columns: repeat(2, minmax(0, 1fr)); /* md: 2 columns */
     }
 }
 
 .listContainer {
-    padding: var(--chakra-space-4);
-    background-color: var(--chakra-colors-bg-card);
-    border-radius: var(--chakra-radii-lg);
-    box-shadow: var(--chakra-shadows-md);
-    border-width: 1px;
-    border-style: solid;
-    border-color: var(--chakra-colors-border-primary);
-    min-height: 220px;
+    padding: var(--spacing-4); /* Updated */
+    background-color: var(--colors-bgSurface); /* Updated */
+    border-radius: var(--radii-lg); /* Updated */
+    box-shadow: var(--shadows-md); /* Updated */
+    border-width: var(--borders-width-xs);
+    border-style: var(--borders-style-solid); /* Ensured style is tokenized */
+    border-color: var(--colors-borderDecorative); /* Updated */
+    min-height: 13.75rem; /* 220px - Kept specific value, consider token if common */
 }
 
 .heading {
-    /* Chakra Heading size="sm" equivalent */
-    font-size: var(--chakra-fontSizes-md);
-    font-weight: var(--chakra-fontWeights-semibold);
-    line-height: 1.2;
-    margin-bottom: var(--chakra-space-4);
-    color: var(--chakra-colors-text-heading);
+    /* Chakra Heading size=\"sm\" equivalent */
+    font-size: var(--typography-fontSizes-md); /* Updated */
+    font-weight: var(--typography-fontWeights-semibold); /* Updated */
+    line-height: var(--typography-lineHeights-condensed); /* Updated from 1.2 to 1.25 */
+    margin-bottom: var(--spacing-4); /* Updated */
+    color: var(--colors-textPrimary); /* Updated */
 }
 
 .list {
     /* Chakra List spacing={2} */
     display: flex;
     flex-direction: column;
-    gap: var(--chakra-space-2);
+    gap: var(--spacing-2); /* Updated */
 }
 
 .listItem {
@@ -46,21 +46,21 @@
     /* Chakra HStack */
     display: flex;
     align-items: center;
-    gap: var(--chakra-space-2); /* Default gap, adjust if different from HStack default */
+    gap: var(--spacing-2); /* Updated */
 }
 
 /* Avatar and Badge are kept as Chakra components */
 /* Custom styling for project icon if needed */
 .projectIcon {
-    color: #3182ce; /* As per FaRegListAlt color prop */
-    width: var(--chakra-fontSizes-lg); /* Approximate size for an icon next to text */
-    height: var(--chakra-fontSizes-lg);
+    color: var(--core-colors-blue-500); /* Keeping core color as it might be specific */
+    width: var(--typography-fontSizes-lg); /* Updated */
+    height: var(--typography-fontSizes-lg); /* Updated */
 }
 
 .itemNameText {
-    font-weight: var(--chakra-fontWeights-bold);
+    font-weight: var(--typography-fontWeights-bold); /* Updated */
 }
 
 .noDataText {
-    color: var(--chakra-colors-text-secondary);
+    color: var(--colors-textSecondary); /* Updated */
 } 

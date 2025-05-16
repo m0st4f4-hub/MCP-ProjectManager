@@ -10,3 +10,7 @@ sql_app.db
 
 # ESLint reports
 eslint_report.json
+**/__pycache__/
+**/*.pyc
+
+# 

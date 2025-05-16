@@ -17,11 +17,11 @@
 }
 
 .toolDetailsBox {
-  border-width: 1px;
+  border-width: var(--borders-width-xs); /* was 1px */
   border-radius: var(--chakra-radii-lg);
   padding: var(--chakra-space-6); /* p={6} */
   border-style: solid; /* Added for border-width to take effect */
-  border-color: var(--chakra-colors-chakra-border-color); /* Assuming default border color */
+  border-color: var(--chakra-colors-chakra-border-color, var(--colors-borderDecorative)); /* Assuming default border color */
 }
 
 .toolDetailsHeading { /* For tool label */
@@ -69,11 +69,11 @@
 
 .responseBox {
   margin-top: var(--chakra-space-6); /* mt={6} */
-  border-width: 1px;
+  border-width: var(--borders-width-xs); /* was 1px */
   border-radius: var(--chakra-radii-lg);
   padding: var(--chakra-space-6); /* p={6} */
   border-style: solid; /* Added for border-width to take effect */
-  border-color: var(--chakra-colors-chakra-border-color); /* Assuming default border color */
+  border-color: var(--chakra-colors-chakra-border-color, var(--colors-borderDecorative)); /* Assuming default border color */
 }
 
 .responseHeading { /* For "Response" */
@@ -94,7 +94,7 @@
   padding: var(--chakra-space-4); /* p={4} */
   display: block;
   white-space: pre-wrap;
-  max-height: 400px;
+  max-height: var(--sizing-sm); /* was 400px, --sizing-sm is 24rem (384px) */
   overflow-y: auto;
 }
 

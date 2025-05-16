@@ -2,30 +2,30 @@
 
 /* General Modal Styles (can be part of a shared modal style sheet too) */
 .modalContent {
-    background-color: var(--chakra-colors-bg-modal);
-    color: var(--chakra-colors-text-primary);
-    border: 1px solid var(--chakra-colors-border-modal);
-    border-radius: var(--chakra-radii-lg);
+    background-color: var(--colors-bgSurface);
+    color: var(--colors-textPrimary);
+    border: var(--borders-width-xs) var(--borders-style-solid) var(--colors-borderDecorative);
+    border-radius: var(--radii-lg);
 }
 
 .modalHeader {
-    color: var(--chakra-colors-text-heading);
-    font-size: var(--chakra-fontSizes-lg);
-    font-weight: var(--chakra-fontWeights-bold);
-    padding: var(--chakra-space-4) var(--chakra-space-6);
-    border-bottom: 1px solid var(--chakra-colors-border-divider);
+    color: var(--colors-textPrimary);
+    font-size: var(--typography-fontSizes-lg);
+    font-weight: var(--typography-fontWeights-bold);
+    padding: var(--spacing-4) var(--spacing-6);
+    border-bottom: var(--borders-width-xs) var(--borders-style-solid) var(--colors-borderDecorative);
 }
 
 .modalBody {
-    padding: var(--chakra-space-4) var(--chakra-space-6);
+    padding: var(--spacing-4) var(--spacing-6);
     display: flex;
     flex-direction: column;
-    gap: var(--chakra-space-5);
+    gap: var(--spacing-5);
 }
 
 .modalFooter {
-    padding: var(--chakra-space-3) var(--chakra-space-6);
-    border-top: 1px solid var(--chakra-colors-border-divider);
+    padding: var(--spacing-3) var(--spacing-6);
+    border-top: var(--borders-width-xs) var(--borders-style-solid) var(--colors-borderDecorative);
     display: flex;
     justify-content: flex-end;
 }
@@ -34,47 +34,47 @@
 .formField {
     display: flex;
     flex-direction: column;
-    gap: var(--chakra-space-1_5);
+    gap: var(--spacing-1-5, 0.375rem);
 }
 
 .formLabel {
-    font-size: var(--chakra-fontSizes-sm);
-    font-weight: var(--chakra-fontWeights-medium);
-    color: var(--chakra-colors-text-secondary);
+    font-size: var(--typography-fontSizes-sm);
+    font-weight: var(--typography-fontWeights-medium);
+    color: var(--colors-textSecondary);
 }
 
 .formInput,
 .formTextarea {
-    padding: var(--chakra-space-2) var(--chakra-space-3);
-    border: 1px solid var(--chakra-colors-border-input);
-    border-radius: var(--chakra-radii-md);
-    background-color: var(--chakra-colors-bg-input);
-    color: var(--chakra-colors-text-input);
-    font-size: var(--chakra-fontSizes-md);
+    padding: var(--spacing-2) var(--spacing-3);
+    border: var(--borders-width-xs) var(--borders-style-solid) var(--colors-borderInteractive);
+    border-radius: var(--radii-md);
+    background-color: var(--colors-bgSurface);
+    color: var(--colors-textPrimary);
+    font-size: var(--typography-fontSizes-base);
     transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .formInput:focus,
 .formTextarea:focus {
-    border-color: var(--chakra-colors-border-focus);
-    box-shadow: 0 0 0 1px var(--chakra-colors-border-focus);
+    border-color: var(--colors-borderInteractiveFocused);
+    box-shadow: var(--shadows-outline);
     outline: none;
 }
 
 .formInput[aria-invalid="true"],
-.formTextarea[aria-invalid="true"] { /* Basic invalid state */
-    border-color: var(--chakra-colors-border-danger);
+.formTextarea[aria-invalid="true"] {
+    border-color: var(--colors-borderError);
 }
 .formInput[aria-invalid="true"]:focus,
 .formTextarea[aria-invalid="true"]:focus {
-    border-color: var(--chakra-colors-border-danger);
-    box-shadow: 0 0 0 1px var(--chakra-colors-border-danger);
+    border-color: var(--colors-borderError);
+    box-shadow: 0 0 0 var(--borders-width-xs) var(--colors-borderError);
 }
 
 .formError {
-    color: var(--chakra-colors-text-danger);
-    font-size: var(--chakra-fontSizes-sm);
-    margin-top: var(--chakra-space-1);
+    color: var(--colors-textError);
+    font-size: var(--typography-fontSizes-sm);
+    margin-top: var(--spacing-1);
 }
 
 /* Button Styles (using Chakra Button component for now, but can be custom) */

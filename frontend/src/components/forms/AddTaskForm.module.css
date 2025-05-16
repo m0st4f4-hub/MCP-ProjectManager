@@ -1,38 +1,41 @@
 /* frontend/src/components/forms/AddTaskForm.module.css */
 
 .addTaskFormContainer {
-  background-color: var(--chakra-colors-bg-surface);
-  padding: var(--chakra-space-6);
-  border-radius: var(--chakra-radii-lg);
-  box-shadow: var(--chakra-shadows-lg);
-  border-width: 1px;
-  border-style: solid; /* Required for border-width to take effect */
-  border-color: var(--chakra-colors-border-base);
+  background-color: var(--colors-bgSurface);
+  padding: var(--spacing-6);
+  border-radius: var(--radii-lg);
+  box-shadow: var(--shadows-lg);
+  border-width: var(--borders-width-xs);
+  border-style: var(--borders-style-solid);
+  border-color: var(--colors-borderDecorative);
 }
 
 .formVStack {
   /* For VStack spacing={4} */
-  /* Consider using gap: var(--chakra-space-4); if VStack is replaced by a simple div */
+  /* Consider using gap: var(--spacing-4); if VStack is replaced by a simple div */
 }
 
 .formHeading {
   /* size="md" can be achieved with theme's font size for md headings */
-  /* font-size: var(--chakra-fontSizes-md); */
-  color: var(--chakra-colors-text-primary);
-  margin-bottom: var(--chakra-space-2);
+  font-size: var(--typography-fontSizes-md);
+  color: var(--colors-textPrimary);
+  margin-bottom: var(--spacing-2);
   text-align: center;
 }
 
 .formLabel { /* Applied to FormLabel */
-  color: var(--chakra-colors-text-primary);
+  color: var(--colors-textPrimary);
 }
 
 .formInput, /* Common class for Input, Textarea, Select */
 .formTextarea,
 .formSelect {
-  background-color: var(--chakra-colors-bg-input);
-  color: var(--chakra-colors-text-primary);
-  border-color: var(--chakra-colors-border-input);
+  background-color: var(--colors-bgSurface);
+  color: var(--colors-textPrimary);
+  border: var(--borders-width-xs) var(--borders-style-solid) var(--colors-borderInteractive);
+  border-radius: var(--radii-md);
+  padding: var(--spacing-2) var(--spacing-3);
+  width: var(--sizing-full);
   /* Other input-specific styles like border-radius, padding might be inherited or set by Chakra defaults */
   /* Ensure to keep Chakra's base input styling by not overriding too much, or by applying this additively */
 }
@@ -40,14 +43,14 @@
 .formInput:hover,
 .formTextarea:hover,
 .formSelect:hover {
-  border-color: var(--chakra-colors-border-input_hover);
+  border-color: var(--core-colors-neutralGray-400);
 }
 
 .formInput:focus,
 .formTextarea:focus,
 .formSelect:focus {
-  border-color: var(--chakra-colors-border-focus);
-  box-shadow: 0 0 0 1px var(--chakra-colors-border-focus); /* Simulating Chakra's outline */
+  border-color: var(--colors-borderInteractiveFocused);
+  box-shadow: var(--shadows-outline);
   /* Chakra's boxShadow: "outline" is often mapped to a specific blue outline, this is a generic version */
 }
 
@@ -55,28 +58,30 @@
 .formInput::placeholder,
 .formTextarea::placeholder,
 .formSelect /* Select placeholder is set via an <option> usually, or a specific prop */ {
-  color: var(--chakra-colors-text-placeholder);
+  color: var(--colors-textPlaceholder);
   opacity: 1; /* Ensure placeholder is visible */
 }
 
 .submitButton {
-  background-color: var(--chakra-colors-bg-button-primary);
-  color: var(--chakra-colors-text-button-primary);
-  width: 100%; /* width="full" */
+  background-color: var(--colors-bgInteractive);
+  color: var(--colors-textInverse);
+  width: var(--sizing-full); /* width="full" */
   /* size="lg" implies specific padding and font-size from Chakra's theme */
   /* Example for lg size (check theme for exact values): */
-  padding-top: var(--chakra-space-3);
-  padding-bottom: var(--chakra-space-3);
-  padding-left: var(--chakra-space-6);
-  padding-right: var(--chakra-space-6);
-  font-size: var(--chakra-fontSizes-lg);
+  padding-top: var(--spacing-3);
+  padding-bottom: var(--spacing-3);
+  padding-left: var(--spacing-6);
+  padding-right: var(--spacing-6);
+  font-size: var(--typography-fontSizes-lg);
   height: auto; /* Reset height if padding defines it */
-  line-height: var(--chakra-lineHeights-normal); /* Ensure text aligns well */
-  border-radius: var(--chakra-radii-md); /* Default button border radius */
+  line-height: var(--typography-lineHeights-regular); /* Ensure text aligns well */
+  border-radius: var(--radii-md); /* Default button border radius */
+  border: none;
+  cursor: pointer;
 }
 
 .submitButton:hover {
-  background-color: var(--chakra-colors-bg-button-primary-hover);
+  background-color: var(--colors-bgInteractiveHover);
 }
 
 /* .formField can be an alternative to .formInput if more generic styling is needed */

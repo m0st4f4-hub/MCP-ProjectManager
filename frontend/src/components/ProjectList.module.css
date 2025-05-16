@@ -2,25 +2,25 @@
 
 .projectListContainer {
   /* For outer VStack: spacing={4} align="stretch" w="full" */
-  width: 100%;
+  width: var(--sizing-full); /* was 100% */
   /* Spacing can be handled by gap or child margins if VStack is replaced */
 }
 
 .projectCard {
   /* For Box (each project item) */
   padding: var(--chakra-space-4);
-  border-width: 1px;
+  border-width: var(--borders-width-xs); /* was 1px */
   border-style: solid; /* Ensure border shows */
-  border-color: var(--chakra-colors-chakra-border-color); /* Default, or specific theme token */
+  border-color: var(--chakra-colors-chakra-border-color, var(--colors-borderDecorative)); /* Default, or specific theme token */
   border-radius: var(--chakra-radii-lg);
   box-shadow: var(--chakra-shadows-md);
-  background-color: var(--chakra-colors-bg-surface);
-  transition: all 0.2s ease-in-out;
+  background-color: var(--chakra-colors-bg-surface, var(--core-colors-white));
+  transition: all 0.2s ease-in-out; /* 0.2s fine */
 }
 
 .projectCard:hover {
   box-shadow: var(--chakra-shadows-xl);
-  border-color: var(--chakra-colors-border-hover, var(--chakra-colors-blue-500)); /* Fallback for border-hover */
+  border-color: var(--chakra-colors-border-hover, var(--colors-borderInteractiveFocused)); /* Fallback for border-hover, was blue-500 */
 }
 
 .projectHeader {
@@ -81,33 +81,33 @@
 }
 
 .cliPromptModalContent {
-  background-color: var(--chakra-colors-bg-modal, var(--chakra-colors-white)); /* Fallback for bg-modal */
-  color: var(--chakra-colors-text-primary, var(--chakra-colors-black)); /* Fallback for text-primary */
+  background-color: var(--chakra-colors-bg-modal, var(--core-colors-white)); /* Fallback for bg-modal */
+  color: var(--chakra-colors-text-primary, var(--colors-textPrimary)); /* Fallback for text-primary, was black */
 }
 
 .cliPromptModalHeader {
-  border-bottom-width: 1px;
+  border-bottom-width: var(--borders-width-xs); /* was 1px */
   border-bottom-style: solid; /* Ensure border shows */
-  border-bottom-color: var(--chakra-colors-border-subtle, var(--chakra-colors-gray-200)); /* Fallback */
+  border-bottom-color: var(--chakra-colors-border-subtle, var(--core-colors-neutralGray-200)); /* Fallback */
 }
 
 .cliPromptModalBody {
-  max-height: 60vh;
+  max-height: calc(var(--sizing-vh) * 0.6); /* was 60vh */
   overflow-y: auto;
   white-space: pre-wrap;
-  font-family: var(--chakra-fonts-mono);
-  font-size: var(--chakra-fontSizes-sm);
-  background-color: var(--chakra-colors-bg-codeblock, var(--chakra-colors-gray-50)); /* Fallback */
-  padding: var(--chakra-space-4); 
+  font-family: var(--chakra-fonts-mono, var(--typography-fontFamilies-monospace));
+  font-size: var(--chakra-fontSizes-sm, var(--typography-fontSizes-sm));
+  background-color: var(--chakra-colors-bg-codeblock, var(--core-colors-neutralGray-50)); /* Fallback */
+  padding: var(--chakra-space-4);
 }
 
 .cliPromptModalFooter {
-  border-top-width: 1px;
+  border-top-width: var(--borders-width-xs); /* was 1px */
   border-top-style: solid; /* Ensure border shows */
-  border-top-color: var(--chakra-colors-border-subtle, var(--chakra-colors-gray-200)); /* Fallback */
+  border-top-color: var(--chakra-colors-border-subtle, var(--core-colors-neutralGray-200)); /* Fallback */
 }
 
 .alertDialogContent {
-  background-color: var(--chakra-colors-bg-modal, var(--chakra-colors-white)); /* Fallback */
-  color: var(--chakra-colors-text-primary, var(--chakra-colors-black)); /* Fallback */
+  background-color: var(--chakra-colors-bg-modal, var(--core-colors-white)); /* Fallback */
+  color: var(--chakra-colors-text-primary, var(--colors-textPrimary)); /* Fallback, was black */
 } 

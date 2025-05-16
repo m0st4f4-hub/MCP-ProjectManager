@@ -48,8 +48,6 @@ import { TaskCreateData, TaskStatus } from '@/types/task';
 import Dashboard from '@/components/Dashboard';
 import { ThemeToggleButton } from '@/components/ThemeToggleButton';
 import MCPDevTools from '@/components/MCPDevTools';
-import OverviewContent from '@/components/OverviewContent';
-import DetailsContent from '@/components/DetailsContent';
 import SettingsContent from '@/components/SettingsContent';
 import styles from './page.module.css'; 
 import sidebarStyles from './Sidebar.module.css'; 
@@ -83,6 +81,30 @@ interface SidebarContentProps {
 
 const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProjectOpen, onAddAgentOpen, onImportPlanOpen, onOpenDevTools, isCollapsed, onToggleCollapse }: SidebarContentProps) => {
     const { colorMode } = useColorMode();
+
+    const navItems = [
+        { view: 'Dashboard', label: 'Dashboard', icon: <ViewIcon /> },
+        { view: 'Workboard', label: 'Workboard', icon: <EditIcon /> },
+        { view: 'Portfolio', label: 'Portfolio', icon: <SearchIcon /> },
+        { view: 'Registry', label: 'Registry', icon: <TimeIcon /> },
+        { view: 'Settings', label: 'Settings', icon: <SettingsIcon /> },
+    ];
+
+    if (activeView === 'Workboard') {
+        navItems.push({ id: 'addTask', label: 'Add Task', icon: <AddIcon />, action: onAddTaskOpen });
+    }
+    if (activeView === 'Portfolio') {
+        navItems.push({ id: 'addProject', label: 'Add Project', icon: <AddIcon />, action: onAddProjectOpen });
+    }
+    if (activeView === 'Registry') {
+        navItems.push({ id: 'addAgent', label: 'Register Agent', icon: <AddIcon />, action: onAddAgentOpen });
+    }
+
+    navItems.push(
+        { id: 'importPlan', label: 'Import Plan', icon: <ArrowUpIcon />, action: onImportPlanOpen },
+        { id: 'devTools', label: 'Dev Tools', icon: <SettingsIcon />, action: onOpenDevTools }
+    );
+
     return (
         <div className={clsx(sidebarStyles.sidebarRoot, isCollapsed ? sidebarStyles.sidebarRootCollapsed : sidebarStyles.sidebarRootExpanded)}>
             <div className={sidebarStyles.sidebarHeader}>
@@ -112,21 +134,13 @@ const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProject
             </div>
 
             <div className={sidebarStyles.navButtonVStack}>
-                {[
-                    { view: 'Dashboard', label: 'Dashboard', icon: <ViewIcon /> },
-                    { view: 'Workboard', label: 'Workboard', icon: <EditIcon /> },
-                    { view: 'Portfolio', label: 'Portfolio', icon: <SearchIcon /> },
-                    { view: 'Registry', label: 'Registry', icon: <TimeIcon /> },
-                    { view: 'Overview', label: 'Overview', icon: <ViewIcon /> },
-                    { view: 'Details', label: 'Details', icon: <SearchIcon /> },
-                    { view: 'Settings', label: 'Settings', icon: <SettingsIcon /> },
-                ].map(item => (
-                    <Tooltip label={item.label} isDisabled={!isCollapsed} placement="right" key={item.view}>
+                {navItems.map(item => (
+                    <Tooltip label={item.label} isDisabled={!isCollapsed} placement="right" key={item.view || item.id}>
                         <button
-                            onClick={() => setActiveView(item.view)}
+                            onClick={item.action ? item.action : () => setActiveView(item.view)}
                             className={clsx(
                                 sidebarStyles.navButton,
-                                activeView === item.view && sidebarStyles.navButtonActive,
+                                !item.action && activeView === item.view && sidebarStyles.navButtonActive,
                                 isCollapsed ? sidebarStyles.navButtonJustifyCenter : sidebarStyles.navButtonJustifyStart,
                                 isCollapsed ? sidebarStyles.navButtonCollapsed : sidebarStyles.navButtonExpanded
                             )}
@@ -137,62 +151,6 @@ const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProject
                     </Tooltip>
                 ))}
             </div>
-
-            {!isCollapsed && (
-                <div className={sidebarStyles.actionButtonsContainer}>
-                    {activeView === 'Workboard' && (
-                        <Tooltip label="Add New Task" isDisabled={!isCollapsed} placement="right">
-                            <button 
-                                onClick={onAddTaskOpen}
-                                className={clsx(sidebarStyles.actionButton, isCollapsed && sidebarStyles.actionButtonCollapsed)}
-                            >
-                                <AddIcon className={sidebarStyles.actionButtonIcon} />
-                                {!isCollapsed && <span className={!isCollapsed ? sidebarStyles.actionButtonTextExpanded : sidebarStyles.actionButtonTextCollapsed}>Add New Task</span>}
-                            </button>
-                        </Tooltip>
-                    )}
-                    {activeView === 'Portfolio' && (
-                        <Tooltip label="Add New Project" isDisabled={!isCollapsed} placement="right">
-                            <button 
-                                onClick={onAddProjectOpen}
-                                className={clsx(sidebarStyles.actionButton, isCollapsed && sidebarStyles.actionButtonCollapsed)}
-                            >
-                                <AddIcon className={sidebarStyles.actionButtonIcon} />
-                                {!isCollapsed && <span className={!isCollapsed ? sidebarStyles.actionButtonTextExpanded : sidebarStyles.actionButtonTextCollapsed}>Add New Project</span>}
-                            </button>
-                        </Tooltip>
-                    )}
-                     {activeView === 'Registry' && (
-                        <Tooltip label="Register New Agent" isDisabled={!isCollapsed} placement="right">
-                            <button 
-                                onClick={onAddAgentOpen}
-                                className={clsx(sidebarStyles.actionButton, isCollapsed && sidebarStyles.actionButtonCollapsed)}
-                            >
-                                <AddIcon className={sidebarStyles.actionButtonIcon} />
-                                {!isCollapsed && <span className={!isCollapsed ? sidebarStyles.actionButtonTextExpanded : sidebarStyles.actionButtonTextCollapsed}>Register Agent</span>}
-                            </button>
-                        </Tooltip>
-                    )}
-                    <Tooltip label="Import JSON Plan" isDisabled={!isCollapsed} placement="right">
-                         <button 
-                            onClick={onImportPlanOpen}
-                            className={clsx(sidebarStyles.actionButton, sidebarStyles.actionButtonSecondary, isCollapsed && sidebarStyles.actionButtonCollapsed)}
-                        >
-                            <ArrowUpIcon className={sidebarStyles.actionButtonIcon} />
-                            {!isCollapsed && <span className={!isCollapsed ? sidebarStyles.actionButtonTextExpanded : sidebarStyles.actionButtonTextCollapsed}>Import Plan</span>}
-                        </button>
-                    </Tooltip>
-                    <Tooltip label="Developer Tools" isDisabled={!isCollapsed} placement="right">
-                        <button 
-                            onClick={onOpenDevTools}
-                            className={clsx(sidebarStyles.actionButton, sidebarStyles.actionButtonTertiary, isCollapsed && sidebarStyles.actionButtonCollapsed)}
-                        >
-                            <SettingsIcon className={sidebarStyles.actionButtonIcon} />
-                            {!isCollapsed && <span className={!isCollapsed ? sidebarStyles.actionButtonTextExpanded : sidebarStyles.actionButtonTextCollapsed}>Dev Tools</span>}
-                        </button>
-                    </Tooltip>
-                </div>
-            )}
         </div>
     );
 };
@@ -354,6 +312,23 @@ export default function Home() {
         }
     }, [isImportPlanOpen]);
 
+    const renderContent = () => {
+        switch (activeView) {
+            case 'Dashboard':
+                return <Dashboard />;
+            case 'Workboard':
+                return <TaskList />;
+            case 'Portfolio':
+                return <ProjectList />;
+            case 'Registry':
+                return <AgentList />;
+            case 'Settings':
+                return <SettingsContent />;
+            default:
+                return null;
+        }
+    };
+
     return (
         <main className={styles.pageContainer}>
             <IconButton
@@ -415,13 +390,7 @@ export default function Home() {
                     </Drawer>
 
                     <section className={styles.mainContentAreaLayout}>
-                        {activeView === 'Dashboard' && <Dashboard />}
-                        {activeView === 'Workboard' && <TaskList />}
-                        {activeView === 'Portfolio' && <ProjectList />}
-                        {activeView === 'Registry' && <AgentList />}
-                        {activeView === 'Overview' && <OverviewContent />}
-                        {activeView === 'Details' && <DetailsContent />}
-                        {activeView === 'Settings' && <SettingsContent />}
+                        {renderContent()}
                     </section>
                 </div>
             </div>

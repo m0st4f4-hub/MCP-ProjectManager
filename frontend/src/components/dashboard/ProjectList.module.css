@@ -2,49 +2,49 @@
 .projectListContainer {
     display: flex;
     flex-direction: column;
-    gap: var(--chakra-space-4);
-    padding: var(--chakra-space-4); /* Or use page-level padding if this is a sub-component */
-    background-color: var(--chakra-colors-bg-content); /* Or transparent if page handles bg */
-    border-radius: var(--chakra-radii-lg);
-    /* box-shadow: var(--chakra-shadows-md); */ /* Optional: if it should be a card itself */
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    background-color: var(--core-colors-neutralGray-50);
+    border-radius: var(--radii-lg);
+    /* box-shadow: var(--shadows-md); */ /* Optional: if it should be a card itself */
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--chakra-space-2); /* Reduced from mb={4} on old Flex */
+    margin-bottom: var(--spacing-2);
 }
 
 .title {
-    font-size: var(--chakra-fontSizes-xl); /* Was size="lg" for Heading */
-    font-weight: var(--chakra-fontWeights-bold);
-    color: var(--chakra-colors-text-primary);
+    font-size: var(--typography-fontSizes-xl);
+    font-weight: var(--typography-fontWeights-bold);
+    color: var(--colors-textPrimary);
 }
 
 .headerActions {
     display: flex;
-    gap: var(--chakra-space-2);
+    gap: var(--spacing-2);
 }
 
 .addButton {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--chakra-space-2) var(--chakra-space-4);
-    background-color: var(--chakra-colors-button-primary-default);
-    color: var(--chakra-colors-text-button-primary);
-    font-weight: var(--chakra-fontWeights-medium);
-    border-radius: var(--chakra-radii-md);
-    border: 1px solid transparent;
+    padding: var(--spacing-2) var(--spacing-4);
+    background-color: var(--colors-bgInteractive);
+    color: var(--colors-textInverse);
+    font-weight: var(--typography-fontWeights-medium);
+    border-radius: var(--radii-md);
+    border: var(--borders-width-xs) var(--borders-style-solid) transparent;
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
 }
 .addButton:hover {
-    background-color: var(--chakra-colors-button-primary-hover);
+    background-color: var(--colors-bgInteractiveHover);
 }
 .addButton:active {
-    background-color: var(--chakra-colors-button-primary-active);
+    background-color: var(--colors-bgInteractiveActive);
 }
 
 
@@ -53,9 +53,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--chakra-space-10);
-    gap: var(--chakra-space-4);
-    color: var(--chakra-colors-text-secondary);
+    padding: var(--spacing-10);
+    gap: var(--spacing-4);
+    color: var(--colors-textSecondary);
 }
 
 .errorContainer {
@@ -63,31 +63,34 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--chakra-space-10);
-    gap: var(--chakra-space-3);
-    background-color: var(--chakra-colors-bg-danger-subtle);
-    color: var(--chakra-colors-text-danger);
-    border-radius: var(--chakra-radii-md);
-    border: 1px solid var(--chakra-colors-border-danger);
+    padding: var(--spacing-10);
+    gap: var(--spacing-3);
+    background-color: var(--colors-statusErrorBg);
+    color: var(--colors-textError);
+    border-radius: var(--radii-md);
+    border: var(--borders-width-xs) var(--borders-style-solid) var(--colors-statusErrorBorder);
 }
 .errorIcon {
-    font-size: var(--chakra-fontSizes-2xl);
-    color: var(--chakra-colors-icon-danger);
+    font-size: var(--typography-fontSizes-h4);
+    color: var(--colors-textError);
 }
 .errorText {
-    font-weight: var(--chakra-fontWeights-medium);
+    font-weight: var(--typography-fontWeights-medium);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radii-md);
+    color: var(--colors-textError);
 }
 .retryButton {
-    padding: var(--chakra-space-2) var(--chakra-space-4);
-    border-radius: var(--chakra-radii-md);
-    background-color: var(--chakra-colors-button-danger-default);
-    color: var(--chakra-colors-text-button-danger);
-    font-weight: var(--chakra-fontWeights-medium);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radii-md);
+    background-color: var(--colors-textError);
+    color: var(--colors-textInverse);
+    font-weight: var(--typography-fontWeights-medium);
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
 }
 .retryButton:hover {
-    background-color: var(--chakra-colors-button-danger-hover);
+    background-color: var(--core-colors-red-600);
 }
 
 .emptyStateContainer {
@@ -95,106 +98,110 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--chakra-space-10) var(--chakra-space-6);
+    padding: var(--spacing-10) var(--spacing-6);
     text-align: center;
-    gap: var(--chakra-space-2);
-    border: 1px dashed var(--chakra-colors-border-secondary);
-    border-radius: var(--chakra-radii-lg);
-    background-color: var(--chakra-colors-bg-subtle);
+    gap: var(--spacing-2);
+    border: var(--borders-width-xs) var(--borders-style-dashed) var(--colors-borderDecorative);
+    border-radius: var(--radii-lg);
+    background-color: var(--core-colors-neutralGray-50);
 }
 .emptyStateIcon {
-    font-size: var(--chakra-fontSizes-3xl);
-    color: var(--chakra-colors-icon-secondary);
-    margin-bottom: var(--chakra-space-2);
+    font-size: var(--typography-fontSizes-h3);
+    color: var(--colors-iconDefault);
+    margin-bottom: var(--spacing-2);
 }
 .emptyStateText {
-    font-size: var(--chakra-fontSizes-lg);
-    font-weight: var(--chakra-fontWeights-medium);
-    color: var(--chakra-colors-text-primary);
+    font-size: var(--typography-fontSizes-lg);
+    font-weight: var(--typography-fontWeights-medium);
+    color: var(--colors-textPrimary);
 }
 .emptyStateSubText {
-    font-size: var(--chakra-fontSizes-md);
-    color: var(--chakra-colors-text-secondary);
+    font-size: var(--typography-fontSizes-base);
+    color: var(--colors-textSecondary);
 }
 .emptyStateLinkButton {
-    color: var(--chakra-colors-text-link);
+    color: var(--colors-textLink);
     text-decoration: underline;
     background: none;
     border: none;
-    padding: 0;
+    padding: var(--spacing-0);
     cursor: pointer;
-    font-weight: var(--chakra-fontWeights-medium);
+    font-weight: var(--typography-fontWeights-medium);
 }
 .emptyStateLinkButton:hover {
-    color: var(--chakra-colors-text-link-hover);
+    color: var(--colors-textLinkHover);
 }
 
 .projectGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Replicates SimpleGrid behavior */
-    gap: var(--chakra-space-4);
+    grid-template-columns: repeat(auto-fill, minmax(18.75rem, 1fr));
+    gap: var(--spacing-4);
     list-style: none;
-    padding: 0;
-    margin: 0;
+    padding: var(--spacing-0);
+    margin: var(--spacing-0);
 }
 
 .projectCard {
     display: flex;
     flex-direction: column;
-    gap: var(--chakra-space-3); /* Approximation for spacing between elements */
-    padding: var(--chakra-space-4);
-    background-color: var(--chakra-colors-bg-card);
-    border-radius: var(--chakra-radii-lg);
-    border: 1px solid var(--chakra-colors-border-primary);
-    box-shadow: var(--chakra-shadows-sm);
+    gap: var(--spacing-3);
+    padding: var(--spacing-4);
+    background-color: var(--colors-bgSurface);
+    border-radius: var(--radii-lg);
+    border: var(--borders-width-xs) var(--borders-style-solid) var(--colors-borderDecorative);
+    box-shadow: var(--shadows-sm);
     transition: all 0.2s ease-in-out;
-    position: relative; /* For archived overlay and top border */
-    overflow: hidden; /* For top border */
+    position: relative;
+    overflow: hidden;
 }
 .projectCard:hover {
-    box-shadow: var(--chakra-shadows-md);
-    border-color: var(--chakra-colors-border-hover);
-    transform: translateY(-2px);
+    box-shadow: var(--shadows-md);
+    border-color: var(--core-colors-neutralGray-400);
+    transform: translateY(calc(var(--spacing-1) / -2));
 }
 
-.projectCard::before { /* Top border accent */
+.projectCard::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background-color: transparent; /* Default */
+    top: var(--spacing-0);
+    left: var(--spacing-0);
+    right: var(--spacing-0);
+    height: var(--spacing-1);
+    background-color: transparent;
     transition: background-color 0.2s ease-in-out;
 }
 /* Specific top border colors can be added based on status if desired, e.g. */
-/* .projectCard.statusInProgress::before { background-color: var(--chakra-colors-blue-500); } */
-/* .projectCard.statusCompleted::before { background-color: var(--chakra-colors-green-500); } */
+/* .projectCard.statusInProgress::before { background-color: var(--core-colors-blue-500); } */
+/* .projectCard.statusCompleted::before { background-color: var(--core-colors-green-500); } */
 
 
 .archivedCard {
-    background-color: var(--chakra-colors-bg-disabled);
-    border-color: var(--chakra-colors-border-disabled);
+    background-color: var(--colors-bgDisabled);
+    border-color: var(--colors-borderDisabled);
 }
 .archivedCard:hover {
-    border-color: var(--chakra-colors-border-disabled-hover);
+    border-color: var(--core-colors-neutralGray-300);
+    box-shadow: var(--shadows-sm);
+    transform: translateY(0);
 }
 
 .archivedOverlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(128, 128, 128, 0.1); /* Light gray overlay */
+    top: var(--spacing-0);
+    left: var(--spacing-0);
+    right: var(--spacing-0);
+    bottom: var(--spacing-0);
+    background-color: rgba(224, 224, 224, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--chakra-colors-text-disabled);
-    font-weight: var(--chakra-fontWeights-bold);
-    font-size: var(--chakra-fontSizes-lg);
-    border-radius: var(--chakra-radii-lg); /* Match parent */
-    pointer-events: none; /* Allows clicks to go through to elements underneath if needed, though usually not for an overlay like this */
+    color: var(--colors-textDisabled);
+    font-weight: var(--typography-fontWeights-bold);
+    font-size: var(--typography-fontSizes-lg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(var(--sizing-full) - var(--spacing-10));
 }
 
 
@@ -205,91 +212,94 @@
 }
 
 .cardTitle {
-    font-size: var(--chakra-fontSizes-lg); /* Was size="md" for Heading */
-    font-weight: var(--chakra-fontWeights-semibold);
-    color: var(--chakra-colors-text-primary);
-    /* For isTruncated, we might need to add width, overflow hidden, text-overflow ellipsis */
+    font-size: var(--typography-fontSizes-lg);
+    font-weight: var(--typography-fontWeights-semibold);
+    color: var(--colors-textPrimary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: calc(100% - 40px); /* Adjust based on menu button size */
+    max-width: calc(100% - var(--spacing-10));
 }
 
 .cardDescription {
-    font-size: var(--chakra-fontSizes-sm);
-    color: var(--chakra-colors-text-secondary);
-    font-weight: var(--chakra-fontWeights-normal);
-    line-height: var(--chakra-lineHeights-short);
-    /* For noOfLines={2} */
+    font-size: var(--typography-fontSizes-sm);
+    color: var(--colors-textSecondary);
+    font-weight: var(--typography-fontWeights-normal);
+    line-height: var(--typography-lineHeights-condensed);
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    max-height: calc(var(--chakra-lineHeights-short) * 2); /* Fallback for non-webkit */
+    max-height: calc(var(--typography-lineHeights-condensed) * 2);
 }
 
 .cardStatusSection {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: var(--chakra-space-2);
-    margin-top: var(--chakra-space-1);
-    margin-bottom: var(--chakra-space-1);
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-1);
+    margin-bottom: var(--spacing-1);
 }
 
 .statusTag {
     display: inline-flex;
     align-items: center;
-    gap: var(--chakra-space-1_5);
-    padding: var(--chakra-space-0_5) var(--chakra-space-2);
-    border-radius: var(--chakra-radii-full);
-    font-size: var(--chakra-fontSizes-xs);
-    font-weight: var(--chakra-fontWeights-medium);
+    gap: var(--spacing-1-5, 0.375rem);
+    padding: var(--spacing-0-5, 0.125rem) var(--spacing-2);
+    border-radius: var(--radii-full);
+    font-size: var(--typography-fontSizes-xs);
+    font-weight: var(--typography-fontWeights-medium);
     text-transform: capitalize;
 }
 
 .statusTagPending {
-    background-color: var(--chakra-colors-blue-100); /* Adjust with theme */
-    color: var(--chakra-colors-blue-800);
+    background-color: var(--core-colors-blue-100);
+    color: var(--core-colors-blue-800);
 }
 .statusTagInProgress {
-    background-color: var(--chakra-colors-yellow-100); /* Adjust with theme */
-    color: var(--chakra-colors-yellow-800);
+    background-color: var(--core-colors-yellow-100);
+    color: var(--core-colors-yellow-800);
 }
 .statusTagCompleted {
-    background-color: var(--chakra-colors-green-100); /* Adjust with theme */
-    color: var(--chakra-colors-green-800);
+    background-color: var(--core-colors-green-100);
+    color: var(--core-colors-green-800);
 }
 .statusTagArchived {
-    background-color: var(--chakra-colors-gray-200); /* Adjust with theme */
-    color: var(--chakra-colors-gray-700);
+    background-color: var(--core-colors-neutralGray-200);
+    color: var(--core-colors-neutralGray-700);
 }
 
 .cardTasksCount {
-    font-size: var(--chakra-fontSizes-sm);
-    color: var(--chakra-colors-text-tertiary);
+    font-size: var(--typography-fontSizes-sm);
+    color: var(--colors-textSecondary);
 }
 
 .cardProgressBar {
-    /* Chakra Progress has its own styling via colorScheme, we can try to mimic or use custom */
-    height: var(--chakra-sizes-1_5); /* was size="sm" */
-    border-radius: var(--chakra-radii-full);
-    background-color: var(--chakra-colors-progress-track-bg, var(--chakra-colors-gray-200)); /* Fallback */
+    height: var(--spacing-1-5, 0.375rem);
+    border-radius: var(--radii-full);
+    background-color: var(--core-colors-neutralGray-200);
+    overflow: hidden;
 }
 /* Specific colorScheme styles would need to be added for the progress bar itself */
 /* For example, for colorScheme="blue": */
-/* .cardProgressBar[value]::-webkit-progress-bar { background-color: var(--chakra-colors-gray-200); } */
-/* .cardProgressBar[value]::-webkit-progress-value { background-color: var(--chakra-colors-blue-500); } */
-/* .cardProgressBar[value]::-moz-progress-bar { background-color: var(--chakra-colors-blue-500); } */
+/* .cardProgressBar[value]::-webkit-progress-bar { background-color: var(--core-colors-gray-200); } */
+/* .cardProgressBar[value]::-webkit-progress-value { background-color: var(--core-colors-blue-500); } */
+/* .cardProgressBar[value]::-moz-progress-bar { background-color: var(--core-colors-blue-500); } */
+
+.cardProgressBarFilled {
+    height: 100%;
+    background-color: var(--colors-brandPrimary);
+}
 
 .cardFooter {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: var(--chakra-space-2);
-    font-size: var(--chakra-fontSizes-xs);
-    color: var(--chakra-colors-text-tertiary);
+    margin-top: var(--spacing-2);
+    font-size: var(--typography-fontSizes-xs);
+    color: var(--colors-textSecondary);
 }
 .cardDate {}
 .cardDateUpdated {
@@ -298,16 +308,19 @@
 
 /* CLI Prompt Modal Specific */
 .cliPromptTextarea {
-    /* Chakra Textarea styles are generally good, but we can ensure some basics */
-    background-color: var(--chakra-colors-bg-textarea, var(--chakra-colors-whiteAlpha-100));
-    border: 1px solid var(--chakra-colors-border-input, var(--chakra-colors-gray-600));
-    border-radius: var(--chakra-radii-md);
-    font-family: var(--chakra-fonts-mono);
-    font-size: var(--chakra-fontSizes-sm);
-    color: var(--chakra-colors-text-primary);
-    padding: var(--chakra-space-2);
+    background-color: var(--colors-bgSurface);
+    border: var(--borders-width-xs) var(--borders-style-solid) var(--colors-borderInteractive);
+    border-radius: var(--radii-md);
+    font-family: var(--typography-fontFamilies-monospace);
+    font-size: var(--typography-fontSizes-sm);
+    color: var(--colors-textPrimary);
+    padding: var(--spacing-2);
+    width: 100%;
+    min-height: var(--spacing-20);
+    box-sizing: border-box;
 }
 .cliPromptTextarea:focus {
-    border-color: var(--chakra-colors-border-focus, var(--chakra-colors-blue-500));
-    box-shadow: 0 0 0 1px var(--chakra-colors-border-focus, var(--chakra-colors-blue-500));
+    border-color: var(--colors-borderInteractiveFocused);
+    box-shadow: var(--shadows-outline);
+    outline: none;
 } 

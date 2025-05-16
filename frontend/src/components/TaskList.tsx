@@ -451,9 +451,12 @@ const TaskList: React.FC = () => {
                 <NoTasks onAddTask={handleOpenAddTaskModalCallback} />
             )}
 
-            <AddTaskForm
-                onClose={handleCloseAddTaskModalCallback}
-            />
+            {/* <AddTaskForm 
+                isOpen={isAddTaskModalOpen} 
+                onClose={handleCloseAddTaskModalCallback} 
+                // editingTask={editingTask}
+                // parentTaskForNewTask={parentTaskForNewTask}
+            /> */}
         </div>
     );
 }

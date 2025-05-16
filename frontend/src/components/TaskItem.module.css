@@ -4,18 +4,18 @@
     display: flex;
     padding: var(--chakra-space-4);
     border-radius: var(--chakra-radii-md);
-    border-width: 1px;
+    border-width: var(--borders-width-xs);
     border-style: solid;
-    border-color: var(--chakra-colors-border-primary, #E2E8F0);
+    border-color: var(--chakra-colors-border-primary, var(--colors-borderDecorative));
     box-shadow: var(--chakra-shadows-sm);
     transition: all 0.2s ease-in-out;
     position: relative;
     overflow: hidden; /* Keep hidden for _before pseudo-element if it extends */
-    background-color: var(--chakra-colors-task-item-bg, var(--chakra-colors-bg-surface, white)); /* Default task item bg */
+    background-color: var(--chakra-colors-task-item-bg, var(--chakra-colors-bg-surface, var(--core-colors-white))); /* Default task item bg */
 }
 
 .taskItemContainerCompleted {
-    background-color: var(--chakra-colors-task-item-completed-bg, var(--chakra-colors-bg-subtle, #F7FAFC));
+    background-color: var(--chakra-colors-task-item-completed-bg, var(--chakra-colors-bg-subtle, var(--core-colors-neutralGray-50))); /* F7FAFC is neutralGray-50 */
 }
 
 .taskItemContainerCompact {
@@ -26,28 +26,28 @@
 .taskItemContainer::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 4px; /* Width of the accent bar */
-    background-color: var(--chakra-colors-gray-300, #CBD5E0); /* Default non-status border accent */
+    top: var(--spacing-0);
+    left: var(--spacing-0);
+    bottom: var(--spacing-0);
+    width: var(--spacing-1);
+    background-color: var(--chakra-colors-gray-300, var(--core-colors-neutralGray-300)); /* Default non-status border accent, CBD5E0 is neutralGray-300 */
     transition: background-color 0.2s ease-in-out;
 }
 
 .taskItemContainer:hover {
     box-shadow: var(--chakra-shadows-md);
-    transform: translateY(-1px);
+    transform: translateY(calc(var(--borders-width-xs) * -1));
     /* Dynamic border color on hover will be tricky. This sets a general hover border. */
-    /* border-color: var(--chakra-colors-border-hover, var(--chakra-colors-blue-400)); */
+    /* border-color: var(--chakra-colors-border-hover, var(--colors-borderInteractiveFocused)); */
 }
 
 /* Specific status accent colors for the left border - applied by adding these classes to taskItemContainer */
-.accentToDo::before { background-color: var(--chakra-colors-blue-500, #3182CE); }
-.accentInProgress::before { background-color: var(--chakra-colors-yellow-500, #D69E2E); }
-.accentBlocked::before { background-color: var(--chakra-colors-red-500, #E53E3E); }
-.accentPending::before { background-color: var(--chakra-colors-orange-500, #DD6B20); }
-.accentCompleted::before { background-color: var(--chakra-colors-green-500, #38A169); }
-.accentDefault::before { background-color: var(--chakra-colors-gray-500, #718096); } /* Fallback */
+.accentToDo::before { background-color: var(--chakra-colors-blue-500, var(--core-colors-blue-500)); } /* 3182CE is blue-500 (chakra) */
+.accentInProgress::before { background-color: var(--chakra-colors-yellow-500, var(--core-colors-yellow-500)); } /* D69E2E is yellow-500 (chakra) */
+.accentBlocked::before { background-color: var(--chakra-colors-red-500, var(--core-colors-red-500)); } /* E53E3E is red-500 (chakra) */
+.accentPending::before { background-color: var(--chakra-colors-orange-500, var(--core-colors-orange-500)); } /* DD6B20 is orange-500 (chakra) */
+.accentCompleted::before { background-color: var(--chakra-colors-green-500, var(--core-colors-green-500)); } /* 38A169 is green-500 (chakra) */
+.accentDefault::before { background-color: var(--chakra-colors-gray-500, var(--core-colors-neutralGray-500)); } /* Fallback, 718096 is gray-500 (chakra) / neutralGray-500 */
 
 
 .taskContentHStack {
@@ -59,7 +59,7 @@
 
 .taskCheckboxContainer {
     /* Container for checkbox for alignment purposes */
-    padding-top: var(--chakra-space-0-5); /* Align checkbox with first line of text slightly better */
+    padding-top: var(--chakra-space-0-5, var(--spacing-0-5)); /* Align checkbox with first line of text slightly better. 0.5 is 2px */
 }
 
 
@@ -86,7 +86,7 @@
 .taskTitle {
     font-size: var(--chakra-fontSizes-md);
     font-weight: var(--chakra-fontWeights-medium);
-    color: var(--chakra-colors-text-primary, black);
+    color: var(--chakra-colors-text-primary, var(--colors-textPrimary));
     cursor: default;
 }
 .taskTitleEditable {
@@ -96,52 +96,52 @@
     font-size: var(--chakra-fontSizes-sm);
 }
 .taskTitleCompleted {
-    color: var(--chakra-colors-text-disabled, #A0AEC0);
+    color: var(--chakra-colors-text-disabled, var(--colors-textDisabled));
     text-decoration: line-through;
 }
 
 .titleInput {
     background-color: transparent;
     border: none;
-    border-bottom: 1px solid var(--chakra-colors-border-input, #CBD5E0);
-    padding: 0;
-    margin:0; /* Reset margin */
-    font-size: inherit; /* Inherit from .taskTitle or .taskTitleCompact */
+    border-bottom: var(--borders-width-xs) solid var(--chakra-colors-border-input, var(--colors-borderDecorative));
+    padding: var(--spacing-0);
+    margin: var(--spacing-0);
+    font-size: inherit;
     font-weight: inherit;
     color: inherit;
     flex-grow: 1;
     outline: none;
 }
 .titleInput:focus {
-    border-bottom-color: var(--chakra-colors-border-focus, var(--chakra-colors-blue-500));
+    border-bottom-color: var(--chakra-colors-border-focus, var(--colors-borderInteractiveFocused));
 }
 
 
 .descriptionText {
     font-size: var(--chakra-fontSizes-sm);
-    color: var(--chakra-colors-text-secondary, #718096);
+    color: var(--chakra-colors-text-secondary, var(--colors-textSecondary));
 }
 .descriptionTextCompact {
     font-size: var(--chakra-fontSizes-xs);
 }
 .descriptionTextCompleted {
-    color: var(--chakra-colors-text-disabled, #A0AEC0);
+    color: var(--chakra-colors-text-disabled, var(--colors-textDisabled));
 }
 
 .descriptionTextarea {
     background-color: transparent;
     border: none;
-    border-bottom: 1px solid var(--chakra-colors-border-input, #CBD5E0);
-    padding: 0;
-    margin: 0;
-    font-size: inherit; /* Inherit from .descriptionText or .descriptionTextCompact */
+    border-bottom: var(--borders-width-xs) solid var(--chakra-colors-border-input, var(--colors-borderDecorative));
+    padding: var(--spacing-0);
+    margin: var(--spacing-0);
+    font-size: inherit;
     color: inherit;
     width: 100%;
     outline: none;
     resize: none; /* Commonly disabled for inline-like textareas */
 }
 .descriptionTextarea:focus {
-    border-bottom-color: var(--chakra-colors-border-focus, var(--chakra-colors-blue-500));
+    border-bottom-color: var(--chakra-colors-border-focus, var(--colors-borderInteractiveFocused));
 }
 
 .tagsContainer {
@@ -169,26 +169,26 @@
 }
 
 /* Specific Status Tag Styles - these will override .taskTag bg/color */
-.statusTagToDo { background-color: var(--chakra-colors-blue-100, #EBF8FF); color: var(--chakra-colors-blue-800, #2A69AC); }
-.statusTagInProgress { background-color: var(--chakra-colors-yellow-100, #FFFFF0); color: var(--chakra-colors-yellow-800, #744210); }
-.statusTagBlocked { background-color: var(--chakra-colors-red-100, #FFF5F5); color: var(--chakra-colors-red-800, #9B2C2C); }
-.statusTagPending { background-color: var(--chakra-colors-orange-100, #FFF हिंदुAF0); color: var(--chakra-colors-orange-800, #9C4221); }
-.statusTagCompleted { background-color: var(--chakra-colors-green-100, #F0FFF4); color: var(--chakra-colors-green-800, #276749); }
-.statusTagDefault { background-color: var(--chakra-colors-gray-100, #F7FAFC); color: var(--chakra-colors-gray-800, #1A202C); }
+.statusTagToDo { background-color: var(--chakra-colors-blue-100, var(--core-colors-blue-100)); color: var(--chakra-colors-blue-800, var(--core-colors-blue-800)); }
+.statusTagInProgress { background-color: var(--chakra-colors-yellow-100, var(--core-colors-yellow-100)); color: var(--chakra-colors-yellow-800, var(--core-colors-yellow-800)); }
+.statusTagBlocked { background-color: var(--chakra-colors-red-100, var(--core-colors-red-100)); color: var(--chakra-colors-red-800, var(--core-colors-red-800)); }
+.statusTagPending { background-color: var(--chakra-colors-orange-100, var(--core-colors-orange-100)); color: var(--chakra-colors-orange-800, var(--core-colors-orange-800)); }
+.statusTagCompleted { background-color: var(--chakra-colors-green-100, var(--core-colors-green-100)); color: var(--chakra-colors-green-800, var(--core-colors-green-800)); }
+.statusTagDefault { background-color: var(--chakra-colors-gray-100, var(--core-colors-neutralGray-100)); color: var(--chakra-colors-gray-800, var(--core-colors-neutralGray-800)); }
 
 .projectTag { /* Example for a specific type of tag, if needed */
-    background-color: var(--chakra-colors-purple-100, #E9D8FD);
-    color: var(--chakra-colors-purple-800, #553C9A);
+    background-color: var(--chakra-colors-purple-100, var(--core-colors-purple-100));
+    color: var(--chakra-colors-purple-800, var(--core-colors-purple-800));
 }
 .agentTag {
-    background-color: var(--chakra-colors-teal-100, #E6FFFA);
-    color: var(--chakra-colors-teal-800, #234E52);
+    background-color: var(--chakra-colors-teal-100, var(--core-colors-teal-100));
+    color: var(--chakra-colors-teal-800, var(--core-colors-teal-800));
 }
 
 .agentAvatar {
     /* size="xs" means 1rem by default in Chakra */
-    width: 1rem;
-    height: 1rem;
+    width: var(--spacing-4);
+    height: var(--spacing-4);
     border-radius: var(--chakra-radii-full);
     margin-right: var(--chakra-space-1);
     /* Avatar component will handle image/fallback text */
@@ -203,7 +203,7 @@
 
 .menuButton {
     background: transparent;
-    color: var(--chakra-colors-text-secondary, #718096);
+    color: var(--chakra-colors-text-secondary, var(--colors-textSecondary));
     border: none;
     border-radius: var(--chakra-radii-md);
     padding: var(--chakra-space-1);
@@ -213,16 +213,16 @@
     justify-content: center;
 }
 .menuButton:hover {
-    background-color: var(--chakra-colors-bg-hover-subtle, #EDF2F7);
-    color: var(--chakra-colors-text-primary, black);
+    background-color: var(--chakra-colors-bg-hover-subtle, var(--core-colors-neutralGray-100));
+    color: var(--chakra-colors-text-primary, var(--colors-textPrimary));
 }
 
 .menuList {
-    background-color: var(--chakra-colors-bg-surface, white);
-    border: 1px solid var(--chakra-colors-border-overlay, #E2E8F0);
+    background-color: var(--chakra-colors-bg-surface, var(--core-colors-white));
+    border: var(--borders-width-xs) solid var(--chakra-colors-border-overlay, var(--colors-borderDecorative));
     box-shadow: var(--chakra-shadows-md);
     border-radius: var(--chakra-radii-md);
-    min-width: 200px; /* Increased min-width for better readability */
+    min-width: 12.5rem;
     padding-top: var(--chakra-space-1);
     padding-bottom: var(--chakra-space-1);
 }
@@ -233,25 +233,25 @@
     align-items: center;
     gap: var(--chakra-space-2);
     font-size: var(--chakra-fontSizes-sm);
-    color: var(--chakra-colors-text-primary, black);
+    color: var(--chakra-colors-text-primary, var(--colors-textPrimary));
     cursor: pointer;
     border-radius: var(--chakra-radii-sm); /* Slight rounding for menu items */
-    margin: 0 var(--chakra-space-1); /* Spacing for items within list */
+    margin: var(--spacing-0) var(--chakra-space-1);
 }
 .menuItem:hover {
-    background-color: var(--chakra-colors-bg-hover-subtle, #EDF2F7);
+    background-color: var(--chakra-colors-bg-hover-subtle, var(--core-colors-neutralGray-100));
 }
 .menuItemDestructive {
-    color: var(--chakra-colors-red-600, #C53030);
+    color: var(--chakra-colors-red-600, var(--core-colors-red-600));
 }
 .menuItemDestructive:hover {
-    background-color: var(--chakra-colors-red-50, #FFF5F5);
-    color: var(--chakra-colors-red-700, #9B2C2C);
+    background-color: var(--chakra-colors-red-50, var(--core-colors-red-50));
+    color: var(--chakra-colors-red-700, var(--core-colors-red-700));
 }
 
 .expandButton {
     background: transparent;
-    color: var(--chakra-colors-icon-secondary, #A0AEC0);
+    color: var(--chakra-colors-icon-secondary, var(--colors-textDisabled));
     border: none;
     border-radius: var(--chakra-radii-full);
     padding: var(--chakra-space-1);
@@ -261,15 +261,15 @@
     justify-content: center;
 }
 .expandButton:hover {
-    background-color: var(--chakra-colors-bg-hover-subtle, #EDF2F7);
-    color: var(--chakra-colors-icon-primary, #4A5568);
+    background-color: var(--chakra-colors-bg-hover-subtle, var(--core-colors-neutralGray-100));
+    color: var(--chakra-colors-icon-primary, var(--colors-textPrimary));
 }
 
 .detailsCollapseContent {
     padding-top: var(--chakra-space-3);
     margin-top: var(--chakra-space-3);
-    border-top: 1px solid var(--chakra-colors-border-secondary, #E2E8F0);
-    width: 100%; /* Ensure it takes full width within the VStack */
+    border-top: var(--borders-width-xs) solid var(--chakra-colors-border-secondary, var(--colors-borderDecorative));
+    width: var(--sizing-full);
 }
 
 .detailsGrid {
@@ -280,20 +280,20 @@
 }
 
 .detailsLabel {
-    color: var(--chakra-colors-text-muted, #A0AEC0);
+    color: var(--chakra-colors-text-muted, var(--colors-textSecondary));
     font-weight: var(--chakra-fontWeights-medium);
     text-align: right;
 }
 
 .detailsValue {
-    color: var(--chakra-colors-text-primary, black);
+    color: var(--chakra-colors-text-primary, var(--colors-textPrimary));
     word-break: break-word; /* Prevent long values from breaking layout */
 }
 
 
 /* Agent Assignment Modal (inline) specific styles */
 .agentModalList {
-    max-height: 200px; /* Limit height for scroll */
+    max-height: 12.5rem;
     overflow-y: auto;
     margin-top: var(--chakra-space-2);
 }
@@ -304,11 +304,11 @@
     font-size: var(--chakra-fontSizes-sm);
 }
 .agentModalListItem:hover {
-    background-color: var(--chakra-colors-bg-hover-subtle, #EDF2F7);
+    background-color: var(--chakra-colors-bg-hover-subtle, var(--core-colors-neutralGray-100));
 }
 .agentModalListItemSelected {
-    background-color: var(--chakra-colors-blue-100, #EBF8FF);
-    color: var(--chakra-colors-blue-700, #2B6CB0);
+    background-color: var(--chakra-colors-blue-100, var(--core-colors-blue-100));
+    color: var(--chakra-colors-blue-700, var(--core-colors-blue-700));
     font-weight: var(--chakra-fontWeights-semibold);
 }
 
@@ -320,7 +320,7 @@
 .inlineEditButton {
     background: transparent;
     border: none;
-    color: var(--chakra-colors-icon-secondary, #A0AEC0);
+    color: var(--chakra-colors-icon-secondary, var(--colors-textDisabled));
     padding: var(--chakra-space-1);
     cursor: pointer;
     border-radius: var(--chakra-radii-md);
@@ -329,12 +329,12 @@
     justify-content: center;
 }
 .inlineEditButton:hover {
-    background-color: var(--chakra-colors-bg-hover-subtle, #EDF2F7);
-    color: var(--chakra-colors-icon-primary, #4A5568);
+    background-color: var(--chakra-colors-bg-hover-subtle, var(--core-colors-neutralGray-100));
+    color: var(--chakra-colors-icon-primary, var(--colors-textPrimary));
 }
 .inlineEditButtonSave:hover {
-    color: var(--chakra-colors-green-500, #38A169);
+    color: var(--chakra-colors-green-500, var(--core-colors-green-500));
 }
 .inlineEditButtonCancel:hover {
-    color: var(--chakra-colors-red-500, #E53E3E);
+    color: var(--chakra-colors-red-500, var(--core-colors-red-500));
 } 

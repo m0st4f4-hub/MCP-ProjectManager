@@ -167,13 +167,6 @@ const TaskControls: React.FC<TaskControlsProps> = ({
                         {viewMode === 'kanban' ? <ViewOffIcon /> : <ViewIcon />}
                         {viewMode === 'kanban' ? 'List View' : 'Kanban View'}
                     </button>
-                    <button 
-                        className={clsx(styles.buttonBaseSm, styles.addTaskButton)}
-                        onClick={onAddTask}
-                    >
-                        <AddIcon />
-                        Add Task
-                    </button>
                 </div>
             </div>
 

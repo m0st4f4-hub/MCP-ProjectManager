@@ -9,7 +9,7 @@
     font-weight: var(--chakra-fontWeights-bold);
     line-height: var(--chakra-lineHeights-shorter);
     margin-bottom: var(--chakra-space-6); /* mb={6} */
-    color: var(--chakra-colors-text-heading, #1A202C);
+    color: var(--chakra-colors-text-heading, var(--colors-textPrimary)); /* #1A202C */
 }
 
 .contentVStack {
@@ -17,10 +17,10 @@
     flex-direction: column;
     gap: var(--chakra-space-5); /* spacing={5} */
     padding: var(--chakra-space-5); /* p={5} */
-    border: 1px solid var(--chakra-colors-border-base, #E2E8F0); /* borderWidth="1px" */
-    border-radius: var(--chakra-radii-lg, 0.5rem); /* borderRadius="lg" */
-    background-color: var(--chakra-colors-bg-surface, #FFFFFF); /* bg="bg.surface" */
-    box-shadow: var(--chakra-shadows-sm, 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06)); /* shadow="sm" */
+    border: var(--borders-width-xs) solid var(--chakra-colors-border-base, var(--colors-borderDecorative)); /* borderWidth="1px", #E2E8F0 */
+    border-radius: var(--chakra-radii-lg, var(--radii-lg)); /* borderRadius="lg" */
+    background-color: var(--chakra-colors-bg-surface, var(--core-colors-white)); /* bg="bg.surface" */
+    box-shadow: var(--chakra-shadows-sm, var(--shadows-sm)); /* shadow="sm" */
     align-items: stretch; /* align="stretch" */
 }
 
@@ -31,29 +31,29 @@
 }
 
 .infoIcon {
-    width: var(--chakra-sizes-6, 1.5rem); /* w={6} */
-    height: var(--chakra-sizes-6, 1.5rem); /* h={6} */
-    color: var(--chakra-colors-blue-500, #3182CE); /* color="blue.500" */
+    width: var(--chakra-sizes-6, var(--spacing-6)); /* w={6} is 1.5rem, --spacing-6 is 1.5rem */
+    height: var(--chakra-sizes-6, var(--spacing-6)); /* h={6} */
+    color: var(--chakra-colors-blue-500, var(--colors-brandPrimary)); /* color="blue.500", #3182CE */
     fill: currentColor;
 }
 
 .subHeading {
-    font-size: var(--chakra-fontSizes-lg, 1.125rem); /* size="md" in Chakra Heading */
+    font-size: var(--chakra-fontSizes-lg, var(--typography-fontSizes-lg)); /* size="md" in Chakra Heading */
     font-weight: var(--chakra-fontWeights-semibold);
     line-height: var(--chakra-lineHeights-shorter);
-    color: var(--chakra-colors-text-primary, #2D3748); /* color="text.primary" */
+    color: var(--chakra-colors-text-primary, var(--colors-textPrimary)); /* color="text.primary", #2D3748 */
 }
 
 .primaryText {
-    color: var(--chakra-colors-text-primary, #2D3748);
+    color: var(--chakra-colors-text-primary, var(--colors-textPrimary)); /* #2D3748 */
 }
 
 .secondaryText {
-    color: var(--chakra-colors-text-secondary, #718096);
+    color: var(--chakra-colors-text-secondary, var(--colors-textSecondary)); /* #718096 */
 }
 
 .tertiaryText {
-    color: var(--chakra-colors-text-tertiary, #A0AEC0);
+    color: var(--chakra-colors-text-tertiary, var(--colors-textSecondary)); /* #A0AEC0 */
 }
 
 .definitionList {
@@ -63,7 +63,7 @@
     align-items: stretch; /* align="stretch" */
     padding-left: var(--chakra-space-5); /* pl={5} */
     list-style-type: disc; /* Since it's as="ul" */
-    color: var(--chakra-colors-text-tertiary, #A0AEC0); /* color="text.tertiary" */
+    color: var(--chakra-colors-text-tertiary, var(--colors-textSecondary)); /* color="text.tertiary", #A0AEC0 */
 }
 
 .definitionListItem {

@@ -25,17 +25,17 @@
     align-items: center;
     padding-bottom: var(--chakra-space-4);
     margin-bottom: var(--chakra-space-4);
-    border-bottom: 1px solid var(--chakra-colors-border-base);
+    border-bottom: var(--borders-width-xs) solid var(--chakra-colors-border-base);
     width: 100%;
 }
 
 .sidebarLogoCollapsed {
-    height: 50px; /* from h prop */
+    height: var(--spacing-12); /* from h prop, was 50px, now 48px */
     margin: 0 auto; /* Center when collapsed */
 }
 
 .sidebarLogoExpanded {
-    height: 120px; /* from h prop */
+    height: var(--spacing-32); /* from h prop, was 120px, now 128px */
     /* Add any other specific styles for expanded logo */
 }
 

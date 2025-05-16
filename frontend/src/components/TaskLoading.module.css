@@ -1,8 +1,8 @@
 /* frontend/src/components/TaskLoading.module.css */
 
 .loadingContainer {
-    width: 100%; /* w="100%" */
-    min-height: 70vh; /* minH="70vh" */
+    width: var(--sizing-full); /* w="100%" */
+    min-height: calc(var(--sizing-vh) * 0.7); /* minH="70vh" */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -18,13 +18,13 @@
 }
 
 .loadingBox {
-    max-width: 500px; /* maxW="500px" */
-    width: 100%; /* w="100%" */
-    background-color: var(--chakra-colors-bg-elevated, #FFFFFF); /* bg="bg.elevated" */
+    max-width: var(--sizing-lg); /* maxW="500px", 500px is approx 31.25rem, --sizing-lg is 32rem */
+    width: var(--sizing-full); /* w="100%" */
+    background-color: var(--chakra-colors-bg-elevated, var(--colors-bgSurfaceElevated)); /* bg="bg.elevated" - added fallback to our token */
     padding: var(--chakra-space-4); /* p={{ base: 4 }} */
-    border-radius: var(--chakra-radii-2xl, 1rem); /* rounded="2xl" */
-    box-shadow: var(--chakra-shadows-2xl, 0 25px 50px -12px rgba(0, 0, 0, 0.25)); /* shadow="2xl" */
-    border: 1px solid var(--chakra-colors-border-base, #E2E8F0); /* borderWidth="1px" borderColor="border.base" */
+    border-radius: var(--chakra-radii-2xl, var(--radii-2xl)); /* rounded="2xl" - added fallback to our token */
+    box-shadow: var(--chakra-shadows-2xl, var(--shadows-xl)); /* shadow="2xl" - added fallback to our token, xl is closest */
+    border: var(--borders-width-xs) solid var(--chakra-colors-border-base, var(--colors-borderDecorative)); /* borderWidth="1px" borderColor="border.base" - added fallback */
     margin-top: var(--chakra-space-8); /* mt={{ base: 8 }} */
     display: flex;
     align-items: center;
@@ -48,11 +48,11 @@
 
 .loadingSpinner {
     /* size="xl" */
-    width: var(--chakra-sizes-16, 4rem); /* Approximate xl size */
-    height: var(--chakra-sizes-16, 4rem);
-    color: var(--chakra-colors-icon-primary, #4A5568); /* color="icon.primary" */
-    border-radius: 50%;
-    border-width: 4px; /* Thicker for xl */
+    width: var(--chakra-sizes-16, var(--spacing-16)); /* Approximate xl size, 4rem */
+    height: var(--chakra-sizes-16, var(--spacing-16)); /* Approximate xl size, 4rem */
+    color: var(--chakra-colors-icon-primary, var(--colors-iconDefault)); /* color="icon.primary" - added fallback */
+    border-radius: var(--radii-round); /* 50% for circle */
+    border-width: var(--borders-width-md); /* Thicker for xl - 4px */
     border-style: solid;
     border-top-color: currentColor; /* Spinner animation part */
     border-right-color: currentColor;
@@ -66,5 +66,5 @@
 }
 
 .loadingText {
-    color: var(--chakra-colors-text-muted, #A0AEC0); /* color="text.muted" */
+    color: var(--chakra-colors-text-muted, var(--colors-textSecondary)); /* color="text.muted" - added fallback */
 } 

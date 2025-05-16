@@ -9,7 +9,7 @@
     font-weight: var(--chakra-fontWeights-bold);
     line-height: var(--chakra-lineHeights-shorter);
     margin-bottom: var(--chakra-space-6); /* mb={6} */
-    color: var(--chakra-colors-text-heading, #1A202C);
+    color: var(--chakra-colors-text-heading, var(--colors-textPrimary)); /* #1A202C */
 }
 
 .settingsListContainer {
@@ -21,27 +21,27 @@
 
 .settingsSectionBox {
     padding: var(--chakra-space-4); /* p={4} */
-    border: 1px solid var(--chakra-colors-border-base, #E2E8F0); /* borderWidth="1px" */
-    border-radius: var(--chakra-radii-lg, 0.5rem); /* borderRadius="lg" */
-    background-color: var(--chakra-colors-bg-surface, #FFFFFF); /* bg="bg.surface" */
-    box-shadow: var(--chakra-shadows-sm, 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06)); /* shadow="sm" */
+    border: var(--borders-width-xs) solid var(--chakra-colors-border-base, var(--colors-borderDecorative)); /* borderWidth="1px", #E2E8F0 */
+    border-radius: var(--chakra-radii-lg, var(--radii-lg)); /* borderRadius="lg" */
+    background-color: var(--chakra-colors-bg-surface, var(--core-colors-white)); /* bg="bg.surface" */
+    box-shadow: var(--chakra-shadows-sm, var(--shadows-sm)); /* shadow="sm" */
 }
 
 .sectionHeading {
-    font-size: var(--chakra-fontSizes-lg, 1.125rem); /* size="md" in Chakra Heading */
+    font-size: var(--chakra-fontSizes-lg, var(--typography-fontSizes-lg)); /* size="md" in Chakra Heading */
     font-weight: var(--chakra-fontWeights-semibold);
     line-height: var(--chakra-lineHeights-shorter);
     margin-bottom: var(--chakra-space-4); /* mb={4} */
-    color: var(--chakra-colors-text-primary, #2D3748); /* color="text.primary" */
+    color: var(--chakra-colors-text-primary, var(--colors-textPrimary)); /* color="text.primary", #2D3748 */
 }
 
 .sectionHeadingMb3 {
     /* As above, but for mb={3} */
-    font-size: var(--chakra-fontSizes-lg, 1.125rem);
+    font-size: var(--chakra-fontSizes-lg, var(--typography-fontSizes-lg));
     font-weight: var(--chakra-fontWeights-semibold);
     line-height: var(--chakra-lineHeights-shorter);
     margin-bottom: var(--chakra-space-3); /* mb={3} */
-    color: var(--chakra-colors-text-primary, #2D3748);
+    color: var(--chakra-colors-text-primary, var(--colors-textPrimary));
 }
 
 .optionsVStack {
@@ -58,19 +58,19 @@
 }
 
 .formLabel {
-    margin-bottom: 0; /* mb="0" */
-    color: var(--chakra-colors-text-secondary, #718096); /* color="text.secondary" */
+    margin-bottom: var(--spacing-0); /* mb="0" */
+    color: var(--chakra-colors-text-secondary, var(--colors-textSecondary)); /* color="text.secondary" */
     font-size: var(--chakra-fontSizes-md);
     line-height: var(--chakra-lineHeights-base);
 }
 
 .placeholderText {
-    color: var(--chakra-colors-text-tertiary, #A0AEC0); /* color="text.tertiary" */
+    color: var(--chakra-colors-text-tertiary, var(--colors-textSecondary)); /* color="text.tertiary", #A0AEC0 */
     margin-bottom: var(--chakra-space-2); /* mb={2} */
 }
 
 .opacityHalf {
-    opacity: 0.5;
+    opacity: 0.5; /* Consider tokenizing if opacity scale is needed */
 }
 
 .marginTop4 {

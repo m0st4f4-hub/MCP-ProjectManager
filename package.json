@@ -27,16 +27,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chalk": "^4.1.2",
-    "commander": "^11.0.0",
-    "concurrently": "^8.2.2",
-    "delay-cli": "^2.0.0",
-    "detect-port": "^2.1.0",
-    "framer-motion": "^12.11.3",
-    "lodash.debounce": "^4.0.8",
-    "nodemon": "^3.1.10",
-    "ora": "^5.4.1",
-    "react-window": "^1.8.11",
-    "recharts": "^2.15.3"
+  },
+  "devDependencies": {
   }
 }

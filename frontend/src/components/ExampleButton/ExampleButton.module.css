@@ -1,0 +1,33 @@
+.button {
+  padding: var(--spacing-3) var(--spacing-6); /* Using spacing tokens */
+  font-family: var(--typography-fontFamilies-body);
+  font-size: var(--typography-fontSizes-base);
+  font-weight: var(--typography-fontWeights-medium);
+  border-radius: var(--radii-md);
+  cursor: pointer;
+  transition: background-color 0.2s ease-out, border-color 0.2s ease-out;
+  border-width: var(--borders-width-xs); /* Using border token */
+  border-style: var(--borders-style-solid); /* Using border token */
+}
+
+.primary {
+  background-color: var(--colors-brandPrimary);
+  color: var(--colors-textInverse);
+  border-color: var(--colors-brandPrimary);
+}
+
+.primary:hover {
+  background-color: var(--colors-brandPrimaryHover);
+  border-color: var(--colors-brandPrimaryHover);
+}
+
+.secondary {
+  background-color: var(--colors-bgSurface);
+  color: var(--colors-textPrimary);
+  border-color: var(--colors-borderInteractive);
+}
+
+.secondary:hover {
+  background-color: var(--colors-bgSurfaceElevated);
+  border-color: var(--colors-borderInteractiveFocused);
+} 

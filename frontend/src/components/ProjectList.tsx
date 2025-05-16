@@ -32,11 +32,17 @@ import { DeleteIcon, HamburgerIcon, CopyIcon, DownloadIcon, RepeatClockIcon, Add
 import { useProjectStore } from '@/store/projectStore';
 import { useTaskStore } from '@/store/taskStore';
 import { Project, ProjectWithTasks, TaskWithMeta } from '@/types';
-import { formatDisplayName, formatRelativeDate } from '@/lib/utils';
+import { formatDisplayName } from '@/lib/utils';
 import styles from './ProjectList.module.css';
 import clsx from 'clsx';
-import CreateProjectModal from './CreateProjectModal';
-import EditProjectModal from './EditProjectModal';
+import { setCurrentProject } from '@/store/projectSlice';
+import { Eye, Edit3, Trash2, PlusCircle } from 'lucide-react';
+import ConfirmationModal from './modals/ConfirmationModal';
+import { format, formatRelative } from 'date-fns';
+import CreateProjectModal from './dashboard/CreateProjectModal';
+import EditProjectModal from './modals/EditProjectModal';
+import { NotificationContext } from '@/contexts/NotificationContext';
+import Notification from './common/Notification';
 
 const ProjectList: React.FC = () => {
     const projects = useProjectStore(state => state.projects);
@@ -208,8 +214,8 @@ Status: ${projectStatus}
 Total Tasks: ${totalTasksInProject}
 Completed Tasks: ${completedTasksInProject}
 Pending Tasks: ${totalTasksInProject - completedTasksInProject}
-Created At: ${project.created_at ? formatRelativeDate(project.created_at) : 'N/A'}
-Last Activity: ${project.updated_at ? formatRelativeDate(project.updated_at) : 'N/A'}
+Created At: ${project.created_at ? formatRelative(new Date(project.created_at), new Date()) : 'N/A'}
+Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at), new Date()) : 'N/A'}
 
 ---
 ## Tasks Overview & Suggested Actions
@@ -346,11 +352,11 @@ Last Activity: ${project.updated_at ? formatRelativeDate(project.updated_at) : '
                 
                 <div className={styles.cardFooter}>
                     <p className={styles.cardDate}>
-                        Created: {project.created_at ? formatRelativeDate(project.created_at) : 'N/A'}
+                        Created: {project.created_at ? formatRelative(new Date(project.created_at), new Date()) : 'N/A'}
                     </p>
                     {project.updated_at && project.updated_at !== project.created_at && (
                          <p className={clsx(styles.cardDate, styles.cardDateUpdated)}>
-                            Updated: {formatRelativeDate(project.updated_at)}
+                            Updated: {formatRelative(new Date(project.updated_at), new Date())}
                         </p>
                     )}
                 </div>
@@ -363,11 +369,6 @@ Last Activity: ${project.updated_at ? formatRelativeDate(project.updated_at) : '
         <div className={styles.projectListContainer}>
             <div className={styles.header}>
                 <h2 className={styles.title}>Projects ({filteredProjects.length})</h2>
-                <div className={styles.headerActions}>
-                    <button onClick={onCreateModalOpen} className={styles.addButton}>
-                        <AddIcon style={{ marginRight: 'var(--chakra-space-2)' }}/> New Project
-                    </button>
-                </div>
             </div>
 
             {filteredProjects.length === 0 && !loading && (
@@ -376,10 +377,7 @@ Last Activity: ${project.updated_at ? formatRelativeDate(project.updated_at) : '
                     <p className={styles.emptyStateText}>No projects found.</p>
                     <p className={styles.emptyStateSubText}>
                         {projectFilters.search || projectFilters.status !== 'all' || projectFilters.agentId ? 
-                         "Try adjusting your filters or " : " "}
-                        <button onClick={onCreateModalOpen} className={styles.emptyStateLinkButton}>
-                            create a new project
-                        </button> to get started.
+                         "Try adjusting your filters or create a new project using the sidebar button." : "Create a new project using the sidebar button to get started."}
                     </p>
                 </div>
             )}

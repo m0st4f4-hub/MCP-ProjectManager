@@ -1,29 +1,29 @@
 /* frontend/src/components/dashboard/UnassignedTasksList.module.css */
 .container {
-    background-color: var(--chakra-colors-bg-surface);
-    border-radius: var(--chakra-radii-lg);
-    padding: var(--chakra-space-4);
-    border-width: 1px;
-    border-style: solid;
-    border-color: var(--chakra-colors-border-secondary);
-    box-shadow: var(--chakra-shadows-md);
-    margin-top: var(--chakra-space-5);
+    background-color: var(--colors-bgSurface);
+    border-radius: var(--radii-lg);
+    padding: var(--spacing-4);
+    border-width: var(--borders-width-xs);
+    border-style: var(--borders-style-solid);
+    border-color: var(--colors-borderDecorative);
+    box-shadow: var(--shadows-md);
+    margin-top: var(--spacing-5);
 }
 
 .heading {
     /* Chakra Heading size="sm" equivalent */
-    font-size: var(--chakra-fontSizes-md);
-    font-weight: var(--chakra-fontWeights-semibold);
-    line-height: 1.2;
-    color: var(--chakra-colors-text-primary);
-    margin-bottom: var(--chakra-space-2);
+    font-size: var(--typography-fontSizes-md);
+    font-weight: var(--typography-fontWeights-semibold);
+    line-height: var(--typography-lineHeights-condensed);
+    color: var(--colors-textPrimary);
+    margin-bottom: var(--spacing-2);
 }
 
 .list {
     /* Chakra List spacing={2} */
     display: flex;
     flex-direction: column;
-    gap: var(--chakra-space-2);
+    gap: var(--spacing-2);
 }
 
 .listItem {
@@ -34,14 +34,14 @@
     /* Chakra HStack */
     display: flex;
     align-items: center;
-    gap: var(--chakra-space-2); /* Default gap for HStack if no spacing prop is given, adjust if needed */
+    gap: var(--spacing-2);
 }
 
 /* Tag styles - Keeping Chakra Tag for its colorScheme and variant features */
 /* We can add custom classes for margin/padding around the Tag if needed */
 
 .taskTitle {
-    font-weight: var(--chakra-fontWeights-medium);
+    font-weight: var(--typography-fontWeights-medium);
     /* noOfLines={1} */
     overflow: hidden;
     text-overflow: ellipsis;
@@ -49,8 +49,8 @@
 }
 
 .projectText {
-    font-size: var(--chakra-fontSizes-xs);
-    color: var(--chakra-colors-text-secondary);
+    font-size: var(--typography-fontSizes-xs);
+    color: var(--colors-textSecondary);
     /* noOfLines={1} */
     overflow: hidden;
     text-overflow: ellipsis;
@@ -58,7 +58,7 @@
 }
 
 .moreTasksText {
-    font-size: var(--chakra-fontSizes-sm);
-    color: var(--chakra-colors-text-secondary);
-    margin-top: var(--chakra-space-2);
+    font-size: var(--typography-fontSizes-sm);
+    color: var(--colors-textSecondary);
+    margin-top: var(--spacing-2);
 } 

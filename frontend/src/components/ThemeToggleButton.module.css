@@ -3,9 +3,9 @@
 .toggleButton {
   /* Styles for the theme toggle button */
   /* Example: might be used if custom non-Chakra icon or layout needed */
-  min-width: 48px;
-  min-height: 48px;
-  height: 48px;
-  width: 48px;
+  min-width: var(--spacing-12); /* 48px */
+  min-height: var(--spacing-12); /* 48px */
+  height: var(--spacing-12); /* 48px */
+  width: var(--spacing-12); /* 48px */
   /* Other specific styles could go here if needed */
 } 

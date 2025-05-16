@@ -1,6 +1,6 @@
 /* frontend/src/components/VirtualizedList.module.css */
 
 .listContainer {
-    height: calc(100vh - 200px); /* height="calc(100vh - 200px)" */
-    width: 100%; /* width="100%" */
+    height: calc(var(--sizing-vh) - 12.5rem); /* was calc(100vh - 200px), 200px = 12.5rem. Consider if 12.5rem can be composed of tokens */
+    width: var(--sizing-full); /* was 100% */
 } 

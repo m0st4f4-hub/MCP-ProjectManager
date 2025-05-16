@@ -13,12 +13,11 @@ import {
     InputLeftElement,
     HStack,
     Button,
-    Switch,
     FormHelperText
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { useTaskStore } from '@/store/taskStore';
-import { TaskFilters, TaskSortOptions, TaskSortField, Project } from '@/types';
+import { TaskFilters, TaskSortOptions, TaskSortField } from '@/types';
 import { formatDisplayName } from '@/lib/utils';
 import { useProjectStore, ProjectState } from '@/store/projectStore';
 import { useAgentStore, AgentState } from '@/store/agentStore';
@@ -32,20 +31,15 @@ const FilterSidebar: React.FC = () => {
     const projectFilter = useTaskStore(state => state.filters.projectId);
     const agentFilter = useTaskStore(state => state.filters.agentId);
     const searchTermFilter = useTaskStore(state => state.filters.search);
-    const hideCompletedTasksFilter = useTaskStore(state => state.filters.hideCompleted);
 
     const setFilters = useTaskStore(state => state.setFilters);
     const sortOptions = useTaskStore(state => state.sortOptions);
     const setSortOptions = useTaskStore(state => state.setSortOptions);
     const taskStoreFetchProjectsAndAgents = useTaskStore(state => state.fetchProjectsAndAgents);
 
-    const projectStoreFilters = useProjectStore((state: ProjectState) => state.filters);
     const setProjectStoreFilters = useProjectStore((state: ProjectState) => state.setFilters);
-    const showArchivedProjects = projectStoreFilters.is_archived;
 
-    const agentStoreFilters = useAgentStore((state: AgentState) => state.filters);
     const setAgentStoreFilters = useAgentStore((state: AgentState) => state.setFilters);
-    const showArchivedAgents = agentStoreFilters.is_archived;
 
     const uniqueAgentsForDropdown = React.useMemo(() => {
         if (!agents) return [];
@@ -61,14 +55,8 @@ const FilterSidebar: React.FC = () => {
 
     const projectsForDropdown = React.useMemo(() => {
         if (!projectsFromStore) return [];
-        if (hideCompletedTasksFilter) {
-            return projectsFromStore.filter(
-                (p: Project) => 
-                    !(p.task_count && p.completed_task_count && p.task_count > 0 && p.task_count === p.completed_task_count)
-            );
-        }
         return projectsFromStore;
-    }, [projectsFromStore, hideCompletedTasksFilter]);
+    }, [projectsFromStore]);
 
     const handleFilterChange = (field: keyof TaskFilters, value: string | number | boolean | null) => {
         setFilters({ [field]: value });
@@ -95,20 +83,6 @@ const FilterSidebar: React.FC = () => {
         setAgentStoreFilters({ is_archived: false, search: '', status: 'all' });
         setSortOptions({ field: 'created_at', direction: 'desc' });
         taskStoreFetchProjectsAndAgents(); // Re-fetch dropdown data respecting new archive settings
-    };
-
-    const handleToggleHideCompleted = (event: React.ChangeEvent<HTMLInputElement>) => {
-        handleFilterChange('hideCompleted', event.target.checked);
-    };
-
-    const handleToggleShowArchivedProjects = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setProjectStoreFilters({ is_archived: event.target.checked });
-        taskStoreFetchProjectsAndAgents();
-    };
-
-    const handleToggleShowArchivedAgents = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setAgentStoreFilters({ is_archived: event.target.checked });
-        taskStoreFetchProjectsAndAgents();
     };
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -190,45 +164,6 @@ const FilterSidebar: React.FC = () => {
                             </option>
                         ))}
                     </Select>
-                </FormControl>
-
-                <FormControl className={styles.switchFormControl}>
-                    <FormLabel htmlFor="hide-completed-tasks" className={styles.switchLabel}>
-                        Hide Completed Tasks?
-                    </FormLabel>
-                    <Switch
-                        id="hide-completed-tasks"
-                        isChecked={hideCompletedTasksFilter || false}
-                        onChange={handleToggleHideCompleted}
-                        colorScheme="brand" // Keep for switch track/thumb theming if CSS is minimal
-                        className={styles.switchElement} 
-                    />
-                </FormControl>
-
-                <FormControl className={styles.switchFormControl}>
-                    <FormLabel htmlFor="show-archived-projects" className={styles.switchLabel}>
-                        Show Archived Projects?
-                    </FormLabel>
-                    <Switch
-                        id="show-archived-projects"
-                        isChecked={showArchivedProjects || false}
-                        onChange={handleToggleShowArchivedProjects}
-                        colorScheme="brand"
-                        className={styles.switchElement}
-                    />
-                </FormControl>
-
-                <FormControl className={styles.switchFormControl}>
-                    <FormLabel htmlFor="show-archived-agents" className={styles.switchLabel}>
-                        Show Archived Agents?
-                    </FormLabel>
-                    <Switch
-                        id="show-archived-agents"
-                        isChecked={showArchivedAgents || false}
-                        onChange={handleToggleShowArchivedAgents}
-                        colorScheme="brand"
-                        className={styles.switchElement}
-                    />
                 </FormControl>
 
                 <Heading className={styles.sortHeading}>

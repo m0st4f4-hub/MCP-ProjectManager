@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "../styles/tokens.css";
 import ChakraProviderWrapper from "@/providers/ChakraProviderWrapper";
 import ClientOnly from "@/components/ClientOnly";
 

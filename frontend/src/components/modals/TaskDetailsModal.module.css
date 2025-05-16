@@ -1,178 +1,168 @@
 /* Styles for TaskDetailsModal */
 .modalContent {
-    background-color: var(--chakra-colors-bg-modal, white);
-    color: var(--chakra-colors-text-primary, black);
-    border: 1px solid var(--chakra-colors-border-base, #E2E8F0);
-    border-radius: var(--chakra-radii-lg); /* Standard modal radius */
+    background-color: var(--colors-bgSurface);
+    color: var(--colors-textPrimary);
+    border: var(--borders-width-xs) var(--borders-style-solid) var(--colors-borderDecorative);
+    border-radius: var(--radii-lg);
 }
 
 .modalHeader {
-    border-bottom: 1px solid var(--chakra-colors-border-base, #E2E8F0);
-    color: var(--chakra-colors-text-heading, #1A202C);
-    padding: var(--chakra-space-4) var(--chakra-space-6); /* Chakra default */
-    font-size: var(--chakra-fontSizes-lg); /* Chakra default */
-    font-weight: var(--chakra-fontWeights-bold); /* Chakra default */
-    display: flex; /* To align spinner and badge */
+    border-bottom: var(--borders-width-xs) var(--borders-style-solid) var(--colors-borderDecorative);
+    color: var(--colors-textPrimary);
+    padding: var(--spacing-4) var(--spacing-6);
+    font-size: var(--typography-fontSizes-lg);
+    font-weight: var(--typography-fontWeights-bold);
+    display: flex;
     align-items: center;
 }
 
 .headerSpinner {
-    /* size="sm" */
-    width: var(--chakra-sizes-4, 1rem);
-    height: var(--chakra-sizes-4, 1rem);
-    margin-left: var(--chakra-space-3);
-    color: var(--chakra-colors-icon-primary, #4A5568);
-    border-width: 2px; /* Spinner specific */
+    width: var(--spacing-4);
+    height: var(--spacing-4);
+    margin-left: var(--spacing-3);
+    color: var(--colors-iconDefault);
+    border-width: var(--borders-width-sm);
 }
 
 .archivedBadge {
-    /* colorScheme="purple" variant="solid" */
-    background-color: var(--chakra-colors-purple-500, #805AD5);
-    color: white;
-    margin-left: var(--chakra-space-3);
-    font-size: 0.8em;
-    padding: var(--chakra-space-0-5) var(--chakra-space-2);
-    border-radius: var(--chakra-radii-sm);
-    font-weight: var(--chakra-fontWeights-medium);
+    background-color: var(--core-colors-purple-500);
+    color: var(--colors-textInverse);
+    margin-left: var(--spacing-3);
+    font-size: var(--typography-fontSizes-xs);
+    padding: var(--spacing-0-5, 0.125rem) var(--spacing-2);
+    border-radius: var(--radii-sm);
+    font-weight: var(--typography-fontWeights-medium);
 }
 
 .modalCloseButton {
-    color: var(--chakra-colors-text-secondary, #718096);
-    position: absolute; /* Chakra default */
-    top: var(--chakra-space-2);
-    right: var(--chakra-space-2);
+    color: var(--colors-textSecondary);
+    position: absolute;
+    top: var(--spacing-2);
+    right: var(--spacing-2);
     background: transparent;
     border: none;
-    border-radius: var(--chakra-radii-md);
-    padding: var(--chakra-space-2);
+    border-radius: var(--radii-md);
+    padding: var(--spacing-2);
     cursor: pointer;
 }
 .modalCloseButton:hover {
-    background-color: var(--chakra-colors-interaction-hover, var(--chakra-colors-bg-hover-subtle, #EDF2F7));
+    background-color: var(--colors-bgInteractiveSubtleHover);
 }
 
 .modalBody {
-    padding-top: var(--chakra-space-6);
-    padding-bottom: var(--chakra-space-6);
-    padding-left: var(--chakra-space-6);
-    padding-right: var(--chakra-space-6);
+    padding-top: var(--spacing-6);
+    padding-bottom: var(--spacing-6);
+    padding-left: var(--spacing-6);
+    padding-right: var(--spacing-6);
 }
 
 .errorText {
-    color: var(--chakra-colors-status-error, var(--chakra-colors-red-500, #E53E3E));
-    margin-bottom: var(--chakra-space-4);
+    color: var(--colors-textError);
+    margin-bottom: var(--spacing-4);
 }
 
 .bodySpinner {
-    color: var(--chakra-colors-icon-primary, #4A5568);
-    /* Center if needed */
+    color: var(--colors-iconDefault);
     display: block;
-    margin: var(--chakra-space-5) auto;
+    margin: var(--spacing-5) auto;
 }
 
 .noTaskText {
-    color: var(--chakra-colors-text-secondary, #718096);
+    color: var(--colors-textSecondary);
 }
 
 .detailsVStack {
     display: flex;
     flex-direction: column;
-    gap: var(--chakra-space-4); /* spacing={4} */
+    gap: var(--spacing-4);
     align-items: stretch;
 }
 
 .sectionHeading {
-    /* size="sm" from Chakra */
-    font-size: var(--chakra-fontSizes-sm, 0.875rem);
-    font-weight: var(--chakra-fontWeights-medium);
-    margin-bottom: var(--chakra-space-1);
-    color: var(--chakra-colors-text-heading, #1A202C);
+    font-size: var(--typography-fontSizes-sm);
+    font-weight: var(--typography-fontWeights-medium);
+    margin-bottom: var(--spacing-1);
+    color: var(--colors-textPrimary);
 }
 
 .descriptionText {
     white-space: pre-wrap;
     max-width: 80ch;
-    color: var(--chakra-colors-text-secondary, #718096);
+    color: var(--colors-textSecondary);
 }
 
 .divider {
-    border-color: var(--chakra-colors-border-divider, #E2E8F0);
-    margin-top: var(--chakra-space-4); /* Added for spacing if used between sections */
-    margin-bottom: var(--chakra-space-4);
+    border-color: var(--colors-borderDecorative);
+    margin-top: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
 }
 
 .detailsHStack {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* Align items at the top if content varies in height */
+    align-items: flex-start;
 }
 
 .subSectionHeading {
-    /* size="xs" textTransform="uppercase" */
-    font-size: var(--chakra-fontSizes-xs, 0.75rem);
-    font-weight: var(--chakra-fontWeights-bold);
+    font-size: var(--typography-fontSizes-xs);
+    font-weight: var(--typography-fontWeights-bold);
     text-transform: uppercase;
-    color: var(--chakra-colors-text-secondary, #718096);
-    margin-bottom: var(--chakra-space-0-5);
+    color: var(--colors-textSecondary);
+    margin-bottom: var(--spacing-0-5, 0.125rem);
 }
 
 .statusTagContainer {
-    margin-left: var(--chakra-space-2);
+    margin-left: var(--spacing-2);
 }
 
 .statusTag {
-    /* size="md" borderRadius="md" variant="subtle" */
-    padding: var(--chakra-space-1) var(--chakra-space-3); /* Approximate md tag */
-    border-radius: var(--chakra-radii-md);
-    font-size: var(--chakra-fontSizes-sm);
-    font-weight: var(--chakra-fontWeights-medium);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radii-md);
+    font-size: var(--typography-fontSizes-sm);
+    font-weight: var(--typography-fontWeights-medium);
     display: inline-flex;
     align-items: center;
-    gap: var(--chakra-space-1);
-    /* colorScheme handled by specific classes or kept on component */
+    gap: var(--spacing-1);
 }
 
-/* Example: Subtle variant for blue colorScheme */
 .statusTagBlue {
-    background-color: var(--chakra-colors-blue-100, #EBF8FF);
-    color: var(--chakra-colors-blue-800, #2A69AC);
+    background-color: var(--core-colors-blue-100);
+    color: var(--core-colors-blue-800);
 }
-/* Add more for other colorSchemes used (green, yellow, red, orange, gray) */
-.statusTagGreen { background-color: var(--chakra-colors-green-100); color: var(--chakra-colors-green-800); }
-.statusTagYellow { background-color: var(--chakra-colors-yellow-100); color: var(--chakra-colors-yellow-800); }
-.statusTagRed { background-color: var(--chakra-colors-red-100); color: var(--chakra-colors-red-800); }
-.statusTagOrange { background-color: var(--chakra-colors-orange-100); color: var(--chakra-colors-orange-800); }
-.statusTagGray { background-color: var(--chakra-colors-gray-100); color: var(--chakra-colors-gray-800); }
-
+.statusTagGreen { background-color: var(--core-colors-green-100); color: var(--core-colors-green-800); }
+.statusTagYellow { background-color: var(--core-colors-yellow-100); color: var(--core-colors-yellow-800); }
+.statusTagRed { background-color: var(--core-colors-red-100); color: var(--core-colors-red-800); }
+.statusTagOrange { background-color: var(--core-colors-orange-100); color: var(--core-colors-orange-800); }
+.statusTagGray { background-color: var(--core-colors-neutralGray-100); color: var(--core-colors-neutralGray-800); }
 
 .detailText {
-    color: var(--chakra-colors-text-primary, #1A202C);
-    font-size: var(--chakra-fontSizes-md);
+    color: var(--colors-textPrimary);
+    font-size: var(--typography-fontSizes-base);
 }
 
 .modalFooter {
-    border-top: 1px solid var(--chakra-colors-border-base, #E2E8F0);
-    padding: var(--chakra-space-4) var(--chakra-space-6); /* Chakra default */
+    border-top: var(--borders-width-xs) var(--borders-style-solid) var(--colors-borderDecorative);
+    padding: var(--spacing-4) var(--spacing-6);
     display: flex;
     justify-content: flex-end;
-    gap: var(--chakra-space-3);
+    gap: var(--spacing-3);
 }
 
 .footerButton {
-    /* Base button style, specific variants/colorSchemes as modifiers */
-    padding: var(--chakra-space-2) var(--chakra-space-4);
-    border-radius: var(--chakra-radii-md);
-    font-size: var(--chakra-fontSizes-sm);
-    font-weight: var(--chakra-fontWeights-medium);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radii-md);
+    font-size: var(--typography-fontSizes-sm);
+    font-weight: var(--typography-fontWeights-medium);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: var(--chakra-space-2);
-    line-height: 1.2;
+    gap: var(--spacing-2);
+    line-height: var(--typography-lineHeights-condensed);
 }
 
 .footerButtonOutline {
-    border: 1px solid;
+    border-width: var(--borders-width-xs);
+    border-style: var(--borders-style-solid);
     background-color: transparent;
 }
 
@@ -181,45 +171,43 @@
     background-color: transparent;
 }
 
-/* ColorScheme specific button styles (example for blue outline) */
 .buttonBlueOutline {
-    border-color: var(--chakra-colors-blue-500, #3182CE);
-    color: var(--chakra-colors-blue-600, #2B6CB0);
+    border-color: var(--colors-brandPrimary);
+    color: var(--colors-brandPrimaryHover);
 }
 .buttonBlueOutline:hover {
-    background-color: var(--chakra-colors-blue-50, #EBF8FF);
+    background-color: var(--colors-bgInteractiveSubtle);
 }
 
 .buttonRed {
-    /* For solid variant, or default if no variant means solid */
-    background-color: var(--chakra-colors-red-500, #E53E3E);
-    color: white;
-    border: 1px solid var(--chakra-colors-red-500, #E53E3E);
+    background-color: var(--colors-textError);
+    color: var(--colors-textInverse);
+    border: var(--borders-width-xs) var(--borders-style-solid) var(--colors-textError);
 }
 .buttonRed:hover {
-    background-color: var(--chakra-colors-red-600, #C53030);
-    border-color: var(--chakra-colors-red-600, #C53030);
+    background-color: var(--core-colors-red-600);
+    border-color: var(--core-colors-red-600);
 }
 
 .buttonRedOutline {
-    border-color: var(--chakra-colors-red-500, #E53E3E);
-    color: var(--chakra-colors-red-600, #C53030);
+    border-color: var(--colors-textError);
+    color: var(--core-colors-red-600);
 }
 .buttonRedOutline:hover {
-    background-color: var(--chakra-colors-red-50, #FFF5F5);
+    background-color: var(--core-colors-red-50);
 }
 
 .buttonTealOutline {
-    border-color: var(--chakra-colors-teal-500, #319795);
-    color: var(--chakra-colors-teal-600, #2C7A7B);
+    border-color: var(--core-colors-teal-500);
+    color: var(--core-colors-teal-600);
 }
 .buttonTealOutline:hover {
-    background-color: var(--chakra-colors-teal-50, #E6FFFA);
+    background-color: var(--core-colors-teal-50);
 }
 
 .buttonGrayGhost {
-    color: var(--chakra-colors-gray-700, #2D3748);
+    color: var(--core-colors-neutralGray-700);
 }
 .buttonGrayGhost:hover {
-    background-color: var(--chakra-colors-gray-100, #EDF2F7);
+    background-color: var(--core-colors-neutralGray-100);
 } 

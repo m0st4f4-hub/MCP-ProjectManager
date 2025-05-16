@@ -27,6 +27,10 @@ const SettingsContent: React.FC = () => {
     const agentStoreFilters = useAgentStore((state: AgentState) => state.filters);
     const setAgentStoreFilters = useAgentStore((state: AgentState) => state.setFilters);
 
+    const handleToggleHideCompletedTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setTaskFilters({ hideCompleted: event.target.checked });
+    };
+
     const handleToggleShowArchivedTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTaskFilters({ is_archived: event.target.checked });
     };
@@ -44,8 +48,33 @@ const SettingsContent: React.FC = () => {
             <h1 className={styles.mainHeading}>Application Settings</h1>
             <div className={styles.settingsListContainer}>
                 <div className={styles.settingsSectionBox}>
-                    <h2 className={styles.sectionHeading}>Archived Content Display</h2>
+                    <h2 className={styles.sectionHeading}>Task Display Options</h2>
                     <div className={styles.optionsVStack}>
+                        <div className={styles.formControlFlex}>
+                            <label htmlFor="hide-completed-tasks" className={styles.formLabel}>
+                                Hide Completed Tasks
+                            </label>
+                            <Switch
+                                id="hide-completed-tasks"
+                                isChecked={taskFilters.hideCompleted || false}
+                                onChange={handleToggleHideCompletedTasks}
+                                colorScheme="brand"
+                                sx={{
+                                    "span.chakra-switch__track": {
+                                        bg: taskFilters.hideCompleted ? "brand.500" : "gray.300",
+                                        _dark: {
+                                            bg: taskFilters.hideCompleted ? "brand.300" : "gray.500",
+                                        }
+                                    },
+                                    "span.chakra-switch__thumb": {
+                                        bg: "white",
+                                        _dark: {
+                                            bg: "gray.50",
+                                        }
+                                    }
+                                }}
+                            />
+                        </div>
                         <div className={styles.formControlFlex}>
                             <label htmlFor="show-archived-tasks" className={styles.formLabel}>
                                 Show Archived Tasks

@@ -2,7 +2,7 @@
 
 .dashboardContainer {
   padding: var(--chakra-space-4);
-  width: 100%;
+  width: var(--sizing-full);
 }
 
 .dashboardGrid {
@@ -27,22 +27,22 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 200px;
-  width: 100%;
+  min-height: 12.5rem;
+  width: var(--sizing-full);
 }
 
 .errorMessage {
-  color: var(--chakra-colors-text-critical, var(--chakra-colors-red-500)); /* Fallback if text-critical not in theme */
+  color: var(--chakra-colors-text-critical, var(--colors-textError)); /* Fallback if text-critical not in theme */
   text-align: center;
   padding: var(--chakra-space-4);
-  width: 100%;
+  width: var(--sizing-full);
 }
 
 .noDataMessage {
   text-align: center;
   padding: var(--chakra-space-4);
-  color: var(--chakra-colors-text-tertiary, var(--chakra-colors-gray-500)); /* Fallback for text-tertiary */
-  width: 100%;
+  color: var(--chakra-colors-text-tertiary, var(--colors-textSecondary)); /* Fallback for text-tertiary */
+  width: var(--sizing-full);
 }
 
 .statCard {

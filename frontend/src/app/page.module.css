@@ -90,7 +90,7 @@
 @media (max-width: /* Chakra md breakpoint, e.g., 48em */) {
   .mainVStackLayout {
     padding: var(--chakra-space-4);
-    padding-top: 60px; /* from pt={{base: "60px"}} */
+    padding-top: var(--spacing-14); /* from pt={{base: "60px"}}, changed to token var(--spacing-14) which is 56px */
   }
   .contentFlexContainer {
     flex-direction: column;

@@ -1,29 +1,29 @@
 /* frontend/src/components/dashboard/RecentActivityList.module.css */
 .container {
-    padding: var(--chakra-space-4);
-    background-color: var(--chakra-colors-bg-card);
-    border-radius: var(--chakra-radii-lg);
-    box-shadow: var(--chakra-shadows-md);
-    border-width: 1px;
-    border-style: solid;
-    border-color: var(--chakra-colors-border-primary);
-    min-height: 180px;
+    padding: var(--spacing-4);
+    background-color: var(--colors-bgSurface);
+    border-radius: var(--radii-lg);
+    box-shadow: var(--shadows-md);
+    border-width: var(--borders-width-xs);
+    border-style: var(--borders-style-solid);
+    border-color: var(--colors-borderDecorative);
+    min-height: 11.25rem; /* 180px */
 }
 
 .heading {
     /* Chakra Heading size="sm" equivalent */
-    font-size: var(--chakra-fontSizes-md);
-    font-weight: var(--chakra-fontWeights-semibold);
-    line-height: 1.2;
-    margin-bottom: var(--chakra-space-4);
-    color: var(--chakra-colors-text-heading);
+    font-size: var(--typography-fontSizes-md);
+    font-weight: var(--typography-fontWeights-semibold);
+    line-height: var(--typography-lineHeights-condensed);
+    margin-bottom: var(--spacing-4);
+    color: var(--colors-textPrimary);
 }
 
 .list {
     /* Chakra List spacing={2} */
     display: flex;
     flex-direction: column;
-    gap: var(--chakra-space-2);
+    gap: var(--spacing-2);
 }
 
 .listItem {
@@ -34,26 +34,26 @@
     /* Chakra HStack */
     display: flex;
     align-items: center;
-    gap: var(--chakra-space-2); /* Default gap for HStack, adjust if needed */
+    gap: var(--spacing-2);
     flex-wrap: wrap; /* Allow wrapping for smaller screens */
 }
 
 /* Badge is kept as a Chakra component for its colorScheme prop */
 
 .titleText {
-    font-weight: var(--chakra-fontWeights-bold);
+    font-weight: var(--typography-fontWeights-bold);
 }
 
 .detailText {
-    font-size: var(--chakra-fontSizes-xs);
-    color: var(--chakra-colors-text-secondary);
+    font-size: var(--typography-fontSizes-xs);
+    color: var(--colors-textSecondary);
 }
 
 .dateText {
-    font-size: var(--chakra-fontSizes-xs);
-    color: var(--chakra-colors-text-muted);
+    font-size: var(--typography-fontSizes-xs);
+    color: var(--colors-textSecondary);
 }
 
 .noActivityText {
-    color: var(--chakra-colors-text-secondary);
+    color: var(--colors-textSecondary);
 } 
