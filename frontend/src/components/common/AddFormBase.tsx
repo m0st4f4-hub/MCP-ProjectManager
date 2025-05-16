@@ -2,9 +2,9 @@ import React from 'react';
 import {
   Box,
   Button,
+  VStack,
   Heading,
 } from '@chakra-ui/react';
-import styles from './AddFormBase.module.css';
 
 interface AddFormBaseProps {
   formTitle: string;
@@ -33,14 +33,15 @@ const AddFormBase: React.FC<AddFormBaseProps> = ({
     <Box 
         as="form" 
         onSubmit={handleSubmit} 
-        className={styles.formContainer}
+        p={4} 
         borderWidth="1px" 
         borderRadius="lg" 
         borderColor="border.default" 
         bg="bg.surface" 
+        mb={6} // Add some margin below the form
     >
-      <div className={styles.formLayoutVStack}>
-        <Heading size="sm" className={styles.formTitleHeading} color="text.secondary">
+      <VStack spacing={4} align="stretch">
+        <Heading size="sm" mb={2} color="text.secondary">
           {formTitle}
         </Heading>
         
@@ -56,7 +57,7 @@ const AddFormBase: React.FC<AddFormBaseProps> = ({
         >
           {submitButtonText}
         </Button>
-      </div>
+      </VStack>
     </Box>
   );
 };

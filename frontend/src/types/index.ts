@@ -1,6 +1,6 @@
+export * from './task';
 export * from './project';
 export * from './agent';
-export * from './task';
 
 // Common types used across the application
 export type SortDirection = 'asc' | 'desc';
@@ -36,15 +36,4 @@ export interface ToastMessage {
     type: ToastType;
     message: string;
     duration?: number;
-}
-
-export type TaskSortField = 'created_at' | 'title' | 'status' | 'agent';
-
-export interface TaskSortOptions {
-    field: TaskSortField;
-    direction: 'asc' | 'desc';
-}
-
-// Add shared types for group by and view mode
-export type GroupByType = 'status' | 'project' | 'agent' | 'parent';
-export type ViewMode = 'list' | 'kanban'; 
+} 

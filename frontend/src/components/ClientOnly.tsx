@@ -1,17 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Modal from 'react-modal';
 
 interface ClientOnlyProps {
-  children?: React.ReactNode;
+  children: React.ReactNode;
 }
 
 const ClientOnly: React.FC<ClientOnlyProps> = ({ children }) => {
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-    Modal.setAppElement('body');
     setHasMounted(true);
   }, []);
 

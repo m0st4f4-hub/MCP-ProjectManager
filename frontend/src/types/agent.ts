@@ -3,7 +3,7 @@ import { Task } from './task';
 
 // Base Agent schema for validation
 export const agentSchema = z.object({
-    id: z.string(),
+    id: z.number(),
     name: z.string().min(1, 'Name is required'),
     created_at: z.string(),
     updated_at: z.string().optional()
@@ -44,8 +44,6 @@ export interface AgentWithMeta extends Agent {
 export interface AgentFilters {
     search?: string;
     status?: 'all' | 'available' | 'busy' | 'offline';
-    projectId?: string | null;
-    is_archived?: boolean | null;
 }
 
 // Agent sort options

@@ -18,7 +18,6 @@ import {
     Checkbox
 } from '@chakra-ui/react';
 import { mcpTools, ApiToolDefinition, ApiToolParameter } from '@/lib/mcpTools';
-import styles from './MCPDevTools.module.css';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -158,8 +157,8 @@ const MCPDevTools: React.FC = () => {
     };
 
     return (
-        <Box className={styles.devToolsContainer}>
-            <VStack spacing={6} align="stretch" className={styles.mainVStack}>
+        <Box p={8}>
+            <VStack spacing={6} align="stretch">
                 <Heading as="h1" size="xl">MCP Dev Tools - API Tester</Heading>
                 <FormControl>
                     <FormLabel htmlFor="tool-select">Select API Endpoint (Tool)</FormLabel>
@@ -168,6 +167,7 @@ const MCPDevTools: React.FC = () => {
                         placeholder="-- Select a tool --" 
                         value={selectedToolId}
                         onChange={(_) => setSelectedToolId(_.target.value)}
+                        focusBorderColor="blue.500"
                     >
                         {mcpTools.map(tool => (
                             <option key={tool.id} value={tool.id}>{tool.label} ({tool.method} {tool.path})</option>
@@ -175,10 +175,10 @@ const MCPDevTools: React.FC = () => {
                     </Select>
                 </FormControl>
                 {selectedTool && (
-                    <Box className={styles.toolDetailsBox}>
-                        <Heading as="h2" size="lg" className={styles.toolDetailsHeading}>{selectedTool.label}</Heading>
-                        <Text className={styles.toolPathText}>{selectedTool.method} {API_BASE_URL}{selectedTool.path}</Text>
-                        {selectedTool.description && <Text className={styles.toolDescriptionText}>{selectedTool.description}</Text>}
+                    <Box borderWidth="1px" borderRadius="lg" p={6}>
+                        <Heading as="h2" size="lg" mb={4}>{selectedTool.label}</Heading>
+                        <Text fontSize="sm" color="gray.500" mb={1}>{selectedTool.method} {API_BASE_URL}{selectedTool.path}</Text>
+                        {selectedTool.description && <Text mb={4} fontStyle="italic">{selectedTool.description}</Text>}
                         <VStack spacing={4} align="stretch">
                             {selectedTool.parameters.map(param => (
                                 <FormControl key={param.name} isRequired={param.required}>
@@ -195,7 +195,8 @@ const MCPDevTools: React.FC = () => {
                                             onChange={(e) => handleParameterChange(param.name, e.target.value, param.type)}
                                             placeholder={param.description || `Enter JSON for ${param.name}`}
                                             rows={5}
-                                            className={styles.jsonTextarea}
+                                            fontFamily="monospace"
+                                            focusBorderColor="blue.500"
                                         />
                                     ) : param.type === 'boolean' ? (
                                         <Checkbox
@@ -212,18 +213,20 @@ const MCPDevTools: React.FC = () => {
                                             value={parameters[param.name] as string || ''}
                                             onChange={(e) => handleParameterChange(param.name, e.target.value, param.type)}
                                             placeholder={param.description || `Enter ${param.name}`}
+                                            focusBorderColor="blue.500"
                                         />
                                     )}
                                     {param.description && param.type !== 'json_object_string' && param.type !== 'boolean' && (
-                                        <Text className={styles.parameterDescriptionText}>{param.description}</Text>
+                                        <Text fontSize="xs" color="gray.400" mt={1}>{param.description}</Text>
                                     )}
                                 </FormControl>
                             ))}
-                            <Button
-                                onClick={handleSubmit}
+                            <Button 
+                                colorScheme="blue" 
+                                onClick={handleSubmit} 
                                 isLoading={isLoading}
+                                mt={4}
                                 isDisabled={!selectedToolId}
-                                className={styles.executeButton}
                             >
                                 Execute Call
                             </Button>
@@ -231,20 +234,16 @@ const MCPDevTools: React.FC = () => {
                     </Box>
                 )}
                 {(response || error) && (
-                    <Box className={styles.responseBox}>
-                        <Heading as="h3" size="md" className={styles.responseHeading}>Response</Heading>
-                        {isLoading && <CircularProgress isIndeterminate color="icon.primary" />}
+                    <Box mt={6} borderWidth="1px" borderRadius="lg" p={6}>
+                        <Heading as="h3" size="md" mb={4}>Response</Heading>
+                        {isLoading && <CircularProgress isIndeterminate color="blue.300" />}
                         {error && (
-                            <Code
-                                className={styles.errorCodeBlock}
-                            >
+                            <Code colorScheme="red" p={4} display="block" whiteSpace="pre-wrap">
                                 Error: {error}
                             </Code>
                         )}
                         {response && (
-                            <Code
-                                className={styles.responseCodeBlock}
-                            >
+                            <Code p={4} display="block" whiteSpace="pre-wrap" overflowX="auto">
                                 {typeof response === 'string' ? response : JSON.stringify(response, null, 2)}
                             </Code>
                         )}
