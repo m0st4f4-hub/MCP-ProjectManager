@@ -7,3 +7,6 @@ backend/sql_app.db
 backend/*.db
 *.db
 sql_app.db
+
+# ESLint reports
+eslint_report.json
