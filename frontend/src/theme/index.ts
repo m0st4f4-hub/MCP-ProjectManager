@@ -340,30 +340,35 @@ const semanticTokens = {
 const menuHelper   = createMultiStyleConfigHelpers(['button','list','item','groupTitle','command','divider'])
 const Menu         = menuHelper.defineMultiStyleConfig({
   baseStyle: (props: StyleFunctionProps) => ({
-    list:{
-      bg: mode('bg.card', 'bg.card')(props),
-      borderColor: mode('border.secondary', 'border.secondary')(props),
-      color: mode('text.primary', 'text.primary')(props),
-      py:1, 
-      minW:'10rem', 
-      boxShadow: mode('sm', 'dark-lg')(props),
+    list: {
+      bg: mode('white', 'neutral.800')(props),
+      borderColor: mode('neutral.300', 'neutral.600')(props),
       borderWidth: '1px',
-      borderRadius: 'md',
-      zIndex: 'dropdown',
-    }, 
-    item:{ 
-      px:3, 
-      py:2, 
-      cursor:'pointer', 
-      bg: 'transparent', 
-      color: mode('text.primary', 'text.primary')(props),
-      _hover:{
-        bg: mode('bg.hover.nav', 'bg.hover.nav')(props),
-      }, 
-      _focus:{
-        bg: mode('bg.hover.nav', 'bg.hover.nav')(props),
+      boxShadow: mode('md', 'lg')(props),
+      color: mode('neutral.900', 'whiteAlpha.900')(props),
+      minWidth: 'xs',
+      py: '2',
+      zIndex: 'popover',
+    },
+    item: {
+      bg: 'transparent',
+      color: mode('neutral.900', 'whiteAlpha.900')(props),
+      py: '0.4rem',
+      px: '0.8rem',
+      transitionProperty: 'background',
+      transitionDuration: 'ultra-fast',
+      transitionTimingFunction: 'ease-in',
+      _hover: {
+        bg: mode('neutral.100', 'neutral.700')(props),
       },
-      _disabled:{ color:'text.muted', cursor:'not-allowed' }
+      _focus: {
+        bg: mode('neutral.100', 'neutral.700')(props),
+      },
+      _active: {
+        bg: mode('neutral.200', 'neutral.600')(props),
+      },
+      cursor: 'pointer',
+      _disabled: { color: 'text.muted', cursor: 'not-allowed' }
     },
   })
 })
@@ -401,31 +406,34 @@ const Tabs         = tabsHelper.defineMultiStyleConfig({
 
 const alertHelper  = createMultiStyleConfigHelpers(['container','title','description','icon'])
 const Alert        = alertHelper.defineMultiStyleConfig({
-  baseStyle: alertHelper.definePartsStyle(({ colorScheme='info' }) => ({
-    container:{ w:'100%', borderRadius:'md', display:'flex', alignItems:'flex-start', gap:3, py:3, px:4 },
-    title:{ fontWeight:'bold', mr:2, lineHeight: 'short' },
-    description:{ flex:1, fontSize: 'sm' },
-    icon:{ mr:3, mt: '0.125em' },
-  })),
+  baseStyle: alertHelper.definePartsStyle((props) => {
+    const { colorScheme = 'info' } = props;
+    return {
+      container:{ w:'100%', borderRadius:'md', display:'flex', alignItems:'flex-start', gap:3, py:3, px:4 },
+      title:{ fontWeight:'bold', mr:2, lineHeight: 'short' },
+      description:{ flex:1, fontSize: 'sm' },
+      icon:{ mr:3, mt: '0.125em', color: mode(`${colorScheme}.600`, `${colorScheme}.400`)(props) },
+    };
+  }),
   variants: {
-    subtle: alertHelper.definePartsStyle(({ colorScheme='info' }) => ({
+    subtle: alertHelper.definePartsStyle((props) => ({
       container:{ 
-        bg: mode(`${colorScheme}.50`, `${colorScheme}.900`)(),
-        color: mode(`${colorScheme}.700`, `${colorScheme}.200`)(), 
+        bg: mode(`${props.colorScheme ?? 'info'}.50`, `${props.colorScheme ?? 'info'}.900`)(props),
+        color: mode(`${props.colorScheme ?? 'info'}.700`, `${props.colorScheme ?? 'info'}.200`)(props), 
       }
     })),
-    solid:  alertHelper.definePartsStyle(({ colorScheme='info' }) => ({
+    solid:  alertHelper.definePartsStyle((props) => ({
       container:{ 
-        bg:mode(`${colorScheme}.500`, `${colorScheme}.600`)(),
+        bg:mode(`${props.colorScheme ?? 'info'}.500`, `${props.colorScheme ?? 'info'}.600`)(props),
         color:'white', 
       } 
     })),
-    'left-accent': alertHelper.definePartsStyle(({ colorScheme='info'}) => ({
+    'left-accent': alertHelper.definePartsStyle((props) => ({
       container: {
         borderLeftWidth: '4px',
-        borderLeftColor: mode(`${colorScheme}.500`, `${colorScheme}.300`)(),
-        bg: mode(`${colorScheme}.50`, `${colorScheme}.900`)(),
-        color: mode(`${colorScheme}.700`, `${colorScheme}.200`)(),
+        borderLeftColor: mode(`${props.colorScheme ?? 'info'}.500`, `${props.colorScheme ?? 'info'}.300`)(props),
+        bg: mode(`${props.colorScheme ?? 'info'}.50`, `${props.colorScheme ?? 'info'}.900`)(props),
+        color: mode(`${props.colorScheme ?? 'info'}.700`, `${props.colorScheme ?? 'info'}.200`)(props),
       }
     })),
   },
@@ -740,8 +748,8 @@ const styles = {
   global: (props: StyleFunctionProps) => ({
     body: {
       fontFamily: 'body',
-      bg: 'bg.app',
-      color: 'text.primary',
+      bg: mode('neutral.50', 'brand.900')(props),
+      color: mode('neutral.900', 'whiteAlpha.900')(props),
       lineHeight: 'base',
       WebkitFontSmoothing: 'antialiased',
       MozOsxFontSmoothing: 'grayscale',

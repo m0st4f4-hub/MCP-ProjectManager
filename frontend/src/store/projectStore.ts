@@ -5,8 +5,7 @@ import {
     updateProject, 
     deleteProject,
     archiveProject as archiveProjectAPI,
-    unarchiveProject as unarchiveProjectAPI,
-    getProjectById
+    unarchiveProject as unarchiveProjectAPI
 } from '@/services/api';
 import { 
     Project, 
@@ -15,22 +14,29 @@ import {
     ProjectFilters 
 } from '@/types/project';
 import { produce } from 'immer';
-import shallow from 'zustand/shallow';
-import debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import { useTaskStore } from './taskStore';
+
+let debouncedFetchProjects: (() => void) | null = null;
 
 export interface ProjectState {
     projects: Project[];
     loading: boolean;
     error: string | null;
     filters: ProjectFilters;
-    fetchProjects: (filters?: ProjectFilters) => Promise<void>;
+    fetchProjects: (filters?: ProjectFilters, isPoll?: boolean) => Promise<void>;
     addProject: (projectData: ProjectCreateData) => Promise<void>;
     editProject: (id: string, projectData: ProjectUpdateData) => Promise<void>;
     removeProject: (id: string) => Promise<void>;
     setFilters: (filters: Partial<ProjectFilters>) => void;
     archiveProject: (id: string) => Promise<void>;
     unarchiveProject: (id: string) => Promise<void>;
+    pollingIntervalId: NodeJS.Timeout | null;
+    isPolling: boolean;
+    pollingError: string | null;
+    startPolling: () => void;
+    stopPolling: () => void;
+    clearPollingError: () => void;
 }
 
 // Utility: Shallow equality for objects
@@ -73,11 +79,21 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     projects: [],
     loading: false,
     error: null,
+    pollingIntervalId: null,
+    isPolling: false,
+    pollingError: null,
     filters: {
         is_archived: false,
+        search: undefined,
+        status: 'all',
+        agentId: undefined,
     },
-    fetchProjects: async (filtersToApply?: ProjectFilters) => {
-        set({ loading: true, error: null });
+    fetchProjects: async (filtersToApply?: ProjectFilters, isPoll = false) => {
+        if (!isPoll) {
+            set({ loading: true, error: null });
+        } else {
+            set({ isPolling: true, pollingError: null });
+        }
         const currentActiveFilters = filtersToApply || get().filters;
         console.log('[ProjectStore] Fetching projects with filters:', currentActiveFilters);
         try {
@@ -85,13 +101,24 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             set(state => {
                 const updatedProjects = upsertProjects(fetchedProjects, state.projects);
                 if (areProjectsEqual(updatedProjects, state.projects) && !filtersToApply) {
-                    return { loading: false };
+                    const newState: Partial<ProjectState> = {};
+                    if (!isPoll) newState.loading = false;
+                    else newState.isPolling = false;
+                    return newState;
                 }
-                return { projects: updatedProjects, loading: false, filters: currentActiveFilters };
+                const newState: Partial<ProjectState> = { projects: updatedProjects };
+                if (!isPoll) newState.loading = false;
+                else newState.isPolling = false;
+                if (filtersToApply) newState.filters = currentActiveFilters;
+                return newState;
             });
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to fetch projects';
-            set({ error: message, loading: false });
+            if (!isPoll) {
+                set({ error: message, loading: false });
+            } else {
+                set({ pollingError: message, isPolling: false });
+            }
             console.error("Fetch Projects Error:", err);
         }
     },
@@ -193,13 +220,35 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     setFilters: (newFilters: Partial<ProjectFilters>) => {
         const currentFilters = get().filters;
         const mergedFilters = { ...currentFilters, ...newFilters };
-        if (mergedFilters.is_archived === currentFilters.is_archived && mergedFilters.search === currentFilters.search && mergedFilters.status === currentFilters.status) {
-            if (!shallowEqual(mergedFilters, currentFilters)) {
-                 set({ filters: mergedFilters });
-            }
-        } 
-        set({ filters: mergedFilters });
-        console.log("[ProjectStore] Setting new filters and re-fetching:", mergedFilters);
-        get().fetchProjects(mergedFilters);
-    }
+        if (!shallowEqual(mergedFilters, currentFilters)) {
+            set({ filters: mergedFilters });
+            console.log("[ProjectStore] Setting new filters and re-fetching:", mergedFilters);
+            get().fetchProjects(mergedFilters);
+        }
+    },
+    startPolling: () => {
+        const { fetchProjects, pollingIntervalId, filters } = get();
+        if (pollingIntervalId) {
+            clearInterval(pollingIntervalId);
+        }
+        set({ loading: true, error: null, pollingError: null });
+        fetchProjects(filters, false).finally(() => {
+            set({ loading: false });
+        });
+
+        debouncedFetchProjects = debounce(() => fetchProjects(get().filters, true), 5000);
+
+        const intervalId = setInterval(() => {
+            if (debouncedFetchProjects) debouncedFetchProjects();
+        }, 20000);
+        set({ pollingIntervalId: intervalId });
+    },
+    stopPolling: () => {
+        const { pollingIntervalId } = get();
+        if (pollingIntervalId) {
+            clearInterval(pollingIntervalId);
+            set({ pollingIntervalId: null, isPolling: false });
+        }
+    },
+    clearPollingError: () => set({ pollingError: null }),
 }));

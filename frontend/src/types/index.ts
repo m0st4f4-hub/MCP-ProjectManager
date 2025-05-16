@@ -43,4 +43,8 @@ export type TaskSortField = 'created_at' | 'title' | 'status' | 'agent';
 export interface TaskSortOptions {
     field: TaskSortField;
     direction: 'asc' | 'desc';
-} 
+}
+
+// Add shared types for group by and view mode
+export type GroupByType = 'status' | 'project' | 'agent' | 'parent';
+export type ViewMode = 'list' | 'kanban'; 

@@ -1,7 +1,7 @@
 // D:\mcp\task-manager\frontend\src\components\TaskItem.tsx
 'use client';
 
-import React, { useCallback, useState, memo } from 'react';
+import React, { useCallback, useState, memo, useMemo } from 'react';
 import {
     Box,
     Checkbox,
@@ -36,87 +36,44 @@ import {
     Collapse,
     Input,
     Textarea,
-    useToken,
-    Icon as ChakraIcon,
-    Badge,
 } from '@chakra-ui/react';
-import { DeleteIcon, WarningIcon, CalendarIcon, ChevronDownIcon, CopyIcon, ChevronUpIcon, ViewIcon, EditIcon, HamburgerIcon, CheckIcon, CloseIcon, DownloadIcon, RepeatClockIcon } from '@chakra-ui/icons';
-import { BsPerson, BsPencil } from 'react-icons/bs';
+import { DeleteIcon, ChevronDownIcon, CopyIcon, ChevronUpIcon, ViewIcon, EditIcon, HamburgerIcon, CheckIcon, CloseIcon, DownloadIcon, RepeatClockIcon } from '@chakra-ui/icons';
 import { GoProject } from "react-icons/go";
-import { motion } from 'framer-motion';
-import { Task } from '@/types'; // Removed Subtask as SubtaskType import
-import EditTaskModal from './EditTaskModal'; // Ensure this path is correct
-import TaskDetailsModal from './modals/TaskDetailsModal'; // Import TaskDetailsModal
-import { useProjectStore } from '@/store/projectStore'; // <-- Import project store
-// import { useTaskStore } from '@/store/taskStore'; // <-- Import useTaskStore // Remove toggleTaskComplete
+import { BsPerson } from 'react-icons/bs';
+import EditTaskModal from './modals/EditTaskModal';
+import TaskDetailsModal from './modals/TaskDetailsModal';
+import { useProjectStore } from '@/store/projectStore';
 import { useTaskStore } from '@/store/taskStore';
-import { getDisplayableStatus, StatusID, getAllStatusIds, getStatusAttributes } from '@/lib/statusUtils'; // Added getAllStatusIds and getStatusAttributes
-
-// For MotionFlex
-const MotionFlex = motion(Flex);
-
+import { getDisplayableStatus, StatusID, getAllStatusIds, getStatusAttributes } from '@/lib/statusUtils';
+import { Task } from '@/types';
+import styles from './TaskItem.module.css';
+import { clsx } from 'clsx';
 
 interface TaskItemProps {
     task: Task;
     compact?: boolean;
     style?: React.CSSProperties;
     onDeleteInitiate: (task: Task) => void;
-    // Remove callback props:
-    // onToggle: (id: string, completed: boolean) => void;
-    // onDelete: (id: string) => void;
-    // onEdit: (task: Task) => void; 
+    onAssignAgent?: (task: Task) => void;
 }
-
-// Renamed and updated to return token paths
-// const getStatusTokenProps = (status: string) => {  // REMOVE THIS FUNCTION
-//     switch (status) {
-//         case 'Completed':
-//             return { label: 'Completed', textColorToken: 'status.completed.text', bgToken: 'status.completed.bg' };
-//         case 'In Progress':
-//             return { label: 'In Progress', textColorToken: 'status.inProgress.text', bgToken: 'status.inProgress.bg' };
-//         case 'Blocked':
-//             return { label: 'Blocked', textColorToken: 'status.blocked.text', bgToken: 'status.blocked.bg' };
-//         default: // Assuming 'To Do' or other neutral statuses
-//             return { label: status || 'Unknown', textColorToken: 'status.todo.text', bgToken: 'status.todo.bg' };
-//     }
-// };
-
-// Renamed and updated to return token paths
-// const getPriorityTokenProps = (priority: string) => { // This function is unused
-//    switch (priority) {
-//        case 'High':
-//            return { icon: WarningIcon, iconColorToken: 'priority.high.icon', label: 'High', textColorToken: 'priority.high.text', bgToken: 'priority.high.bg' };
-//        case 'Medium':
-//            return { icon: WarningIcon, iconColorToken: 'priority.medium.icon', label: 'Medium', textColorToken: 'priority.medium.text', bgToken: 'priority.medium.bg' };
-//        case 'Low':
-//            return { icon: WarningIcon, iconColorToken: 'priority.low.icon', label: 'Low', textColorToken: 'priority.low.text', bgToken: 'priority.low.bg' };
-//        default:
-//            return null;
-//    }
-// };
 
 const TaskItem: React.FC<TaskItemProps> = memo(({
     task,
     compact = false,
     style,
     onDeleteInitiate,
-    // onToggle, // Removed
-    // onDelete, // Removed
-    // onEdit, // Removed
+    onAssignAgent,
 }) => {
     const { isOpen: isEditTaskModalOpen, onOpen: onOpenEditTaskModal, onClose: onCloseEditTaskModal } = useDisclosure();
-    const { isOpen: isDetailsModalOpen, onOpen: onOpenDetailsModal, onClose: onCloseDetailsModal } = useDisclosure(); // For TaskDetailsModal
+    const { isOpen: isDetailsModalOpen, onOpen: onOpenDetailsModal, onClose: onCloseDetailsModal } = useDisclosure();
     const projects = useProjectStore((state) => state.projects);
     const projectName = projects.find(p => p.id === task.project_id)?.name;
 
-    // Get actions from taskStore
-    // const toggleTaskComplete = useTaskStore((state) => state.toggleTaskComplete); // Remove this line
-    const deleteTaskStore = useTaskStore((state) => state.deleteTask);
-    const editTaskInStore = useTaskStore((state) => state.updateTask); // updateTask is the correct name now
-    const archiveTask = useTaskStore((state) => state.archiveTask);
-    const unarchiveTask = useTaskStore((state) => state.unarchiveTask);
+    const editTaskInStore = useTaskStore((state) => state.updateTask);
+    const archiveTaskInStore = useTaskStore((state) => state.archiveTask);
+    const unarchiveTaskInStore = useTaskStore((state) => state.unarchiveTask);
+    const storeAgents = useTaskStore((state) => state.agents || []);
 
-    const agents = useTaskStore((state) => state.agents || []); // Use correct store for agents
     const [isAgentModalOpen, setAgentModalOpen] = useState(false);
     const [agentLoading, setAgentLoading] = useState(false);
     const toast = useToast();
@@ -125,78 +82,84 @@ const TaskItem: React.FC<TaskItemProps> = memo(({
     const [isEditingDescription, setIsEditingDescription] = useState(false);
     const [editTitle, setEditTitle] = useState(task.title);
     const [editDescription, setEditDescription] = useState(task.description || '');
-    const [showStatusOptions, setShowStatusOptions] = useState(false);
 
-    // Theme tokens
-    const taskBg = useToken('colors', [task.completed ? 'task.item.completed.bg' : 'task.item.bg'])[0];
-    const borderColorPrimary = useToken('colors', ['border.primary'])[0];
-    const borderAccent = useToken('colors', ['border.accent'])[0];
-    // const cardHoverBg = useColorModeValue('taskItem.default.hover.bg', 'taskItem.default.hover.bg'); // This line will be removed by the edit
+    const currentStatusId = (task.status || 'TO_DO') as StatusID;
+    const statusInfo = getDisplayableStatus(currentStatusId, task.title);
 
-    // Get status display properties from the utility
-    const currentStatus = (task.status || 'TO_DO') as StatusID;
-    const statusInfo = getDisplayableStatus(currentStatus, task.title); // Pass task.title as a fallback/example for dynamicValue if needed by some statuses
+    const statusDisplayName = statusInfo?.displayName ?? 'Unknown Status';
+    const StatusIconComponent = statusInfo?.icon;
 
-    const statusDisplayName = statusInfo?.displayName ?? 'Unknown';
-    const statusColorScheme = statusInfo?.colorScheme ?? 'gray';
-    const statusIcon = statusInfo?.icon;
-    const statusDynamicValue = statusInfo?.dynamicValue;
+    const getStatusAccentClassName = (status: StatusID) => {
+        switch (status) {
+            case 'TO_DO': return styles.accentToDo;
+            case 'IN_PROGRESS': return styles.accentInProgress;
+            case 'BLOCKED': return styles.accentBlocked;
+            case 'PENDING_VERIFICATION': return styles.accentPending;
+            case 'COMPLETED': return styles.accentCompleted;
+            default: return styles.accentDefault;
+        }
+    };
 
-    // Accent bar color by status - using the main color of the scheme
-    const statusAccent = useToken('colors', [`${statusColorScheme}.500`, 'gray.500'])[0]; // Fallback to gray
+    const getStatusTagClassName = (status: StatusID) => {
+        switch (status) {
+            case 'TO_DO': return styles.statusTagToDo;
+            case 'IN_PROGRESS': return styles.statusTagInProgress;
+            case 'BLOCKED': return styles.statusTagBlocked;
+            case 'PENDING_VERIFICATION': return styles.statusTagPending;
+            case 'COMPLETED': return styles.statusTagCompleted;
+            default: return styles.statusTagDefault;
+        }
+    };
 
-    const handleToggleCompletion = useCallback(async () => { // Make async
-        const newStatus = !task.completed ? 'Completed' : 'To Do';
+    const handleToggleCompletion = useCallback(async () => {
+        const newStatus = (task.status !== 'COMPLETED') ? 'COMPLETED' : 'TO_DO';
         try {
             await editTaskInStore(task.id, { status: newStatus });
-            // Optionally, show a toast or handle UI feedback
-        } catch (error) {
-            console.error("Failed to toggle task completion:", error);
-            // Optionally, show an error toast
+        } catch {
+            toast({ title: 'Error updating status', status: 'error', duration: 3000, isClosable: true });
         }
-    }, [task.id, task.completed, editTaskInStore]);
-
-    // const handleDeleteClick = useCallback(() => { // This function is unused
-    //     deleteTaskStore(task.id); // Changed from removeTask to deleteTask
-    // }, [task.id, deleteTaskStore]);
-
-    const textColorSecondary = task.completed ? 'text.disabled' : 'text.secondary';
+    }, [task.id, task.status, editTaskInStore, toast]);
 
     const handleAssignAgent = useCallback(() => {
-        setAgentModalOpen(true);
-    }, []);
+        if (onAssignAgent) onAssignAgent(task);
+        else setAgentModalOpen(true);
+    }, [onAssignAgent, task]);
+
     const handleAgentSelect = async (agent: { id: string; name: string }) => {
         setAgentLoading(true);
-        await editTaskInStore(task.id, { agent_id: agent.id, agent_name: agent.name });
-        setAgentLoading(false);
-        setAgentModalOpen(false);
-        toast({ title: `Agent assigned: ${agent.name}`, status: 'success', duration: 2000, isClosable: true });
+        try {
+            await editTaskInStore(task.id, { agent_id: agent.id, agent_name: agent.name });
+            toast({ title: `Agent assigned: ${agent.name}`, status: 'success', duration: 2000, isClosable: true });
+        } catch {
+            toast({ title: 'Error assigning agent', status: 'error', duration: 3000, isClosable: true });
+        } finally {
+            setAgentLoading(false);
+            setAgentModalOpen(false);
+        }
     };
-    const handleStatusChange = async (status: StatusID) => {
-        await editTaskInStore(task.id, { status });
-        toast({ title: `Status set to ${status}`, status: 'info', duration: 1500, isClosable: true });
+
+    const handleStatusChange = async (newStatus: StatusID) => {
+        try {
+            await editTaskInStore(task.id, { status: newStatus });
+            toast({ title: `Status set to ${getDisplayableStatus(newStatus)?.displayName || newStatus}`, status: 'info', duration: 1500, isClosable: true });
+        } catch {
+            toast({ title: 'Error updating status', status: 'error', duration: 3000, isClosable: true });
+        }
     };
 
     const handleCopyPrompt = () => {
-        // Always resolve agent_name from agent_id if missing or fallback
         let agentName = task.agent_name;
         if ((!agentName || agentName === '—') && task.agent_id) {
-            const agents = useTaskStore.getState().agents || [];
-            const agent = agents.find(a => a.id === task.agent_id);
+            const agent = storeAgents.find(a => a.id === task.agent_id);
             agentName = agent ? agent.name : undefined;
         }
-        let prompt;
+        let promptText;
         if (!agentName || agentName === '—') {
-            prompt = `No agent is currently assigned to this task. Please assign an agent, then execute the following:\n\n- **Task ID:** ${task.id}\n- **Task Name:** ${task.title}\n- **Project ID:** ${task.project_id}\n\nThis is an existing task in the project. Do not create a new one. Once assigned, the agent should work on this task, update its status as they progress, and mark it as finished when done.`;
-            navigator.clipboard.writeText(prompt).then(() => {
-                toast({ title: 'Prompt copied to clipboard! (No agent assigned)', status: 'info', duration: 2000, isClosable: true });
-            }, () => {
-                toast({ title: 'Failed to copy prompt.', status: 'error', duration: 2000, isClosable: true });
-            });
-            return;
+            promptText = `No agent is currently assigned to this task. Please assign an agent, then execute the following:\n\n- **Task ID:** ${task.id}\n- **Task Name:** ${task.title}\n- **Project ID:** ${task.project_id}\n\nThis is an existing task in the project. Do not create a new one. Once assigned, the agent should work on this task, update its status as they progress, and mark it as finished when done.`;
+        } else {
+            promptText = `@${agentName}, please execute the assigned task:\n\n- **Task ID:** ${task.id}\n- **Task Name:** ${task.title}\n- **Project ID:** ${task.project_id}\n\nThis is an existing task in the project. Do not create a new one. Work on this task, update its status as you progress, and mark it as finished when done.`;
         }
-        prompt = `@${agentName}, please execute the assigned task:\n\n- **Task ID:** ${task.id}\n- **Task Name:** ${task.title}\n- **Project ID:** ${task.project_id}\n\nThis is an existing task in the project. Do not create a new one. Work on this task, update its status as you progress, and mark it as finished when done.`;
-        navigator.clipboard.writeText(prompt).then(() => {
+        navigator.clipboard.writeText(promptText).then(() => {
             toast({ title: 'Prompt copied to clipboard!', status: 'success', duration: 2000, isClosable: true });
         }, () => {
             toast({ title: 'Failed to copy prompt.', status: 'error', duration: 2000, isClosable: true });
@@ -206,26 +169,26 @@ const TaskItem: React.FC<TaskItemProps> = memo(({
     const startEditingTitle = () => {
         setEditTitle(task.title);
         setIsEditingTitle(true);
-        if (task.status !== 'In Progress') {
-            editTaskInStore(task.id, { status: 'In Progress' });
+        if (task.status !== 'IN_PROGRESS') {
+            editTaskInStore(task.id, { status: 'IN_PROGRESS' });
         }
     };
     const startEditingDescription = () => {
         setEditDescription(task.description || '');
         setIsEditingDescription(true);
-        if (task.status !== 'In Progress') {
-            editTaskInStore(task.id, { status: 'In Progress' });
+        if (task.status !== 'IN_PROGRESS') {
+            editTaskInStore(task.id, { status: 'IN_PROGRESS' });
         }
     };
     const saveTitle = async () => {
-        if (editTitle !== task.title) {
-            await editTaskInStore(task.id, { title: editTitle });
+        if (editTitle.trim() !== task.title) {
+            await editTaskInStore(task.id, { title: editTitle.trim() });
         }
         setIsEditingTitle(false);
     };
     const saveDescription = async () => {
-        if (editDescription !== (task.description || '')) {
-            await editTaskInStore(task.id, { description: editDescription });
+        if (editDescription.trim() !== (task.description || '')) {
+            await editTaskInStore(task.id, { description: editDescription.trim() });
         }
         setIsEditingDescription(false);
     };
@@ -238,405 +201,282 @@ const TaskItem: React.FC<TaskItemProps> = memo(({
         setIsEditingDescription(false);
     };
 
-    // Define available statuses for the dropdown menu
-    const availableStatuses = React.useMemo(() => {
+    const availableStatuses = useMemo(() => {
         return getAllStatusIds().filter(id => {
             const attrs = getStatusAttributes(id);
-            // Include statuses that are not terminal, or if it's the current task's status (even if terminal, to show it as selected)
-            return (attrs && !attrs.isTerminal) || id === currentStatus;
+            return (attrs && !attrs.isTerminal) || id === currentStatusId;
         });
-    }, [currentStatus]);
+    }, [currentStatusId]);
 
-    const handleArchiveTask = async (taskId: string) => {
+    const handleArchiveTask = async () => {
         try {
-            await archiveTask(taskId);
-            toast({
-                title: 'Task archived',
-                status: 'success',
-                duration: 3000,
-                isClosable: true,
-            });
-        } catch (error) {
-            toast({
-                title: 'Error archiving task',
-                description: error instanceof Error ? error.message : 'An error occurred',
-                status: 'error',
-                duration: 5000,
-                isClosable: true,
-            });
-        }
+            await archiveTaskInStore(task.id);
+            toast({ title: 'Task archived', status: 'success', duration: 3000, isClosable: true });
+        } catch { toast({ title: 'Error archiving task', status: 'error', duration: 3000, isClosable: true }); }
+    };
+    const handleUnarchiveTask = async () => {
+        try {
+            await unarchiveTaskInStore(task.id);
+            toast({ title: 'Task unarchived', status: 'success', duration: 3000, isClosable: true });
+        } catch { toast({ title: 'Error unarchiving task', status: 'error', duration: 3000, isClosable: true }); }
     };
 
-    const handleUnarchiveTask = async (taskId: string) => {
-        try {
-            await unarchiveTask(taskId);
-            toast({
-                title: 'Task unarchived',
-                status: 'success',
-                duration: 3000,
-                isClosable: true,
-            });
-        } catch (error) {
-            toast({
-                title: 'Error unarchiving task',
-                description: error instanceof Error ? error.message : 'An error occurred',
-                status: 'error',
-                duration: 5000,
-                isClosable: true,
-            });
-        }
-    };
+    const taskContainerClasses = clsx(
+        styles.taskItemContainer,
+        task.status === 'COMPLETED' && styles.taskItemContainerCompleted,
+        compact && styles.taskItemContainerCompact,
+        getStatusAccentClassName(currentStatusId)
+    );
+
+    const taskTitleClasses = clsx(
+        styles.taskTitle,
+        isEditingTitle && styles.taskTitleEditable,
+        compact && styles.taskTitleCompact,
+        task.status === 'COMPLETED' && styles.taskTitleCompleted
+    );
+
+    const descriptionTextClasses = clsx(
+        styles.descriptionText,
+        compact && styles.descriptionTextCompact,
+        task.status === 'COMPLETED' && styles.descriptionTextCompleted
+    );
 
     return (
-        <>
-            <Box position="relative" role="group" style={style}>
-                <MotionFlex
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -30, transition: { duration: 0.3 } }}
-                    transition={{ type: "spring", stiffness: 260, damping: 25 }}
-                    align="center"
-                    p={compact ? 2 : 4}
-                    bg={taskBg}
-                    borderRadius="lg"
-                    boxShadow={compact ? 'xs' : 'md'}
-                    mb={compact ? 2 : 3}
-                    borderWidth="1px"
-                    borderColor={borderColorPrimary}
-                    borderLeftWidth="4px"
-                    borderLeftColor={task.completed ? 'status.success' : (statusAccent || borderAccent)}
-                    width="100%"
-                    gap={compact ? 2 : 4}
-                    minH={compact ? '48px' : 'auto'}
-                    _hover={{
-                        borderColor: task.completed ? borderColorPrimary : borderAccent,
-                        bg: 'taskItem.default.hover.bg', // Use token string directly
-                        boxShadow: compact ? "sm" : "lg",
-                        transform: "translateY(-2px)"
-                    }}
-                >
-                    {/* Agent Avatar */}
-                    <Avatar
-                        name={task.agent_name || 'Unassigned'}
-                        size={compact ? 'xs' : 'sm'}
-                        cursor="pointer"
-                        onClick={handleAssignAgent}
-                        title={task.agent_name ? `Agent: ${task.agent_name}` : "Assign Agent"}
+        <Box className={taskContainerClasses} style={style} >
+            <HStack className={styles.taskContentHStack}>
+                <Box className={styles.taskCheckboxContainer}>
+                    <Checkbox 
+                        isChecked={task.status === 'COMPLETED'} 
+                        onChange={handleToggleCompletion} 
+                        size="lg"
+                        colorScheme={statusInfo?.colorScheme || 'gray'}
+                        aria-label={`Mark task ${task.title} as ${task.status === 'COMPLETED' ? 'incomplete' : 'complete'}`}
                     />
+                </Box>
 
-                    <VStack align="start" spacing={compact ? 0.5 : 1} flex="1" minW="0"> {/* Added minW="0" for flex truncation */}
-                        <HStack w="100%" justifyContent="space-between">
-                            <Tooltip label={task.title} placement="top-start" isDisabled={!compact}>
-                                {isEditingTitle ? (
-                                    <HStack w="100%">
-                                        <Input 
-                                            value={editTitle} 
-                                            onChange={(e) => setEditTitle(e.target.value)} 
-                                            size="sm" 
-                                            autoFocus
-                                            onBlur={saveTitle} 
-                                            onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && saveTitle()} 
-                                            bg="bg.input"
-                                            borderColor="border.input"
-                                            _hover={{ borderColor: 'border.input.hover' }}
-                                            _focus={{ borderColor: 'border.focus', boxShadow: 'outline' }}
-                                        />
-                                        <IconButton icon={<CheckIcon />} aria-label="Save title" onClick={saveTitle} size="sm" />
-                                        <IconButton icon={<CloseIcon />} aria-label="Cancel edit title" onClick={cancelTitle} size="sm" />
-                                    </HStack>
-                                ) : (
-                                    <Box
-                                        as="span"
-                                        position="relative"
-                                        _hover={{ cursor: 'pointer', borderBottom: '1px dashed', borderColor: 'brand.400', color: 'brand.500' }}
-                                        onClick={startEditingTitle}
-                                        tabIndex={0}
-                                        onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter') startEditingTitle(); }}
-                                        aria-label="Edit title"
-                                        display="inline-flex"
-                                        alignItems="center"
-                                    >
-                                        {task.title || <Text as="span" color="text.muted">Click to edit title</Text>}
-                                        <Icon as={EditIcon} boxSize={3} ml={2} color="brand.400" opacity={0.7} />
-                                    </Box>
-                                )}
-                            </Tooltip>
-                            {!compact && (
-                                <IconButton
-                                    aria-label="Toggle details"
-                                    icon={detailsOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                                    size="xs"
-                                    variant="ghost"
-                                    onClick={() => setDetailsOpen(!detailsOpen)}
-                                />
-                            )}
-                        </HStack>
-
-                        {!compact && task.description && (
-                            <Collapse in={detailsOpen} animateOpacity>
-                                {isEditingDescription ? (
-                                    <VStack w="100%" align="stretch">
-                                        <Textarea 
-                                            value={editDescription} 
-                                            onChange={(e) => setEditDescription(e.target.value)} 
-                                            size="sm" 
-                                            autoFocus 
-                                            onBlur={saveDescription}
-                                            minH="80px"
-                                            bg="bg.input"
-                                            borderColor="border.input"
-                                            _hover={{ borderColor: 'border.input.hover' }}
-                                            _focus={{ borderColor: 'border.focus', boxShadow: 'outline' }}
-                                        />
-                                        <HStack justify="flex-end">
-                                            <Button 
-                                                onClick={saveDescription} 
-                                                size="xs" 
-                                                bg="bg.button.primary"
-                                                color="text.button.primary"
-                                                _hover={{bg: "bg.button.primary.hover"}}
-                                            >
-                                                Save
-                                            </Button>
-                                            <Button onClick={cancelDescription} size="xs" variant="ghost">Cancel</Button>
-                                        </HStack>
-                                    </VStack>
-                                ) : (
-                                    <Box
-                                        as="span"
-                                        position="relative"
-                                        _hover={{ cursor: 'pointer', borderBottom: '1px dashed', borderColor: 'brand.400', color: 'brand.500' }}
-                                        onClick={startEditingDescription}
-                                        tabIndex={0}
-                                        onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter') startEditingDescription(); }}
-                                        aria-label="Edit description"
-                                        display="inline-flex"
-                                        alignItems="center"
-                                    >
-                                        {task.description ? (
-                                            <Text color="text.secondary">{task.description}</Text>
-                                        ) : (
-                                            <Text as="span" color="text.muted">Click to add description</Text>
-                                        )}
-                                        <Icon as={EditIcon} boxSize={3} ml={2} color="brand.400" opacity={0.7} />
-                                    </Box>
-                                )}
-                            </Collapse>
-                        )}
-                        
-                        {compact && projectName && (
-                             <HStack spacing={1} align="center">
-                                <Icon as={GoProject} color={textColorSecondary} boxSize="3" />
-                                <Text fontSize="xs" color={textColorSecondary} noOfLines={1}>
-                                    {projectName}
+                <VStack className={clsx(styles.taskInfoVStack, compact && styles.taskInfoVStackCompact)}>
+                    <Box className={styles.titleContainer}>
+                        {isEditingTitle ? (
+                            <Input 
+                                value={editTitle} 
+                                onChange={(e) => setEditTitle(e.target.value)} 
+                                onBlur={saveTitle} 
+                                autoFocus 
+                                className={clsx(styles.titleInput, compact && styles.titleInputCompact)}
+                                placeholder="Task title"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') saveTitle();
+                                    if (e.key === 'Escape') cancelTitle();
+                                }}
+                            />
+                        ) : (
+                            <Text onClick={startEditingTitle} className={taskTitleClasses} noOfLines={2}>
+                                {task.title}
                             </Text>
+                        )}
+                        {isEditingTitle && (
+                            <HStack className={styles.inlineEditActions}>
+                                <IconButton 
+                                    aria-label="Save title" 
+                                    icon={<CheckIcon />} 
+                                    onClick={saveTitle} 
+                                    size="xs" 
+                                    className={clsx(styles.inlineEditButton, styles.inlineEditButtonSave)}
+                                />
+                                <IconButton 
+                                    aria-label="Cancel edit title" 
+                                    icon={<CloseIcon />} 
+                                    onClick={cancelTitle} 
+                                    size="xs" 
+                                    className={clsx(styles.inlineEditButton, styles.inlineEditButtonCancel)}
+                                />
                             </HStack>
                         )}
+                    </Box>
+                    
+                    { (task.description || isEditingDescription) && (
+                         isEditingDescription ? (
+                            <Textarea
+                                value={editDescription}
+                                onChange={(e) => setEditDescription(e.target.value)}
+                                onBlur={saveDescription}
+                                autoFocus
+                                className={clsx(styles.descriptionTextarea, compact && styles.descriptionTextareaCompact)}
+                                placeholder="Task description"
+                                minRows={1}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && e.ctrlKey) saveDescription();
+                                    if (e.key === 'Escape') cancelDescription();
+                                }}
+                            />
+                        ) : (
+                            <Text onClick={startEditingDescription} className={descriptionTextClasses} noOfLines={compact ? 1 : 2}>
+                                {task.description}
+                            </Text>
+                        )
+                    )}
+                     {isEditingDescription && (
+                        <HStack className={styles.inlineEditActions} justifyContent="flex-end" w="full">
+                            <IconButton 
+                                aria-label="Save description" 
+                                icon={<CheckIcon />} 
+                                onClick={saveDescription} 
+                                size="xs" 
+                                className={clsx(styles.inlineEditButton, styles.inlineEditButtonSave)}
+                            />
+                            <IconButton 
+                                aria-label="Cancel edit description" 
+                                icon={<CloseIcon />} 
+                                onClick={cancelDescription} 
+                                size="xs" 
+                                className={clsx(styles.inlineEditButton, styles.inlineEditButtonCancel)}
+                            />
+                        </HStack>
+                    )}
 
-                        {!compact && (
-                            <HStack spacing={2} wrap="wrap">
-                                {/* Status Tag */}
-                                <Tag size="sm" variant="subtle" colorScheme={statusColorScheme} cursor="pointer" onClick={() => setShowStatusOptions(!showStatusOptions)} title={statusDisplayName}>
-                                    {statusIcon && typeof statusIcon !== 'string' && <TagLeftIcon boxSize="12px" as={statusIcon} />}
-                                    <TagLabel>{statusDynamicValue ? `${statusDisplayName}: ${statusDynamicValue}` : statusDisplayName}</TagLabel>
-                                    <Icon as={showStatusOptions ? ChevronUpIcon : ChevronDownIcon} ml={1} />
-                                    {task.is_archived && (
-                                        <Badge colorScheme="purple" variant="solid" ml={1} size="xs" px={1.5} py={0.5} borderRadius="sm">
-                                            Archived
-                                        </Badge>
-                                    )}
+                    <HStack className={clsx(styles.tagsContainer, compact && styles.tagsContainerCompact)}>
+                        <Tag className={clsx(styles.taskTag, getStatusTagClassName(currentStatusId))} size="sm">
+                            {StatusIconComponent && <TagLeftIcon as={StatusIconComponent} />}
+                            <TagLabel>{statusDisplayName}</TagLabel>
+                        </Tag>
+                        {projectName && (
+                            <Tooltip label={`Project: ${projectName}`}>
+                                <Tag className={clsx(styles.taskTag, styles.projectTag)} size="sm">
+                                    <TagLeftIcon as={GoProject} />
+                                    <TagLabel>{projectName}</TagLabel>
                                 </Tag>
-                            </HStack>
+                            </Tooltip>
                         )}
-                    </VStack>
+                        {task.agent_name && task.agent_name !== '—' && (
+                             <Tooltip label={`Agent: ${task.agent_name}`}>
+                                <Tag className={clsx(styles.taskTag, styles.agentTag)} size="sm">
+                                    <Avatar name={task.agent_name} className={styles.agentAvatar} size="xs" />
+                                    <TagLabel>{task.agent_name}</TagLabel>
+                                </Tag>
+                            </Tooltip>
+                        )}
+                    </HStack>
+                </VStack>
 
-                    {/* Actions Menu - kept similar for both modes but styled for compact */}
+                <Flex className={styles.controlsFlex}>
+                    <IconButton
+                        aria-label={detailsOpen ? 'Collapse details' : 'Expand details'}
+                        icon={detailsOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                        onClick={() => setDetailsOpen(!detailsOpen)}
+                        size="sm"
+                        className={styles.expandButton}
+                    />
                     <Menu placement="bottom-end">
-                        <MenuButton
-                            as={IconButton}
-                            icon={<HamburgerIcon />}
-                            size={compact ? "xs" : "sm"}
-                            variant="ghost"
-                            aria-label="Task actions"
-                            color={textColorSecondary}
+                        <MenuButton 
+                            as={IconButton} 
+                            aria-label="Task options" 
+                            icon={<HamburgerIcon />} 
+                            size="sm"
+                            className={styles.menuButton}
                         />
-                        <MenuList
-                            shadow="md"
-                            border="1px"
-                            borderColor="border.secondary"
-                            borderRadius="md"
-                        >
-                            <MenuItem icon={<BsPencil />} onClick={onOpenEditTaskModal}>Edit Task</MenuItem>
-                            <MenuItem icon={<ViewIcon />} onClick={onOpenDetailsModal}>View Details</MenuItem>
-                            <MenuItem icon={<BsPerson />} onClick={handleAssignAgent}>Assign Agent</MenuItem>
-                            <MenuItem onClick={() => setShowStatusOptions((v) => !v)}>
-                                <Flex justifyContent="space-between" w="100%" align="center">
-                                    <span>Set Status</span>
-                                    <Icon as={ChevronDownIcon} transform={showStatusOptions ? 'rotate(180deg)' : undefined} />
-                                </Flex>
-                            </MenuItem>
-                            {showStatusOptions && (
-                                <Box px={3} py={2}>
-                                    {availableStatuses.map((s_id) => {
-                                        const sStatusInfo = getDisplayableStatus(s_id);
-                                        const sDisplayName = sStatusInfo?.displayName ?? 'Unknown';
-                                        const sIcon = sStatusInfo?.icon;
+                        <MenuList className={styles.menuList}>
+                            <MenuItem icon={<EditIcon />} onClick={onOpenEditTaskModal} className={styles.menuItem}>Edit Task</MenuItem>
+                            <MenuItem icon={<ViewIcon />} onClick={onOpenDetailsModal} className={styles.menuItem}>View Details</MenuItem>
+                            <MenuItem icon={<BsPerson />} onClick={handleAssignAgent} className={styles.menuItem}>Assign Agent</MenuItem>
+                            <Menu>
+                                <MenuButton as={Button} variant="ghost" size="sm" width="full" textAlign="left" fontWeight="normal" className={styles.menuItem}>
+                                    <HStack><Icon as={RepeatClockIcon} mr={1}/><span>Change Status</span></HStack>
+                                </MenuButton>
+                                <MenuList className={styles.menuList}>
+                                    {availableStatuses.map(statusId => {
+                                        const sInfo = getDisplayableStatus(statusId);
                                         return (
                                             <MenuItem 
-                                                key={s_id} 
-                                                onClick={() => { handleStatusChange(s_id); setShowStatusOptions(false); }} 
-                                                icon={currentStatus === s_id ? <CheckIcon color={`${statusColorScheme}.500`} /> : (sIcon ? <ChakraIcon as={sIcon} /> : undefined)}
+                                                key={statusId} 
+                                                onClick={() => handleStatusChange(statusId)} 
+                                                icon={sInfo?.icon ? <Icon as={sInfo.icon} /> : undefined}
+                                                className={styles.menuItem}
                                             >
-                                                {sDisplayName}
+                                                {sInfo?.displayName || statusId}
                                             </MenuItem>
                                         );
                                     })}
-                                    <Box mt={2}>
-                                        {(() => {
-                                            const currentActualStatusInfo = getDisplayableStatus((task.status || 'TO_DO') as StatusID);
-                                            const currentStatusDisplayName = currentActualStatusInfo?.displayName ?? 'Unknown';
-                                            const currentStatusColorScheme = currentActualStatusInfo?.colorScheme ?? 'gray';
-                                            return (
-                                                <Tag size="sm" variant="subtle" colorScheme={currentStatusColorScheme}>
-                                                    <TagLabel>Current: {currentStatusDisplayName}</TagLabel>
-                                                </Tag>
-                                            );
-                                        })()}
-                                    </Box>
-                                </Box>
-                            )}
-                            <MenuItem icon={<CopyIcon />} onClick={handleCopyPrompt}>Copy CLI Prompt</MenuItem>
-                            {!task.is_archived ? (
-                                <MenuItem icon={<DownloadIcon />} onClick={() => handleArchiveTask(task.id)}>
-                                    Archive Task
-                                </MenuItem>
+                                </MenuList>
+                            </Menu>
+                            <MenuItem icon={<CopyIcon />} onClick={handleCopyPrompt} className={styles.menuItem}>Copy CLI Prompt</MenuItem>
+                            {task.is_archived ? (
+                                <MenuItem icon={<DownloadIcon transform='rotate(180deg)' />} onClick={handleUnarchiveTask} className={styles.menuItem}>Unarchive Task</MenuItem>
                             ) : (
-                                <MenuItem icon={<RepeatClockIcon />} onClick={() => handleUnarchiveTask(task.id)}>
-                                    Unarchive Task
-                                </MenuItem>
+                                <MenuItem icon={<DownloadIcon />} onClick={handleArchiveTask} className={styles.menuItem}>Archive Task</MenuItem>
                             )}
-                            <MenuItem icon={<DeleteIcon />} color="actions.danger.text" onClick={() => onDeleteInitiate(task)}>Delete Task</MenuItem>
+                            <MenuItem icon={<DeleteIcon />} onClick={() => onDeleteInitiate(task)} className={clsx(styles.menuItem, styles.menuItemDestructive)}>Delete Task</MenuItem>
                         </MenuList>
                     </Menu>
+                </Flex>
+            </HStack>
+            
+            <Collapse in={detailsOpen} animateOpacity>
+                <Box className={styles.detailsCollapseContent}>
+                    <VStack align="start" spacing={1} className={styles.detailsGrid}>
+                        <Text className={styles.detailsLabel}>ID:</Text>
+                        <Text className={styles.detailsValue}>{task.id}</Text>
+                        
+                        <Text className={styles.detailsLabel}>Created:</Text>
+                        <Text className={styles.detailsValue}>{new Date(task.created_at).toLocaleString()}</Text>
+                        
+                        <Text className={styles.detailsLabel}>Updated:</Text>
+                        <Text className={styles.detailsValue}>{new Date(task.updated_at).toLocaleString()}</Text>
+                        
+                        {task.project_id && (
+                            <><Text className={styles.detailsLabel}>Project ID:</Text>
+                            <Text className={styles.detailsValue}>{task.project_id}</Text></>
+                        )}
+                        {task.agent_id && (
+                            <><Text className={styles.detailsLabel}>Agent ID:</Text>
+                            <Text className={styles.detailsValue}>{task.agent_id}</Text></>
+                        )}
+                         {task.dependencies && task.dependencies.length > 0 && (
+                            <><Text className={styles.detailsLabel}>Depends on:</Text>
+                            <Text className={styles.detailsValue}>{task.dependencies.join(', ')}</Text></>
+                        )}
+                        {task.story_points && (
+                            <><Text className={styles.detailsLabel}>Story Points:</Text>
+                            <Text className={styles.detailsValue}>{task.story_points}</Text></>
+                        )}
+                    </VStack>
+                </Box>
+            </Collapse>
 
-                    {/* Conditionally render completion checkbox for non-compact view */}
-                    {!compact && (
-                        <Checkbox
-                            isChecked={task.completed}
-                            onChange={handleToggleCompletion}
-                            aria-label="Complete task"
-                            size={compact ? "sm" : "md"}
-                            mr={compact ? 2 : 3}
-                            sx={{
-                                '& .chakra-checkbox__control': {
-                                    borderColor: 'border.checkbox',
-                                    _checked: {
-                                        bg: 'bg.checkbox.checked',
-                                        borderColor: 'border.checkbox.checked',
-                                        color: 'icon.inverted', // For the checkmark itself
-                                    }
-                                }
-                            }}
-                        />
-                    )}
+            <EditTaskModal isOpen={isEditTaskModalOpen} onClose={onCloseEditTaskModal} task={task} />
+            <TaskDetailsModal isOpen={isDetailsModalOpen} onClose={onCloseDetailsModal} task={task} />
 
-                </MotionFlex>
-                <Collapse in={detailsOpen} animateOpacity>
-                    <Box
-                        id={`task-details-${task.id}`}
-                        bg="bg.surface"
-                        borderRadius="md"
-                        p={6}
-                        mt={-2}
-                        mb={3}
-                        borderWidth="1px"
-                        borderColor="border.primary"
-                        boxShadow="md"
-                        aria-live="polite"
-                        _dark={{
-                            bg: 'bg.surface',
-                            borderColor: 'border.primary',
-                            color: 'text.primary',
-                        }}
-                        _light={{
-                            bg: 'bg.surface',
-                            borderColor: 'border.primary',
-                            color: 'text.primary',
-                        }}
-                    >
-                        <Text fontWeight="bold" mb={2} color="text.heading">Description</Text>
-                        <Text color="text.body">{task.description || 'No description provided.'}</Text>
-                    </Box>
-                </Collapse>
-            </Box>
-
-            {isEditTaskModalOpen && (
-                <EditTaskModal
-                    isOpen={isEditTaskModalOpen}
-                    onClose={onCloseEditTaskModal}
-                    task={task}
-                    onUpdate={async (id, data) => { // id here is string from schema
-                        await editTaskInStore(id.toString(), data); 
-                    }}
-                />
-            )}
-
-            {isDetailsModalOpen && (
-                <TaskDetailsModal
-                    isOpen={isDetailsModalOpen}
-                    onClose={onCloseDetailsModal}
-                    taskId={task?.id ?? null} // Pass task.id (which is string)
-                />
-            )}
-
-            {/* Agent Assignment Modal */}
-            <Modal isOpen={isAgentModalOpen} onClose={() => setAgentModalOpen(false)} size="md" isCentered>
+            <Modal isOpen={isAgentModalOpen} onClose={() => setAgentModalOpen(false)} isCentered>
                 <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>Assign Agent</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                        {agentLoading ? (
-                            <Spinner />
-                        ) : (
-                            <List spacing={2}>
-                                {agents.length === 0 && <ListItem>No agents available.</ListItem>}
-                                {agents.map(agent => (
-                                    <ListItem key={agent.id}>
-                                        <Button w="100%" onClick={() => handleAgentSelect(agent)}>{agent.name}</Button>
+                <ModalContent className={styles.modalContent}>
+                    <ModalHeader className={styles.modalHeader}>Assign Agent to: {task.title}</ModalHeader>
+                    <ModalCloseButton className={styles.modalCloseButton}/>
+                    <ModalBody className={styles.modalBody}>
+                        {agentLoading && <Spinner />}
+                        {!agentLoading && (
+                            <List spacing={3} className={styles.agentModalList}>
+                                {storeAgents.map(agent => (
+                                    <ListItem 
+                                        key={agent.id} 
+                                        onClick={() => handleAgentSelect(agent)} 
+                                        className={clsx(styles.agentModalListItem, task.agent_id === agent.id && styles.agentModalListItemSelected)}
+                                    >
+                                        {agent.name}
                                     </ListItem>
                                 ))}
+                                {storeAgents.length === 0 && <Text>No agents available.</Text>}
                             </List>
                         )}
                     </ModalBody>
-                    <ModalFooter>
-                        <Button onClick={() => setAgentModalOpen(false)}>Cancel</Button>
+                    <ModalFooter className={styles.modalFooter}>
+                        <Button onClick={() => setAgentModalOpen(false)} className={styles.actionButton}>Cancel</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-        </>
+        </Box>
     );
 });
 
 TaskItem.displayName = 'TaskItem';
 
 export default TaskItem;
-
-// Helper to get all descendant IDs (if you have nested subtasks and want to delete them all)
-// This would be more relevant if subtasks were managed within TaskItem directly or if
-// TaskStore needed this logic for deep optimistic deletes based on parent task ID.
-// For now, assuming subtasks are handled elsewhere or not deeply nested for deletion via TaskItem.
-// const getAllDescendantIds = (taskId: string, tasks: Task[]): string[] => {
-//     const descendants: string[] = [];
-//     const task = tasks.find(t => t.id === taskId);
-//     if (task && task.subtasks) {
-//         task.subtasks.forEach(sub => {
-//             descendants.push(sub.id);
-//             // If subtasks can also have subtasks, recurse:
-//             // descendants.push(...getAllDescendantIds(sub.id, tasks)); // This requires subtasks to be in the main tasks array or a different structure
-//         });
-//     }
-//     return descendants;
-// };
 

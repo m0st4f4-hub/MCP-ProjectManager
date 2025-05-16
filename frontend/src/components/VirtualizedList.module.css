@@ -1,0 +1,6 @@
+/* frontend/src/components/VirtualizedList.module.css */
+
+.listContainer {
+    height: calc(100vh - 200px); /* height="calc(100vh - 200px)" */
+    width: 100%; /* width="100%" */
+} 

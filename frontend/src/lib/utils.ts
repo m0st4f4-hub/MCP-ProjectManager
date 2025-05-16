@@ -1,4 +1,5 @@
-import { Status, StatusID } from '@/types';
+// import { Status } from '@/types';
+import { getStatusAttributes, StatusID as CanonicalStatusID } from '@/lib/statusUtils';
 
 export const formatDisplayName = (name?: string | null): string => {
     if (!name || name.trim() === '') {
@@ -28,26 +29,48 @@ console.log(formatDisplayName(null));                 // Unnamed
 console.log(formatDisplayName(""));                   // Unnamed
 */
 
-export const mapStatusToStatusID = (status: Status | null | undefined): StatusID => {
-    if (!status) return 'TO_DO'; // Default for null, undefined, or empty string if it somehow bypasses Status type
-    switch (status) {
-        case 'To Do': return 'TO_DO';
-        case 'In Progress': return 'IN_PROGRESS';
-        case 'Blocked': return 'BLOCKED';
-        case 'Completed': return 'COMPLETED';
-        default:
-            // This case should ideally not be reached if Status type is strictly followed
-            // However, to be robust for unexpected values:
-            const upperStatus = status.toUpperCase().replace(/\\s+/g, '_');
-            if (['TO_DO', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED'].includes(upperStatus)) {
-                if (typeof console !== 'undefined') {
-                    console.warn(`[mapStatusToStatusID] Mapped non-standard status "${status}" to "${upperStatus as StatusID}".`);
-                }
-                return upperStatus as StatusID;
-            }
-            if (typeof console !== 'undefined') {
-                console.warn(`[mapStatusToStatusID] Unknown status value: "${status}", defaulting to TO_DO.`);
-            }
-            return 'TO_DO';
+export const mapStatusToStatusID = (status: string | null | undefined): CanonicalStatusID => {
+    if (!status || typeof status !== 'string' || status.trim() === '') {
+        return 'TO_DO'; // Default for null, undefined, or empty/non-string if it somehow bypasses Status type
     }
+
+    // Handle common display names case-insensitively
+    const lowerStatus = status.toLowerCase();
+    switch (lowerStatus) {
+        case 'to do':
+        case 'todo':
+            return 'TO_DO';
+        case 'in progress':
+            return 'IN_PROGRESS';
+        case 'blocked':
+            return 'BLOCKED';
+        case 'completed':
+            return 'COMPLETED';
+        case 'failed':
+            return 'FAILED';
+        case 'verification failed':
+            return 'VERIFICATION_FAILED';
+        // Add more explicit mappings if other common display names exist
+        // e.g., case 'context acquired': return 'CONTEXT_ACQUIRED';
+    }
+
+    // Fallback: try to match the uppercased/underscored version directly as a CanonicalStatusID
+    // This handles cases where task.status might already be a StatusID string (e.g., "EXECUTION_IN_PROGRESS")
+    // or a custom status string that follows the StatusID format.
+    const upperStatus = status.toUpperCase().replace(/\s+/g, '_');
+    if (getStatusAttributes(upperStatus as CanonicalStatusID)) {
+        // It's a known CanonicalStatusID.
+        // Optionally, add a console.warn if 'status' wasn't identical to 'upperStatus'
+        // to catch statuses that are almost StatusIDs but have different casing/spacing.
+        if (status !== upperStatus && typeof console !== 'undefined') {
+             console.warn(`[mapStatusToStatusID] Mapped status "${status}" to CanonicalStatusID "${upperStatus}".`);
+        }
+        return upperStatus as CanonicalStatusID;
+    }
+
+    // If no match after explicit cases and direct StatusID check, then it's unknown.
+    if (typeof console !== 'undefined') {
+        console.warn(`[mapStatusToStatusID] Unknown status value: "${status}", defaulting to TO_DO.`);
+    }
+    return 'TO_DO';
 }; 

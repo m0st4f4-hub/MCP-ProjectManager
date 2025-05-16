@@ -3,7 +3,8 @@
 import React from 'react';
 import { FixedSizeList } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { Box } from '@chakra-ui/react';
+// import { Box } from '@chakra-ui/react'; // To be removed
+import styles from './VirtualizedList.module.css'; // Added import
 
 interface VirtualizedListProps<T> {
     items: T[];
@@ -23,7 +24,7 @@ function VirtualizedList<T>({
     };
 
     return (
-        <Box height="calc(100vh - 200px)" width="100%">
+        <div className={styles.listContainer}> {/* Replaced Box with div and applied styles */}
             <AutoSizer>
                 {({ height, width }) => (
                     <FixedSizeList
@@ -37,7 +38,7 @@ function VirtualizedList<T>({
                     </FixedSizeList>
                 )}
             </AutoSizer>
-        </Box>
+        </div>
     );
 }
 

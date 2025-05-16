@@ -4,7 +4,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 // import TaskItem from './TaskItem'; // No longer directly used here
 import {
-    Container,
+    // Container, // Removed Container
     useBreakpointValue,
     useDisclosure,
     useToast,
@@ -15,23 +15,22 @@ import {
     // Badge, // Unused - Remove
 } from '@chakra-ui/react';
 import { useTaskStore, sortTasks } from '@/store/taskStore';
-import { Task } from '@/types'; // TaskStatus is unused
-import { formatDisplayName } from '@/lib/utils';
+import { Task, TaskFilters, GroupByType } from '@/types';
+import { formatDisplayName, mapStatusToStatusID } from '@/lib/utils';
 import * as statusUtils from '@/lib/statusUtils';
-import { shallow } from 'zustand/shallow';
-import AddTaskForm from './AddTaskForm';
+import AddTaskForm from './forms/AddTaskForm';
 // Icons are no longer directly used by TaskList:
 // import { AddIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { useProjectStore } from '@/store/projectStore';
-import { useAgentStore } from '@/store/agentStore';
-import ListView from './ListView';
+import { useAgentStore, AgentState } from '@/store/agentStore';
+import ListView from './views/ListView';
 import TaskControls from './TaskControls';
 import NoTasks from './NoTasks'; // Import the new component
 import TaskLoading from './TaskLoading'; // Import the new component
 import TaskError from './TaskError'; // Import the new component
-import KanbanView from './KanbanView'; // Import KanbanView
+import KanbanView from './views/KanbanView'; // Import KanbanView
+import styles from './TaskList.module.css'; // Added import for CSS Modules
 
-type GroupByType = 'status' | 'project' | 'agent';
 type ViewMode = 'list' | 'kanban';
 // type StatusType = 'To Do' | 'In Progress' | 'Blocked' | 'Completed'; // For Kanban later
 // type ColorMap = { // For Kanban later
@@ -61,28 +60,25 @@ interface GroupedTasks {
 const TaskList: React.FC = () => {
     const tasks = useTaskStore(state => state.tasks);
     const projects = useProjectStore(state => state.projects);
-    const agents = useAgentStore(state => state.agents);
+    const agents = useAgentStore((state: AgentState) => state.agents);
     const loading = useTaskStore(state => state.loading);
     const error = useTaskStore(state => state.error);
     const fetchTasks = useTaskStore(state => state.fetchTasks);
     const fetchProjectsAndAgents = useTaskStore(state => state.fetchProjectsAndAgents);
     const sortOptions = useTaskStore(state => state.sortOptions);
-    const editTask = useTaskStore(state => state.editTask);
     // const deleteTask = useTaskStore(state => state.deleteTask); // Unused - keep commented or remove
     const isPolling = useTaskStore(state => state.isPolling);
     const pollingError = useTaskStore(state => state.pollingError);
     const clearPollingError = useTaskStore(state => state.clearPollingError);
     const mutationError = useTaskStore(state => state.mutationError);
     const clearMutationError = useTaskStore(state => state.clearMutationError);
-    const filters = useTaskStore(state => state.filters, shallow);
+    const filters = useTaskStore(state => state.filters);
 
     const [, setGroupBy] = useState<GroupByType>('status'); // groupBy is set but not used
-    const { isOpen: isAddTaskModalOpen, onOpen: onOpenAddTaskModal, onClose: onCloseAddTaskModal } = useDisclosure();
-    const [editingTask, setEditingTask] = useState<Task | null>(null);
-    const [parentTaskForNewTask, setParentTaskForNewTask] = useState<string | null>(null);
+    const { /* isOpen: isAddTaskModalOpen, */ onOpen: onOpenAddTaskModal, onClose: onCloseAddTaskModal } = useDisclosure();
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [viewMode, setViewMode] = useState<ViewMode>('list');
-    const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
+
     const { } = useDisclosure(); // isFilterOpen and onFilterOpen are unused, onFilterClose was removed previously
 
     const toast = useToast();
@@ -143,17 +139,16 @@ const TaskList: React.FC = () => {
     //     return () => window.removeEventListener('resize', handleResize);
     // }, []);
 
-    const handleOpenAddTaskModalCallback = useCallback((taskToEdit: Task | null = null, parentId: string | null = null) => {
-        setEditingTask(taskToEdit);
-        setParentTaskForNewTask(parentId);
+    const handleOpenAddTaskModalCallback = useCallback((/* taskToEdit: Task | null = null */) => { // taskToEdit is unused
+        // setEditingTask(taskToEdit); // This line was already commented out or removed
         onOpenAddTaskModal();
-    }, [onOpenAddTaskModal, setEditingTask, setParentTaskForNewTask]);
+    }, [onOpenAddTaskModal]); // Removed setParentTaskForNewTask from dependencies
 
     const handleCloseAddTaskModalCallback = useCallback(() => {
         onCloseAddTaskModal();
-        setEditingTask(null);
-        setParentTaskForNewTask(null);
-    }, [onCloseAddTaskModal, setEditingTask, setParentTaskForNewTask]);
+        // setEditingTask(null);
+        // setParentTaskForNewTask(null); // Removed setParentTaskForNewTask
+    }, [onCloseAddTaskModal]); // Removed setParentTaskForNewTask from dependencies
 
     const applyAllFilters = useCallback((task: Task, currentFilters: TaskFilters): boolean => {
         // Search filter
@@ -164,25 +159,29 @@ const TaskList: React.FC = () => {
             if (!titleMatch && !descriptionMatch) return false;
         }
 
-        // Status filter (using the existing logic for active/completed from TaskControls)
-        const taskStatusStr = task.status || 'TO_DO'; // Default to TO_DO if status is null/undefined
-        const statusAttributes = statusUtils.getStatusAttributes(taskStatusStr as statusUtils.StatusID);
-        let isEffectivelyCompleted = task.completed || false;
-        if (statusAttributes) {
-            if (statusAttributes.category === 'completed' || statusAttributes.category === 'failed') {
-                isEffectivelyCompleted = true;
-            }
-        } else if (taskStatusStr.startsWith('COMPLETED_')) { 
-            isEffectivelyCompleted = true;
-        }
+        // Status filter - REVISED LOGIC
+        if (currentFilters.status && currentFilters.status !== 'all') { // Only filter if not 'all'
+            const taskActualStatusID = mapStatusToStatusID(task.status); // Use helper from /lib/utils
+            const taskCategory = getTaskCategory(task); // Use helper, assumes getTaskCategory is available or defined locally
 
-        if (currentFilters.status && currentFilters.status !== 'all') {
-            if (currentFilters.status === 'completed' && !isEffectivelyCompleted) return false;
-            if (currentFilters.status === 'active' && isEffectivelyCompleted) return false;
+            if (currentFilters.status === 'active') {
+                if (taskCategory === 'completed' || taskCategory === 'failed') return false;
+            } else if (currentFilters.status === 'completed') {
+                if (taskCategory !== 'completed' && taskCategory !== 'failed') return false;
+            } else {
+                // Assumes currentFilters.status is a specific StatusID like TO_DO, IN_PROGRESS, etc.
+                if (taskActualStatusID !== currentFilters.status) return false;
+            }
         }
         
         // Hide completed tasks filter (from main filters, not the specific list view toggle)
-        if (currentFilters.hideCompleted && isEffectivelyCompleted) return false;
+        // This filter might be redundant if currentFilters.status = 'active' already handles it,
+        // but it can serve as an additional override.
+        // If status is 'completed', hideCompleted does nothing. If status is 'active', this is redundant.
+        // If status is a specific one (e.g. TO_DO), this could still hide it if it were somehow marked completed by category.
+        if (currentFilters.hideCompleted && getTaskCategory(task) === 'completed') { // Assumes getTaskCategory is available
+            return false;
+        }
 
         // Project filter
         if (currentFilters.projectId) { 
@@ -192,11 +191,6 @@ const TaskList: React.FC = () => {
         // Agent filter
         if (currentFilters.agentId) { 
             if (task.agent_id !== currentFilters.agentId) return false;
-        }
-
-        // Top-level only filter - this should only apply if the filter is set to true
-        if (currentFilters.top_level_only === true && task.parent_task_id) {
-            return false;
         }
 
         // Archive filter
@@ -219,6 +213,15 @@ const TaskList: React.FC = () => {
         return true; // Task passes all filters
     }, []); // Dependencies: statusUtils is stable. Filters are handled by useMemo consumers.
 
+    // Helper function for task category (can be moved to utils if not already there)
+    // Ensure this is consistent with the one in Dashboard.tsx or imported from a shared location.
+    const getTaskCategory = (task: Task): string => {
+        if (!task.status) return 'todo';
+        const canonicalStatusId = mapStatusToStatusID(task.status);
+        const attributes = statusUtils.getStatusAttributes(canonicalStatusId);
+        return attributes ? attributes.category : 'todo';
+    };
+
     const allFilterableTasks = useMemo(() => {
         return tasks.filter(task => applyAllFilters(task, filters));
     }, [tasks, filters, applyAllFilters]);
@@ -227,15 +230,15 @@ const TaskList: React.FC = () => {
 
     // This memo is for tasks that will be displayed in the List View, respecting top_level_only for grouping.
     const filteredTasksForListView = useMemo(() => {
-        if (filters.top_level_only === false) {
+        // if (filters.top_level_only === false) { // top_level_only filter is removed
             // If not filtering for top-level only, all filterable tasks are candidates for the list view structure.
             // The grouping logic will handle parent_task_id.
             return allFilterableTasks;
-        } else {
+        // } else {
             // If top_level_only IS true, then filter down to actual top-level tasks for the initial grouping.
-            return allFilterableTasks.filter(task => !task.parent_task_id);
-        }
-    }, [allFilterableTasks, filters.top_level_only]);
+        //     return allFilterableTasks.filter(task => !task.parent_task_id); // Removed parent_task_id check
+        // }
+    }, [allFilterableTasks]); // Removed filters.top_level_only from dependencies
 
     const tasksForKanbanView = useMemo(() => {
         // Kanban view typically shows all tasks that pass filters, regardless of parent_task_id, as it's flat.
@@ -253,11 +256,11 @@ const TaskList: React.FC = () => {
                 id: 'active',
                 name: `Active Tasks (${currentTasks.filter(t => {
                     const attrs = statusUtils.getStatusAttributes(t.status as statusUtils.StatusID);
-                    return !(attrs?.category === 'completed' || t.status?.startsWith('COMPLETED_') || t.completed);
+                    return !(attrs?.category === 'completed' || t.status?.startsWith('COMPLETED_'));
                 }).length})`,
                 tasks: sortTasks(currentTasks.filter(t => {
                     const attrs = statusUtils.getStatusAttributes(t.status as statusUtils.StatusID);
-                    return !(attrs?.category === 'completed' || t.status?.startsWith('COMPLETED_') || t.completed);
+                    return !(attrs?.category === 'completed' || t.status?.startsWith('COMPLETED_'));
                 }), sortOptions),
                 status: 'active',
             },
@@ -265,11 +268,11 @@ const TaskList: React.FC = () => {
                 id: 'completed',
                 name: `Completed Tasks (${currentTasks.filter(t => {
                     const attrs = statusUtils.getStatusAttributes(t.status as statusUtils.StatusID);
-                    return (attrs?.category === 'completed' || t.status?.startsWith('COMPLETED_') || t.completed);
+                    return (attrs?.category === 'completed' || t.status?.startsWith('COMPLETED_'));
                 }).length})`,
                 tasks: sortTasks(currentTasks.filter(t => {
                     const attrs = statusUtils.getStatusAttributes(t.status as statusUtils.StatusID);
-                    return (attrs?.category === 'completed' || t.status?.startsWith('COMPLETED_') || t.completed);
+                    return (attrs?.category === 'completed' || t.status?.startsWith('COMPLETED_'));
                 }), sortOptions),
                 status: 'completed',
             }
@@ -296,11 +299,9 @@ const TaskList: React.FC = () => {
                 'TO_DO', 
                 'IN_PROGRESS', 
                 'BLOCKED', 
-                'PENDING_REVIEW', 
-                'COMPLETED_AWAITING_VERIFICATION',
-                'HANDOFF_DESIGN',
-                'HANDOFF_ENGINEERING',
-                'HANDOFF_QA',
+                'PENDING_VERIFICATION', 
+                'COMPLETED_AWAITING_PROJECT_MANAGER',
+                'COMPLETED_HANDOFF_TO_...',
                 'FAILED', 
                 'COMPLETED'
             ];
@@ -314,14 +315,14 @@ const TaskList: React.FC = () => {
                 if (aIndex !== -1) return -1;
                 if (bIndex !== -1) return 1;
                 // For statuses not in preferred order, sort by their display name
-                const aDisplayName = statusUtils.getDisplayableStatus(a).displayName;
-                const bDisplayName = statusUtils.getDisplayableStatus(b).displayName;
+                const aDisplayName = statusUtils.getDisplayableStatus(a)?.displayName || a;
+                const bDisplayName = statusUtils.getDisplayableStatus(b)?.displayName || b;
                 return aDisplayName.localeCompare(bDisplayName);
             });
             
             const statusGroups = allStatusIdsInTasks.map(statusIdKey => {
                 const tasksInStatus = tasksByStatusId[statusIdKey] || [];
-                const { displayName } = statusUtils.getDisplayableStatus(statusIdKey);
+                const { displayName } = statusUtils.getDisplayableStatus(statusIdKey) || { displayName: statusIdKey };
                 return {
                     id: statusIdKey, 
                     name: `${displayName} (${tasksInStatus.length})`,
@@ -401,7 +402,7 @@ const TaskList: React.FC = () => {
     }
 
     if (error) {
-        return <TaskError error={error as Error | string} onRetry={fetchTasks} />;
+        return <TaskError error={typeof error === 'string' ? error : String(error)} />;
     }
 
     const noTasksToShow = groupedAndFilteredTasks.groups.every(group => {
@@ -413,14 +414,14 @@ const TaskList: React.FC = () => {
       }) && !loading && !isInitialLoad;
 
     if (noTasksToShow) {
-        return <NoTasks onAddTask={() => handleOpenAddTaskModalCallback(null, null)} />;
+        return <NoTasks onAddTask={() => handleOpenAddTaskModalCallback()} />;
     }
 
     return (
-        <Container maxW="full" p={{ base: 0, md: 4 }} bg="bg.page" flex={1}>
+        <div className={styles.taskListContainer}>
             <TaskControls
                 groupBy={effectiveGroupBy}
-                setGroupBy={setGroupBy}
+                setGroupBy={(value: GroupByType) => setGroupBy(value)}
                 viewMode={viewMode}
                 setViewMode={setViewMode}
                 onAddTask={handleOpenAddTaskModalCallback}
@@ -451,14 +452,9 @@ const TaskList: React.FC = () => {
             )}
 
             <AddTaskForm
-                isOpen={isAddTaskModalOpen}
                 onClose={handleCloseAddTaskModalCallback}
-                taskToEdit={editingTask}
-                parentTaskId={parentTaskForNewTask}
-                allProjects={projects} // Pass all projects to the form
-                allAgents={agents} // Pass all agents to the form
             />
-        </Container>
+        </div>
     );
 }
 

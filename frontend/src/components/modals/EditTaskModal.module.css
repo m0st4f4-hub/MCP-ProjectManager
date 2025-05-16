@@ -1,0 +1,73 @@
+/* EditTaskModal.module.css */
+
+.formControl {
+    margin-bottom: var(--chakra-space-4); /* Add default spacing between form controls */
+}
+
+.formLabel {
+    color: var(--chakra-colors-text-primary, #2D3748);
+    font-size: var(--chakra-fontSizes-sm, 0.875rem);
+    margin-bottom: var(--chakra-space-1);
+    display: block; /* Ensure margin-bottom applies */
+}
+
+.formInput,
+.formTextarea,
+.formSelect {
+    background-color: var(--chakra-colors-bg-input, white);
+    color: var(--chakra-colors-text-input, #2D3748);
+    border: 1px solid var(--chakra-colors-border-input, #CBD5E0);
+    border-radius: var(--chakra-radii-md);
+    padding: var(--chakra-space-2) var(--chakra-space-3);
+    font-size: var(--chakra-fontSizes-md, 1rem);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.formInput:hover,
+.formTextarea:hover,
+.formSelect:hover {
+    border-color: var(--chakra-colors-border-input-hover, var(--chakra-colors-gray-400));
+}
+
+.formInput:focus,
+.formTextarea:focus,
+.formSelect:focus {
+    border-color: var(--chakra-colors-border-focus, var(--chakra-colors-blue-500));
+    box-shadow: 0 0 0 1px var(--chakra-colors-border-focus, var(--chakra-colors-blue-500));
+    outline: none;
+}
+
+.formInput::placeholder,
+.formTextarea::placeholder {
+    color: var(--chakra-colors-text-placeholder, #A0AEC0);
+}
+
+.formTextarea {
+    min-height: 80px; /* Default textarea height */
+}
+
+.checkboxControlContainer { /* For the FormControl wrapping the Checkbox */
+    display: flex;
+    align-items: center;
+    margin-top: var(--chakra-space-2); /* Add some space above checkbox */
+}
+
+.checkboxLabel {
+    /* If Checkbox itself has a label part that needs styling, or for a separate <label> */
+    margin-left: var(--chakra-space-2);
+    color: var(--chakra-colors-text-primary);
+    font-size: var(--chakra-fontSizes-md);
+}
+
+/* Note: Styling the Checkbox component itself (the box and checkmark) heavily relies on Chakra's internal structure
+   and theme. Applying simple CSS classes might not be enough for a full visual override if desired.
+   Chakra's colorScheme prop is usually the best way to theme it.
+   If specific visual changes are needed, it might require more complex CSS targeting Chakra's internal classes,
+   or forgoing the Chakra component for a custom one. */
+
+.readOnlyInput {
+    background-color: var(--chakra-colors-bg-disabled, var(--chakra-colors-gray-100));
+    opacity: 0.7;
+    cursor: not-allowed;
+} 

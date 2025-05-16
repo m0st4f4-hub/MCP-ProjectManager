@@ -3,6 +3,7 @@
 import React from 'react';
 import { useColorMode, IconButton } from '@chakra-ui/react';
 import { FaMoon, FaSun } from 'react-icons/fa';
+import styles from './ThemeToggleButton.module.css';
 
 export const ThemeToggleButton = () => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -16,10 +17,7 @@ export const ThemeToggleButton = () => {
       variant="ghost"
       size="lg"
       fontSize="xl"
-      minW="48px"
-      minH="48px"
-      h="48px"
-      w="48px"
+      className={styles.toggleButton}
       tabIndex={0}
     />
   );

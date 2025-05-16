@@ -1,19 +1,225 @@
 /* Styles for TaskDetailsModal */
-.modalBody {
-    /* Example: Add specific padding if needed, though Chakra's ModalBody handles much of this */
-    /* padding: 1rem; */
+.modalContent {
+    background-color: var(--chakra-colors-bg-modal, white);
+    color: var(--chakra-colors-text-primary, black);
+    border: 1px solid var(--chakra-colors-border-base, #E2E8F0);
+    border-radius: var(--chakra-radii-lg); /* Standard modal radius */
 }
 
-.detailRow {
+.modalHeader {
+    border-bottom: 1px solid var(--chakra-colors-border-base, #E2E8F0);
+    color: var(--chakra-colors-text-heading, #1A202C);
+    padding: var(--chakra-space-4) var(--chakra-space-6); /* Chakra default */
+    font-size: var(--chakra-fontSizes-lg); /* Chakra default */
+    font-weight: var(--chakra-fontWeights-bold); /* Chakra default */
+    display: flex; /* To align spinner and badge */
+    align-items: center;
+}
+
+.headerSpinner {
+    /* size="sm" */
+    width: var(--chakra-sizes-4, 1rem);
+    height: var(--chakra-sizes-4, 1rem);
+    margin-left: var(--chakra-space-3);
+    color: var(--chakra-colors-icon-primary, #4A5568);
+    border-width: 2px; /* Spinner specific */
+}
+
+.archivedBadge {
+    /* colorScheme="purple" variant="solid" */
+    background-color: var(--chakra-colors-purple-500, #805AD5);
+    color: white;
+    margin-left: var(--chakra-space-3);
+    font-size: 0.8em;
+    padding: var(--chakra-space-0-5) var(--chakra-space-2);
+    border-radius: var(--chakra-radii-sm);
+    font-weight: var(--chakra-fontWeights-medium);
+}
+
+.modalCloseButton {
+    color: var(--chakra-colors-text-secondary, #718096);
+    position: absolute; /* Chakra default */
+    top: var(--chakra-space-2);
+    right: var(--chakra-space-2);
+    background: transparent;
+    border: none;
+    border-radius: var(--chakra-radii-md);
+    padding: var(--chakra-space-2);
+    cursor: pointer;
+}
+.modalCloseButton:hover {
+    background-color: var(--chakra-colors-interaction-hover, var(--chakra-colors-bg-hover-subtle, #EDF2F7));
+}
+
+.modalBody {
+    padding-top: var(--chakra-space-6);
+    padding-bottom: var(--chakra-space-6);
+    padding-left: var(--chakra-space-6);
+    padding-right: var(--chakra-space-6);
+}
+
+.errorText {
+    color: var(--chakra-colors-status-error, var(--chakra-colors-red-500, #E53E3E));
+    margin-bottom: var(--chakra-space-4);
+}
+
+.bodySpinner {
+    color: var(--chakra-colors-icon-primary, #4A5568);
+    /* Center if needed */
+    display: block;
+    margin: var(--chakra-space-5) auto;
+}
+
+.noTaskText {
+    color: var(--chakra-colors-text-secondary, #718096);
+}
+
+.detailsVStack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--chakra-space-4); /* spacing={4} */
+    align-items: stretch;
+}
+
+.sectionHeading {
+    /* size="sm" from Chakra */
+    font-size: var(--chakra-fontSizes-sm, 0.875rem);
+    font-weight: var(--chakra-fontWeights-medium);
+    margin-bottom: var(--chakra-space-1);
+    color: var(--chakra-colors-text-heading, #1A202C);
+}
+
+.descriptionText {
+    white-space: pre-wrap;
+    max-width: 80ch;
+    color: var(--chakra-colors-text-secondary, #718096);
+}
+
+.divider {
+    border-color: var(--chakra-colors-border-divider, #E2E8F0);
+    margin-top: var(--chakra-space-4); /* Added for spacing if used between sections */
+    margin-bottom: var(--chakra-space-4);
+}
+
+.detailsHStack {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.5rem;
+    align-items: flex-start; /* Align items at the top if content varies in height */
 }
 
-.detailLabel {
-    font-weight: bold;
+.subSectionHeading {
+    /* size="xs" textTransform="uppercase" */
+    font-size: var(--chakra-fontSizes-xs, 0.75rem);
+    font-weight: var(--chakra-fontWeights-bold);
+    text-transform: uppercase;
+    color: var(--chakra-colors-text-secondary, #718096);
+    margin-bottom: var(--chakra-space-0-5);
 }
 
-.detailValue {
-    /* styles for values */
+.statusTagContainer {
+    margin-left: var(--chakra-space-2);
+}
+
+.statusTag {
+    /* size="md" borderRadius="md" variant="subtle" */
+    padding: var(--chakra-space-1) var(--chakra-space-3); /* Approximate md tag */
+    border-radius: var(--chakra-radii-md);
+    font-size: var(--chakra-fontSizes-sm);
+    font-weight: var(--chakra-fontWeights-medium);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--chakra-space-1);
+    /* colorScheme handled by specific classes or kept on component */
+}
+
+/* Example: Subtle variant for blue colorScheme */
+.statusTagBlue {
+    background-color: var(--chakra-colors-blue-100, #EBF8FF);
+    color: var(--chakra-colors-blue-800, #2A69AC);
+}
+/* Add more for other colorSchemes used (green, yellow, red, orange, gray) */
+.statusTagGreen { background-color: var(--chakra-colors-green-100); color: var(--chakra-colors-green-800); }
+.statusTagYellow { background-color: var(--chakra-colors-yellow-100); color: var(--chakra-colors-yellow-800); }
+.statusTagRed { background-color: var(--chakra-colors-red-100); color: var(--chakra-colors-red-800); }
+.statusTagOrange { background-color: var(--chakra-colors-orange-100); color: var(--chakra-colors-orange-800); }
+.statusTagGray { background-color: var(--chakra-colors-gray-100); color: var(--chakra-colors-gray-800); }
+
+
+.detailText {
+    color: var(--chakra-colors-text-primary, #1A202C);
+    font-size: var(--chakra-fontSizes-md);
+}
+
+.modalFooter {
+    border-top: 1px solid var(--chakra-colors-border-base, #E2E8F0);
+    padding: var(--chakra-space-4) var(--chakra-space-6); /* Chakra default */
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--chakra-space-3);
+}
+
+.footerButton {
+    /* Base button style, specific variants/colorSchemes as modifiers */
+    padding: var(--chakra-space-2) var(--chakra-space-4);
+    border-radius: var(--chakra-radii-md);
+    font-size: var(--chakra-fontSizes-sm);
+    font-weight: var(--chakra-fontWeights-medium);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--chakra-space-2);
+    line-height: 1.2;
+}
+
+.footerButtonOutline {
+    border: 1px solid;
+    background-color: transparent;
+}
+
+.footerButtonGhost {
+    border: none;
+    background-color: transparent;
+}
+
+/* ColorScheme specific button styles (example for blue outline) */
+.buttonBlueOutline {
+    border-color: var(--chakra-colors-blue-500, #3182CE);
+    color: var(--chakra-colors-blue-600, #2B6CB0);
+}
+.buttonBlueOutline:hover {
+    background-color: var(--chakra-colors-blue-50, #EBF8FF);
+}
+
+.buttonRed {
+    /* For solid variant, or default if no variant means solid */
+    background-color: var(--chakra-colors-red-500, #E53E3E);
+    color: white;
+    border: 1px solid var(--chakra-colors-red-500, #E53E3E);
+}
+.buttonRed:hover {
+    background-color: var(--chakra-colors-red-600, #C53030);
+    border-color: var(--chakra-colors-red-600, #C53030);
+}
+
+.buttonRedOutline {
+    border-color: var(--chakra-colors-red-500, #E53E3E);
+    color: var(--chakra-colors-red-600, #C53030);
+}
+.buttonRedOutline:hover {
+    background-color: var(--chakra-colors-red-50, #FFF5F5);
+}
+
+.buttonTealOutline {
+    border-color: var(--chakra-colors-teal-500, #319795);
+    color: var(--chakra-colors-teal-600, #2C7A7B);
+}
+.buttonTealOutline:hover {
+    background-color: var(--chakra-colors-teal-50, #E6FFFA);
+}
+
+.buttonGrayGhost {
+    color: var(--chakra-colors-gray-700, #2D3748);
+}
+.buttonGrayGhost:hover {
+    background-color: var(--chakra-colors-gray-100, #EDF2F7);
 } 

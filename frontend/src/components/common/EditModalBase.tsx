@@ -8,7 +8,6 @@ import {
   ModalBody,
   ModalCloseButton,
   Button,
-  Flex,
   AlertDialog,
   AlertDialogBody,
   AlertDialogFooter,
@@ -16,9 +15,8 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   useDisclosure,
-  VStack,
-  Text,
 } from '@chakra-ui/react';
+import styles from './EditModalBase.module.css';
 
 // Define a generic constraint for entity data
 // Ensure it has an 'id' and allows accessing a display field via string key
@@ -119,15 +117,15 @@ function EditModalBase<T extends EntityWithIdAndName>({
             Edit {entityName}: {entityDisplayName}
           </ModalHeader>
           <ModalCloseButton color="text.secondary" _hover={{ bg: "interaction.hover"}}/>
-          <ModalBody pb={6} pt={4}>
+          <ModalBody className={styles.modalBody}>
             {/* Render the specific form fields passed as children */}
-            <VStack spacing={4} align="stretch">
+            <div className={styles.formFieldsContainer}>
                 {children}
-            </VStack>
+            </div>
           </ModalBody>
 
           <ModalFooter borderTopWidth="1px" borderColor="border.base">
-            <Flex justify="space-between" width="100%">
+            <div className={styles.modalFooterLayout}>
               {!hideDeleteButton && onDelete ? (
                 <Button
                   variant="outline"
@@ -141,7 +139,7 @@ function EditModalBase<T extends EntityWithIdAndName>({
                   Delete
                 </Button>
               ) : <div />}
-              <Flex>
+              <div>
                 <Button variant="ghost" onClick={onClose} mr={3} isDisabled={isLoadingSave || isLoadingDelete} color="text.secondary">
                   Cancel
                 </Button>
@@ -156,8 +154,8 @@ function EditModalBase<T extends EntityWithIdAndName>({
                 >
                   Save Changes
                 </Button>
-              </Flex>
-            </Flex>
+              </div>
+            </div>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -174,8 +172,8 @@ function EditModalBase<T extends EntityWithIdAndName>({
               <AlertDialogHeader fontSize="lg" fontWeight="bold" borderBottomWidth="1px" borderColor="border.base">
                 Delete {entityName}
               </AlertDialogHeader>
-              <AlertDialogBody py={4}>
-                Are you sure you want to delete the {entityName.toLowerCase()} &quot;<Text as="span" fontWeight="bold" color="status.error">{entityDisplayName}</Text>&quot;? This action cannot be undone.
+              <AlertDialogBody className={styles.alertDialogBody}>
+                Are you sure you want to delete the {entityName.toLowerCase()} &quot;<span className={styles.entityDisplayNameHighlight}>{entityDisplayName}</span>&quot;? This action cannot be undone.
               </AlertDialogBody>
               <AlertDialogFooter borderTopWidth="1px" borderColor="border.base">
                 <Button variant="ghost" ref={cancelRef} onClick={onAlertClose} isDisabled={isLoadingDelete} color="text.secondary">

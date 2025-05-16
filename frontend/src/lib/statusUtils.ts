@@ -29,11 +29,8 @@
  * - For status updates that are announced dynamically (e.g., via ARIA live regions),
  *   the `displayName` provides a human-readable string suitable for such announcements.
  */
-import { As } from '@chakra-ui/react';
 
-// Icon names are placeholders, representing abstract concepts for status visualization.
-// In a real implementation, these would map to actual icon components (e.g., from @chakra-ui/icons or react-icons).
-// Example: import { EditIcon, TimeIcon, CheckCircleIcon, WarningIcon, ... } from '@chakra-ui/icons';
+import type { ElementType } from 'react';
 
 /**
  * Defines the raw string identifiers for all canonical task statuses.
@@ -96,7 +93,7 @@ export interface StatusAttributeObject {
    * @example 'CheckCircleIcon' // Placeholder name
    * @example CheckCircleIcon // Actual imported component (if As type is used)
    */
-  icon?: As | string;
+  icon?: ElementType | string;
   /**
    * Indicates if the task is considered finished from an agent's perspective
    * and no further automated work or standard progression is expected for this specific task.
@@ -360,7 +357,7 @@ export function getStatusAttributes(statusId: StatusID): StatusAttributeObject |
 export function getDisplayableStatus(
   statusId: string, // Accepts string to handle full dynamic IDs
   fallbackTitleOrDynamicValue?: string
-): { displayName: string; colorScheme: string; icon?: As | string; dynamicValue?: string } | undefined {
+): { displayName: string; colorScheme: string; icon?: ElementType | string; dynamicValue?: string } | undefined {
   
   let baseStatusDefinition: StatusAttributeObject | undefined = undefined;
   let extractedValue: string | undefined = fallbackTitleOrDynamicValue; // Initialize with fallback
@@ -440,7 +437,7 @@ export function getDisplayableStatus(
 export function getFallbackDisplayableStatus(
   originalStatusId: string,
   fallbackTitle?: string
-): { displayName: string; colorScheme: string; icon?: As | string; dynamicValue?: string } {
+): { displayName: string; colorScheme: string; icon?: ElementType | string; dynamicValue?: string } {
     // Try to make a somewhat readable display name from the originalStatusId
     let displayName = fallbackTitle || originalStatusId;
     if (!fallbackTitle) {

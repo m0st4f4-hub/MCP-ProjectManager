@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import AddProjectForm from '../components/AddProjectForm'; // Adjust path as necessary
+import AddProjectForm from '../components/forms/AddProjectForm'; // Adjust path as necessary
 
 jest.mock('@/contexts/ProjectContext'); // Mock ProjectContext
 

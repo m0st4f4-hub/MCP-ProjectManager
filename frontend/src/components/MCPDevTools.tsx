@@ -18,6 +18,7 @@ import {
     Checkbox
 } from '@chakra-ui/react';
 import { mcpTools, ApiToolDefinition, ApiToolParameter } from '@/lib/mcpTools';
+import styles from './MCPDevTools.module.css';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -157,8 +158,8 @@ const MCPDevTools: React.FC = () => {
     };
 
     return (
-        <Box p={8}>
-            <VStack spacing={6} align="stretch">
+        <Box className={styles.devToolsContainer}>
+            <VStack spacing={6} align="stretch" className={styles.mainVStack}>
                 <Heading as="h1" size="xl">MCP Dev Tools - API Tester</Heading>
                 <FormControl>
                     <FormLabel htmlFor="tool-select">Select API Endpoint (Tool)</FormLabel>
@@ -174,10 +175,10 @@ const MCPDevTools: React.FC = () => {
                     </Select>
                 </FormControl>
                 {selectedTool && (
-                    <Box borderWidth="1px" borderRadius="lg" p={6}>
-                        <Heading as="h2" size="lg" mb={4}>{selectedTool.label}</Heading>
-                        <Text fontSize="sm" color="text.secondary" mb={1}>{selectedTool.method} {API_BASE_URL}{selectedTool.path}</Text>
-                        {selectedTool.description && <Text mb={4} fontStyle="italic">{selectedTool.description}</Text>}
+                    <Box className={styles.toolDetailsBox}>
+                        <Heading as="h2" size="lg" className={styles.toolDetailsHeading}>{selectedTool.label}</Heading>
+                        <Text className={styles.toolPathText}>{selectedTool.method} {API_BASE_URL}{selectedTool.path}</Text>
+                        {selectedTool.description && <Text className={styles.toolDescriptionText}>{selectedTool.description}</Text>}
                         <VStack spacing={4} align="stretch">
                             {selectedTool.parameters.map(param => (
                                 <FormControl key={param.name} isRequired={param.required}>
@@ -194,7 +195,7 @@ const MCPDevTools: React.FC = () => {
                                             onChange={(e) => handleParameterChange(param.name, e.target.value, param.type)}
                                             placeholder={param.description || `Enter JSON for ${param.name}`}
                                             rows={5}
-                                            fontFamily="monospace"
+                                            className={styles.jsonTextarea}
                                         />
                                     ) : param.type === 'boolean' ? (
                                         <Checkbox
@@ -214,18 +215,15 @@ const MCPDevTools: React.FC = () => {
                                         />
                                     )}
                                     {param.description && param.type !== 'json_object_string' && param.type !== 'boolean' && (
-                                        <Text fontSize="xs" color="text.muted" mt={1}>{param.description}</Text>
+                                        <Text className={styles.parameterDescriptionText}>{param.description}</Text>
                                     )}
                                 </FormControl>
                             ))}
-                            <Button 
-                                bg="bg.button.primary"
-                                color="text.button.primary"
-                                _hover={{ bg: 'bg.button.primary.hover' }}
-                                onClick={handleSubmit} 
+                            <Button
+                                onClick={handleSubmit}
                                 isLoading={isLoading}
-                                mt={4}
                                 isDisabled={!selectedToolId}
+                                className={styles.executeButton}
                             >
                                 Execute Call
                             </Button>
@@ -233,22 +231,20 @@ const MCPDevTools: React.FC = () => {
                     </Box>
                 )}
                 {(response || error) && (
-                    <Box mt={6} borderWidth="1px" borderRadius="lg" p={6}>
-                        <Heading as="h3" size="md" mb={4}>Response</Heading>
+                    <Box className={styles.responseBox}>
+                        <Heading as="h3" size="md" className={styles.responseHeading}>Response</Heading>
                         {isLoading && <CircularProgress isIndeterminate color="icon.primary" />}
                         {error && (
-                            <Code 
-                                bg="bg.danger.subtle" 
-                                color="text.critical" 
-                                p={4} 
-                                display="block" 
-                                whiteSpace="pre-wrap"
+                            <Code
+                                className={styles.errorCodeBlock}
                             >
                                 Error: {error}
                             </Code>
                         )}
                         {response && (
-                            <Code p={4} display="block" whiteSpace="pre-wrap" overflowX="auto">
+                            <Code
+                                className={styles.responseCodeBlock}
+                            >
                                 {typeof response === 'string' ? response : JSON.stringify(response, null, 2)}
                             </Code>
                         )}

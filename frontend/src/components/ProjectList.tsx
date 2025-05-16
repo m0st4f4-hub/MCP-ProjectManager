@@ -1,22 +1,15 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
-    VStack,
-    Box,
-    Text,
     Progress,
     Badge,
     IconButton,
-    HStack,
     useToast,
     Menu,
     MenuButton,
     MenuList,
     MenuItem,
-    Flex,
-    useBreakpointValue,
-    Heading,
     Button,
     Modal,
     ModalOverlay,
@@ -31,17 +24,24 @@ import {
     AlertDialogHeader,
     AlertDialogBody,
     AlertDialogFooter,
+    Spinner,
+    Textarea,
+    useDisclosure,
 } from '@chakra-ui/react';
-import { DeleteIcon, HamburgerIcon, AddIcon, CopyIcon, DownloadIcon, RepeatClockIcon } from '@chakra-ui/icons';
+import { DeleteIcon, HamburgerIcon, CopyIcon, DownloadIcon, RepeatClockIcon, AddIcon, SearchIcon, CheckCircleIcon, WarningTwoIcon, TimeIcon, EditIcon, TriangleDownIcon, ExternalLinkIcon, SunIcon } from '@chakra-ui/icons';
 import { useProjectStore } from '@/store/projectStore';
 import { useTaskStore } from '@/store/taskStore';
-import { Project } from '@/types';
-import { formatDisplayName } from '@/lib/utils';
-import { useDisclosure } from '@chakra-ui/react';
+import { Project, ProjectWithTasks, TaskWithMeta } from '@/types';
+import { formatDisplayName, formatRelativeDate } from '@/lib/utils';
+import styles from './ProjectList.module.css';
+import clsx from 'clsx';
+import CreateProjectModal from './CreateProjectModal';
+import EditProjectModal from './EditProjectModal';
 
 const ProjectList: React.FC = () => {
     const projects = useProjectStore(state => state.projects);
     const loading = useProjectStore(state => state.loading);
+    const error = useProjectStore(state => state.error);
     const fetchProjects = useProjectStore(state => state.fetchProjects);
     const removeProject = useProjectStore(state => state.removeProject);
     const archiveProject = useProjectStore(state => state.archiveProject);
@@ -49,13 +49,16 @@ const ProjectList: React.FC = () => {
     const projectFilters = useProjectStore(state => state.filters);
     const tasks = useTaskStore(state => state.tasks);
     const toast = useToast();
-    const isMobile = useBreakpointValue({ base: true, md: false });
     const [cliPromptModalOpen, setCliPromptModalOpen] = useState(false);
     const [cliPromptText, setCliPromptText] = useState('');
     const [cliPromptProjectName, setCliPromptProjectName] = useState('');
     const { isOpen: isAlertOpen, onOpen: onAlertOpen, onClose: onAlertClose } = useDisclosure();
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
-    const cancelRef = React.useRef();
+    const cancelRef = React.useRef<HTMLButtonElement | null>(null);
+
+    const { isOpen: isCreateModalOpen, onOpen: onCreateModalOpen, onClose: onCreateModalClose } = useDisclosure();
+    const { isOpen: isEditModalOpen, onOpen: onEditModalOpen, onClose: onEditModalClose } = useDisclosure();
+    const [editingProject, setEditingProject] = useState<ProjectWithTasks | null>(null);
 
     useEffect(() => {
         fetchProjects();
@@ -129,14 +132,18 @@ const ProjectList: React.FC = () => {
         }
     };
 
-    const filteredProjects = React.useMemo(() => {
+    const handleEditProject = (project: ProjectWithTasks) => {
+        setEditingProject(project);
+        onEditModalOpen();
+    };
+
+    const filteredProjects = useMemo(() => {
         if (!projects) return [];
         return projects.filter(project => {
             if (!project) return false;
             const totalTasks = project.task_count ?? 0;
             const completedTasks = project.completed_task_count ?? 0;
 
-            // Search Term Filter (Project Name and Description) - Uses projectFilters
             if (projectFilters.search) {
                 const searchTermLower = projectFilters.search.toLowerCase();
                 const nameMatch = project.name?.toLowerCase().includes(searchTermLower);
@@ -144,44 +151,50 @@ const ProjectList: React.FC = () => {
                 if (!nameMatch && !descriptionMatch) return false;
             }
 
-            // Agent Filter (Projects the agent is working on) - Uses projectFilters.agentId
-            // This now relies on ProjectFilters having agentId and API supporting it.
-            if (projectFilters.agentId) { 
-                const agentTasksInProject = tasks.filter(task => 
+            if (projectFilters.agentId && tasks) {
+                const agentTasksInProject = tasks.filter(task =>
                     task.project_id === project.id && task.agent_id === projectFilters.agentId
                 );
                 if (agentTasksInProject.length === 0) return false;
             }
-
-            // Status Filter (Based on project's task counts) - Uses projectFilters
+            
             if (projectFilters.status && projectFilters.status !== 'all') {
-                if (totalTasks === 0 && projectFilters.status === 'active') return false;
-                if (totalTasks === 0 && projectFilters.status === 'completed') return true;
+                if (project.is_archived && projectFilters.status !== 'archived') return false;
+                if (!project.is_archived && projectFilters.status === 'archived') return false;
 
-                const allCompleted = totalTasks > 0 && completedTasks === totalTasks;
-                if (projectFilters.status === 'completed' && !allCompleted) return false;
-                if (projectFilters.status === 'active' && allCompleted) return false;
+                if (projectFilters.status === 'active') {
+                    if (project.is_archived || (totalTasks > 0 && completedTasks === totalTasks) || totalTasks === 0) return false;
+                }
+                if (projectFilters.status === 'completed') {
+                    if (project.is_archived || !(totalTasks > 0 && completedTasks === totalTasks)) return false;
+                }
+                if (projectFilters.status === 'pending') {
+                    if (project.is_archived || totalTasks > 0) return false;
+                }
+
+            } else if (projectFilters.status === 'all' && project.is_archived) {
+                return false;
             }
 
-            // Project ID filter from globalFilters doesn't make sense for filtering the project list itself,
-            // unless it means to show only that specific project.
             if (projectFilters.projectId && project.id !== projectFilters.projectId) {
-                // This would make the filter very restrictive, essentially singling out a project.
-                // return false; // Uncomment if this specific behavior is desired.
+                return false;
             }
 
             return true;
         });
     }, [projects, projectFilters, tasks]);
 
-    // Generate CLI prompt for a project
-    const handleOpenCliPrompt = (project) => {
-        const projectTasks = tasks.filter(task => task.project_id === project.id);
+    const handleOpenCliPrompt = (project: ProjectWithTasks) => {
+        const projectTasks: TaskWithMeta[] = (project.tasks || [])
+            .map(task => ({
+                ...task,
+                completed: task.status === 'COMPLETED',
+            }));
         const totalTasksInProject = projectTasks.length;
         const completedTasksInProject = projectTasks.filter(task => task.completed).length;
         const isInProgress = totalTasksInProject > 0 && completedTasksInProject < totalTasksInProject;
         const isCompleted = totalTasksInProject > 0 && completedTasksInProject === totalTasksInProject;
-        const projectStatus = isCompleted ? 'Completed' : (isInProgress ? 'In Progress' : (totalTasksInProject > 0 ? 'Pending Start' : 'Idle (No Tasks)'));
+        const projectStatus = project.is_archived ? 'Archived' : (isCompleted ? 'Completed' : (isInProgress ? 'In Progress' : (totalTasksInProject > 0 ? 'Pending Start' : 'Idle (No Tasks)')));
 
         let prompt = `# MCP Project Review & Action Prompt
 # Target Agent: @ProjectManager.mdc (or an appropriate coordinating agent)
@@ -195,6 +208,8 @@ Status: ${projectStatus}
 Total Tasks: ${totalTasksInProject}
 Completed Tasks: ${completedTasksInProject}
 Pending Tasks: ${totalTasksInProject - completedTasksInProject}
+Created At: ${project.created_at ? formatRelativeDate(project.created_at) : 'N/A'}
+Last Activity: ${project.updated_at ? formatRelativeDate(project.updated_at) : 'N/A'}
 
 ---
 ## Tasks Overview & Suggested Actions
@@ -208,11 +223,7 @@ Pending Tasks: ${totalTasksInProject - completedTasksInProject}
             projectTasks.forEach((task, idx) => {
                 const agentDisplay = task.agent_name ? `@${task.agent_name}` : (task.agent_id ? `AgentID: ${task.agent_id}` : 'UNASSIGNED');
                 const taskStatus = task.completed ? 'Completed' : (task.status || 'To Do');
-                prompt += `\n### Task ${idx + 1}: ${task.title} (ID: ${task.id})
-  Status: ${taskStatus}
-  Assigned Agent: ${agentDisplay}
-  Description: ${task.description || 'No description.'}
-`;
+                prompt += `\n### Task ${idx + 1}: ${task.title} (ID: ${task.id})\n  Status: ${taskStatus}\n  Assigned Agent: ${agentDisplay}\n  Description: ${task.description || 'No description.'}\n`;
                 if (!task.agent_id && !task.completed) {
                     prompt += `  Suggested Action: Assign an agent. Example: mcp_project-manager_update_task_by_id(task_id='${task.id}', agent_name='TARGET_AGENT_NAME')\n`;
                 } else if (!task.completed) {
@@ -250,316 +261,215 @@ Pending Tasks: ${totalTasksInProject - completedTasksInProject}
         }
     };
 
-    if (loading) {
+    const getProjectStatusInfo = (project: ProjectWithTasks) => {
+        if (project.is_archived) return { label: 'Archived', colorScheme: 'gray', icon: <ArchiveIcon /> };
+        if (project.task_count === 0) return { label: 'Pending', colorScheme: 'blue', icon: <TimeIcon /> };
+        if (project.completed_task_count === project.task_count) return { label: 'Completed', colorScheme: 'green', icon: <CheckCircleIcon /> };
+        return { label: 'In Progress', colorScheme: 'yellow', icon: <RepeatClockIcon /> };
+    };
+
+    if (loading && !projects.length) {
         return (
-            <VStack spacing={4} align="stretch">
-                {[1, 2, 3].map(i => (
-                    <Box key={i} p={4} bg="bg.card" rounded="lg" shadow="md" borderWidth="1px" borderColor="border.primary">
-                        <Box height="20px" width="60%" bg="bg.subtle" rounded="md" mb={2} />
-                        <Box height="8px" bg="bg.subtle" rounded="full" />
-                    </Box>
-                ))}
-            </VStack>
+            <div className={styles.loadingContainer}>
+                <Spinner size="xl" />
+                <p>Loading Projects...</p>
+            </div>
         );
     }
 
-    if (!filteredProjects.length && !loading) {
+    if (error) {
         return (
-            <Box textAlign="center" py={8} bg="bg.content" rounded="lg" shadow="md" borderWidth="1px" borderColor="border.primary">
-                <Text color="text.secondary">No projects found</Text>
-            </Box>
+            <div className={styles.errorContainer}>
+                <WarningTwoIcon className={styles.errorIcon} />
+                <p className={styles.errorText}>Error loading projects: {error}</p>
+                <button onClick={() => fetchProjects()} className={styles.retryButton}>
+                    Try Again
+                </button>
+            </div>
         );
     }
+    
+    const ProjectCard = ({ project }: { project: ProjectWithTasks }) => {
+        const totalTasks = project.task_count ?? 0;
+        const completedTasks = project.completed_task_count ?? 0;
+        const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+        const statusInfo = getProjectStatusInfo(project);
 
-    return (
-        <VStack spacing={4} align="stretch">
-            <Flex justify="space-between" align="center" mb={4} px={1}>
-                <Heading size="md" color="text.heading">Portfolio</Heading>
-                {isMobile ? (
+        return (
+            <li className={clsx(styles.projectCard, project.is_archived && styles.archivedCard)}>
+                <div className={styles.cardHeader}>
+                    <h3 className={styles.cardTitle}>{project.name}</h3>
                     <Menu>
                         <MenuButton
                             as={IconButton}
-                            aria-label='Project Actions'
+                            aria-label="Options"
                             icon={<HamburgerIcon />}
-                            size="sm"
                             variant="ghost"
-                            color="icon.secondary"
-                            _hover={{ bg: "bg.hover.nav", color: "text.primary" }}
+                            size="sm"
                         />
-                        <MenuList bg="bg.card" borderColor="border.secondary">
-                            <MenuItem 
-                                icon={<AddIcon />} 
-                                bg="bg.card" 
-                                _hover={{ bg: "bg.hover.nav" }}
-                            >
-                                Add Project
+                        <MenuList>
+                            <MenuItem icon={<EditIcon />} onClick={() => handleEditProject(project)}>
+                                Edit Project
+                            </MenuItem>
+                            <MenuItem icon={<DownloadIcon />} onClick={() => handleOpenCliPrompt(project)}>
+                                View CLI Prompt
+                            </MenuItem>
+                            {!project.is_archived ? (
+                                <MenuItem icon={<SunIcon />} onClick={() => handleArchiveProject(project.id)}>
+                                    Archive Project
+                                </MenuItem>
+                            ) : (
+                                <MenuItem icon={<RepeatClockIcon />} onClick={() => handleUnarchiveProject(project.id)}>
+                                    Unarchive Project
+                                </MenuItem>
+                            )}
+                            <MenuItem icon={<DeleteIcon />} onClick={() => handleDeleteInitiate(project)} color="red.500">
+                                Delete Project
                             </MenuItem>
                         </MenuList>
                     </Menu>
-                ) : (
-                    <Button 
-                        leftIcon={<AddIcon />} 
-                        size="sm" 
-                        variant="outline" 
-                        color="text.link"
-                        borderColor="border.primary"
-                        _hover={{ bg: "bg.hover.nav" }}
-                    >
-                        Add Project
-                    </Button>
-                )}
-            </Flex>
-            {filteredProjects.map(project => {
-                // Calculate task counts from the tasks in the store
-                const projectTasks = tasks.filter(task => task.project_id === project.id);
-                const totalTasks = projectTasks.length;
-                const completedTasks = projectTasks.filter(task => task.completed).length;
+                </div>
 
-                const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+                {project.description && <p className={styles.cardDescription}>{project.description}</p>}
                 
-                const isCompleted = progress === 100 && totalTasks > 0;
-                const isInProgress = totalTasks > 0 && !isCompleted;
+                <div className={styles.cardStatusSection}>
+                     <span className={clsx(styles.statusTag, styles[`statusTag${statusInfo.label.replace(/\s+/g, '').replace(/\s+/g, '')}`])}>
+                        {statusInfo.icon}
+                        {statusInfo.label}
+                    </span>
+                    <span className={styles.cardTasksCount}>
+                        {completedTasks}/{totalTasks} tasks
+                    </span>
+                </div>
 
-                return (
-                    <Box
-                        key={project.id}
-                        p={4}
-                        bg="bg.card"
-                        rounded="lg"
-                        shadow="md"
-                        borderWidth="1px"
-                        borderColor="border.primary"
-                        _hover={{
-                            shadow: "lg",
-                            borderColor: isInProgress ? 'accent.active' : (isCompleted ? 'border.subtle' : 'border.primary'),
-                            transform: "translateY(-1px)"
-                        }}
-                        transition="all 0.2s ease-in-out"
-                        position="relative"
-                        overflow="hidden"
-                        _before={{
-                            content: '""',
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            height: "4px",
-                            bg: isInProgress ? 'accent.active' : "transparent",
-                            opacity: 0.9
-                        }}
-                    >
-                        <HStack 
-                            mb={2} 
-                            align={{ base: 'flex-start', md: 'start' }}
-                            direction={{ base: 'column', md: 'row' }}
-                        >
-                            <VStack align="start" spacing={0.5} flex={1} mb={{ base: 2, md: 0 }}>
-                                <Text 
-                                    fontWeight="semibold"
-                                    fontSize="lg"
-                                    color="text.primary"
-                                >
-                                    {formatDisplayName(project.name)}
-                                </Text>
-                                <HStack>
-                                    <Text fontSize="xs" color="text.secondary" fontWeight="medium">
-                                        Tasks: {totalTasks}
-                                    </Text>
-                                    <Badge 
-                                        variant="subtle"
-                                        size="sm"
-                                        px={2} 
-                                        py={0.5} 
-                                        borderRadius="md"
-                                        bg={isCompleted ? 'badge.bg.success' : (isInProgress ? 'badge.bg.info' : 'badge.bg.neutral')} 
-                                        color={isCompleted ? 'badge.text.success' : (isInProgress ? 'badge.text.info' : 'badge.text.neutral')}
-                                    >
-                                        {isCompleted ? "Completed" : (isInProgress ? "In Progress" : "Idle")}
-                                    </Badge>
-                                    {project.is_archived && (
-                                        <Badge colorScheme="purple" variant="solid" ml={2} size="sm" px={2} py={0.5} borderRadius="md">
-                                            Archived
-                                        </Badge>
-                                    )}
-                                </HStack>
-                            </VStack>
-                            <Menu placement="bottom-end">
-                                <MenuButton
-                                    as={IconButton}
-                                    aria-label="Options"
-                                    icon={<HamburgerIcon />}
-                                    variant="ghost"
-                                    color="icon.secondary"
-                                    _hover={{ bg: "bg.hover.nav", color: "text.primary" }}
-                                    size="sm"
-                                />
-                                <MenuList bg="bg.card" borderColor="border.secondary" color="text.primary">
-                                    <MenuItem 
-                                        icon={<CopyIcon />} 
-                                        onClick={() => handleOpenCliPrompt(project)}
-                                        bg="bg.card"
-                                        _hover={{ bg: "bg.hover.nav" }}
-                                        _focus={{ bg: "bg.hover.nav" }}
-                                    >
-                                        Project CLI Prompt
-                                    </MenuItem>
-                                    {!project.is_archived ? (
-                                        <MenuItem 
-                                            icon={<DownloadIcon />} 
-                                            onClick={() => handleArchiveProject(project.id)}
-                                            bg="bg.card"
-                                            _hover={{ bg: "bg.hover.nav" }}
-                                            _focus={{ bg: "bg.hover.nav" }}
-                                        >
-                                            Archive Project
-                                        </MenuItem>
-                                    ) : (
-                                        <MenuItem 
-                                            icon={<RepeatClockIcon />} 
-                                            onClick={() => handleUnarchiveProject(project.id)}
-                                            bg="bg.card"
-                                            _hover={{ bg: "bg.hover.nav" }}
-                                            _focus={{ bg: "bg.hover.nav" }}
-                                        >
-                                            Unarchive Project
-                                        </MenuItem>
-                                    )}
-                                    <MenuItem 
-                                        icon={<DeleteIcon />} 
-                                        onClick={() => handleDeleteInitiate(project)}
-                                        bg="bg.card"
-                                        color="text.danger"
-                                        _hover={{ bg: "bg.danger.hover", color: "text.danger.hover" }}
-                                        _focus={{ bg: "bg.danger.hover", color: "text.danger.hover" }}
-                                    >
-                                        Delete Project
-                                    </MenuItem>
-                                </MenuList>
-                            </Menu>
-                        </HStack>
-                        {project.description && (
-                            <Text 
-                                color="text.secondary" 
-                                fontSize="sm"
-                                fontWeight="normal"
-                                mb={2} 
-                                noOfLines={2}
-                                maxWidth="80ch"
-                            >
-                                {project.description}
-                            </Text>
-                        )}
-                        <Progress
-                            value={progress}
-                            size="xs"
-                            hasStripe={isInProgress}
-                            isAnimated={isInProgress}
-                            mt={3}
-                            borderRadius="full"
-                            bg="progress.track.bg"
-                            sx={{
-                                "& > div[role=progressbar]": {
-                                    bg: "progress.filledTrack.bg"
-                                }
-                            }}
-                        />
-                        <Flex justify="space-between" mt={2}>
-                            <Text fontSize="xs" color="text.secondary">
-                                {completedTasks} / {totalTasks} tasks
-                            </Text>
-                        </Flex>
-                    </Box>
-                );
-            })}
-            {/* CLI Prompt Modal */}
-            <Modal isOpen={cliPromptModalOpen} onClose={() => setCliPromptModalOpen(false)} size="lg" isCentered>
+                <Progress value={progress} size="sm" className={styles.cardProgressBar} colorScheme={statusInfo.colorScheme} />
+                
+                <div className={styles.cardFooter}>
+                    <p className={styles.cardDate}>
+                        Created: {project.created_at ? formatRelativeDate(project.created_at) : 'N/A'}
+                    </p>
+                    {project.updated_at && project.updated_at !== project.created_at && (
+                         <p className={clsx(styles.cardDate, styles.cardDateUpdated)}>
+                            Updated: {formatRelativeDate(project.updated_at)}
+                        </p>
+                    )}
+                </div>
+                 {project.is_archived && <div className={styles.archivedOverlay}>Archived</div>}
+            </li>
+        );
+    };
+
+    return (
+        <div className={styles.projectListContainer}>
+            <div className={styles.header}>
+                <h2 className={styles.title}>Projects ({filteredProjects.length})</h2>
+                <div className={styles.headerActions}>
+                    <button onClick={onCreateModalOpen} className={styles.addButton}>
+                        <AddIcon style={{ marginRight: 'var(--chakra-space-2)' }}/> New Project
+                    </button>
+                </div>
+            </div>
+
+            {filteredProjects.length === 0 && !loading && (
+                <div className={styles.emptyStateContainer}>
+                    <SearchIcon className={styles.emptyStateIcon} />
+                    <p className={styles.emptyStateText}>No projects found.</p>
+                    <p className={styles.emptyStateSubText}>
+                        {projectFilters.search || projectFilters.status !== 'all' || projectFilters.agentId ? 
+                         "Try adjusting your filters or " : " "}
+                        <button onClick={onCreateModalOpen} className={styles.emptyStateLinkButton}>
+                            create a new project
+                        </button> to get started.
+                    </p>
+                </div>
+            )}
+
+            <ul className={styles.projectGrid}>
+                {filteredProjects.map(project => (
+                    project && <ProjectCard key={project.id} project={project as ProjectWithTasks} />
+                ))}
+            </ul>
+
+            <Modal isOpen={cliPromptModalOpen} onClose={() => setCliPromptModalOpen(false)} size="xl">
                 <ModalOverlay />
-                <ModalContent bg="bg.card" color="text.primary" borderWidth="1px" borderColor="border.secondary">
-                    <ModalHeader borderBottomWidth="1px" borderColor="border.secondary">
-                        Project CLI Prompt{cliPromptProjectName ? `: ${cliPromptProjectName}` : ''}
-                    </ModalHeader>
+                <ModalContent bg="bg.modal" color="text.primary">
+                    <ModalHeader>CLI Prompt for {cliPromptProjectName}</ModalHeader>
                     <ModalCloseButton />
-                    <ModalBody py={6}>
-                        <Box 
-                            as="pre" 
-                            whiteSpace="pre-wrap" 
-                            fontSize="sm" 
-                            p={4} 
-                            bg="bg.subtle" 
-                            color="text.secondary" 
-                            borderRadius="md" 
-                            borderWidth="1px"
-                            borderColor="border.subtle"
-                            maxH="60vh" 
-                            overflowY="auto"
-                        >
-                            {cliPromptText}
-                        </Box>
+                    <ModalBody>
+                        <Textarea
+                            value={cliPromptText}
+                            isReadOnly
+                            rows={15}
+                            fontFamily="monospace"
+                            fontSize="sm"
+                            bg="bg.textarea"
+                            borderColor="border.input"
+                            _hover={{ borderColor: "border.inputHover" }}
+                            className={styles.cliPromptTextarea}
+                        />
                     </ModalBody>
-                    <ModalFooter borderTopWidth="1px" borderColor="border.secondary">
-                        <Button 
-                            leftIcon={<CopyIcon />} 
-                            onClick={handleCopyPrompt} 
-                            variant="solid"
-                            bg="button.primary.default"
-                            color="button.primary.text"
-                            _hover={{ bg: "button.primary.hover" }}
-                            mr={3}
-                        >
-                            Copy to Clipboard
+                    <ModalFooter>
+                        <Button variant="ghost" onClick={handleCopyPrompt} leftIcon={<CopyIcon />}>
+                            Copy Prompt
                         </Button>
-                        <Button 
-                            onClick={() => setCliPromptModalOpen(false)} 
-                            variant="ghost"
-                            color="text.link"
-                            _hover={{ bg: "bg.hover.subtle" }}
-                        >
+                        <Button colorScheme="blue" ml={3} onClick={() => setCliPromptModalOpen(false)}>
                             Close
                         </Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-            {/* AlertDialog for Delete Confirmation */}
-            {projectToDelete && (
-                <AlertDialog
-                    isOpen={isAlertOpen}
-                    leastDestructiveRef={cancelRef}
-                    onClose={onAlertClose}
-                    isCentered
-                >
-                    <AlertDialogOverlay>
-                        <AlertDialogContent bg="bg.card" color="text.primary" borderWidth="1px" borderColor="border.secondary">
-                            <AlertDialogHeader fontSize="lg" fontWeight="bold" borderBottomWidth="1px" borderColor="border.secondary">
-                                Delete Project
-                            </AlertDialogHeader>
 
-                            <AlertDialogBody py={6}>
-                                {projectToDelete.is_archived 
-                                    ? "Are you sure you want to permanently delete this archived project? This action cannot be undone."
-                                    : "Are you sure you want to delete this project? All associated tasks will also be deleted."
-                                }
-                            </AlertDialogBody>
+            <AlertDialog
+                isOpen={isAlertOpen}
+                leastDestructiveRef={cancelRef}
+                onClose={onAlertClose}
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent bg="bg.modal" color="text.primary">
+                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                            Delete Project
+                        </AlertDialogHeader>
+                        <AlertDialogBody>
+                            Are you sure you want to delete project '{projectToDelete?.name}'?
+                            {projectToDelete?.is_archived ? " This is an archived project." : " This action cannot be undone."}
+                            {(projectToDelete?.task_count ?? 0) > 0 && ` It has ${projectToDelete?.task_count} associated task(s).`}
+                        </AlertDialogBody>
+                        <AlertDialogFooter>
+                            <Button ref={cancelRef} onClick={onAlertClose} variant="outline">
+                                Cancel
+                            </Button>
+                            <Button 
+                                colorScheme="red" 
+                                onClick={handleDeleteConfirm} 
+                                ml={3}
+                                bg="button.danger.default"
+                                _hover={{bg: "button.danger.hover"}}
+                                _active={{bg: "button.danger.active"}}
+                            >
+                                Delete
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
 
-                            <AlertDialogFooter borderTopWidth="1px" borderColor="border.secondary">
-                                <Button ref={cancelRef} onClick={onAlertClose} variant="ghost" color="text.link" _hover={{ bg: "bg.hover.subtle" }}>
-                                    Cancel
-                                </Button>
-                                <Button 
-                                    colorScheme="red" 
-                                    onClick={handleDeleteConfirm} 
-                                    ml={3}
-                                    bg="button.danger.default"
-                                    color="button.danger.text"
-                                    _hover={{ bg: "button.danger.hover" }}
-                                >
-                                    Delete
-                                </Button>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialogOverlay>
-                </AlertDialog>
+            {isCreateModalOpen && (
+                <CreateProjectModal
+                    isOpen={isCreateModalOpen}
+                    onClose={onCreateModalClose}
+                />
             )}
-        </VStack>
+            {editingProject && isEditModalOpen && (
+                 <EditProjectModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => {
+                        onEditModalClose();
+                        setEditingProject(null);
+                    }}
+                    projectData={editingProject}
+                 />
+            )}
+        </div>
     );
 };
 

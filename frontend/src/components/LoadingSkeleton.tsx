@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Box, VStack, Skeleton, SkeletonText } from '@chakra-ui/react';
+import { Skeleton, SkeletonText } from '@chakra-ui/react';
+import styles from './LoadingSkeleton.module.css';
+import { clsx } from 'clsx';
 
 interface LoadingSkeletonProps {
     count?: number;
@@ -15,80 +17,54 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     const skeletons = Array(count).fill(0);
 
     const TaskSkeleton = () => (
-        <Box
-            data-testid="skeleton-item"
-            p={4}
-            bg="bg.card"
-            rounded="lg"
-            shadow="lg"
-            borderWidth="1px"
-            borderColor="border.secondary"
-        >
-            <VStack align="stretch" spacing={3}>
-                <Box display="flex" alignItems="center" gap={4}>
+        <div className={styles.skeletonItemBase} data-testid="skeleton-item">
+            <div className={styles.taskSkeletonContentStack}>
+                <div className={styles.taskSkeletonHeader}>
                     <Skeleton height="20px" width="20px" startColor="bg.subtle" endColor="bg.surface" />
                     <Skeleton height="20px" flex="1" startColor="bg.subtle" endColor="bg.surface" />
-                </Box>
+                </div>
                 <SkeletonText noOfLines={2} spacing={2} startColor="bg.subtle" endColor="bg.surface" />
-                <Box display="flex" gap={2}>
+                <div className={styles.taskSkeletonTagsContainer}>
                     <Skeleton height="16px" width="80px" startColor="bg.subtle" endColor="bg.surface" />
                     <Skeleton height="16px" width="100px" startColor="bg.subtle" endColor="bg.surface" />
-                </Box>
-            </VStack>
-        </Box>
+                </div>
+            </div>
+        </div>
     );
 
     const ProjectSkeleton = () => (
-        <Box
-            data-testid="skeleton-item"
-            p={4}
-            bg="bg.card"
-            rounded="lg"
-            shadow="lg"
-            borderWidth="1px"
-            borderColor="border.secondary"
-        >
-            <VStack align="stretch" spacing={3}>
-                <Box display="flex" justifyContent="space-between">
+        <div className={styles.skeletonItemBase} data-testid="skeleton-item">
+            <div className={styles.projectSkeletonContentStack}>
+                <div className={styles.projectSkeletonHeader}>
                     <Skeleton height="24px" width="200px" startColor="bg.subtle" endColor="bg.surface" />
                     <Skeleton height="24px" width="24px" startColor="bg.subtle" endColor="bg.surface" />
-                </Box>
+                </div>
                 <SkeletonText noOfLines={2} spacing={2} startColor="bg.subtle" endColor="bg.surface" />
-                <Box>
-                    <Box display="flex" justifyContent="space-between" mb={2}>
-                        <Box display="flex" gap={2}>
+                <div className={styles.projectSkeletonDetailsContainer}>
+                    <div className={styles.projectSkeletonProgressHeader}>
+                        <div className={styles.projectSkeletonTags}>
                             <Skeleton height="16px" width="80px" startColor="bg.subtle" endColor="bg.surface" />
                             <Skeleton height="16px" width="100px" startColor="bg.subtle" endColor="bg.surface" />
-                        </Box>
+                        </div>
                         <Skeleton height="16px" width="60px" startColor="bg.subtle" endColor="bg.surface" />
-                    </Box>
+                    </div>
                     <Skeleton height="8px" startColor="bg.subtle" endColor="bg.surface" />
-                </Box>
-            </VStack>
-        </Box>
+                </div>
+            </div>
+        </div>
     );
 
     const AgentSkeleton = () => (
-        <Box
-            data-testid="skeleton-item"
-            p={4}
-            bg="bg.card"
-            rounded="lg"
-            shadow="lg"
-            borderWidth="1px"
-            borderColor="border.secondary"
-        >
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-                <VStack align="start" spacing={2}>
-                    <Skeleton height="24px" width="180px" startColor="bg.subtle" endColor="bg.surface" />
-                    <Box display="flex" gap={2}>
-                        <Skeleton height="16px" width="80px" startColor="bg.subtle" endColor="bg.surface" />
-                        <Skeleton height="16px" width="60px" startColor="bg.subtle" endColor="bg.surface" />
-                    </Box>
-                </VStack>
-                <Skeleton height="32px" width="32px" startColor="bg.subtle" endColor="bg.surface" />
-            </Box>
-        </Box>
+        <div className={clsx(styles.skeletonItemBase, styles.agentSkeletonContainer)} data-testid="skeleton-item">
+            <div className={styles.agentInfoStack}>
+                <Skeleton height="24px" width="180px" startColor="bg.subtle" endColor="bg.surface" />
+                <div className={styles.agentTagsContainer}>
+                    <Skeleton height="16px" width="80px" startColor="bg.subtle" endColor="bg.surface" />
+                    <Skeleton height="16px" width="60px" startColor="bg.subtle" endColor="bg.surface" />
+                </div>
+            </div>
+            <Skeleton height="32px" width="32px" startColor="bg.subtle" endColor="bg.surface" />
+        </div>
     );
 
     const SkeletonComponent = {
@@ -98,11 +74,11 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     }[type];
 
     return (
-        <VStack spacing={4} align="stretch" w="100%">
+        <div className={styles.skeletonListContainer}>
             {skeletons.map((_, i) => (
                 <SkeletonComponent key={i} />
             ))}
-        </VStack>
+        </div>
     );
 };
 

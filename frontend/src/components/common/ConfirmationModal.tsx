@@ -8,9 +8,9 @@ import {
     ModalBody,
     ModalCloseButton,
     Button,
-    Text,
     useColorModeValue,
 } from '@chakra-ui/react';
+import styles from './ConfirmationModal.module.css';
 
 interface ConfirmationModalProps {
     isOpen: boolean;
@@ -44,9 +44,9 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <ModalContent bg={modalBg}>
                 <ModalHeader borderBottomWidth="1px" borderColor={borderColor}>{title}</ModalHeader>
                 <ModalCloseButton />
-                <ModalBody py={6}>
-                    {bodyText && <Text>{bodyText}</Text>}
-                    {!bodyText && <Text>Are you sure you want to proceed with this action?</Text>}
+                <ModalBody className={styles.modalBody}>
+                    {bodyText && <p className={styles.bodyText}>{bodyText}</p>}
+                    {!bodyText && <p className={styles.bodyText}>Are you sure you want to proceed with this action?</p>}
                 </ModalBody>
                 <ModalFooter borderTopWidth="1px" borderColor={borderColor}>
                     <Button variant="ghost" onClick={onClose} mr={3} isDisabled={isLoading}>

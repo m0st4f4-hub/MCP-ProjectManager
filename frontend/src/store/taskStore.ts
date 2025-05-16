@@ -3,31 +3,10 @@ import { Task, TaskCreateData, TaskUpdateData, TaskFilters, TaskSortOptions, Pro
 import { create } from 'zustand';
 import * as api from '@/services/api';
 import { produce } from 'immer';
-import shallow from 'zustand/shallow';
+import { shallow } from 'zustand/shallow';
 import debounce from 'lodash.debounce';
-
-// Helper function to get all descendant task IDs
-const getAllDescendantIds = (taskId: string, tasks: Task[]): string[] => {
-    const descendants: string[] = [];
-    const children = tasks.filter(task => task.parent_task_id === taskId);
-    for (const child of children) {
-        descendants.push(child.id);
-        descendants.push(...getAllDescendantIds(child.id, tasks));
-    }
-    return descendants;
-};
-
-// Utility: Shallow equality for objects
-function shallowEqual<T extends object>(a: T, b: T): boolean {
-    if (a === b) return true;
-    const aKeys = Object.keys(a);
-    const bKeys = Object.keys(b);
-    if (aKeys.length !== bKeys.length) return false;
-    for (const key of aKeys) {
-        if (a[key as keyof T] !== b[key as keyof T]) return false;
-    }
-    return true;
-}
+import { useProjectStore } from './projectStore';
+import { useAgentStore } from './agentStore';
 
 // Improved upsertTasks: preserve references for unchanged items
 const upsertTasks = (tasksToUpsert: Task[], existingTasks: Task[]): Task[] => {
@@ -35,7 +14,7 @@ const upsertTasks = (tasksToUpsert: Task[], existingTasks: Task[]): Task[] => {
     const result: Task[] = [];
     for (const newTask of tasksToUpsert) {
         const oldTask = taskMap.get(newTask.id);
-        if (oldTask && shallowEqual(oldTask, newTask)) {
+        if (oldTask && shallow(oldTask, newTask)) {
             result.push(oldTask); // preserve reference
         } else {
             result.push(newTask);
@@ -48,7 +27,7 @@ const upsertTasks = (tasksToUpsert: Task[], existingTasks: Task[]): Task[] => {
 const areTasksEqual = (a: Task[], b: Task[]): boolean => {
     if (a.length !== b.length) return false;
     for (let i = 0; i < a.length; i++) {
-        if (a[i].id !== b[i].id || !shallowEqual(a[i], b[i])) return false;
+        if (a[i].id !== b[i].id || !shallow(a[i], b[i])) return false;
     }
     return true;
 };
@@ -121,6 +100,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         top_level_only: true,
         hideCompleted: false,
         is_archived: false,
+        projectId: undefined,
+        agentId: undefined,
+        status: 'all',
+        search: undefined,
     },
     projects: [],
     agents: [],
@@ -169,16 +152,19 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
     fetchProjectsAndAgents: async () => {
         try {
+            const projectArchiveFilter = useProjectStore.getState().filters.is_archived;
+            const agentArchiveFilter = useAgentStore.getState().filters.is_archived;
+
             const [projects, agents] = await Promise.all([
-                api.getProjects({ is_archived: null }),
-                api.getAgents()
+                api.getProjects({ is_archived: projectArchiveFilter === null ? undefined : projectArchiveFilter }),
+                api.getAgents({ is_archived: agentArchiveFilter === null ? undefined : agentArchiveFilter })
             ]);
             set({ projects, agents });
         } catch (error) {
             let errorMessage = 'Failed to fetch projects and agents';
             if (error instanceof Error) errorMessage = error.message;
             else if (typeof error === 'string') errorMessage = error;
-            console.error("Error fetching projects and agents:", error);
+            console.error("Error fetching projects and agents:", errorMessage, error);
         }
     },
 
@@ -230,7 +216,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             } else if (typeof error === 'string') {
                 errorMessage = error;
             }
-            set({ mutationError: errorMessage, loading: false });
+            set({ mutationError: { type: 'add', message: errorMessage }, loading: false });
             console.error("Error adding task:", error);
             throw error;
         }
@@ -270,7 +256,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
                 const newTasks = state.tasks.filter(t => t.id !== taskId);
                 return {
                     tasks: sortTasks(newTasks, state.sortOptions),
-                    selectedTask: state.selectedTask?.id === taskId ? null : state.selectedTask,
+                    selectedTaskIds: state.selectedTaskIds.filter(id => id !== taskId),
                     loading: false,
                 };
             });
@@ -281,13 +267,13 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             } else if (typeof error === 'string') {
                 errorMessage = error;
             }
-            set({ mutationError: errorMessage, loading: false });
+            set({ mutationError: { type: 'delete', message: errorMessage }, loading: false });
             console.error("Error deleting task:", error);
             throw error;
         }
     },
 
-    openEditModal: (task) => {
+    openEditModal: (task: Task) => {
         set({ editingTask: task, isEditModalOpen: true });
     },
 
@@ -303,18 +289,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     setFilters: (newFilters: Partial<TaskFilters>) => {
         const currentFilters = get().filters;
         const mergedFilters = { ...currentFilters, ...newFilters };
-        if (mergedFilters.is_archived === currentFilters.is_archived && 
-            mergedFilters.projectId === currentFilters.projectId && 
-            mergedFilters.status === currentFilters.status &&
-            mergedFilters.search === currentFilters.search &&
-            mergedFilters.hideCompleted === currentFilters.hideCompleted) {
-            if(!shallowEqual(mergedFilters, currentFilters)) {
-                 set({ filters: mergedFilters });
-            }
+        if (!shallow(mergedFilters, currentFilters)) {
+            set({ filters: mergedFilters });
+            console.log('[TaskStore] Setting new task filters and re-fetching:', mergedFilters);
+            get().fetchTasks(mergedFilters, false);
         }
-        set({ filters: mergedFilters });
-        console.log('[TaskStore] Setting new task filters and re-fetching:', mergedFilters);
-        get().fetchTasks(mergedFilters, false);
     },
 
     setEditingTask: (task: Task | null) => set({ editingTask: task, isEditModalOpen: !!task }),
@@ -344,7 +323,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         set({ selectedTaskIds: [] });
     },
     bulkDeleteTasks: async () => {
-        const { selectedTaskIds, tasks } = get();
+        const { selectedTaskIds } = get();
         if (selectedTaskIds.length === 0) return;
         set({ loading: true, mutationError: null });
         try {
@@ -495,8 +474,8 @@ export const sortTasks = (tasks: Task[], options: TaskSortOptions): Task[] => {
     const field = options.field;
     const direction = options.direction === 'asc' ? 1 : -1;
     return [...tasks].sort((a, b) => {
-        let valA = a[field as keyof Task];
-        let valB = b[field as keyof Task];
+        const valA = a[field as keyof Task];
+        const valB = b[field as keyof Task];
 
         if (valA == null && valB == null) return 0;
         if (valA == null) return 1;
@@ -511,7 +490,7 @@ export const sortTasks = (tasks: Task[], options: TaskSortOptions): Task[] => {
         if (typeof valA === 'boolean' && typeof valB === 'boolean') {
             return (valA === valB ? 0 : valA ? -1 : 1) * direction;
         }
-        if (field === 'created_at' || field === 'updated_at') {
+        if (field === 'created_at') {
             return (new Date(valA as string).getTime() - new Date(valB as string).getTime()) * direction;
         }
         return 0;

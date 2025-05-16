@@ -37,12 +37,12 @@ export const createBaseStore = <
         ...(initialData as Omit<TState, keyof BaseState | keyof TActions>),
         ...(actionsCreator(set, get) as TActions),
         clearError: () => set({ error: null } as Partial<TState>),
-    });
+    }) as unknown as TState;
 
-    if (options.persist && typeof window !== 'undefined') {
-        return create<TState>(persist(store, { name: options.name, version: options.version || 1 })); 
+    if (options.persist) {
+        return create(persist(store, { name: options.name, version: options.version || 1 }));
     }
-    return create<TState>(store);
+    return create(store);
 };
 
 // Error handling utility (from diff)

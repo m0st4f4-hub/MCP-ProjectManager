@@ -2,9 +2,6 @@ import { StoreApi } from 'zustand';
 import { Agent, AgentCreateData, AgentUpdateData, AgentFilters, AgentSortOptions } from '@/types/agent';
 import { createBaseStore, BaseState, withLoading } from './baseStore';
 import * as api from '@/services/api';
-import produce from 'immer';
-import shallow from 'zustand/shallow';
-import debounce from 'lodash.debounce';
 
 type AgentActions = {
     fetchAgents: (filters?: AgentFilters) => Promise<void>;
@@ -36,10 +33,9 @@ const initialAgentData: Omit<AgentState, keyof BaseState | keyof AgentActions> =
         direction: 'desc'
     },
     filters: {
-        status: 'all'
+        status: 'all',
+        is_archived: false,
     },
-    loading: false,
-    error: null,
 };
 
 // Utility: Shallow equality for objects
@@ -104,7 +100,7 @@ const agentActionsCreator = (
         set({ loading: true, error: null });
         try {
             console.log(`[Store] Calling API to create agent: ${agentData.name}`);
-            const newAgent = await api.createAgent(agentData);
+            const newAgent = await api.createAgent(agentData.name);
             console.log(`[Store] API returned new agent:`, newAgent);
             set((state) => ({
                 agents: sortAgents([newAgent, ...state.agents], state.sortOptions),

@@ -33,7 +33,7 @@ describe('ClientOnly', () => {
   });
 
   it('renders nothing if no children are provided but still mounts', () => {
-    const { container } = render(<ClientOnly />);
+    const { container } = render(<ClientOnly>{null}</ClientOnly>);
     // Expect the container to not be empty (e.g. might render a fragment or an empty div if structured that way)
     // but it should not contain // any (removed as unused) specific children other than what ClientOnly might render itself (if anything)
     // This test is more about ensuring it doesn't crash

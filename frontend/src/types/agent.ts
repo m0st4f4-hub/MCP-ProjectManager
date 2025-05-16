@@ -45,6 +45,7 @@ export interface AgentFilters {
     search?: string;
     status?: 'all' | 'available' | 'busy' | 'offline';
     projectId?: string | null;
+    is_archived?: boolean | null;
 }
 
 // Agent sort options

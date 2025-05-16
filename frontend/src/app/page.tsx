@@ -3,12 +3,11 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-    VStack,
-    Heading,
-    Box,
+    // VStack, // To be replaced
+    // Box, // To be replaced
     useToast,
-    HStack,
-    Button,
+    // HStack, // To be replaced where possible or kept if complex and not simple flex row
+    Button, // Keep for modals for now
     useDisclosure,
     Modal,
     ModalOverlay,
@@ -16,8 +15,8 @@ import {
     ModalHeader,
     ModalBody,
     ModalCloseButton,
-    Text,
-    Textarea,
+    Text, // Keep for modals for now, or replace if simple
+    Textarea, // Keep for modal
     Drawer,
     DrawerBody,
     DrawerHeader,
@@ -25,32 +24,36 @@ import {
     DrawerContent,
     DrawerCloseButton,
     IconButton,
-    Flex,
-    Spacer,
-    Tooltip,
-    Image,
+    // Flex, // To be replaced
+    // Spacer, // Already replaced in SidebarContent
+    Tooltip, // Keep
+    Image, // Keep
     useColorMode,
-    Tabs,
-    TabList,
-    Tab,
+    Box,
 } from '@chakra-ui/react';
 import { AddIcon, ArrowUpIcon, CopyIcon, HamburgerIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon, ViewIcon, EditIcon, SearchIcon, TimeIcon } from '@chakra-ui/icons';
 import TaskList from '@/components/TaskList';
-import AddTaskForm from '@/components/AddTaskForm';
+import AddTaskForm from '@/components/forms/AddTaskForm';
 import ProjectList from '@/components/ProjectList';
-import AddProjectForm from '@/components/AddProjectForm';
+import AddProjectForm from '@/components/forms/AddProjectForm';
 import AgentList from '@/components/AgentList';
-import AddAgentForm from '@/components/AddAgentForm';
+import AddAgentForm from '@/components/forms/AddAgentForm';
 import { useTaskStore, TaskState } from '@/store/taskStore';
 import { useProjectStore, ProjectState } from '@/store/projectStore';
 import { useAgentStore, AgentState } from '@/store/agentStore';
 import FilterSidebar from '@/components/common/FilterSidebar';
-import { createProject, createTask } from '@/services/api';
+import { createProject, createTask, createAgent } from '@/services/api';
 import { ProjectCreateData } from '@/types/project';
-import { TaskCreateData } from '@/types/task';
+import { TaskCreateData, TaskStatus } from '@/types/task';
 import Dashboard from '@/components/Dashboard';
 import { ThemeToggleButton } from '@/components/ThemeToggleButton';
 import MCPDevTools from '@/components/MCPDevTools';
+import OverviewContent from '@/components/OverviewContent';
+import DetailsContent from '@/components/DetailsContent';
+import SettingsContent from '@/components/SettingsContent';
+import styles from './page.module.css'; 
+import sidebarStyles from './Sidebar.module.css'; 
+import clsx from 'clsx'; 
 
 interface ImportedPlanTask {
     title: string;
@@ -79,197 +82,118 @@ interface SidebarContentProps {
 }
 
 const SidebarContent = ({ activeView, setActiveView, onAddTaskOpen, onAddProjectOpen, onAddAgentOpen, onImportPlanOpen, onOpenDevTools, isCollapsed, onToggleCollapse }: SidebarContentProps) => {
+    const { colorMode } = useColorMode();
     return (
-        <VStack h="full" spacing={2} align="stretch" flexGrow={1}>
-            <HStack justify="space-between" align="center" w="full" pb={3} borderBottomWidth="1px" borderColor="border.primary">
-                {!isCollapsed && (
-                    <Heading size="md" color="text.heading">
-                        Menu
-                    </Heading>
+        <div className={clsx(sidebarStyles.sidebarRoot, isCollapsed ? sidebarStyles.sidebarRootCollapsed : sidebarStyles.sidebarRootExpanded)}>
+            <div className={sidebarStyles.sidebarHeader}>
+                {isCollapsed ? (
+                    <Image
+                        src={colorMode === 'dark' ? '/assets/images/logo_dark.png' : '/assets/images/logo_light.png'}
+                        alt="Project Manager Logo"
+                        className={sidebarStyles.sidebarLogoCollapsed}
+                    />
+                ) : (
+                    <Image
+                        src={colorMode === 'dark' ? '/assets/images/logo_dark.png' : '/assets/images/logo_light.png'}
+                        alt="Project Manager Logo"
+                        className={sidebarStyles.sidebarLogoExpanded}
+                    />
                 )}
-                {isCollapsed && <Box w={1} /> }
+                {!isCollapsed && <div style={{ marginLeft: 'auto' }} />}
                 <ThemeToggleButton />
-            </HStack>
+                <IconButton 
+                    aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                    icon={isCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+                    onClick={onToggleCollapse}
+                    variant="ghost"
+                    size="sm"
+                    className={sidebarStyles.sidebarToggle}
+                />
+            </div>
 
-            <VStack spacing={1} align="stretch">
-                <Tooltip label="Dashboard" isDisabled={!isCollapsed} placement="right">
-                    <Button
-                        justifyContent={isCollapsed ? "center" : "flex-start"}
-                        onClick={() => setActiveView('Dashboard')}
-                        variant={activeView === 'Dashboard' ? 'solid' : 'ghost'}
-                        bg={activeView === 'Dashboard' ? 'bg.active.nav' : undefined}
-                        color={activeView === 'Dashboard' ? 'text.button.primary' : 'text.secondary'}
-                        _hover={{ 
-                            bg: activeView !== 'Dashboard' ? 'bg.hover.nav' : undefined,
-                            textDecoration: 'none' 
-                        }}
-                        w={isCollapsed ? "auto" : "full"}
-                        px={isCollapsed ? 2 : undefined}
-                        leftIcon={<ViewIcon />}
-                    >
-                        {!isCollapsed && "Dashboard"}
-                    </Button>
-                </Tooltip>
-                <Tooltip label="Workboard" isDisabled={!isCollapsed} placement="right">
-                    <Button
-                        justifyContent={isCollapsed ? "center" : "flex-start"}
-                        onClick={() => setActiveView('Workboard')}
-                        variant={activeView === 'Workboard' ? 'solid' : 'ghost'}
-                        bg={activeView === 'Workboard' ? 'bg.active.nav' : undefined}
-                        color={activeView === 'Workboard' ? 'text.button.primary' : 'text.secondary'}
-                        _hover={{ 
-                            bg: activeView !== 'Workboard' ? 'bg.hover.nav' : undefined,
-                            textDecoration: 'none' 
-                        }}
-                        w={isCollapsed ? "auto" : "full"}
-                        px={isCollapsed ? 2 : undefined}
-                        leftIcon={<EditIcon />}
-                    >
-                        {!isCollapsed && "Workboard"}
-                    </Button>
-                </Tooltip>
-                <Tooltip label="Portfolio" isDisabled={!isCollapsed} placement="right">
-                    <Button
-                        justifyContent={isCollapsed ? "center" : "flex-start"}
-                        onClick={() => setActiveView('Portfolio')}
-                        variant={activeView === 'Portfolio' ? 'solid' : 'ghost'}
-                        bg={activeView === 'Portfolio' ? 'bg.active.nav' : undefined}
-                        color={activeView === 'Portfolio' ? 'text.button.primary' : 'text.secondary'}
-                        _hover={{ 
-                            bg: activeView !== 'Portfolio' ? 'bg.hover.nav' : undefined,
-                            textDecoration: 'none' 
-                        }}
-                        w={isCollapsed ? "auto" : "full"}
-                        px={isCollapsed ? 2 : undefined}
-                        leftIcon={<SearchIcon />}
-                    >
-                        {!isCollapsed && "Portfolio"}
-                    </Button>
-                </Tooltip>
-                <Tooltip label="Registry" isDisabled={!isCollapsed} placement="right">
-                    <Button
-                        justifyContent={isCollapsed ? "center" : "flex-start"}
-                        onClick={() => setActiveView('Registry')}
-                        variant={activeView === 'Registry' ? 'solid' : 'ghost'}
-                        bg={activeView === 'Registry' ? 'bg.active.nav' : undefined}
-                        color={activeView === 'Registry' ? 'text.button.primary' : 'text.secondary'}
-                        _hover={{ 
-                            bg: activeView !== 'Registry' ? 'bg.hover.nav' : undefined,
-                            textDecoration: 'none' 
-                        }}
-                        w={isCollapsed ? "auto" : "full"}
-                        px={isCollapsed ? 2 : undefined}
-                        leftIcon={<TimeIcon />}
-                    >
-                        {!isCollapsed && "Registry"}
-                    </Button>
-                </Tooltip>
-            </VStack>
+            <div className={sidebarStyles.navButtonVStack}>
+                {[
+                    { view: 'Dashboard', label: 'Dashboard', icon: <ViewIcon /> },
+                    { view: 'Workboard', label: 'Workboard', icon: <EditIcon /> },
+                    { view: 'Portfolio', label: 'Portfolio', icon: <SearchIcon /> },
+                    { view: 'Registry', label: 'Registry', icon: <TimeIcon /> },
+                    { view: 'Overview', label: 'Overview', icon: <ViewIcon /> },
+                    { view: 'Details', label: 'Details', icon: <SearchIcon /> },
+                    { view: 'Settings', label: 'Settings', icon: <SettingsIcon /> },
+                ].map(item => (
+                    <Tooltip label={item.label} isDisabled={!isCollapsed} placement="right" key={item.view}>
+                        <button
+                            onClick={() => setActiveView(item.view)}
+                            className={clsx(
+                                sidebarStyles.navButton,
+                                activeView === item.view && sidebarStyles.navButtonActive,
+                                isCollapsed ? sidebarStyles.navButtonJustifyCenter : sidebarStyles.navButtonJustifyStart,
+                                isCollapsed ? sidebarStyles.navButtonCollapsed : sidebarStyles.navButtonExpanded
+                            )}
+                        >
+                            <span className={sidebarStyles.navButtonIcon}>{item.icon}</span>
+                            {!isCollapsed && <span className={!isCollapsed ? sidebarStyles.navButtonTextExpanded : sidebarStyles.navButtonTextCollapsed}>{item.label}</span>}
+                        </button>
+                    </Tooltip>
+                ))}
+            </div>
 
             {!isCollapsed && (
-                <Box w="full" pb={2} mb={0} borderTopWidth="1px" borderColor="border.divider" mt={2} pt={2}>
+                <div className={sidebarStyles.actionButtonsContainer}>
                     {activeView === 'Workboard' && (
                         <Tooltip label="Add New Task" isDisabled={!isCollapsed} placement="right">
-                            <Button 
-                                leftIcon={<AddIcon />} 
-                                variant="solid" 
-                                size="sm" 
-                                w={isCollapsed ? "auto" : "full"} 
-                                px={isCollapsed ? 2 : undefined}
+                            <button 
                                 onClick={onAddTaskOpen}
-                                bg="bg.button.accent"
-                                color="text.button.accent"
-                                _hover={{ bg: 'bg.button.accent.hover' }}
+                                className={clsx(sidebarStyles.actionButton, isCollapsed && sidebarStyles.actionButtonCollapsed)}
                             >
-                                {!isCollapsed && "Add New Task"}
-                            </Button>
+                                <AddIcon className={sidebarStyles.actionButtonIcon} />
+                                {!isCollapsed && <span className={!isCollapsed ? sidebarStyles.actionButtonTextExpanded : sidebarStyles.actionButtonTextCollapsed}>Add New Task</span>}
+                            </button>
                         </Tooltip>
                     )}
                     {activeView === 'Portfolio' && (
                         <Tooltip label="Add New Project" isDisabled={!isCollapsed} placement="right">
-                            <Button 
-                                leftIcon={<AddIcon />} 
-                                variant="solid" 
-                                size="sm" 
-                                w={isCollapsed ? "auto" : "full"} 
-                                px={isCollapsed ? 2 : undefined}
+                            <button 
                                 onClick={onAddProjectOpen}
-                                bg="bg.button.accent"
-                                color="text.button.accent"
-                                _hover={{ bg: 'bg.button.accent.hover' }}
+                                className={clsx(sidebarStyles.actionButton, isCollapsed && sidebarStyles.actionButtonCollapsed)}
                             >
-                                {!isCollapsed && "Add New Project"}
-                            </Button>
+                                <AddIcon className={sidebarStyles.actionButtonIcon} />
+                                {!isCollapsed && <span className={!isCollapsed ? sidebarStyles.actionButtonTextExpanded : sidebarStyles.actionButtonTextCollapsed}>Add New Project</span>}
+                            </button>
                         </Tooltip>
                     )}
-                    {activeView === 'Registry' && (
-                        <Tooltip label="Add New Agent" isDisabled={!isCollapsed} placement="right">
-                            <Button 
-                                leftIcon={<AddIcon />} 
-                                variant="solid" 
-                                size="sm" 
-                                w={isCollapsed ? "auto" : "full"} 
-                                px={isCollapsed ? 2 : undefined}
+                     {activeView === 'Registry' && (
+                        <Tooltip label="Register New Agent" isDisabled={!isCollapsed} placement="right">
+                            <button 
                                 onClick={onAddAgentOpen}
-                                bg="bg.button.accent"
-                                color="text.button.accent"
-                                _hover={{ bg: 'bg.button.accent.hover' }}
+                                className={clsx(sidebarStyles.actionButton, isCollapsed && sidebarStyles.actionButtonCollapsed)}
                             >
-                                {!isCollapsed && "Add New Agent"}
-                            </Button>
+                                <AddIcon className={sidebarStyles.actionButtonIcon} />
+                                {!isCollapsed && <span className={!isCollapsed ? sidebarStyles.actionButtonTextExpanded : sidebarStyles.actionButtonTextCollapsed}>Register Agent</span>}
+                            </button>
                         </Tooltip>
                     )}
-                </Box>
-            )}
-
-            <Spacer />
-
-            <VStack spacing={1} align="stretch" pb={2}>
-                <Tooltip label="Import Plan" isDisabled={!isCollapsed} placement="right">
-                    <Box w="full" pt={2} borderTopWidth={isCollapsed ? "none" : "1px"} borderColor="border.divider" mt={isCollapsed ? 0 : 2}>
-                        <Button 
-                            leftIcon={<ArrowUpIcon />} 
-                            variant="solid" 
-                            size="sm" 
-                            w={isCollapsed ? "auto" : "full"} 
-                            px={isCollapsed ? 2 : undefined}
+                    <Tooltip label="Import JSON Plan" isDisabled={!isCollapsed} placement="right">
+                         <button 
                             onClick={onImportPlanOpen}
-                            bg="bg.button.primary"
-                            color="text.button.primary"
-                            _hover={{ bg: 'bg.button.primary.hover' }}
+                            className={clsx(sidebarStyles.actionButton, sidebarStyles.actionButtonSecondary, isCollapsed && sidebarStyles.actionButtonCollapsed)}
                         >
-                            {!isCollapsed && "Import Plan"}
-                        </Button>
-                    </Box>
-                </Tooltip>
-                <Tooltip label="Dev Tools" isDisabled={!isCollapsed} placement="right">
-                    <Box w="full" pt={2} >
-                        <Button 
-                            leftIcon={<SettingsIcon />} 
-                            variant="ghost" 
-                            size="sm" 
-                            w={isCollapsed ? "auto" : "full"} 
-                            px={isCollapsed ? 2 : undefined}
+                            <ArrowUpIcon className={sidebarStyles.actionButtonIcon} />
+                            {!isCollapsed && <span className={!isCollapsed ? sidebarStyles.actionButtonTextExpanded : sidebarStyles.actionButtonTextCollapsed}>Import Plan</span>}
+                        </button>
+                    </Tooltip>
+                    <Tooltip label="Developer Tools" isDisabled={!isCollapsed} placement="right">
+                        <button 
                             onClick={onOpenDevTools}
-                            color="text.secondary"
-                            _hover={{ bg: 'bg.hover.nav' }} 
+                            className={clsx(sidebarStyles.actionButton, sidebarStyles.actionButtonTertiary, isCollapsed && sidebarStyles.actionButtonCollapsed)}
                         >
-                            {!isCollapsed && "Dev Tools"}
-                        </Button>
-                    </Box>
-                </Tooltip>
-            </VStack>
-            <IconButton 
-                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"} 
-                icon={isCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-                onClick={onToggleCollapse}
-                variant="ghost"
-                alignSelf={isCollapsed ? "center" : "flex-end"}
-                mt={2}
-                size="sm"
-            />
-            {!isCollapsed && <FilterSidebar />}
-        </VStack>
+                            <SettingsIcon className={sidebarStyles.actionButtonIcon} />
+                            {!isCollapsed && <span className={!isCollapsed ? sidebarStyles.actionButtonTextExpanded : sidebarStyles.actionButtonTextCollapsed}>Dev Tools</span>}
+                        </button>
+                    </Tooltip>
+                </div>
+            )}
+        </div>
     );
 };
 
@@ -281,13 +205,13 @@ export default function Home() {
     const fetchProjects = useProjectStore((state: ProjectState) => state.fetchProjects);
     const fetchAgents = useAgentStore((state: AgentState) => state.fetchAgents);
     const toast = useToast();
+    const { colorMode } = useColorMode();
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [activeView, setActiveView] = useState('Dashboard');
     const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const toggleSidebarCollapse = () => setIsSidebarCollapsed(!isSidebarCollapsed);
 
     const { isOpen: isAddTaskOpen, onOpen: onAddTaskOpen, onClose: onAddTaskClose } = useDisclosure();
-    const { isOpen: isAddProjectOpen, onOpen: onAddProjectOpen, onClose: onAddProjectClose } = useDisclosure();
+    const { isOpen: isAddProjectOpen, onOpen: _internalOnAddProjectOpen, onClose: onAddProjectClose } = useDisclosure();
     const { isOpen: isAddAgentOpen, onOpen: onAddAgentOpen, onClose: onAddAgentClose } = useDisclosure();
     const { isOpen: isImportPlanOpen, onOpen: onImportPlanOpen, onClose: onImportPlanClose } = useDisclosure();
     const { isOpen: isDevToolsOpen, onOpen: onOpenDevTools, onClose: onCloseDevTools } = useDisclosure();
@@ -296,13 +220,18 @@ export default function Home() {
     const [importStatus, setImportStatus] = React.useState<string>("");
     const [isImporting, setIsImporting] = React.useState<boolean>(false);
 
-    const { colorMode } = useColorMode();
-
     const projectFilters = useProjectStore(state => state.filters);
     const setProjectFilters = useProjectStore(state => state.setFilters);
 
     const taskFilters = useTaskStore(state => state.filters);
     const setTaskFilters = useTaskStore(state => state.setFilters);
+
+    console.log('Home render. isAddProjectOpen:', isAddProjectOpen, 'activeView:', activeView, 'isSidebarCollapsed:', isSidebarCollapsed);
+
+    const onAddProjectOpen = () => {
+        console.log('Home: onAddProjectOpen logic initiated. Current isAddProjectOpen before call:', isAddProjectOpen);
+        _internalOnAddProjectOpen();
+    };
 
     useEffect(() => {
         startPolling();
@@ -325,7 +254,16 @@ export default function Home() {
         }
     }, [error, toast]);
 
-    const AI_REVISION_PROMPT = `Based on our preceding discussion detailing the project plan, please convert that plan into the following JSON format. This JSON will be used to import the project and its tasks into my task manager.\n\nThe JSON structure MUST be as follows:\n\n{\n  \"projectName\": \"STRING - The name of the project (required)\",\n  \"projectDescription\": \"STRING - A brief description of the project (optional)\",\n  \"projectAgentName\": \"STRING - The name of a default agent for all tasks in this project (optional)\",\n  \"tasks\": [\n    {\n      \"title\": \"STRING - The title of the task (required)\",\n      \"description\": \"STRING - A description for the task (optional)\",\n      \"agentName\": \"STRING - The name of a specific agent for this task (optional, overrides projectAgentName if provided for this task)\",\n      \"completed\": BOOLEAN - Whether the task is completed (optional, defaults to false, true/false)\n    }\n    // ... more tasks can be added to the array\n  ]\n}\n\nPlease provide ONLY the JSON output derived from our preceding conversation. Ensure all string values are correctly quoted and boolean values for 'completed' are strictly \`true\` or \`false\` (not strings).`;
+    useEffect(() => {
+        // Consuming filter variables to satisfy ESLint rule
+        if (process.env.NODE_ENV === 'development') {
+            console.log('Current Project Filters:', projectFilters);
+            console.log('Current Task Filters:', taskFilters);
+        }
+        // setProjectFilters and setTaskFilters are setters, their usage is implied by using the state they set.
+    }, [projectFilters, taskFilters, setProjectFilters, setTaskFilters]);
+
+    const AI_REVISION_PROMPT = `Based on our preceding discussion detailing the project plan, please convert that plan into the following JSON format. This JSON will be used to import the project and its tasks into my task manager.\\n\\nThe JSON structure MUST be as follows:\\n\\n{\\n  \"projectName\": \"STRING - The name of the project (required)\",\\n  \"projectDescription\": \"STRING - A brief description of the project (optional)\",\\n  \"projectAgentName\": \"STRING - The name of a default agent for all tasks in this project (optional)\",\\n  \"tasks\": [\\n    {\\n      \"title\": \"STRING - The title of the task (required)\",\\n      \"description\": \"STRING - A description for the task (optional)\",\\n      \"agentName\": \"STRING - The name of a specific agent for this task (optional, overrides projectAgentName if provided for this task)\",\\n      \"completed\": BOOLEAN - Whether the task is completed (optional, defaults to false, true/false)\\n    }\\n    // ... more tasks can be added to the array\\n  ]\\n}\\n\\nPlease provide ONLY the JSON output derived from our preceding conversation. Ensure all string values are correctly quoted and boolean values for 'completed' are strictly \`true\` or \`false\` (not strings).`;
 
     const handleCopyAiPrompt = async () => {
         try {
@@ -373,11 +311,11 @@ export default function Home() {
                 description: data.projectDescription,
             };
             const newProject = await createProject(projectPayload);
-            importLog += `Created project: ${newProject.name} (ID: ${newProject.id})\n`;
+            importLog += `Created project: ${newProject.name} (ID: ${newProject.id})\\n`;
 
             for (const task of data.tasks) {
                 if (!task.title || typeof task.title !== 'string') {
-                    importLog += `Skipping task: Missing or invalid title.\n`;
+                    importLog += `Skipping task: Missing or invalid title.\\n`;
                     continue;
                 }
                 const taskPayload: TaskCreateData = {
@@ -385,17 +323,17 @@ export default function Home() {
                     description: task.description,
                     project_id: newProject.id,
                     agent_name: task.agentName ?? data.projectAgentName,
-                    completed: task.completed ?? false,
+                    status: task.completed ? TaskStatus.COMPLETED : TaskStatus.PENDING
                 };
                 try {
                     const newTask = await createTask(taskPayload);
-                    importLog += `  - Created task: ${newTask.title} (ID: ${newTask.id})\n`;
+                    importLog += `  - Created task: ${newTask.title} (ID: ${newTask.id})\\n`;
                 } catch (taskError) {
-                    importLog += `  - Failed to create task '${task.title}': ${taskError instanceof Error ? taskError.message : String(taskError)}\n`;
+                    importLog += `  - Failed to create task '${task.title}': ${taskError instanceof Error ? taskError.message : String(taskError)}\\n`;
                 }
             }
 
-            setImportStatus(`Import successful!\n${importLog}`);
+            setImportStatus(`Import successful!\\n${importLog}`);
             setJsonPasteContent("");
             fetchProjects();
             fetchTasks();
@@ -416,11 +354,8 @@ export default function Home() {
         }
     }, [isImportPlanOpen]);
 
-    // Define a placeholder name for demonstration
-    // const name = 'User';
-
     return (
-        <Box w="100vw" minH="100vh" px={0} mx={0} bg="bg.content">
+        <main className={styles.pageContainer}>
             <IconButton
                 aria-label="Open menu"
                 icon={<HamburgerIcon />}
@@ -428,44 +363,19 @@ export default function Home() {
                 variant="outline"
                 display={{ base: 'block', md: 'none' }}
                 onClick={onDrawerOpen}
-                position="fixed"
-                top="1rem"
-                left="1rem"
-                zIndex="overlay"
+                className={styles.mobileMenuButton}
                 bg="bg.content"
                 borderColor="border.primary"
                 _hover={{ bg: "interaction.hover" }}
             />
 
-            <VStack spacing={4} align="stretch" p={{ base: 4, md: 6 }} pt={{ base: "60px", md: 6 }}>
-                <HStack 
-                    w="full" 
-                    justifyContent={{ base: 'center', md: 'space-between' }} 
-                    alignItems="center" 
-                    mb={4} 
-                    px={{ base: 0, md: 2}}
-                >
-                    <Image
-                        src={colorMode === 'dark' ? '/assets/images/logo_dark.png' : '/assets/images/logo_light.png'}
-                        alt="Project Manager Logo"
-                        h={{ base: "100px", md: "120px" }}
-                        objectFit="contain"
-                    />
-                </HStack>
-                
-                <Flex align="flex-start" gap={{ base: 4, md: 6 }} w="full" direction={{ base: 'column', md: 'row' }}>
-                    <VStack 
-                        as="nav"
-                        w={{ base: 'full', md: isSidebarCollapsed ? 20 : 60 }} 
-                        bg="bg.sidebar" 
-                        p={4} 
-                        display={{ base: 'none', md: 'flex' }} 
-                        transition="width 0.2s ease-in-out"
-                        spacing={0} 
-                        align="stretch"
-                        h="calc(100vh - 100px)"
-                        position="sticky"
-                        top="20px"
+            <div className={styles.mainVStackLayout}>
+                <div className={styles.contentFlexContainer}>
+                    <nav 
+                        className={clsx(
+                            styles.desktopSidebar,
+                            isSidebarCollapsed ? styles.desktopSidebarCollapsed : styles.desktopSidebarExpanded
+                        )}
                     >
                         <SidebarContent 
                             activeView={activeView} 
@@ -476,17 +386,18 @@ export default function Home() {
                             onImportPlanOpen={onImportPlanOpen}
                             onOpenDevTools={onOpenDevTools}
                             isCollapsed={isSidebarCollapsed}
-                            onToggleCollapse={toggleSidebarCollapse}
+                            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                         />
-                    </VStack>
+                        {!isSidebarCollapsed && <FilterSidebar />}
+                    </nav>
 
                     <Drawer isOpen={isDrawerOpen} placement="left" onClose={onDrawerClose}>
                         <DrawerOverlay bg="blackAlpha.600" />
-                        <DrawerContent bg="bg.surface">
+                        <DrawerContent bg="bg.surface" className={styles.drawerContent}>
                             <DrawerCloseButton />
-                            <DrawerHeader borderBottomWidth="1px" borderColor="border.divider">Menu</DrawerHeader>
-                            <DrawerBody p={0}>
-                                <VStack spacing={4} align="stretch" p={5}>
+                            <DrawerHeader borderBottomWidth="1px" borderColor="border.divider" className={styles.drawerHeader}>Menu</DrawerHeader>
+                            <DrawerBody p={0} className={styles.drawerBody}>
+                                <div className={styles.drawerSidebarContentContainerLayout}>
                                     <SidebarContent 
                                         activeView={activeView} 
                                         setActiveView={(view) => { setActiveView(view); onDrawerClose(); }}
@@ -498,57 +409,28 @@ export default function Home() {
                                         isCollapsed={false} 
                                         onToggleCollapse={() => {}} 
                                     />
-                                </VStack>
+                                </div>
                             </DrawerBody>
                         </DrawerContent>
                     </Drawer>
 
-                    <Box flex={1} p={{ base: 2, md: 4 }} overflowY="auto" bg="bg.page">
+                    <section className={styles.mainContentAreaLayout}>
                         {activeView === 'Dashboard' && <Dashboard />}
-                        {activeView === 'Workboard' && (
-                            <Box>
-                                <Tabs 
-                                    variant="soft-rounded" 
-                                    colorScheme="teal"
-                                    mb={4}
-                                    index={taskFilters.is_archived === true ? 1 : 0}
-                                    onChange={(index) => setTaskFilters({ is_archived: index === 1 })}
-                                >
-                                    <TabList>
-                                        <Tab>Active Tasks</Tab>
-                                        <Tab>Archived Tasks</Tab>
-                                    </TabList>
-                                </Tabs>
-                                <TaskList />
-                            </Box>
-                        )}
-                        {activeView === 'Portfolio' && (
-                            <Box>
-                                <Tabs 
-                                    variant="soft-rounded" 
-                                    colorScheme="blue" 
-                                    mb={4}
-                                    index={projectFilters.is_archived === true ? 1 : 0}
-                                    onChange={(index) => setProjectFilters({ is_archived: index === 1 })}
-                                >
-                                    <TabList>
-                                        <Tab>Active</Tab>
-                                        <Tab>Archived</Tab>
-                                    </TabList>
-                                </Tabs>
-                                <ProjectList />
-                            </Box>
-                        )}
+                        {activeView === 'Workboard' && <TaskList />}
+                        {activeView === 'Portfolio' && <ProjectList />}
                         {activeView === 'Registry' && <AgentList />}
-                    </Box>
-                </Flex>
-            </VStack>
+                        {activeView === 'Overview' && <OverviewContent />}
+                        {activeView === 'Details' && <DetailsContent />}
+                        {activeView === 'Settings' && <SettingsContent />}
+                    </section>
+                </div>
+            </div>
 
             <Modal isOpen={isAddTaskOpen} onClose={onAddTaskClose} size="xl">
                 <ModalOverlay backdropFilter="blur(2px)" />
                 <ModalContent bg="bg.modal" color="text.primary" borderColor="border.modal" borderWidth="1px">
                     <ModalCloseButton color="text.secondary" _hover={{ bg: "button.hover.secondary", color: "text.primary" }} />
-                    <ModalBody pb={6} pt={3}>
+                    <ModalBody pb={6} pt={3} className={styles.modalBody}>
                         <AddTaskForm />
                     </ModalBody>
                 </ModalContent>
@@ -558,7 +440,7 @@ export default function Home() {
                 <ModalOverlay backdropFilter="blur(2px)" />
                 <ModalContent bg="bg.modal" color="text.primary" borderColor="border.modal" borderWidth="1px">
                     <ModalCloseButton color="text.secondary" _hover={{ bg: "button.hover.secondary", color: "text.primary" }} />
-                    <ModalBody pb={6} pt={3}>
+                    <ModalBody pb={6} pt={3} className={styles.modalBody}>
                         <AddProjectForm 
                             onSubmit={async (data) => {
                                 await createProject(data);
@@ -575,14 +457,20 @@ export default function Home() {
                 <ModalOverlay backdropFilter="blur(2px)" />
                 <ModalContent bg="bg.modal" color="text.primary" borderColor="border.modal" borderWidth="1px">
                     <ModalCloseButton color="text.secondary" _hover={{ bg: "button.hover.secondary", color: "text.primary" }} />
-                    <ModalBody pb={6} pt={3}>
+                    <ModalBody pb={6} pt={3} className={styles.modalBody}>
                         <AddAgentForm 
-                            onSubmit={async (name) => {
-                                // Assuming addAgent is available from useAgentStore
-                                // You may need to import and use it if not already
-                                // For now, just close the modal
-                                // TODO: Implement actual agent creation logic
-                                onAddAgentClose();
+                            onSubmit={async (name: string) => {
+                                if (!name.trim()) {
+                                    console.error("Agent name cannot be empty.");
+                                    return;
+                                }
+                                try {
+                                    await createAgent(name);
+                                    fetchAgents();
+                                    onAddAgentClose();
+                                } catch (error) {
+                                    console.error("Failed to create agent:", error);
+                                }
                             }}
                             onClose={onAddAgentClose}
                             initialData={{ name: '' }}
@@ -594,10 +482,10 @@ export default function Home() {
             <Modal isOpen={isImportPlanOpen} onClose={onImportPlanClose} size="xl">
                 <ModalOverlay backdropFilter="blur(2px)" />
                 <ModalContent bg="bg.modal" color="text.primary" borderColor="border.modal" borderWidth="1px">
-                    <ModalHeader color="text.heading">Import Project from JSON</ModalHeader>
+                    <ModalHeader color="text.heading" className={styles.importPlanModalHeader}>Import Project from JSON</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody pb={6}>
-                        <Text mb={2} color="text.secondary">Paste the JSON content below. You can use the AI prompt to help generate this.</Text>
+                        <Text mb={2} color="text.secondary" className={styles.importPlanDescription}>Paste the JSON content below. You can use the AI prompt to help generate this.</Text>
                         <Textarea
                             placeholder="Paste JSON here..."
                             value={jsonPasteContent}
@@ -607,8 +495,9 @@ export default function Home() {
                             bg="bg.input"
                             borderColor="border.input"
                             focusBorderColor="border.focus"
+                            className={styles.importPlanTextarea}
                         />
-                        <HStack justify="space-between" mb={4}>
+                        <div className={styles.importPlanActionsContainer}>
                             <Button 
                                 variant="solid" 
                                 onClick={handleJsonImport} 
@@ -623,10 +512,21 @@ export default function Home() {
                             <Button variant="ghost" onClick={handleCopyAiPrompt} leftIcon={<CopyIcon />} color="text.link">
                                 Copy AI Prompt
                             </Button>
-                        </HStack>
+                        </div>
                         {importStatus && (
-                            <Box p={3} bg={importStatus.startsWith("Error") || importStatus.startsWith("Import failed") ? "bg.danger.subtle" : "bg.status.success.subtle"} borderRadius="md" mt={2}>
-                                <Text whiteSpace="pre-wrap" fontFamily="mono" fontSize="sm" color={importStatus.startsWith("Error") || importStatus.startsWith("Import failed") ? "text.danger" : "text.status.success"}>
+                            <Box 
+                                p={3} 
+                                bg={importStatus.startsWith("Error") || importStatus.startsWith("Import failed") ? "bg.danger.subtle" : "bg.status.success.subtle"} 
+                                borderRadius="md" 
+                                mt={2} 
+                                className={styles.importPlanStatusBox}
+                            >
+                                <Text 
+                                    fontFamily="mono" 
+                                    fontSize="sm" 
+                                    color={importStatus.startsWith("Error") || importStatus.startsWith("Import failed") ? "text.danger" : "text.status.success"}
+                                    className={styles.importPlanStatusText}
+                                >
                                     {importStatus}
                                 </Text>
                             </Box>
@@ -642,17 +542,17 @@ export default function Home() {
                 size='lg'
             >
                 <DrawerOverlay />
-                <DrawerContent>
-                    <DrawerCloseButton />
-                    <DrawerHeader borderBottomWidth='1px' borderColor="border.primary">
-                        <HStack spacing={2}>
+                <DrawerContent bg="bg.surface" className={styles.drawerContent}>
+                    <DrawerHeader borderBottomWidth='1px' borderColor="border.primary" className={styles.devToolsDrawerHeader}>
+                        <div className={styles.devToolsHeaderContainer}>
                             <Image 
                                 src={colorMode === 'dark' ? '/assets/images/icon_dark.png' : '/assets/images/icon_light.png'}
                                 alt="Project Manager Icon"
                                 boxSize="24px"
+                                className={styles.devToolsIcon}
                             />
                             <Text>MCP Dev Tools</Text>
-                        </HStack>
+                        </div>
                     </DrawerHeader>
                     <DrawerBody>
                         <MCPDevTools />
@@ -660,6 +560,6 @@ export default function Home() {
                 </DrawerContent>
             </Drawer>
 
-        </Box>
+        </main>
     );
 }

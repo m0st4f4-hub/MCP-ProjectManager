@@ -1,18 +1,31 @@
 import { z } from 'zod';
 
+export enum TaskStatus {
+    PENDING = 'pending',
+    TODO = 'todo',
+    IN_PROGRESS = 'in_progress',
+    COMPLETED = 'completed',
+    BLOCKED = 'blocked',
+}
+
+export enum TaskPriority {
+    LOW = 'low',
+    MEDIUM = 'medium',
+    HIGH = 'high',
+}
+
 // Base Task schema for validation
 export const taskSchema = z.object({
     id: z.string(),
     title: z.string().min(1, 'Title is required'),
     description: z.string().nullable().optional(),
-    completed: z.boolean(),
-    project_id: z.string(),
-    agent_id: z.string().nullable().optional(),
-    agent_name: z.string().nullable().optional(),
-    parent_task_id: z.string().nullable().optional(),
+    status: z.string().default('TO_DO'),
+    project_id: z.string().nullable(),
+    assignee_id: z.string().nullable().optional(),
     created_at: z.string(),
     updated_at: z.string().optional(),
-    status: z.string().nullable().optional(),
+    agent_id: z.string().nullable().optional(),
+    agent_name: z.string().nullable().optional(),
     is_archived: z.boolean().optional(),
 });
 
@@ -39,8 +52,7 @@ export type TaskUpdateData = z.infer<typeof taskUpdateSchema>;
 
 // Task with computed fields
 export interface TaskWithMeta extends Task {
-    isOverdue?: boolean;
-    daysRemaining?: number;
+    completed?: boolean;
 }
 
 // Task filter options
@@ -49,8 +61,6 @@ export interface TaskFilters {
     agentId?: string;
     status?: 'all' | 'completed' | 'active';
     search?: string;
-    parent_task_id?: string;
-    top_level_only?: boolean;
     hideCompleted?: boolean;
     is_archived?: boolean | null;
 }

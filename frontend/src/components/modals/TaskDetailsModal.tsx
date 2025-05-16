@@ -29,15 +29,18 @@ import {
     useDisclosure,
     Badge,
 } from '@chakra-ui/react';
-import { Task, getTaskById } from '@/services/api'; // Assuming getTaskById exists
+import { Task } from '@/types'; // Corrected import for Task
+import { getTaskById } from '@/services/api'; // Assuming getTaskById exists
 import { useTaskStore } from '@/store/taskStore'; // To potentially get project/agent names if not in task detail
 import { getDisplayableStatus, StatusID } from '@/lib/statusUtils'; // Added import
 import { DeleteIcon, DownloadIcon, RepeatClockIcon } from '@chakra-ui/icons'; // Added icons
+import styles from './TaskDetailsModal.module.css';
+import { clsx } from 'clsx';
 
 interface TaskDetailsModalProps {
     isOpen: boolean;
     onClose: () => void;
-    taskId: string | null; // Changed to string to match API and store id type
+    taskId: string | null; // Changed number back to string
 }
 
 const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
@@ -63,7 +66,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         onOpen: onAlertOpen, 
         onClose: onAlertClose 
     } = useDisclosure();
-    const cancelRef = React.useRef();
+    const cancelRef = React.useRef<HTMLButtonElement | null>(null);
 
     useEffect(() => {
         if (isOpen && taskId !== null) {
@@ -155,92 +158,124 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
     const agent = agents.find(a => a.id === task?.agent_id);
 
+    const getStatusTagClassName = (colorScheme?: string) => {
+        switch (colorScheme) {
+            case 'blue': return styles.statusTagBlue;
+            case 'green': return styles.statusTagGreen;
+            case 'yellow': return styles.statusTagYellow;
+            case 'red': return styles.statusTagRed;
+            case 'orange': return styles.statusTagOrange;
+            case 'gray': return styles.statusTagGray;
+            default: return styles.statusTagGray; // Default fallback
+        }
+    };
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
             <ModalOverlay backdropFilter="blur(2px)" />
-            <ModalContent bg="bg.modal" color="text.primary" borderColor="border.base" borderWidth="1px">
-                <ModalHeader borderBottomWidth="1px" borderColor="border.base" color="text.heading">
+            <ModalContent className={styles.modalContent}>
+                <ModalHeader className={styles.modalHeader}>
                     {task ? task.title : 'Task Details'}
-                    {isLoading && <Spinner size="sm" ml={3} color="icon.primary" />}
+                    {isLoading && <Spinner size="sm" className={styles.headerSpinner} />}
                     {task?.is_archived && (
-                        <Badge colorScheme="purple" variant="solid" ml={3} fontSize="0.8em">
-                            Archived
-                        </Badge>
+                        <Badge colorScheme="purple" className={styles.archivedBadge}>Archived</Badge>
                     )}
                 </ModalHeader>
-                <ModalCloseButton color="text.secondary" _hover={{ bg: "interaction.hover"}} />
-                <ModalBody py={6}>
+                <ModalCloseButton className={styles.modalCloseButton} />
+                <ModalBody className={styles.modalBody}>
                     {error && (
-                        <Box color="status.error" mb={4}>
+                        <Box className={styles.errorText}>
                             Error: {error}
                         </Box>
                     )}
-                    {isLoading && !task && !error && <Spinner color="icon.primary" />}
-                    {!isLoading && !task && !error && <Text color="text.secondary">No task selected or details unavailable.</Text>}
+                    {isLoading && !task && !error && <Spinner className={styles.bodySpinner} />}
+                    {!isLoading && !task && !error && <Text className={styles.noTaskText}>No task selected or details unavailable.</Text>}
                     
                     {task && (
-                        <VStack spacing={4} align="stretch">
+                        <VStack className={styles.detailsVStack}>
                             <Box>
-                                <Heading size="sm" mb={1} color="text.heading">Description</Heading>
-                                <Text whiteSpace="pre-wrap" maxWidth="80ch" color="text.secondary">{task.description || 'No description provided.'}</Text>
+                                <Heading size="sm" className={styles.sectionHeading}>Description</Heading>
+                                <Text className={styles.descriptionText}>{task.description || 'No description provided.'}</Text>
                             </Box>
-                            <Divider borderColor="border.divider" />
-                            <HStack justifyContent="space-between">
+                            <Divider className={styles.divider} />
+                            <HStack className={styles.detailsHStack}>
                                 <Box>
-                                    <Heading size="xs" textTransform="uppercase" color="text.secondary">Status</Heading>
-                                    {(() => {
-                                        // Default to 'TO_DO' if task.status is null or undefined
-                                        const statusId = (task.status || 'TO_DO') as StatusID;
-                                        const { displayName, colorScheme, icon, dynamicValue } = getDisplayableStatus(statusId, task.title);
-                                        return (
-                                            <Tag
-                                                size="md"
-                                                borderRadius="md"
-                                                colorScheme={colorScheme}
-                                                variant="subtle" // Using subtle variant for consistency if desired
-                                            >
-                                                {icon && <TagLeftIcon as={icon} />}
-                                                <Text>{dynamicValue ? `${displayName} (${dynamicValue})` : displayName}</Text>
-                                            </Tag>
-                                        );
-                                    })()}
+                                    <Heading size="xs" className={styles.subSectionHeading}>Status</Heading>
+                                    <Box className={styles.statusTagContainer}>
+                                        {(() => {
+                                            const statusId = (task.status || 'TO_DO') as StatusID;
+                                            const statusInfo = getDisplayableStatus(statusId, task.title);
+                                            if (!statusInfo) {
+                                                return <Tag className={clsx(styles.statusTag, styles.statusTagGray)}>Unknown Status</Tag>;
+                                            }
+                                            const { displayName, colorScheme, icon, dynamicValue } = statusInfo;
+                                            return (
+                                                <Tag className={clsx(styles.statusTag, getStatusTagClassName(colorScheme))}>
+                                                    {icon && typeof icon !== 'string' && <TagLeftIcon as={icon} />}
+                                                    <Text>{dynamicValue ? `${displayName} (${dynamicValue})` : displayName}</Text>
+                                                </Tag>
+                                            );
+                                        })()}
+                                    </Box>
                                 </Box>
                                 <Box>
-                                    <Heading size="xs" textTransform="uppercase" color="text.secondary">Project</Heading>
-                                    <Text color="text.primary">{getProjectName(task.project_id)}</Text>
-                                </Box>
-                            </HStack>
-                            <HStack justifyContent="space-between">
-                                <Box>
-                                    <Heading size="xs" textTransform="uppercase" color="text.secondary">Agent</Heading>
-                                    <Text color="text.primary">{agent ? agent.name : (task?.agent_name || 'Unassigned')}</Text>
+                                    <Heading size="xs" className={styles.subSectionHeading}>Project</Heading>
+                                    <Text className={styles.detailText}>{getProjectName(task.project_id)}</Text>
                                 </Box>
                             </HStack>
+                            <HStack className={styles.detailsHStack}>
+                                <Box>
+                                    <Heading size="xs" className={styles.subSectionHeading}>Agent</Heading>
+                                    <Text className={styles.detailText}>{agent ? agent.name : (task?.agent_name || 'Unassigned')}</Text>
+                                </Box>
+                            </HStack>
+                            <Divider className={styles.divider} />
+                            <Box>
+                                <Heading size="xs" className={styles.subSectionHeading}>Timestamps</Heading>
+                                <Text className={styles.detailText}>Created: {new Date(task.created_at).toLocaleString()}</Text>
+                                <Text className={styles.detailText}>Updated: {task.updated_at ? new Date(task.updated_at).toLocaleString() : 'N/A'}</Text>
+                            </Box>
                         </VStack>
                     )}
                 </ModalBody>
-                <ModalFooter borderTopWidth="1px" borderColor="border.base">
+                <ModalFooter className={styles.modalFooter}>
                     {task && !task.is_archived && (
                         <>
-                            <Button leftIcon={<DownloadIcon />} colorScheme="blue" variant="outline" onClick={handleArchive} mr={3}>
+                            <Button 
+                                leftIcon={<DownloadIcon />} 
+                                onClick={handleArchive} 
+                                className={clsx(styles.footerButton, styles.footerButtonOutline, styles.buttonBlueOutline)}
+                            >
                                 Archive Task
                             </Button>
-                            <Button leftIcon={<DeleteIcon />} colorScheme="red" variant="outline" onClick={handleDeleteInitiate} mr={3}>
+                            <Button 
+                                leftIcon={<DeleteIcon />} 
+                                onClick={handleDeleteInitiate} 
+                                className={clsx(styles.footerButton, styles.footerButtonOutline, styles.buttonRedOutline)}
+                            >
                                 Delete Task
                             </Button>
                         </>
                     )}
                     {task && task.is_archived && (
                         <>
-                            <Button leftIcon={<RepeatClockIcon />} colorScheme="teal" variant="outline" onClick={handleUnarchive} mr={3}>
+                            <Button 
+                                leftIcon={<RepeatClockIcon />} 
+                                onClick={handleUnarchive} 
+                                className={clsx(styles.footerButton, styles.footerButtonOutline, styles.buttonTealOutline)}
+                            >
                                 Unarchive Task
                             </Button>
-                            <Button leftIcon={<DeleteIcon />} colorScheme="red" onClick={handleDeleteInitiate} mr={3}>
+                            <Button 
+                                leftIcon={<DeleteIcon />} 
+                                onClick={handleDeleteInitiate} 
+                                className={clsx(styles.footerButton, styles.buttonRed)} // Solid red button
+                            >
                                 Delete Permanently
                             </Button>
                         </>
                     )}
-                    <Button variant="ghost" onClick={onClose} color="text.link">Close</Button>
+                    <Button onClick={onClose} className={clsx(styles.footerButton, styles.footerButtonGhost, styles.buttonGrayGhost)} >Close</Button>
                 </ModalFooter>
             </ModalContent>
             {task && (
@@ -251,20 +286,19 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     isCentered
                 >
                     <AlertDialogOverlay>
-                        <AlertDialogContent bg="bg.modal" color="text.primary">
-                            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                                {task.is_archived ? 'Delete Archived Task' : 'Delete Task'}
+                        <AlertDialogContent className={styles.modalContent}>
+                            <AlertDialogHeader className={styles.modalHeader}>
+                                Delete Task
                             </AlertDialogHeader>
-                            <AlertDialogBody>
-                                {task.is_archived
-                                    ? 'Are you sure you want to permanently delete this archived task? This action cannot be undone.'
-                                    : 'Are you sure you want to delete this task?'}
+                            <AlertDialogBody className={styles.modalBody}>
+                                Are you sure you want to permanently delete task &quot;{task.title}&quot;? 
+                                This action cannot be undone.
                             </AlertDialogBody>
-                            <AlertDialogFooter>
-                                <Button ref={cancelRef} onClick={onAlertClose} variant="ghost">
+                            <AlertDialogFooter className={styles.modalFooter}>
+                                <Button ref={cancelRef} onClick={onAlertClose} className={clsx(styles.footerButton, styles.footerButtonGhost, styles.buttonGrayGhost)}>
                                     Cancel
                                 </Button>
-                                <Button colorScheme="red" onClick={handleDeleteConfirm} ml={3}>
+                                <Button onClick={handleDeleteConfirm} className={clsx(styles.footerButton, styles.buttonRed)} ml={3}>
                                     Delete
                                 </Button>
                             </AlertDialogFooter>

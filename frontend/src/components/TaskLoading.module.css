@@ -1,0 +1,70 @@
+/* frontend/src/components/TaskLoading.module.css */
+
+.loadingContainer {
+    width: 100%; /* w="100%" */
+    min-height: 70vh; /* minH="70vh" */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: var(--chakra-space-4); /* py={{ base: 4 }} */
+    padding-bottom: var(--chakra-space-4);
+}
+
+@media (min-width: 48em) { /* md breakpoint */
+    .loadingContainer {
+        padding-top: var(--chakra-space-12); /* py={{ md: 12 }} */
+        padding-bottom: var(--chakra-space-12);
+    }
+}
+
+.loadingBox {
+    max-width: 500px; /* maxW="500px" */
+    width: 100%; /* w="100%" */
+    background-color: var(--chakra-colors-bg-elevated, #FFFFFF); /* bg="bg.elevated" */
+    padding: var(--chakra-space-4); /* p={{ base: 4 }} */
+    border-radius: var(--chakra-radii-2xl, 1rem); /* rounded="2xl" */
+    box-shadow: var(--chakra-shadows-2xl, 0 25px 50px -12px rgba(0, 0, 0, 0.25)); /* shadow="2xl" */
+    border: 1px solid var(--chakra-colors-border-base, #E2E8F0); /* borderWidth="1px" borderColor="border.base" */
+    margin-top: var(--chakra-space-8); /* mt={{ base: 8 }} */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (min-width: 48em) { /* md breakpoint */
+    .loadingBox {
+        padding: var(--chakra-space-8); /* p={{ md: 8 }} */
+        margin-top: var(--chakra-space-16); /* mt={{ md: 16 }} */
+    }
+}
+
+.loadingContentStack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--chakra-space-6); /* spacing={6} */
+    width: 100%; /* w="100%" */
+    align-items: center; /* To center spinner and text */
+}
+
+.loadingSpinner {
+    /* size="xl" */
+    width: var(--chakra-sizes-16, 4rem); /* Approximate xl size */
+    height: var(--chakra-sizes-16, 4rem);
+    color: var(--chakra-colors-icon-primary, #4A5568); /* color="icon.primary" */
+    border-radius: 50%;
+    border-width: 4px; /* Thicker for xl */
+    border-style: solid;
+    border-top-color: currentColor; /* Spinner animation part */
+    border-right-color: currentColor;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loadingText {
+    color: var(--chakra-colors-text-muted, #A0AEC0); /* color="text.muted" */
+} 

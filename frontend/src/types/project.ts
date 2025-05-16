@@ -51,6 +51,7 @@ export interface ProjectFilters {
     status?: 'all' | 'active' | 'completed';
     agentId?: string | null;
     is_archived?: boolean | null;
+    projectId?: string | null;
 }
 
 // Project sort options

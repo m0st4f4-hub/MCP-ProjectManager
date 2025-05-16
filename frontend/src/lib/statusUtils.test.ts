@@ -3,48 +3,15 @@ import {
   getDisplayableStatus,
   getAllStatusIds,
   StatusID,
-  StatusAttributeObject,
 } from './statusUtils';
-
-// Mocking Chakra UI icons for tests as they are not relevant to the logic
-const MOCK_ICON = 'MockIconComponent';
-
-// Helper to create a partial mock of StatusAttributeObject for STATUS_MAP values
-const createPartialStatusObject = (id: StatusID, isDynamic = false, dynamicPartsExtractor?: RegExp, dynamicDisplayNamePattern?: string): Partial<StatusAttributeObject> => ({
-  id,
-  displayName: id, // Default, will be overridden in actual map
-  category: 'todo', // Default
-  description: `Description for ${id}`,
-  colorScheme: 'gray', // Default
-  icon: MOCK_ICON,
-  isTerminal: false, // Default
-  isDynamic,
-  ...(dynamicPartsExtractor && { dynamicPartsExtractor }),
-  ...(dynamicDisplayNamePattern && { dynamicDisplayNamePattern }),
-});
-
-// A simplified subset of STATUS_MAP for testing getStatusAttributes and getAllStatusIds
-// We rely on the actual STATUS_MAP in statusUtils.ts for getDisplayableStatus tests for accuracy
-const mockStatusMapForBasicTests: Readonly<Record<StatusID, Partial<StatusAttributeObject>>> = {
-  'To Do': createPartialStatusObject('To Do'),
-  'In Progress': createPartialStatusObject('In Progress'),
-  'Completed': createPartialStatusObject('Completed', false),
-  'COMPLETED_HANDOFF_TO_...': createPartialStatusObject(
-    'COMPLETED_HANDOFF_TO_...',
-    true,
-    /^COMPLETED_HANDOFF_TO_(([a-zA-Z0-9-]+(?:\s*,\s*[a-zA-Z0-9-]+)*))$/,
-    'Handoff to: {value}'
-  ),
-  'FAILED': createPartialStatusObject('FAILED', false),
-};
 
 // --- Tests for getStatusAttributes ---_/
 
 describe('getStatusAttributes', () => {
   it('should return attributes for a valid static StatusID', () => {
-    const attributes = getStatusAttributes('To Do');
+    const attributes = getStatusAttributes('TO_DO');
     expect(attributes).toBeDefined();
-    expect(attributes?.id).toBe('To Do');
+    expect(attributes?.id).toBe('TO_DO');
     expect(attributes?.displayName).toBe('To Do');
     expect(attributes?.category).toBe('todo');
     // Check a few more known properties from the actual STATUS_MAP
@@ -71,7 +38,7 @@ describe('getStatusAttributes', () => {
 
 describe('getDisplayableStatus', () => {
   // Test cases for static statuses
-  const staticStatuses: StatusID[] = ['To Do', 'In Progress', 'Blocked', 'Completed', 'FAILED'];
+  const staticStatuses: StatusID[] = ['TO_DO', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'FAILED'];
   staticStatuses.forEach(statusId => {
     it(`should return correct displayable info for static status: ${statusId}`, () => {
       const displayable = getDisplayableStatus(statusId);
@@ -149,7 +116,7 @@ describe('getAllStatusIds', () => {
     // The current implementation of getAllStatusIds directly uses Object.keys(STATUS_MAP).
     // So, we check if the length matches and if some known keys are present.
     const actualStatusMapKeys = [
-      'To Do', 'In Progress', 'Blocked', 'Completed', 'CONTEXT_ACQUIRED',
+      'TO_DO', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED', 'CONTEXT_ACQUIRED',
       'PLANNING_COMPLETE', 'EXECUTION_IN_PROGRESS', 'PENDING_VERIFICATION',
       'VERIFICATION_COMPLETE', 'VERIFICATION_FAILED', 'COMPLETED_AWAITING_PROJECT_MANAGER',
       'COMPLETED_HANDOFF_TO_...', 'FAILED', 'IN_PROGRESS_AWAITING_SUBTASK',
