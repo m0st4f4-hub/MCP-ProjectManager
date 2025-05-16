@@ -1,0 +1,78 @@
+/* frontend/src/components/SettingsContent.module.css */
+
+.pageContainer { /* For the outer Box, if needed for consistent page padding */
+    padding: var(--chakra-space-4);
+}
+
+.mainHeading {
+    font-size: var(--chakra-fontSizes-xl); /* size="lg" typically maps to xl */
+    font-weight: var(--chakra-fontWeights-bold);
+    line-height: var(--chakra-lineHeights-shorter);
+    margin-bottom: var(--chakra-space-6); /* mb={6} */
+    color: var(--chakra-colors-text-heading, #1A202C);
+}
+
+.settingsListContainer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--chakra-space-6); /* spacing={6} */
+    align-items: stretch; /* align="stretch" */
+}
+
+.settingsSectionBox {
+    padding: var(--chakra-space-4); /* p={4} */
+    border: 1px solid var(--chakra-colors-border-base, #E2E8F0); /* borderWidth="1px" */
+    border-radius: var(--chakra-radii-lg, 0.5rem); /* borderRadius="lg" */
+    background-color: var(--chakra-colors-bg-surface, #FFFFFF); /* bg="bg.surface" */
+    box-shadow: var(--chakra-shadows-sm, 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06)); /* shadow="sm" */
+}
+
+.sectionHeading {
+    font-size: var(--chakra-fontSizes-lg, 1.125rem); /* size="md" in Chakra Heading */
+    font-weight: var(--chakra-fontWeights-semibold);
+    line-height: var(--chakra-lineHeights-shorter);
+    margin-bottom: var(--chakra-space-4); /* mb={4} */
+    color: var(--chakra-colors-text-primary, #2D3748); /* color="text.primary" */
+}
+
+.sectionHeadingMb3 {
+    /* As above, but for mb={3} */
+    font-size: var(--chakra-fontSizes-lg, 1.125rem);
+    font-weight: var(--chakra-fontWeights-semibold);
+    line-height: var(--chakra-lineHeights-shorter);
+    margin-bottom: var(--chakra-space-3); /* mb={3} */
+    color: var(--chakra-colors-text-primary, #2D3748);
+}
+
+.optionsVStack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--chakra-space-4); /* spacing={4} */
+    align-items: stretch; /* align="stretch" */
+}
+
+.formControlFlex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.formLabel {
+    margin-bottom: 0; /* mb="0" */
+    color: var(--chakra-colors-text-secondary, #718096); /* color="text.secondary" */
+    font-size: var(--chakra-fontSizes-md);
+    line-height: var(--chakra-lineHeights-base);
+}
+
+.placeholderText {
+    color: var(--chakra-colors-text-tertiary, #A0AEC0); /* color="text.tertiary" */
+    margin-bottom: var(--chakra-space-2); /* mb={2} */
+}
+
+.opacityHalf {
+    opacity: 0.5;
+}
+
+.marginTop4 {
+    margin-top: var(--chakra-space-4);
+} 

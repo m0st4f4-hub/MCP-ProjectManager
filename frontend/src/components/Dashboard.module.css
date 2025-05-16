@@ -1,0 +1,58 @@
+/* frontend/src/components/Dashboard.module.css */
+
+.dashboardContainer {
+  padding: var(--chakra-space-4);
+  width: 100%;
+}
+
+.dashboardGrid {
+  /* Styles for the main dashboard grid layout */
+  /* Use 'gap' for spacing if SimpleGrid is replaced by a CSS grid */
+}
+
+.dashboardHeading {
+  /* For the main "Dashboard Overview" Heading */
+  /* e.g., font-size: var(--chakra-fontSizes-2xl); */
+  /* margin-bottom: var(--chakra-space-6); */
+}
+
+.sectionHeading {
+    /* For sub-headings like "Task Status", "Recent Activity" */
+    /* e.g., font-size: var(--chakra-fontSizes-xl); */
+    /* margin-top: var(--chakra-space-6); */
+    /* margin-bottom: var(--chakra-space-4); */
+}
+
+.loadingSpinnerContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  width: 100%;
+}
+
+.errorMessage {
+  color: var(--chakra-colors-text-critical, var(--chakra-colors-red-500)); /* Fallback if text-critical not in theme */
+  text-align: center;
+  padding: var(--chakra-space-4);
+  width: 100%;
+}
+
+.noDataMessage {
+  text-align: center;
+  padding: var(--chakra-space-4);
+  color: var(--chakra-colors-text-tertiary, var(--chakra-colors-gray-500)); /* Fallback for text-tertiary */
+  width: 100%;
+}
+
+.statCard {
+  /* Styles for individual statistic cards (handled by DashboardStatsGrid) */
+}
+
+.chartContainer {
+  /* Styles for chart containers (handled by specific chart components) */
+}
+
+.dashboardIcon {
+    margin-right: var(--chakra-space-2);
+} 

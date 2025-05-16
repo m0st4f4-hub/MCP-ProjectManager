@@ -2,23 +2,23 @@
 
 import React from 'react';
 import { useColorMode, IconButton } from '@chakra-ui/react';
-import { SunIcon, MoonIcon } from '@chakra-ui/icons'; // Use Chakra icons
+import { FaMoon, FaSun } from 'react-icons/fa';
+import styles from './ThemeToggleButton.module.css';
 
-export const ThemeToggleButton: React.FC = () => {
+export const ThemeToggleButton = () => {
   const { colorMode, toggleColorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
 
   return (
     <IconButton
-      aria-label="Toggle theme"
-      icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      icon={isDark ? <FaSun /> : <FaMoon />}
       onClick={toggleColorMode}
-      variant="ghost" // Use ghost for subtle appearance
-      size="md"
-      // Optional: Add tooltip for clarity
+      variant="ghost"
+      size="lg"
+      fontSize="xl"
+      className={styles.toggleButton}
+      tabIndex={0}
     />
-    // Previous button implementation removed
-    // <Button onClick={toggleTheme} className="p-2 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-    //   Switch to {theme === 'light' ? 'Dark' : 'Light'} Mode
-    // </Button>
   );
 }; 

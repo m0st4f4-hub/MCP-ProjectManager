@@ -1,0 +1,313 @@
+/* Styles for ProjectList component */ 
+.projectListContainer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--chakra-space-4);
+    padding: var(--chakra-space-4); /* Or use page-level padding if this is a sub-component */
+    background-color: var(--chakra-colors-bg-content); /* Or transparent if page handles bg */
+    border-radius: var(--chakra-radii-lg);
+    /* box-shadow: var(--chakra-shadows-md); */ /* Optional: if it should be a card itself */
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--chakra-space-2); /* Reduced from mb={4} on old Flex */
+}
+
+.title {
+    font-size: var(--chakra-fontSizes-xl); /* Was size="lg" for Heading */
+    font-weight: var(--chakra-fontWeights-bold);
+    color: var(--chakra-colors-text-primary);
+}
+
+.headerActions {
+    display: flex;
+    gap: var(--chakra-space-2);
+}
+
+.addButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--chakra-space-2) var(--chakra-space-4);
+    background-color: var(--chakra-colors-button-primary-default);
+    color: var(--chakra-colors-text-button-primary);
+    font-weight: var(--chakra-fontWeights-medium);
+    border-radius: var(--chakra-radii-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+.addButton:hover {
+    background-color: var(--chakra-colors-button-primary-hover);
+}
+.addButton:active {
+    background-color: var(--chakra-colors-button-primary-active);
+}
+
+
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--chakra-space-10);
+    gap: var(--chakra-space-4);
+    color: var(--chakra-colors-text-secondary);
+}
+
+.errorContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--chakra-space-10);
+    gap: var(--chakra-space-3);
+    background-color: var(--chakra-colors-bg-danger-subtle);
+    color: var(--chakra-colors-text-danger);
+    border-radius: var(--chakra-radii-md);
+    border: 1px solid var(--chakra-colors-border-danger);
+}
+.errorIcon {
+    font-size: var(--chakra-fontSizes-2xl);
+    color: var(--chakra-colors-icon-danger);
+}
+.errorText {
+    font-weight: var(--chakra-fontWeights-medium);
+}
+.retryButton {
+    padding: var(--chakra-space-2) var(--chakra-space-4);
+    border-radius: var(--chakra-radii-md);
+    background-color: var(--chakra-colors-button-danger-default);
+    color: var(--chakra-colors-text-button-danger);
+    font-weight: var(--chakra-fontWeights-medium);
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+.retryButton:hover {
+    background-color: var(--chakra-colors-button-danger-hover);
+}
+
+.emptyStateContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--chakra-space-10) var(--chakra-space-6);
+    text-align: center;
+    gap: var(--chakra-space-2);
+    border: 1px dashed var(--chakra-colors-border-secondary);
+    border-radius: var(--chakra-radii-lg);
+    background-color: var(--chakra-colors-bg-subtle);
+}
+.emptyStateIcon {
+    font-size: var(--chakra-fontSizes-3xl);
+    color: var(--chakra-colors-icon-secondary);
+    margin-bottom: var(--chakra-space-2);
+}
+.emptyStateText {
+    font-size: var(--chakra-fontSizes-lg);
+    font-weight: var(--chakra-fontWeights-medium);
+    color: var(--chakra-colors-text-primary);
+}
+.emptyStateSubText {
+    font-size: var(--chakra-fontSizes-md);
+    color: var(--chakra-colors-text-secondary);
+}
+.emptyStateLinkButton {
+    color: var(--chakra-colors-text-link);
+    text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-weight: var(--chakra-fontWeights-medium);
+}
+.emptyStateLinkButton:hover {
+    color: var(--chakra-colors-text-link-hover);
+}
+
+.projectGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Replicates SimpleGrid behavior */
+    gap: var(--chakra-space-4);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.projectCard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--chakra-space-3); /* Approximation for spacing between elements */
+    padding: var(--chakra-space-4);
+    background-color: var(--chakra-colors-bg-card);
+    border-radius: var(--chakra-radii-lg);
+    border: 1px solid var(--chakra-colors-border-primary);
+    box-shadow: var(--chakra-shadows-sm);
+    transition: all 0.2s ease-in-out;
+    position: relative; /* For archived overlay and top border */
+    overflow: hidden; /* For top border */
+}
+.projectCard:hover {
+    box-shadow: var(--chakra-shadows-md);
+    border-color: var(--chakra-colors-border-hover);
+    transform: translateY(-2px);
+}
+
+.projectCard::before { /* Top border accent */
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: transparent; /* Default */
+    transition: background-color 0.2s ease-in-out;
+}
+/* Specific top border colors can be added based on status if desired, e.g. */
+/* .projectCard.statusInProgress::before { background-color: var(--chakra-colors-blue-500); } */
+/* .projectCard.statusCompleted::before { background-color: var(--chakra-colors-green-500); } */
+
+
+.archivedCard {
+    background-color: var(--chakra-colors-bg-disabled);
+    border-color: var(--chakra-colors-border-disabled);
+}
+.archivedCard:hover {
+    border-color: var(--chakra-colors-border-disabled-hover);
+}
+
+.archivedOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(128, 128, 128, 0.1); /* Light gray overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--chakra-colors-text-disabled);
+    font-weight: var(--chakra-fontWeights-bold);
+    font-size: var(--chakra-fontSizes-lg);
+    border-radius: var(--chakra-radii-lg); /* Match parent */
+    pointer-events: none; /* Allows clicks to go through to elements underneath if needed, though usually not for an overlay like this */
+}
+
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cardTitle {
+    font-size: var(--chakra-fontSizes-lg); /* Was size="md" for Heading */
+    font-weight: var(--chakra-fontWeights-semibold);
+    color: var(--chakra-colors-text-primary);
+    /* For isTruncated, we might need to add width, overflow hidden, text-overflow ellipsis */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100% - 40px); /* Adjust based on menu button size */
+}
+
+.cardDescription {
+    font-size: var(--chakra-fontSizes-sm);
+    color: var(--chakra-colors-text-secondary);
+    font-weight: var(--chakra-fontWeights-normal);
+    line-height: var(--chakra-lineHeights-short);
+    /* For noOfLines={2} */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    max-height: calc(var(--chakra-lineHeights-short) * 2); /* Fallback for non-webkit */
+}
+
+.cardStatusSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--chakra-space-2);
+    margin-top: var(--chakra-space-1);
+    margin-bottom: var(--chakra-space-1);
+}
+
+.statusTag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--chakra-space-1_5);
+    padding: var(--chakra-space-0_5) var(--chakra-space-2);
+    border-radius: var(--chakra-radii-full);
+    font-size: var(--chakra-fontSizes-xs);
+    font-weight: var(--chakra-fontWeights-medium);
+    text-transform: capitalize;
+}
+
+.statusTagPending {
+    background-color: var(--chakra-colors-blue-100); /* Adjust with theme */
+    color: var(--chakra-colors-blue-800);
+}
+.statusTagInProgress {
+    background-color: var(--chakra-colors-yellow-100); /* Adjust with theme */
+    color: var(--chakra-colors-yellow-800);
+}
+.statusTagCompleted {
+    background-color: var(--chakra-colors-green-100); /* Adjust with theme */
+    color: var(--chakra-colors-green-800);
+}
+.statusTagArchived {
+    background-color: var(--chakra-colors-gray-200); /* Adjust with theme */
+    color: var(--chakra-colors-gray-700);
+}
+
+.cardTasksCount {
+    font-size: var(--chakra-fontSizes-sm);
+    color: var(--chakra-colors-text-tertiary);
+}
+
+.cardProgressBar {
+    /* Chakra Progress has its own styling via colorScheme, we can try to mimic or use custom */
+    height: var(--chakra-sizes-1_5); /* was size="sm" */
+    border-radius: var(--chakra-radii-full);
+    background-color: var(--chakra-colors-progress-track-bg, var(--chakra-colors-gray-200)); /* Fallback */
+}
+/* Specific colorScheme styles would need to be added for the progress bar itself */
+/* For example, for colorScheme="blue": */
+/* .cardProgressBar[value]::-webkit-progress-bar { background-color: var(--chakra-colors-gray-200); } */
+/* .cardProgressBar[value]::-webkit-progress-value { background-color: var(--chakra-colors-blue-500); } */
+/* .cardProgressBar[value]::-moz-progress-bar { background-color: var(--chakra-colors-blue-500); } */
+
+.cardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--chakra-space-2);
+    font-size: var(--chakra-fontSizes-xs);
+    color: var(--chakra-colors-text-tertiary);
+}
+.cardDate {}
+.cardDateUpdated {
+    font-style: italic;
+}
+
+/* CLI Prompt Modal Specific */
+.cliPromptTextarea {
+    /* Chakra Textarea styles are generally good, but we can ensure some basics */
+    background-color: var(--chakra-colors-bg-textarea, var(--chakra-colors-whiteAlpha-100));
+    border: 1px solid var(--chakra-colors-border-input, var(--chakra-colors-gray-600));
+    border-radius: var(--chakra-radii-md);
+    font-family: var(--chakra-fonts-mono);
+    font-size: var(--chakra-fontSizes-sm);
+    color: var(--chakra-colors-text-primary);
+    padding: var(--chakra-space-2);
+}
+.cliPromptTextarea:focus {
+    border-color: var(--chakra-colors-border-focus, var(--chakra-colors-blue-500));
+    box-shadow: 0 0 0 1px var(--chakra-colors-border-focus, var(--chakra-colors-blue-500));
+} 

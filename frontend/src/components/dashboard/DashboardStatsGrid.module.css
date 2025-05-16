@@ -1,0 +1,131 @@
+/* DashboardStatsGrid.module.css */
+.statsGrid {
+    /* Replaces SimpleGrid columns and spacing */
+    display: grid;
+    gap: var(--chakra-space-6); /* 24px */
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+/* Responsive columns for SimpleGrid */
+@media (min-width: 30em) { /* sm */
+    .statsGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (min-width: 48em) { /* md */
+    .statsGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+@media (min-width: 62em) { /* lg */
+    .statsGrid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.skeletonWrapper {
+    height: 120px; /* from Skeleton height */
+    border-radius: var(--chakra-radii-xl); /* 0.75rem, from Skeleton borderRadius */
+}
+
+/* StatCard styles */
+.statCard {
+    padding: var(--chakra-space-6); /* 24px */
+    box-shadow: var(--chakra-shadows-lg);
+    border-width: 1px;
+    border-style: solid; /* Explicitly set border-style */
+    border-radius: var(--chakra-radii-xl); /* 0.75rem */
+    background-color: var(--chakra-colors-bg-card);
+    border-color: var(--chakra-colors-border-primary);
+    transition: all 0.2s;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative; /* For IconButton positioning */
+}
+
+.statCardClickable {
+    /* additional styles for clickable cards */
+}
+
+.statCardClickable:hover {
+    box-shadow: var(--chakra-shadows-2xl);
+    transform: translateY(-2px);
+    border-color: var(--chakra-colors-accent-active);
+    cursor: pointer;
+}
+
+.statCardNonClickable:hover {
+    box-shadow: var(--chakra-shadows-xl);
+}
+
+.statCardContent {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: var(--chakra-space-4); /* 16px, from HStack spacing */
+}
+
+.statCardIcon {
+    /* Chakra Icon w={10} h={10} -> 2.5rem */
+    width: 2.5rem; 
+    height: 2.5rem;
+    /* color is passed as a prop, so it can remain on the Icon component or be handled dynamically if needed */
+}
+
+.statDetails {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* from VStack align="start" */
+    gap: 0; /* from VStack spacing={0} */
+}
+
+.statLabel {
+    color: var(--chakra-colors-text-secondary);
+    font-size: var(--chakra-fontSizes-sm); /* 0.875rem */
+}
+
+.statNumber {
+    font-size: var(--chakra-fontSizes-2xl); /* 1.5rem */
+    font-weight: var(--chakra-fontWeights-bold);
+    color: var(--chakra-colors-text-primary);
+}
+
+.statHelpText {
+    color: var(--chakra-colors-text-muted);
+    font-size: var(--chakra-fontSizes-xs); /* 0.75rem */
+}
+
+.trendIndicator {
+    display: flex;
+    align-items: center;
+    gap: var(--chakra-space-1); /* 4px, from HStack spacing */
+}
+
+.trendIcon {
+    /* Chakra Icon boxSize={4} -> 1rem */
+    width: 1rem;
+    height: 1rem;
+}
+
+.trendText {
+    font-weight: var(--chakra-fontWeights-bold);
+    font-size: var(--chakra-fontSizes-md); /* 1rem */
+}
+
+.trendUp {
+    color: var(--chakra-colors-green-400);
+}
+
+.trendDown {
+    color: var(--chakra-colors-red-400);
+}
+
+.copyButton {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+    /* size="xs", variant="ghost", colorScheme="blue" will be handled by Chakra's IconButton */
+} 

@@ -8,7 +8,6 @@ import {
   ModalBody,
   ModalCloseButton,
   Button,
-  Flex,
   AlertDialog,
   AlertDialogBody,
   AlertDialogFooter,
@@ -16,9 +15,8 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   useDisclosure,
-  VStack,
-  Text,
 } from '@chakra-ui/react';
+import styles from './EditModalBase.module.css';
 
 // Define a generic constraint for entity data
 // Ensure it has an 'id' and allows accessing a display field via string key
@@ -114,54 +112,54 @@ function EditModalBase<T extends EntityWithIdAndName>({
     <>
       <Modal isOpen={isOpen} onClose={onClose} isCentered size={size}>
         <ModalOverlay />
-        <ModalContent bg="bg.surface" color="text.default">
-          <ModalHeader borderBottomWidth="1px" borderColor="border.default">
+        <ModalContent bg="bg.surface" color="text.primary">
+          <ModalHeader borderBottomWidth="1px" borderColor="border.base">
             Edit {entityName}: {entityDisplayName}
           </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6} pt={4}>
+          <ModalCloseButton color="text.secondary" _hover={{ bg: "interaction.hover"}}/>
+          <ModalBody className={styles.modalBody}>
             {/* Render the specific form fields passed as children */}
-            <VStack spacing={4} align="stretch">
+            <div className={styles.formFieldsContainer}>
                 {children}
-            </VStack>
+            </div>
           </ModalBody>
 
-          <ModalFooter borderTopWidth="1px" borderColor="border.default">
-            <Flex justify="space-between" width="100%">
-              {/* Delete Button (Optional) */}
+          <ModalFooter borderTopWidth="1px" borderColor="border.base">
+            <div className={styles.modalFooterLayout}>
               {!hideDeleteButton && onDelete ? (
                 <Button
-                  colorScheme="red"
                   variant="outline"
+                  color="status.error"
+                  borderColor="status.error"
+                  _hover={{ bg: "bg.danger.subtle" }}
                   onClick={onAlertOpen}
                   isLoading={isLoadingDelete}
                   loadingText="Deleting..."
                 >
                   Delete
                 </Button>
-              ) : <div />} {/* Placeholder to maintain spacing */}
-
-              {/* Cancel and Save Buttons */}
-              <Flex>
-                <Button variant="ghost" onClick={onClose} mr={3} isDisabled={isLoadingSave || isLoadingDelete}>
+              ) : <div />}
+              <div>
+                <Button variant="ghost" onClick={onClose} mr={3} isDisabled={isLoadingSave || isLoadingDelete} color="text.secondary">
                   Cancel
                 </Button>
                 <Button
-                  colorScheme="blue"
+                  bg="bg.button.primary"
+                  color="text.button.primary"
+                  _hover={{ bg: "bg.button.primary.hover" }}
                   onClick={handleSave}
                   isLoading={isLoadingSave}
                   loadingText="Saving..."
-                  isDisabled={isLoadingDelete} // Disable save if deleting
+                  isDisabled={isLoadingDelete}
                 >
                   Save Changes
                 </Button>
-              </Flex>
-            </Flex>
+              </div>
+            </div>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      {/* Delete Confirmation Dialog */}
       {onDelete && (
           <AlertDialog
             isOpen={isAlertOpen}
@@ -170,18 +168,26 @@ function EditModalBase<T extends EntityWithIdAndName>({
             isCentered
           >
           <AlertDialogOverlay>
-            <AlertDialogContent bg="bg.surface" color="text.default">
-              <AlertDialogHeader fontSize="lg" fontWeight="bold" borderBottomWidth="1px" borderColor="border.default">
+            <AlertDialogContent bg="bg.surface" color="text.primary">
+              <AlertDialogHeader fontSize="lg" fontWeight="bold" borderBottomWidth="1px" borderColor="border.base">
                 Delete {entityName}
               </AlertDialogHeader>
-              <AlertDialogBody py={4}>
-                Are you sure you want to delete the {entityName.toLowerCase()} &quot;<Text as="span" fontWeight="bold">{entityDisplayName}</Text>&quot;? This action cannot be undone.
+              <AlertDialogBody className={styles.alertDialogBody}>
+                Are you sure you want to delete the {entityName.toLowerCase()} &quot;<span className={styles.entityDisplayNameHighlight}>{entityDisplayName}</span>&quot;? This action cannot be undone.
               </AlertDialogBody>
-              <AlertDialogFooter borderTopWidth="1px" borderColor="border.default">
-                <Button variant="ghost" ref={cancelRef} onClick={onAlertClose} isDisabled={isLoadingDelete}>
+              <AlertDialogFooter borderTopWidth="1px" borderColor="border.base">
+                <Button variant="ghost" ref={cancelRef} onClick={onAlertClose} isDisabled={isLoadingDelete} color="text.secondary">
                   Cancel
                 </Button>
-                <Button colorScheme="red" onClick={handleDeleteConfirm} ml={3} isLoading={isLoadingDelete} loadingText="Deleting...">
+                <Button 
+                    bg="bg.button.danger"
+                    color="text.button.primary"
+                    _hover={{ bg: "bg.danger.hover" }}
+                    onClick={handleDeleteConfirm} 
+                    ml={3} 
+                    isLoading={isLoadingDelete} 
+                    loadingText="Deleting..."
+                >
                   Delete
                 </Button>
               </AlertDialogFooter>

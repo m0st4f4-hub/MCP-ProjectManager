@@ -1,0 +1,63 @@
+/* frontend/src/components/OverviewContent.module.css */
+
+.pageContainer { /* For the outer Box, if needed for consistent page padding */
+    padding: var(--chakra-space-4);
+}
+
+.mainHeading {
+    font-size: var(--chakra-fontSizes-xl); /* size="lg" */
+    font-weight: var(--chakra-fontWeights-bold);
+    line-height: var(--chakra-lineHeights-shorter);
+    margin-bottom: var(--chakra-space-6); /* mb={6} */
+    color: var(--chakra-colors-text-heading, #1A202C);
+}
+
+.statsGrid {
+    display: grid;
+    gap: var(--chakra-space-6); /* spacing={6} */
+    margin-bottom: var(--chakra-space-6); /* mb={6} */
+    grid-template-columns: repeat(1, 1fr); /* columns={{ base: 1 }} */
+}
+
+@media (min-width: 48em) { /* md breakpoint */
+    .statsGrid {
+        grid-template-columns: repeat(3, 1fr); /* columns={{ md: 3 }} */
+    }
+}
+
+.statBox {
+    padding: var(--chakra-space-4); /* p={4} */
+    border: 1px solid var(--chakra-colors-border-base, #E2E8F0); /* borderWidth="1px" */
+    border-radius: var(--chakra-radii-lg, 0.5rem); /* borderRadius="lg" */
+    background-color: var(--chakra-colors-bg-surface, #FFFFFF); /* bg="bg.surface" */
+    box-shadow: var(--chakra-shadows-sm, 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06)); /* shadow="sm" */
+}
+
+.statLabel {
+    color: var(--chakra-colors-text-secondary, #718096); /* color="text.secondary" */
+    font-size: var(--chakra-fontSizes-sm);
+    margin-bottom: var(--chakra-space-1);
+}
+
+.statNumber {
+    color: var(--chakra-colors-text-primary, #2D3748); /* color="text.primary" */
+    font-size: var(--chakra-fontSizes-2xl, 1.5rem); /* Default StatNumber size */
+    font-weight: var(--chakra-fontWeights-semibold);
+}
+
+.welcomeVStack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--chakra-space-4); /* spacing={4} */
+    align-items: stretch; /* align="stretch" */
+}
+
+.welcomeText {
+    font-size: var(--chakra-fontSizes-xl, 1.25rem); /* fontSize="xl" */
+    color: var(--chakra-colors-text-secondary, #718096); /* color="text.secondary" */
+    line-height: var(--chakra-lineHeights-tall, 1.75);
+}
+
+.descriptionText {
+    color: var(--chakra-colors-text-tertiary, #A0AEC0);
+} 

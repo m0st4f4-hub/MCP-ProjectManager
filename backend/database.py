@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- SQLite Configuration (Default) ---
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///D:/mcp/task-manager/sql_app.db"  # Use absolute path
+# SQLALCHEMY_DATABASE_URL = "sqlite:///../sql_app.db" # Original relative path
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False} # Needed only for SQLite
 )
@@ -30,8 +31,11 @@ Base = declarative_base()
 
 # Dependency to get DB session
 def get_db():
+    print("[get_db] Creating database session...")
     db = SessionLocal()
     try:
+        print("[get_db] Yielding database session...")
         yield db
     finally:
+        print("[get_db] Closing database session...")
         db.close()

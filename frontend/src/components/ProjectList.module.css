@@ -1,0 +1,113 @@
+/* frontend/src/components/ProjectList.module.css */
+
+.projectListContainer {
+  /* For outer VStack: spacing={4} align="stretch" w="full" */
+  width: 100%;
+  /* Spacing can be handled by gap or child margins if VStack is replaced */
+}
+
+.projectCard {
+  /* For Box (each project item) */
+  padding: var(--chakra-space-4);
+  border-width: 1px;
+  border-style: solid; /* Ensure border shows */
+  border-color: var(--chakra-colors-chakra-border-color); /* Default, or specific theme token */
+  border-radius: var(--chakra-radii-lg);
+  box-shadow: var(--chakra-shadows-md);
+  background-color: var(--chakra-colors-bg-surface);
+  transition: all 0.2s ease-in-out;
+}
+
+.projectCard:hover {
+  box-shadow: var(--chakra-shadows-xl);
+  border-color: var(--chakra-colors-border-hover, var(--chakra-colors-blue-500)); /* Fallback for border-hover */
+}
+
+.projectHeader {
+  /* For Flex (name and menu) */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--chakra-space-2);
+}
+
+.projectName {
+  /* For Heading (project name) */
+  /* size="md" - use theme font size for md headings */
+  color: var(--chakra-colors-text-primary);
+  /* isTruncated is a behavioral prop, keep on component */
+}
+
+.projectDescription {
+  /* For Text (project description) */
+  font-size: var(--chakra-fontSizes-sm);
+  color: var(--chakra-colors-text-secondary);
+  margin-bottom: var(--chakra-space-3);
+  /* noOfLines={2} is behavioral, keep on component */
+}
+
+.taskCountsContainer {
+  /* For HStack (task counts) */
+  display: flex; /* If HStack is replaced */
+  gap: var(--chakra-space-4); /* For spacing={4} */
+  margin-bottom: var(--chakra-space-3);
+}
+
+.taskCountLabel {
+  font-size: var(--chakra-fontSizes-xs);
+  font-weight: var(--chakra-fontWeights-medium);
+  color: var(--chakra-colors-text-muted);
+}
+
+.taskCountValue {
+  font-size: var(--chakra-fontSizes-sm);
+  font-weight: var(--chakra-fontWeights-bold);
+  color: var(--chakra-colors-text-primary);
+}
+
+.progressMargin {
+    margin-top: var(--chakra-space-1);
+}
+
+.archivedBadge {
+  /* For Badge (archived status) */
+  margin-left: auto;
+  /* colorScheme and variant are theme-based, keep on component */
+}
+
+.menuButton {
+  /* For IconButton (MenuButton) */
+  /* size="sm", variant="ghost" are theme-based, keep on component */
+}
+
+.cliPromptModalContent {
+  background-color: var(--chakra-colors-bg-modal, var(--chakra-colors-white)); /* Fallback for bg-modal */
+  color: var(--chakra-colors-text-primary, var(--chakra-colors-black)); /* Fallback for text-primary */
+}
+
+.cliPromptModalHeader {
+  border-bottom-width: 1px;
+  border-bottom-style: solid; /* Ensure border shows */
+  border-bottom-color: var(--chakra-colors-border-subtle, var(--chakra-colors-gray-200)); /* Fallback */
+}
+
+.cliPromptModalBody {
+  max-height: 60vh;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: var(--chakra-fonts-mono);
+  font-size: var(--chakra-fontSizes-sm);
+  background-color: var(--chakra-colors-bg-codeblock, var(--chakra-colors-gray-50)); /* Fallback */
+  padding: var(--chakra-space-4); 
+}
+
+.cliPromptModalFooter {
+  border-top-width: 1px;
+  border-top-style: solid; /* Ensure border shows */
+  border-top-color: var(--chakra-colors-border-subtle, var(--chakra-colors-gray-200)); /* Fallback */
+}
+
+.alertDialogContent {
+  background-color: var(--chakra-colors-bg-modal, var(--chakra-colors-white)); /* Fallback */
+  color: var(--chakra-colors-text-primary, var(--chakra-colors-black)); /* Fallback */
+} 

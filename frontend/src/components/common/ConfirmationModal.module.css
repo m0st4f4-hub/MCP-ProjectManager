@@ -1,0 +1,14 @@
+/* frontend/src/components/common/ConfirmationModal.module.css */
+
+.modalBody {
+    /* py={6} */
+    padding-top: var(--chakra-space-6);
+    padding-bottom: var(--chakra-space-6);
+}
+
+.bodyText {
+    /* Basic paragraph styling, can be enhanced if needed */
+    font-size: var(--chakra-fontSizes-md); /* Default Chakra Text size */
+    line-height: var(--chakra-lineHeights-base);
+    color: var(--chakra-colors-text-primary); /* Default text color, adjust if needed */
+} 
