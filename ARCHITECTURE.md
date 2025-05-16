@@ -155,7 +155,7 @@ This section provides an overview of the key directories within the MCP Project 
     *   **`database.py`**: Database connection setup and session management.
     *   **`schemas.py`**: Pydantic schemas for data validation and serialization.
     *   **`crud.py`**: Functions for common database operations (Create, Read, Update, Delete).
-    *   **`routers/`**: (If used) Directory for organizing API routes into separate modules.
+    *   **`routers/`**: (Currently, routes are defined in `main.py`; this could be a future organization for larger projects).
     *   **`requirements.txt`**: Lists Python dependencies for the backend.
 
 *   **`/frontend/`**: Contains the Next.js and TypeScript frontend application.

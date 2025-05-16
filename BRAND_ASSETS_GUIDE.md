@@ -93,5 +93,35 @@ Fonts are defined in `frontend/src/theme/index.ts`.
 - `xl`: `1.25rem`
 - `2xl` to `7xl` for larger headings.
 
+## 4. Asset Generation Script (`crop_logo.py`)
+
+The project includes a Python script named `crop_logo.py` located in the project root. This script is used to generate the various logo and icon assets listed in section 1 (Logos, Icons, Favicons) from master source images.
+
+### 4.1. Purpose
+- To automate the cropping, resizing, and background transparency adjustments needed to create consistent themed assets from source images (`image-light.png` and `image-dark.png`, expected in the project root).
+- To ensure all derived assets (like favicons and theme-specific icons) originate from a common source, maintaining brand consistency.
+
+### 4.2. How it Works
+- The script uses the Pillow (PIL) library for image manipulation.
+- It defines specific coordinates (e.g., `MAIN_LOGO_WITH_TEXT_COORDS`, `STANDALONE_ICON_COORDS`) to crop the relevant parts from the source images.
+- It can make specified background colors transparent (e.g., white for light theme, black for dark theme) within a defined tolerance.
+- It resizes and pads the standalone icon to create square favicons of various sizes.
+- Generated assets are saved to `frontend/public/assets/images/` and `frontend/public/`.
+
+### 4.3. Usage
+1.  **Prerequisites**: Ensure Python and Pillow are installed (`pip install Pillow`).
+2.  **Source Images**: Place your master logo images named `image-light.png` and `image-dark.png` in the project root directory.
+3.  **Configure Coordinates & Colors**: 
+    -   Open `crop_logo.py` in a text editor.
+    -   **Crucially, adjust the coordinate tuples** at the top of the script (`MAIN_LOGO_WITH_TEXT_COORDS`, `STANDALONE_ICON_COORDS`) to match the layout of your source images. The script provides comments and initial estimates, but these will likely need tuning.
+    -   Adjust `LIGHT_THEME_BG_COLOR_RGB`, `DARK_THEME_BG_COLOR_RGB`, and their respective `_TOLERANCE` values if your source images have different background colors or if the transparency effect needs refinement.
+4.  **Run the Script**: Execute the script from the project root directory:
+    ```bash
+    python crop_logo.py
+    ```
+5.  **Verify Output**: Check the `frontend/public/assets/images/` and `frontend/public/` directories for the generated assets.
+
+**Note**: This script is intended for developers managing the visual assets of the project. If the source images or desired cropping changes, this script will need to be re-configured and re-run.
+
 --- 
 *This guide should be updated if assets, colors, or fonts change.* 

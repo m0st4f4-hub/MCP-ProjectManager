@@ -38,7 +38,8 @@ project-manager/
 ├── .cursor/                # MCP rules and agent configurations
 │   ├── rules/              # Agent rule files (.mdc)
 │   └── ...
-├── backend/
+├── backend/                # FastAPI backend service. See backend/README.md for details.
+│                           # (Subdirectories like alembic/, tests/ also have READMEs)
 │   ├── .venv/              # Python virtual environment
 │   ├── alembic/            # Alembic migration scripts
 │   ├── crud.py             # Database CRUD functions
@@ -50,7 +51,8 @@ project-manager/
 │   ├── pyproject.toml      # Project metadata and dependencies (or requirements.txt)
 │   └── sql_app.db          # SQLite database file
 │   └── .env                # Optional: for PostgreSQL connection details
-├── frontend/
+├── frontend/               # Next.js frontend application. See frontend/README.md for details.
+│                           # (Most subdirectories under frontend/src/ have detailed READMEs)
 │   ├── public/             # Static assets (images, favicons)
 │   ├── src/
 │   │   ├── app/            # Next.js App Router pages
@@ -62,7 +64,7 @@ project-manager/
 │   ├── next.config.mjs     # Next.js configuration
 │   ├── package.json        # Node dependencies
 │   ├── tsconfig.json       # TypeScript configuration
-├── cli.js                  # Main CLI script for the suite
+├── cli.js                  # Main CLI script for the suite (core of mcp-project-manager-cli)
 ├── BRAND_ASSETS_GUIDE.md   # Branding guidelines and asset paths
 └── README.md               # This file
 ```
@@ -139,6 +141,9 @@ npm run dev
 ```
 
 The frontend application will be available at `http://localhost:3000`.
+
+**Windows Development Tip:**
+A `dev_launcher.bat` script is available in the project root. This batch file attempts to clear ports 8080 (for backend) and 3000 (for frontend) and then launches the backend (`npm run dev:backend`) and frontend (`npm run dev:frontend`) development servers in separate terminal windows. You can run it by double-clicking or executing `dev_launcher.bat` in your terminal from the project root.
 
 ## How It Works
 

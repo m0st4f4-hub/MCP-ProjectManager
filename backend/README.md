@@ -2,19 +2,37 @@
 
 ## Overview
 
-This directory contains the backend service for the Project Manager application. It is built using FastAPI and SQLAlchemy, providing a RESTful API for managing projects, agents, tasks, and subtasks. It also integrates with MCP (Model Context Protocol) for enhanced agent capabilities.
+This directory contains the backend service for the Project Manager application. It is built using FastAPI and SQLAlchemy, providing a RESTful API for managing projects, agents, and tasks. It also integrates with MCP (Model Context Protocol) via the `FastApiMCP` library for enhanced agent capabilities.
 
 ## Project Structure
 
--   **`main.py`**: The main FastAPI application file. It defines the FastAPI instance, includes middleware (CORS, logging), manages the application lifespan (startup/shutdown events, MCP initialization), and defines all API endpoint routers.
--   **`database.py`**: Configures the database connection using SQLAlchemy. It sets up the database engine, session maker (`SessionLocal`), and the declarative base (`Base`) for ORM models. It also provides the `get_db` dependency injector for database sessions. Currently configured for SQLite, with commented-out options for PostgreSQL.
--   **`models.py`**: Defines the SQLAlchemy ORM models (`Project`, `Agent`, `Task`, `Subtask`) corresponding to the database tables and specifies their relationships.
--   **`schemas.py`**: Defines the Pydantic models used for data validation and serialization in the API endpoints. These schemas dictate the expected structure of request bodies and the format of response data.
--   **`crud.py`**: Contains the Create, Read, Update, Delete (CRUD) database operations. These functions abstract the direct database interactions using SQLAlchemy, taking Pydantic schemas as input and returning ORM models.
--   **`alembic/`**: Contains Alembic migration scripts for managing database schema changes (if initialized).
--   **`tests/`**: Contains backend unit and integration tests (if implemented).
+-   **`main.py`**: The main FastAPI application file.
+    -   Initializes the FastAPI app with a lifespan manager for startup/shutdown events.
+    -   **MCP Integration**: During startup, it initializes `FastApiMCP`, stores the instance in `app.state.mcp_instance`, and mounts its routes. This enables Model Context Protocol functionalities.
+    -   Includes middleware for CORS and HTTP request logging.
+    -   Defines all API endpoint routers for projects, agents, tasks, and a dynamic `/mcp-docs` endpoint.
+-   **`database.py`**: Configures the database connection using SQLAlchemy.
+    -   Sets up the database engine (defaults to SQLite with an absolute path, PostgreSQL option available).
+    -   Provides `SessionLocal` for creating database sessions and `Base` for ORM models.
+    -   Includes the `get_db` dependency injector for managing database session lifecycles in API requests.
+-   **`models.py`**: Defines the SQLAlchemy ORM models (`Project`, `Agent`, `Task`) corresponding to the database tables and specifies their relationships.
+    -   Primary keys are typically UUIDs stored as strings.
+    -   `Project` and `Agent` models have a one-to-many relationship with `Task`.
+    -   Cascade delete is configured: deleting a Project or Agent will also delete all their associated Tasks.
+    -   Task completion is determined by the `Task.status` field, not a separate boolean `completed` field in the model.
+-   **`schemas.py`**: Defines the Pydantic models used for data validation and serialization in the API endpoints.
+    -   Follows a pattern of `Base`, `Create`, `Update`, and full response schemas for each entity.
+    -   `ConfigDict(from_attributes=True)` is used to enable ORM mode for response schemas.
+-   **`crud.py`**: Contains the Create, Read, Update, Delete (CRUD) database operations.
+    -   Functions abstract direct database interactions using SQLAlchemy, taking Pydantic schemas as input and returning ORM models or lists thereof.
+    -   Handles generation of UUIDs for new entities.
+    -   Calculates `task_count` for projects (non-archived tasks for active projects).
+    -   Includes logic for archiving/unarchiving entities and cascading these actions to related tasks if applicable (e.g., archiving a project archives its tasks).
+-   **`alembic/`**: Contains Alembic migration scripts for managing database schema changes.
+-   **`tests/`**: Contains backend unit and integration tests.
 -   **`sql_app.db`**: The SQLite database file (if using the default configuration).
--   **`.env`**: (Optional/Gitignored) Used to store environment variables, potentially including database credentials for PostgreSQL.
+-   **`.env`**: (Optional/Gitignored) Used to store environment variables, e.g., for PostgreSQL database credentials.
+-   **`requirements.txt`**: Lists Python package dependencies.
 
 ## Setup Instructions
 
@@ -24,31 +42,23 @@ This directory contains the backend service for the Project Manager application.
     # Create and activate a virtual environment (recommended)
     python -m venv backend/.venv
     # Windows activation:
-    backend\\.venv\\Scripts\\activate
+    backend\.venv\Scripts\activate
     # macOS/Linux activation:
     # source backend/.venv/bin/activate
 
     # Install requirements
     pip install -r backend/requirements.txt
     ```
-    *(Note: A `requirements.txt` file is assumed. If it doesn\'t exist, it should be generated based on the project\'s imports).*
 
-2.  **Environment Variables**: If using PostgreSQL (currently commented out in `database.py`), create a `.env` file in the `backend/` directory with the following variables:
-    ```dotenv
-    DATABASE_USER=your_db_user
-    DATABASE_PASSWORD=your_db_password
-    DATABASE_HOST=localhost
-    DATABASE_PORT=5432
-    DATABASE_NAME=taskdb
-    ```
+2.  **Environment Variables**: If using PostgreSQL (currently commented out in `database.py`), create a `.env` file in the `backend/` directory with your database credentials.
 
 3.  **Database Setup**:
-    *   **SQLite (Default)**: The database file (`sql_app.db`) will be created automatically in the location specified in `database.py` when the application first runs and interacts with the database.
+    *   **SQLite (Default)**: The database file (`sql_app.db`) will be created automatically in the location specified in `database.py` (currently an absolute path `D:/mcp/task-manager/sql_app.db`) when the application first runs and interacts with the database.
     *   **PostgreSQL**: Ensure the PostgreSQL server is running and the specified database exists.
-    *   **Migrations (Alembic)**: If using Alembic for migrations (recommended for production and schema changes):
-        *   Initialize Alembic (if not already done): `alembic init alembic` (run from `backend/` directory). Configure `alembic.ini` and `env.py` to point to your database and models.
-        *   Generate initial migration: `alembic revision --autogenerate -m "Initial database schema"`
-        *   Apply migrations: `alembic upgrade head`
+    *   **Migrations (Alembic)**: Database schema is managed by Alembic.
+        *   To apply migrations: `alembic upgrade head` (run from the `backend/` directory after configuring `alembic.ini` and `env.py` if necessary).
+        *   To generate new migrations after model changes: `alembic revision --autogenerate -m "Describe changes"`
+        *   Refer to Alembic documentation for full usage.
 
 ## Running the Service
 
@@ -67,37 +77,34 @@ The alternative ReDoc documentation is at `http://localhost:8000/redoc`.
 
 ## API Endpoint Overview
 
-The API provides endpoints for managing the following resources:
+The API provides endpoints for managing the following resources. Refer to the auto-generated API documentation at `/docs` for detailed request/response schemas and parameters.
 
--   **Projects**: Create, list, retrieve, update, delete projects.
+-   **Root (`/`)**: Basic welcome message.
+-   **Projects**: Create, list, retrieve, update, delete, archive, unarchive.
     -   `POST /projects/`
     -   `GET /projects/`
     -   `GET /projects/{project_id}`
     -   `PUT /projects/{project_id}`
     -   `DELETE /projects/{project_id}`
--   **Agents**: Create, list, retrieve (by name or ID), update, delete agents.
+    -   `POST /projects/{project_id}/archive`
+    -   `POST /projects/{project_id}/unarchive`
+-   **Agents**: Create, list, retrieve (by name or ID), update, delete.
     -   `POST /agents/`
     -   `GET /agents/`
     -   `GET /agents/{agent_name}`
     -   `GET /agents/id/{agent_id}`
     -   `PUT /agents/{agent_id}`
     -   `DELETE /agents/{agent_id}`
--   **Tasks**: Create, list (with filters), retrieve, update, delete tasks.
+-   **Tasks**: Create, list (with filters), retrieve, update, delete, archive, unarchive.
     -   `POST /tasks/`
     -   `GET /tasks/`
     -   `GET /tasks/{task_id}`
     -   `PUT /tasks/{task_id}`
     -   `DELETE /tasks/{task_id}`
--   **Subtasks**: Create (for a parent task), list (for a parent task), retrieve, update, delete subtasks.
-    -   `POST /tasks/{parent_task_id}/subtasks/`
-    -   `GET /tasks/{parent_task_id}/subtasks/`
-    -   `GET /subtasks/{subtask_id}`
-    -   `PUT /subtasks/{subtask_id}`
-    -   `DELETE /subtasks/{subtask_id}`
+    -   `POST /tasks/{task_id}/archive`
+    -   `POST /tasks/{task_id}/unarchive`
 -   **MCP**:
-    -   `/mcp-docs`: Provides documentation for MCP tools derived from API endpoints.
-    -   Other MCP endpoints are managed by the `FastApiMCP` integration.
+    -   `/mcp-docs`: Dynamically provides documentation for MCP tools derived from API endpoints and the `FastApiMCP` instance.
+    -   Other MCP-specific endpoints are managed by the `FastApiMCP` integration.
 -   **Planning**:
-    -   `POST /projects/generate-planning-prompt`: Generates a planning prompt based on a goal.
-
-Refer to the auto-generated API documentation at `/docs` for detailed request/response schemas and parameters. 
+    -   `POST /projects/generate-planning-prompt`: Generates a planning prompt based on a goal. 

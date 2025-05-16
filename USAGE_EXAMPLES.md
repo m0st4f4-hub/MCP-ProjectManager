@@ -105,4 +105,17 @@ The primary benefit of this approach is a streamlined and consistent startup exp
 
 ### 2.2. Starting with Custom Ports
 
+You can specify custom ports for the backend and frontend services using options with the `start` command.
+
+```bash
+# Using npx
+npx mcp-project-manager-cli start --backend-port 8001 --frontend-port 3001
+
+# Or, if installed globally:
+mcp-project-manager start -bp 8001 -fp 3001
 ```
+
+-   `--backend-port` (or `-bp`): Sets the port for the FastAPI backend server. Defaults to `8000`.
+-   `--frontend-port` (or `-fp`): Sets the port for the Next.js frontend application. Defaults to `3000`.
+
+The CLI will attempt to use the ports you specify. If a specified port is already in use, the CLI will try to find a nearby available port and inform you of the port it's using.
