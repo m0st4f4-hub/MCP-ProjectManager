@@ -649,9 +649,9 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
                   }
                   onClick={() => handleDeleteInitiate(project)}
                   color="textError"
-                  _hover={{
-                    bg: colorPrimitives.red[50],
-                    color: colorPrimitives.red[700],
+                  _hover={{ 
+                    bg: "errorBgSubtle",
+                    color: "textStatusError"
                   }}
                 >
                   Delete Project
@@ -779,7 +779,7 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
       <VStack
         spacing="4"
         p={{ base: "6", md: "10" }}
-        bg="statusErrorBg"
+        bg="statusErrorBgSubtle"
         borderRadius="lg"
         borderWidth="DEFAULT"
         borderColor="statusErrorBorder"
@@ -787,12 +787,12 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
         minH="300px"
         justifyContent="center"
       >
-        <WarningTwoIcon boxSize="40px" color="textError" />
-        <Heading size="md" color="textError" display="flex" alignItems="center">
+        <WarningTwoIcon boxSize="40px" color="textStatusError" />
+        <Heading size="md" color="textStatusError" display="flex" alignItems="center">
           <WarningTwoIcon boxSize={5} mr={2} />
           An error occurred while fetching projects.
         </Heading>
-        <Text color="textError" textAlign="center">
+        <Text color="textStatusError" textAlign="center">
           {error}
         </Text>
         <Button
@@ -800,9 +800,9 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
           leftIcon={<AppIcon name="repeatclock" boxSize={4} />}
           onClick={() => fetchProjects()}
           mt="2"
-          borderColor="textError"
-          color="textError"
-          _hover={{ bg: colorPrimitives.red[50] }}
+          borderColor="statusErrorBorder"
+          color="textStatusError"
+          _hover={{ bg: "errorBgSubtle" }}
         >
           Retry
         </Button>
@@ -925,14 +925,9 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
               rows={20}
               fontFamily="monospace"
               fontSize="sm"
-              bg={colorPrimitives.gray[50]}
-              color={colorPrimitives.gray[900]}
+              bg="surfaceElevated"
+              color="textPrimary"
               borderColor="borderDecorative"
-              _dark={{
-                bg: colorPrimitives.gray[900],
-                color: colorPrimitives.gray[100],
-                borderColor: colorPrimitives.gray[700],
-              }}
               borderRadius="md"
               p={4}
               whiteSpace="pre-wrap"

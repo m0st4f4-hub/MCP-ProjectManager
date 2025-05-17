@@ -47,7 +47,7 @@ import UnassignedTasksList from "./dashboard/UnassignedTasksList";
 import TopPerformersLists from "./dashboard/TopPerformersLists";
 import RecentActivityList from "./dashboard/RecentActivityList";
 import DashboardSection from './dashboard/DashboardSection';
-import { sizing, typography } from "../tokens";
+import { sizing, typography, semanticColors } from "../tokens";
 
 // Define selectors outside the component for stable references
 const selectTaskFilters = (state: TaskState) => state.filters;
