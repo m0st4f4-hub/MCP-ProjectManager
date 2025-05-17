@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Heading, Spinner, Text, VStack, BoxProps } from '@chakra-ui/react';
-import { typography, semanticColors, sizing } from '@/tokens';
+import { typography, semanticColors, sizing, shadows } from '@/tokens';
 
 interface DashboardSectionProps extends BoxProps {
   title: string;
@@ -14,9 +14,9 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({ title, isLoading, e
   // Default styling, can be overridden by props passed via ...rest
   const defaultStyles = {
     p: sizing.spacing[4] || '4',
-    borderWidth: sizing.borderWidth.sm || '1px',
+    borderWidth: sizing.borderWidth.DEFAULT || '1px',
     borderRadius: sizing.borderRadius.lg || 'lg',
-    boxShadow: sizing.shadows.md || 'md',
+    boxShadow: shadows.md || 'md',
     bg: semanticColors.surfaceDefault?.DEFAULT || 'transparent', // Ensure a fallback for bg
     borderColor: semanticColors.borderNeutral?.DEFAULT || 'gray.200',
   };
@@ -25,7 +25,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({ title, isLoading, e
     <Box {...defaultStyles} {...rest} aria-busy={isLoading}>
       <Heading 
         as="h2" 
-        size={typography.fontSizes.h4 || 'lg'} 
+        size={typography.fontSize.h4 || 'lg'} 
         mb={sizing.spacing[3] || '3'} 
         color={semanticColors.textPrimary?.DEFAULT || 'inherit'} 
         fontFamily={typography.fontFamily.heading?.join(',') || 'sans-serif'}
@@ -34,7 +34,7 @@ const DashboardSection: React.FC<DashboardSectionProps> = ({ title, isLoading, e
       </Heading>
       {isLoading && (
         <VStack justifyContent="center" alignItems="center" minH="100px">
-          <Spinner thickness={sizing.borderWidth.md || '4px'} speed="0.65s" color={semanticColors.brandPrimary?.DEFAULT || 'blue.500'} emptyColor={semanticColors.borderNeutral?.DEFAULT || 'gray.200'} size="xl" />
+          <Spinner thickness={sizing.borderWidth['4'] || '4px'} speed="0.65s" color={semanticColors.brandPrimary?.DEFAULT || 'blue.500'} emptyColor={semanticColors.borderNeutral?.DEFAULT || 'gray.200'} size="xl" />
         </VStack>
       )}
       {!isLoading && error && (
