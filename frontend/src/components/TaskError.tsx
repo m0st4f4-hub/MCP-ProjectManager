@@ -1,30 +1,58 @@
-import React from 'react';
-// import {
-//     Box,
-//     Heading,
-//     Icon,
-//     Text,
-//     VStack,
-// } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons'; // Or a more appropriate error icon like WarningIcon
-import styles from './TaskError.module.css';
+import React from "react";
+import { Box, /*Heading, Icon,*/ Text, VStack, Flex, Button, Heading } from "@chakra-ui/react";
+import { WarningTwoIcon } from "@chakra-ui/icons";
+import AppIcon from "./common/AppIcon";
+import { typography } from '../tokens';
 
 interface TaskErrorProps {
     error: string;
+    onRetry: () => void;
 }
 
-const TaskError: React.FC<TaskErrorProps> = ({ error }) => {
+const TaskError: React.FC<TaskErrorProps> = ({ error, onRetry }) => {
     return (
-        <div className={styles.errorContainer}>
-            <div className={styles.errorBox}>
-                <div className={styles.errorContentStack}>
-                    {/* Consider replacing AddIcon with a proper error icon (e.g., SVG or a different component) */}
-                    <AddIcon className={styles.errorIcon} /> 
-                    <h2 className={styles.errorHeading}>Error Loading Tasks</h2>
-                    <p className={styles.errorMessageText}>{error}</p>
-                </div>
-            </div>
-        </div>
+        <Flex
+            direction="column"
+            align="center"
+            justify="center"
+            textAlign="center"
+            py={{ base: 12, md: 24 }}
+            px={4}
+            height="100%"
+            bg="bgSurface"
+        >
+            <Box
+                p="8"
+                bg="bgSurface"
+                borderRadius="lg"
+                shadow="md"
+                borderWidth="DEFAULT"
+                borderStyle="solid"
+                borderColor="borderDecorative"
+                maxW="md"
+            >
+                <VStack spacing="5" align="center">
+                    <WarningTwoIcon boxSize={10} color="red.500" />
+                    <Heading color="textPrimary" fontSize={typography.fontSize.xl} textAlign="center">
+                        Oops! Something went wrong.
+                    </Heading>
+                    <Text color="textSecondary" fontSize={typography.fontSize.md} textAlign="center">
+                        {error}
+                    </Text>
+                    <Text color="textSecondary" fontSize={typography.fontSize.sm} textAlign="center">
+                        Please try again, or contact support if the issue persists.
+                    </Text>
+                    <Button
+                        onClick={onRetry}
+                        colorScheme="red"
+                        size="md"
+                        leftIcon={<AppIcon name="refresh" boxSize={5} />}
+                    >
+                        Retry
+                    </Button>
+                </VStack>
+            </Box>
+        </Flex>
     );
 };
 

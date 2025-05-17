@@ -12,7 +12,10 @@
     "dev:frontend": "cd frontend && npm run dev",
     "lint:frontend": "cd frontend && npx eslint . --ext .js,.jsx,.ts,.tsx --config ./eslint.config.cjs --format json --output-file ../eslint_report.json",
     "watch:pack": "nodemon --watch cli.js --watch package.json --watch .npmignore --watch .cursor/rules --ext js,json,mdc --exec \"npm pack\"",
-    "build:all": "cd frontend && npm run build && .\\backend\\.venv\\Scripts\\python.exe -m pip install -r .\\backend\\requirements.txt"
+    "build:all": "cd frontend && npm run build && cd .. && backend\\.venv\\Scripts\\python.exe -m pip install -r backend\\requirements.txt",
+    "type-check": "npx tsc --noEmit",
+    "fix": "cd frontend && npm run fix",
+    "format": "cd frontend && npm run format"
   },
   "keywords": [
     "project-management",
@@ -27,7 +30,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-  },
-  "devDependencies": {
+    "@wonderwhy-er/desktop-commander": "^0.1.39"
   }
 }

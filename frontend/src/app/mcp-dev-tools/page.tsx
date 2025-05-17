@@ -1,3 +1,3 @@
-import MCPDevTools from '@/components/MCPDevTools';
+import MCPDevTools from "@/components/MCPDevTools";
 
-export default MCPDevTools; 
+export default MCPDevTools;

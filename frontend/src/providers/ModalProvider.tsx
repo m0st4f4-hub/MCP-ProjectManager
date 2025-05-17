@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import Modal from 'react-modal';
+import { useEffect } from "react";
+import Modal from "react-modal";
 
 interface ModalProviderProps {
   children: React.ReactNode;

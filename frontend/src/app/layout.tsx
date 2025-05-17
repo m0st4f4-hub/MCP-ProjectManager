@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "../styles/tokens.css";
 import ChakraProviderWrapper from "@/providers/ChakraProviderWrapper";
 import ClientOnly from "@/components/ClientOnly";
 
@@ -8,7 +7,10 @@ import ClientOnly from "@/components/ClientOnly";
 import { Geist, Geist_Mono } from "next/font/google";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+});
 
 export const metadata: Metadata = {
   title: "Project Manager",
@@ -47,12 +49,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable}`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geist.variable} ${geistMono.variable}`}
+    >
       <body suppressHydrationWarning>
         <ClientOnly>
-          <ChakraProviderWrapper>
-            {children}
-          </ChakraProviderWrapper>
+          <ChakraProviderWrapper>{children}</ChakraProviderWrapper>
         </ClientOnly>
       </body>
     </html>

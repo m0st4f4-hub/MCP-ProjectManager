@@ -1,101 +1,152 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-    Box,
-    Button,
-    FormControl,
-    FormLabel,
-    Input,
-    Textarea,
-    VStack,
-    useToast,
-    Heading,
-    FormErrorMessage
-} from '@chakra-ui/react';
-import { ProjectCreateData } from '@/types';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { projectCreateSchema } from '@/types/project';
-import styles from './AddProjectForm.module.css';
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Textarea,
+  VStack,
+  useToast,
+  Heading,
+  FormErrorMessage,
+} from "@chakra-ui/react";
+import { ProjectCreateData /*, Project*/ } from "@/types"; // Project is unused
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { projectCreateSchema } from "@/types/project";
+import AppIcon from '../common/AppIcon';
+// import { useRouter } from 'next/navigation'; // useRouter is unused
 
 interface AddProjectFormProps {
-    onSubmit: (data: ProjectCreateData) => Promise<void>;
-    onClose: () => void;
+  onSubmit: (data: ProjectCreateData) => Promise<void>;
+  onClose: () => void;
 }
 
-const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit, onClose }) => {
-    const toast = useToast();
-    const [isLoading, setIsLoading] = useState(false);
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<ProjectCreateData>({
-        resolver: zodResolver(projectCreateSchema),
-    });
+const AddProjectForm: React.FC<AddProjectFormProps> = ({
+  onSubmit,
+  onClose,
+}) => {
+  const toast = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
-    const handleFormSubmit: SubmitHandler<ProjectCreateData> = async (data) => {
-        setIsLoading(true);
-        try {
-            await onSubmit(data);
-            onClose(); // Close modal on success
-        } catch (error) {
-            toast({
-                title: 'Error adding project',
-                description: error instanceof Error ? error.message : 'An error occurred',
-                status: 'error',
-                duration: 5000,
-                isClosable: true,
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ProjectCreateData>({
+    resolver: zodResolver(projectCreateSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
 
-    return (
-        <Box
-            as="form"
-            onSubmit={handleSubmit(handleFormSubmit)}
-            className={styles.addProjectFormContainer}
+  const handleFormSubmit = async (data: ProjectCreateData) => {
+    setIsLoading(true);
+    try {
+      await onSubmit(data);
+      toast({
+        title: "Project created successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      reset();
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error creating project",
+        description:
+          error instanceof Error ? error.message : "Could not create project.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Box
+      as="form"
+      onSubmit={handleSubmit(handleFormSubmit)}
+      bg="bgSurface"
+      p="6"
+      borderRadius="lg"
+      shadow="lg"
+      borderWidth="DEFAULT"
+      borderStyle="solid"
+      borderColor="borderDecorative"
+    >
+      <VStack spacing="4" align="stretch">
+        <Heading
+          as="h3"
+          size="md"
+          color="textPrimary"
+          mb="2"
+          textAlign="center"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
         >
-            <VStack className={styles.formVStack}>
-                <Heading className={styles.formHeading}>
-                    Define New Initiative
-                </Heading>
+          <AppIcon name="add" boxSize={5} mr={2} />
+          Define New Initiative
+        </Heading>
 
-                <FormControl isInvalid={!!errors.name}>
-                    <FormLabel htmlFor="name" className={styles.formLabel}>Name</FormLabel>
-                    <Input
-                        id="name"
-                        {...register('name')}
-                        placeholder="Enter project name"
-                        className={styles.formInput}
-                    />
-                    <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
-                </FormControl>
+        <FormControl isRequired isInvalid={!!errors.name}>
+          <FormLabel htmlFor="projectName">Project Name</FormLabel>
+          <Input
+            id="projectName"
+            {...register("name")}
+            placeholder="Enter project name"
+            bg="bgSurface"
+            color="textPrimary"
+            borderColor="borderInteractive"
+            borderWidth="DEFAULT"
+            borderRadius="md"
+            _hover={{ borderColor: "borderInteractiveHover" }}
+            _focus={{ borderColor: "borderFocused", boxShadow: "outline" }}
+            _placeholder={{ color: "textPlaceholder" }}
+          />
+          <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+        </FormControl>
 
-                <FormControl isInvalid={!!errors.description}>
-                    <FormLabel htmlFor="description" className={styles.formLabel}>Description</FormLabel>
-                    <Textarea
-                        id="description"
-                        {...register('description')}
-                        placeholder="Enter project description"
-                        className={styles.formTextarea}
-                    />
-                    <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
-                </FormControl>
+        <FormControl isInvalid={!!errors.description}>
+          <FormLabel htmlFor="projectDescription">
+            Description (Optional)
+          </FormLabel>
+          <Textarea
+            id="projectDescription"
+            {...register("description")}
+            placeholder="Enter a brief description of the project"
+            bg="bgSurface"
+            color="textPrimary"
+            borderColor="borderInteractive"
+            borderWidth="DEFAULT"
+            borderRadius="md"
+            _hover={{ borderColor: "borderInteractiveHover" }}
+            _focus={{ borderColor: "borderFocused", boxShadow: "outline" }}
+            _placeholder={{ color: "textPlaceholder" }}
+          />
+          <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
+        </FormControl>
 
-                <Button
-                    type="submit"
-                    className={styles.submitButton}
-                    isLoading={isLoading}
-                >
-                    Define New Initiative
-                </Button>
-            </VStack>
-        </Box>
-    );
+        <Button
+          type="submit"
+          colorScheme="primary"
+          isLoading={isLoading}
+          leftIcon={<AppIcon name="add" boxSize={5} />}
+        >
+          Create Project
+        </Button>
+      </VStack>
+    </Box>
+  );
 };
 
-export default AddProjectForm; 
+export default AddProjectForm;

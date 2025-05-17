@@ -30,7 +30,7 @@
  *   the `displayName` provides a human-readable string suitable for such announcements.
  */
 
-import type { ElementType } from 'react';
+import type { ElementType } from "react";
 
 /**
  * Defines the raw string identifiers for all canonical task statuses.
@@ -38,21 +38,21 @@ import type { ElementType } from 'react';
  * incorporate dynamic information (e.g., 'COMPLETED_HANDOFF_TO_...').
  */
 export type StatusID =
-  | 'TO_DO'
-  | 'IN_PROGRESS'
-  | 'BLOCKED'
-  | 'COMPLETED'
-  | 'CONTEXT_ACQUIRED'
-  | 'PLANNING_COMPLETE'
-  | 'EXECUTION_IN_PROGRESS'
-  | 'PENDING_VERIFICATION'
-  | 'VERIFICATION_COMPLETE'
-  | 'VERIFICATION_FAILED'
-  | 'COMPLETED_AWAITING_PROJECT_MANAGER'
-  | 'COMPLETED_HANDOFF_TO_...' // Base for dynamic status, full string includes IDs
-  | 'FAILED'
-  | 'IN_PROGRESS_AWAITING_SUBTASK'
-  | 'PENDING_RECOVERY_ATTEMPT';
+  | "TO_DO"
+  | "IN_PROGRESS"
+  | "BLOCKED"
+  | "COMPLETED"
+  | "CONTEXT_ACQUIRED"
+  | "PLANNING_COMPLETE"
+  | "EXECUTION_IN_PROGRESS"
+  | "PENDING_VERIFICATION"
+  | "VERIFICATION_COMPLETE"
+  | "VERIFICATION_FAILED"
+  | "COMPLETED_AWAITING_PROJECT_MANAGER"
+  | "COMPLETED_HANDOFF_TO_..." // Base for dynamic status, full string includes IDs
+  | "FAILED"
+  | "IN_PROGRESS_AWAITING_SUBTASK"
+  | "PENDING_RECOVERY_ATTEMPT";
 
 /**
  * Represents the full set of attributes for a canonical task status.
@@ -73,7 +73,13 @@ export interface StatusAttributeObject {
    * Broad category for filtering, grouping, or applying consistent styling/logic.
    * (e.g., 'todo', 'inProgress', 'completed', 'failed', 'blocked', 'pendingInput').
    */
-  category: 'todo' | 'inProgress' | 'pendingInput' | 'completed' | 'failed' | 'blocked';
+  category:
+    | "todo"
+    | "inProgress"
+    | "pendingInput"
+    | "completed"
+    | "failed"
+    | "blocked";
   /**
    * A brief explanation of what the status means.
    * Useful for tooltips or more detailed views.
@@ -137,155 +143,164 @@ export interface StatusAttributeObject {
  * component itself (e.g., `icon: EditIcon`).
  */
 const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
-  'TO_DO': {
-    id: 'TO_DO',
-    displayName: 'To Do',
-    category: 'todo',
-    description: 'Task is pending and has not yet been started.',
-    colorScheme: 'gray',
-    icon: 'EditIcon', // Placeholder for an icon like Chakra UI's EditIcon or similar
+  TO_DO: {
+    id: "TO_DO",
+    displayName: "To Do",
+    category: "todo",
+    description: "Task is pending and has not yet been started.",
+    colorScheme: "gray",
+    icon: "EditIcon", // Placeholder for an icon like Chakra UI's EditIcon or similar
     isTerminal: false,
     isDynamic: false,
   },
-  'IN_PROGRESS': {
-    id: 'IN_PROGRESS',
-    displayName: 'In Progress',
-    category: 'inProgress',
-    description: 'Task is actively being worked on.',
-    colorScheme: 'blue',
-    icon: 'TimeIcon', // Placeholder for an icon indicating activity or time
+  IN_PROGRESS: {
+    id: "IN_PROGRESS",
+    displayName: "In Progress",
+    category: "inProgress",
+    description: "Task is actively being worked on.",
+    colorScheme: "blue",
+    icon: "TimeIcon", // Placeholder for an icon indicating activity or time
     isTerminal: false,
     isDynamic: false,
   },
-  'BLOCKED': {
-    id: 'BLOCKED',
-    displayName: 'Blocked',
-    category: 'blocked',
-    description: 'Task cannot proceed due to a dependency or issue.',
-    colorScheme: 'orange',
-    icon: 'WarningTwoIcon', // Placeholder for an icon indicating a warning or blockage
+  BLOCKED: {
+    id: "BLOCKED",
+    displayName: "Blocked",
+    category: "blocked",
+    description: "Task cannot proceed due to a dependency or issue.",
+    colorScheme: "orange",
+    icon: "WarningTwoIcon", // Placeholder for an icon indicating a warning or blockage
     isTerminal: false,
     isDynamic: false,
   },
-  'COMPLETED': {
-    id: 'COMPLETED',
-    displayName: 'Completed',
-    category: 'completed',
-    description: 'Task has been finished successfully.',
-    colorScheme: 'green',
-    icon: 'CheckCircleIcon', // Placeholder for an icon indicating success
+  COMPLETED: {
+    id: "COMPLETED",
+    displayName: "Completed",
+    category: "completed",
+    description: "Task has been finished successfully.",
+    colorScheme: "green",
+    icon: "CheckCircleIcon", // Placeholder for an icon indicating success
     isTerminal: true,
     isDynamic: false,
   },
-  'CONTEXT_ACQUIRED': {
-    id: 'CONTEXT_ACQUIRED',
-    displayName: 'Context Acquired',
-    category: 'inProgress',
-    description: 'Agent has fetched and understood the task details.',
-    colorScheme: 'cyan',
-    icon: 'InfoOutlineIcon', // Placeholder for an informational icon
+  CONTEXT_ACQUIRED: {
+    id: "CONTEXT_ACQUIRED",
+    displayName: "Context Acquired",
+    category: "inProgress",
+    description: "Agent has fetched and understood the task details.",
+    colorScheme: "cyan",
+    icon: "InfoOutlineIcon", // Placeholder for an informational icon
     isTerminal: false,
     isDynamic: false,
   },
-  'PLANNING_COMPLETE': {
-    id: 'PLANNING_COMPLETE',
-    displayName: 'Planning Complete',
-    category: 'inProgress',
-    description: 'Agent has finalized its plan of action for the task.',
-    colorScheme: 'teal',
-    icon: 'ListOrderedIcon', // Placeholder, e.g. RiListOrdered or similar
+  PLANNING_COMPLETE: {
+    id: "PLANNING_COMPLETE",
+    displayName: "Planning Complete",
+    category: "inProgress",
+    description: "Agent has finalized its plan of action for the task.",
+    colorScheme: "teal",
+    icon: "ListOrderedIcon", // Placeholder, e.g. RiListOrdered or similar
     isTerminal: false,
     isDynamic: false,
   },
-  'EXECUTION_IN_PROGRESS': {
-    id: 'EXECUTION_IN_PROGRESS',
-    displayName: 'Execution In Progress',
-    category: 'inProgress',
-    description: 'Agent is currently executing the core work of the task.',
-    colorScheme: 'blue',
-    icon: 'RepeatClockIcon', // Placeholder, e.g. MdOutlineSettingsBackupRestore or similar for ongoing work
+  EXECUTION_IN_PROGRESS: {
+    id: "EXECUTION_IN_PROGRESS",
+    displayName: "Execution In Progress",
+    category: "inProgress",
+    description: "Agent is currently executing the core work of the task.",
+    colorScheme: "blue",
+    icon: "RepeatClockIcon", // Placeholder, e.g. MdOutlineSettingsBackupRestore or similar for ongoing work
     isTerminal: false,
     isDynamic: false,
   },
-  'PENDING_VERIFICATION': {
-    id: 'PENDING_VERIFICATION',
-    displayName: 'Pending Verification',
-    category: 'inProgress', // Still active, but a specific sub-state
-    description: 'Agent has completed the execution and is awaiting verification of the results.',
-    colorScheme: 'yellow',
-    icon: 'QuestionOutlineIcon', // Placeholder for a query or pending state
+  PENDING_VERIFICATION: {
+    id: "PENDING_VERIFICATION",
+    displayName: "Pending Verification",
+    category: "inProgress", // Still active, but a specific sub-state
+    description:
+      "Agent has completed the execution and is awaiting verification of the results.",
+    colorScheme: "yellow",
+    icon: "QuestionOutlineIcon", // Placeholder for a query or pending state
     isTerminal: false,
     isDynamic: false,
   },
-  'VERIFICATION_COMPLETE': {
-    id: 'VERIFICATION_COMPLETE',
-    displayName: 'Verification Complete',
-    category: 'inProgress', // Part of the active flow, leading to a terminal state
-    description: 'Agent has successfully verified the results of its execution.',
-    colorScheme: 'green',
-    icon: 'CheckIcon', // Placeholder for a simple checkmark
+  VERIFICATION_COMPLETE: {
+    id: "VERIFICATION_COMPLETE",
+    displayName: "Verification Complete",
+    category: "inProgress", // Part of the active flow, leading to a terminal state
+    description:
+      "Agent has successfully verified the results of its execution.",
+    colorScheme: "green",
+    icon: "CheckIcon", // Placeholder for a simple checkmark
     isTerminal: false, // Typically followed by a handoff or PM review status
     isDynamic: false,
   },
-  'VERIFICATION_FAILED': {
-    id: 'VERIFICATION_FAILED',
-    displayName: 'Verification Failed',
-    category: 'failed',
-    description: "Agent's verification of the task's execution failed. Requires attention.",
-    colorScheme: 'red',
-    icon: 'NotAllowedIcon', // Placeholder for failure or error
+  VERIFICATION_FAILED: {
+    id: "VERIFICATION_FAILED",
+    displayName: "Verification Failed",
+    category: "failed",
+    description:
+      "Agent's verification of the task's execution failed. Requires attention.",
+    colorScheme: "red",
+    icon: "NotAllowedIcon", // Placeholder for failure or error
     isTerminal: false, // Not truly terminal as it usually requires rework or PM intervention
     isDynamic: false,
   },
-  'COMPLETED_AWAITING_PROJECT_MANAGER': {
-    id: 'COMPLETED_AWAITING_PROJECT_MANAGER',
-    displayName: 'Completed (Awaiting PM Review)',
-    category: 'completed',
-    description: 'Task is completed by the agent and awaits review or next steps from the Project Manager.',
-    colorScheme: 'purple',
-    icon: 'EmailIcon', // Placeholder, suggesting communication or review needed
+  COMPLETED_AWAITING_PROJECT_MANAGER: {
+    id: "COMPLETED_AWAITING_PROJECT_MANAGER",
+    displayName: "Completed (Awaiting PM Review)",
+    category: "completed",
+    description:
+      "Task is completed by the agent and awaits review or next steps from the Project Manager.",
+    colorScheme: "purple",
+    icon: "EmailIcon", // Placeholder, suggesting communication or review needed
     isTerminal: true,
     isDynamic: false,
   },
-  'COMPLETED_HANDOFF_TO_...': {
-    id: 'COMPLETED_HANDOFF_TO_...',
-    displayName: 'Handoff to: {value}', // Default dynamic pattern
-    category: 'completed',
-    description: 'Task is completed, and follow-up tasks have been created and assigned. The dynamic part holds the new Task IDs or relevant handoff information.',
-    colorScheme: 'purple',
-    icon: 'ArrowForwardIcon', // Placeholder for handoff or continuation
+  "COMPLETED_HANDOFF_TO_...": {
+    id: "COMPLETED_HANDOFF_TO_...",
+    displayName: "Handoff to: {value}", // Default dynamic pattern
+    category: "completed",
+    description:
+      "Task is completed, and follow-up tasks have been created and assigned. The dynamic part holds the new Task IDs or relevant handoff information.",
+    colorScheme: "purple",
+    icon: "ArrowForwardIcon", // Placeholder for handoff or continuation
     isTerminal: true,
     isDynamic: true,
-    dynamicPartsExtractor: /^COMPLETED_HANDOFF_TO_((?:[a-zA-Z0-9-]+|\b\w+\b)(?:\\s*,\\s*(?:[a-zA-Z0-9-]+|\b\w+\b))*)$/i,
-    dynamicDisplayNamePattern: 'Handoff to: {value}',
+    dynamicPartsExtractor:
+      /^COMPLETED_HANDOFF_TO_((?:[a-zA-Z0-9-]+|\b\w+\b)(?:\\s*,\\s*(?:[a-zA-Z0-9-]+|\b\w+\b))*)$/i,
+    dynamicDisplayNamePattern: "Handoff to: {value}",
   },
-  'FAILED': {
-    id: 'FAILED',
-    displayName: 'Failed',
-    category: 'failed',
-    description: 'Task could not be completed due to an unrecoverable error or failure.',
-    colorScheme: 'red',
-    icon: 'WarningIcon', // Placeholder for a general warning/failure icon
+  FAILED: {
+    id: "FAILED",
+    displayName: "Failed",
+    category: "failed",
+    description:
+      "Task could not be completed due to an unrecoverable error or failure.",
+    colorScheme: "red",
+    icon: "WarningIcon", // Placeholder for a general warning/failure icon
     isTerminal: true,
     isDynamic: false,
   },
-  'IN_PROGRESS_AWAITING_SUBTASK': {
-    id: 'IN_PROGRESS_AWAITING_SUBTASK',
-    displayName: 'Awaiting Subtask(s)',
-    category: 'blocked', // Considered blocked as it cannot proceed
-    description: 'Task is paused, waiting for one or more subtasks to be completed.',
-    colorScheme: 'orange',
-    icon: 'TimeIcon', // Placeholder, can indicate waiting
+  IN_PROGRESS_AWAITING_SUBTASK: {
+    id: "IN_PROGRESS_AWAITING_SUBTASK",
+    displayName: "Awaiting Subtask(s)",
+    category: "blocked", // Considered blocked as it cannot proceed
+    description:
+      "Task is paused, waiting for one or more subtasks to be completed.",
+    colorScheme: "orange",
+    icon: "TimeIcon", // Placeholder, can indicate waiting
     isTerminal: false,
     isDynamic: false,
   },
-  'PENDING_RECOVERY_ATTEMPT': {
-    id: 'PENDING_RECOVERY_ATTEMPT',
-    displayName: 'Pending Recovery',
-    category: 'inProgress', // Actively trying to recover
-    description: 'Agent encountered an issue and is planning or attempting a recovery action.',
-    colorScheme: 'yellow',
-    icon: 'RepeatIcon', // Placeholder, indicating a retry or recovery process
+  PENDING_RECOVERY_ATTEMPT: {
+    id: "PENDING_RECOVERY_ATTEMPT",
+    displayName: "Pending Recovery",
+    category: "inProgress", // Actively trying to recover
+    description:
+      "Agent encountered an issue and is planning or attempting a recovery action.",
+    colorScheme: "yellow",
+    icon: "RepeatIcon", // Placeholder, indicating a retry or recovery process
     isTerminal: false,
     isDynamic: false,
   },
@@ -306,7 +321,9 @@ const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
  *   console.log(todoAttrs.colorScheme); // "gray"
  * }
  */
-export function getStatusAttributes(statusId: StatusID): StatusAttributeObject | undefined {
+export function getStatusAttributes(
+  statusId: StatusID,
+): StatusAttributeObject | undefined {
   return STATUS_MAP[statusId];
 }
 
@@ -356,9 +373,15 @@ export function getStatusAttributes(statusId: StatusID): StatusAttributeObject |
  */
 export function getDisplayableStatus(
   statusId: string, // Accepts string to handle full dynamic IDs
-  fallbackTitleOrDynamicValue?: string
-): { displayName: string; colorScheme: string; icon?: ElementType | string; dynamicValue?: string } | undefined {
-  
+  fallbackTitleOrDynamicValue?: string,
+):
+  | {
+      displayName: string;
+      colorScheme: string;
+      icon?: ElementType | string;
+      dynamicValue?: string;
+    }
+  | undefined {
   let baseStatusDefinition: StatusAttributeObject | undefined = undefined;
   let extractedValue: string | undefined = fallbackTitleOrDynamicValue; // Initialize with fallback
 
@@ -366,7 +389,11 @@ export function getDisplayableStatus(
   if (STATUS_MAP[statusId as StatusID]) {
     baseStatusDefinition = STATUS_MAP[statusId as StatusID];
     // If it's a static match but also the base for a dynamic type that expects a fallback, use the fallback.
-    if (baseStatusDefinition.isDynamic && baseStatusDefinition.dynamicDisplayNamePattern && fallbackTitleOrDynamicValue) {
+    if (
+      baseStatusDefinition.isDynamic &&
+      baseStatusDefinition.dynamicDisplayNamePattern &&
+      fallbackTitleOrDynamicValue
+    ) {
       extractedValue = fallbackTitleOrDynamicValue;
     } else if (!baseStatusDefinition.isDynamic) {
       extractedValue = undefined; // Not dynamic, no extracted value from statusId itself
@@ -383,12 +410,12 @@ export function getDisplayableStatus(
           baseStatusDefinition = definition;
           // Prioritize value extracted from statusId string if match is found and group exists
           if (match[1]) {
-             extractedValue = match[1];
+            extractedValue = match[1];
           }
           // If no value was extracted from statusId (match[1] is empty/undefined)
           // and a fallback was provided, retain the fallback.
           // If match[1] has a value, it overrides the initial fallbackTitleOrDynamicValue for extractedValue.
-          break; 
+          break;
         }
       }
     }
@@ -402,21 +429,32 @@ export function getDisplayableStatus(
 
   // 4. Construct display properties
   let finalDisplayName = baseStatusDefinition.displayName;
-  if (baseStatusDefinition.isDynamic && baseStatusDefinition.dynamicDisplayNamePattern) {
+  if (
+    baseStatusDefinition.isDynamic &&
+    baseStatusDefinition.dynamicDisplayNamePattern
+  ) {
     if (extractedValue) {
-      finalDisplayName = baseStatusDefinition.dynamicDisplayNamePattern.replace(/\{value\}|\{extractedValue\}/g, extractedValue);
+      finalDisplayName = baseStatusDefinition.dynamicDisplayNamePattern.replace(
+        /\{value\}|\{extractedValue\}/g,
+        extractedValue,
+      );
     } else if (fallbackTitleOrDynamicValue) {
       // Fallback if extractor failed but a general title was given
-      finalDisplayName = baseStatusDefinition.dynamicDisplayNamePattern.replace(/\{value\}|\{extractedValue\}/g, fallbackTitleOrDynamicValue);
+      finalDisplayName = baseStatusDefinition.dynamicDisplayNamePattern.replace(
+        /\{value\}|\{extractedValue\}/g,
+        fallbackTitleOrDynamicValue,
+      );
     } else {
       // If dynamic but no value extracted and no fallback, use the raw pattern or a generic placeholder
       // This case implies the dynamicDisplayNamePattern itself should be a reasonable fallback.
       // Or, adjust finalDisplayName to indicate missing data, e.g., by removing "{value}"
-      finalDisplayName = baseStatusDefinition.dynamicDisplayNamePattern.replace(/\{value\}|\{extractedValue\}/g, '').trim();
-      if (finalDisplayName.endsWith(':')) finalDisplayName += ' (undefined)';
+      finalDisplayName = baseStatusDefinition.dynamicDisplayNamePattern
+        .replace(/\{value\}|\{extractedValue\}/g, "")
+        .trim();
+      if (finalDisplayName.endsWith(":")) finalDisplayName += " (undefined)";
     }
   }
-  
+
   return {
     displayName: finalDisplayName,
     colorScheme: baseStatusDefinition.colorScheme,
@@ -436,24 +474,29 @@ export function getDisplayableStatus(
  */
 export function getFallbackDisplayableStatus(
   originalStatusId: string,
-  fallbackTitle?: string
-): { displayName: string; colorScheme: string; icon?: ElementType | string; dynamicValue?: string } {
-    // Try to make a somewhat readable display name from the originalStatusId
-    let displayName = fallbackTitle || originalStatusId;
-    if (!fallbackTitle) {
-        displayName = originalStatusId
-            .replace(/_/g, ' ') // Replace underscores with spaces
-            .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize words
-    }
+  fallbackTitle?: string,
+): {
+  displayName: string;
+  colorScheme: string;
+  icon?: ElementType | string;
+  dynamicValue?: string;
+} {
+  // Try to make a somewhat readable display name from the originalStatusId
+  let displayName = fallbackTitle || originalStatusId;
+  if (!fallbackTitle) {
+    displayName = originalStatusId
+      .replace(/_/g, " ") // Replace underscores with spaces
+      .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize words
+  }
 
-    return {
-        displayName: displayName,
-        colorScheme: 'gray', // Default color for unknown statuses
-        icon: 'QuestionIcon', // Placeholder for an unknown or help icon
-        dynamicValue: fallbackTitle === originalStatusId ? undefined : originalStatusId, // If fallbackTitle was originalStatusId, no distinct dynamicValue
-    };
+  return {
+    displayName: displayName,
+    colorScheme: "gray", // Default color for unknown statuses
+    icon: "QuestionIcon", // Placeholder for an unknown or help icon
+    dynamicValue:
+      fallbackTitle === originalStatusId ? undefined : originalStatusId, // If fallbackTitle was originalStatusId, no distinct dynamicValue
+  };
 }
-
 
 /**
  * Retrieves an array of all canonical `StatusID` keys defined in `STATUS_MAP`.

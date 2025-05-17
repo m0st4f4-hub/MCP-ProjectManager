@@ -13,4 +13,5 @@ eslint_report.json
 **/__pycache__/
 **/*.pyc
 
-# 
+#
+/eslint_report.json

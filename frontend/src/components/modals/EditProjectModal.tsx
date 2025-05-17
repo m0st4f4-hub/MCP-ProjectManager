@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   FormControl,
   FormLabel,
   Input,
   Textarea,
   useToast,
-} from '@chakra-ui/react';
-import { Project, ProjectUpdateData } from '@/types';
-import EditModalBase from '../common/EditModalBase';
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  VStack,
+} from "@chakra-ui/react";
+import { Project, ProjectUpdateData } from "@/types";
+import EditModalBase from "../common/EditModalBase";
+import AppIcon from '../common/AppIcon';
 
 interface EditProjectModalProps {
   isOpen: boolean;
@@ -24,8 +30,8 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
   onProjectUpdated,
   onProjectDeleted,
 }) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const toast = useToast();
@@ -33,10 +39,10 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
   useEffect(() => {
     if (project) {
       setName(project.name);
-      setDescription(project.description || '');
+      setDescription(project.description || "");
     } else {
-      setName('');
-      setDescription('');
+      setName("");
+      setDescription("");
     }
   }, [project, isOpen]);
 
@@ -47,19 +53,22 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
     try {
       await onProjectUpdated(updateData);
       toast({
-        title: 'Project updated.',
-        status: 'success',
+        title: "Project updated.",
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
       onClose();
     } catch (error: unknown) {
-      console.error('Failed to update project:', error);
-      const message = error instanceof Error ? error.message : 'Could not update the project.';
+      console.error("Failed to update project:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not update the project.";
       toast({
-        title: 'Update failed.',
+        title: "Update failed.",
         description: message,
-        status: 'error',
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -74,19 +83,22 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
     try {
       await onProjectDeleted(project.id);
       toast({
-        title: 'Project deleted.',
-        status: 'info',
+        title: "Project deleted.",
+        status: "info",
         duration: 3000,
         isClosable: true,
       });
       onClose();
     } catch (error: unknown) {
-      console.error('Failed to delete project:', error);
-      const message = error instanceof Error ? error.message : 'Could not delete the project.';
+      console.error("Failed to delete project:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not delete the project.";
       toast({
-        title: 'Deletion failed.',
+        title: "Deletion failed.",
         description: message,
-        status: 'error',
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -108,25 +120,57 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
       isLoadingDelete={isDeleting}
       size="lg"
     >
-      <FormControl isRequired>
-        <FormLabel>Name</FormLabel>
-        <Input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Project Name"
-        />
-      </FormControl>
+      <ModalHeader borderBottomWidth="1px" borderColor={decorativeBorder} display="flex" alignItems="center">
+        <AppIcon name="edit" boxSize={6} mr={2} />
+        Edit Project
+      </ModalHeader>
+      <ModalBody>
+        <VStack spacing="4" align="stretch">
+          <FormControl>
+            <FormLabel display="flex" alignItems="center">
+              <AppIcon name="title" boxSize={4} mr={2} />
+              Name
+            </FormLabel>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Project name"
+            />
+          </FormControl>
 
-      <FormControl>
-        <FormLabel>Description</FormLabel>
-        <Textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Project Description"
-        />
-      </FormControl>
+          <FormControl>
+            <FormLabel display="flex" alignItems="center">
+              <AppIcon name="description" boxSize={4} mr={2} />
+              Description
+            </FormLabel>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Project description"
+            />
+          </FormControl>
+        </VStack>
+      </ModalBody>
+      <ModalFooter borderTopWidth="1px" borderColor={decorativeBorder}>
+        <Button
+          variant="ghost"
+          mr={3}
+          onClick={onClose}
+          leftIcon={<AppIcon name="close" boxSize={4} />}
+        >
+          Cancel
+        </Button>
+        <Button
+          colorScheme="blue"
+          onClick={handleSave}
+          isLoading={isLoading}
+          leftIcon={<AppIcon name="save" boxSize={4} />}
+        >
+          Save Changes
+        </Button>
+      </ModalFooter>
     </EditModalBase>
   );
 };
 
-export default EditProjectModal; 
+export default EditProjectModal;

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -15,8 +15,12 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   useDisclosure,
-} from '@chakra-ui/react';
-import styles from './EditModalBase.module.css';
+  Text,
+  Flex,
+  useColorMode,
+} from "@chakra-ui/react";
+import { semanticColors, colorPrimitives } from "@/tokens/colors";
+import AppIcon from './AppIcon';
 
 // Define a generic constraint for entity data
 // Ensure it has an 'id' and allows accessing a display field via string key
@@ -48,35 +52,72 @@ function EditModalBase<T extends EntityWithIdAndName>({
   onDelete,
   isLoadingSave,
   isLoadingDelete = false, // Default to false if onDelete is not provided
-  size = 'lg',
+  size = "lg",
   hideDeleteButton = false,
 }: EditModalBaseProps<T>) {
-  const { isOpen: isAlertOpen, onOpen: onAlertOpen, onClose: onAlertClose } = useDisclosure();
+  const {
+    isOpen: isAlertOpen,
+    onOpen: onAlertOpen,
+    onClose: onAlertClose,
+  } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === "dark";
 
-  const entityDisplayName = entityData ? String(entityData[entityDisplayField]) : '';
+  // Define semantic colors based on mode
+  const surfaceBg = isDark
+    ? semanticColors.surface.dark
+    : semanticColors.surface.DEFAULT;
+  const onSurfaceColor = isDark
+    ? semanticColors.onSurface.dark
+    : semanticColors.onSurface.DEFAULT;
+  const decorativeBorder = isDark
+    ? semanticColors.borderDecorative.dark
+    : semanticColors.borderDecorative.DEFAULT;
+  const textSecondaryColor = isDark
+    ? semanticColors.textSecondary.dark
+    : semanticColors.textSecondary.DEFAULT;
+  const interactionHoverBg = isDark
+    ? semanticColors.surfaceElevated.dark
+    : semanticColors.surfaceElevated.DEFAULT;
+
+  const errorColor = isDark
+    ? semanticColors.error.dark
+    : semanticColors.error.DEFAULT;
+  const errorBgSubtle = isDark
+    ? semanticColors.errorBgSubtle.dark
+    : semanticColors.errorBgSubtle.DEFAULT;
+
+  const primaryButtonBg = isDark
+    ? semanticColors.primary.dark
+    : semanticColors.primary.DEFAULT;
+  const onPrimaryButtonColor = isDark
+    ? semanticColors.onPrimary.dark
+    : semanticColors.onPrimary.DEFAULT;
+  const primaryButtonHoverBg = isDark
+    ? semanticColors.primaryHover.dark
+    : semanticColors.primaryHover.DEFAULT;
+
+  const dangerButtonBg = isDark
+    ? semanticColors.error.dark
+    : semanticColors.error.DEFAULT; // Main background for danger button
+  const onDangerButtonColor = isDark
+    ? semanticColors.onError.dark
+    : semanticColors.onError.DEFAULT;
+  // For hover on danger button, using a slightly darker primitive or a specific semantic token if available
+  const dangerButtonHoverBg = isDark
+    ? colorPrimitives.red[500]
+    : colorPrimitives.red[600];
+
+  const entityDisplayName = entityData
+    ? String(entityData[entityDisplayField])
+    : "";
 
   const handleSave = async () => {
     try {
       await onSave();
-      // Success toast can be handled by the caller after successful API call if more context is needed
-      // toast({
-      //   title: `${entityName} updated.`,
-      //   status: 'success',
-      //   duration: 3000,
-      //   isClosable: true,
-      // });
-      // onClose(); // Caller should handle closing on successful save
     } catch (error: unknown) {
-       console.error(`Failed to update ${entityName}:`, error);
-       // Error toast should be handled by the caller as they have more error context
-      // toast({
-      //   title: 'Update failed.',
-      //   description: error.message || `Could not update the ${entityName}.`,
-      //   status: 'error',
-      //   duration: 5000,
-      //   isClosable: true,
-      // });
+      console.error(`Failed to update ${entityName}:`, error);
     }
   };
 
@@ -84,109 +125,129 @@ function EditModalBase<T extends EntityWithIdAndName>({
     if (!onDelete || !entityData) return;
     try {
       await onDelete();
-      // Success toast can be handled by the caller
-      // toast({
-      //   title: `${entityName} deleted.`,
-      //   status: 'info',
-      //   duration: 3000,
-      //   isClosable: true,
-      // });
       onAlertClose();
-      // onClose(); // Caller should handle closing
     } catch (error: unknown) {
       console.error(`Failed to delete ${entityName}:`, error);
-       // Error toast handled by caller
-      // toast({
-      //   title: 'Deletion failed.',
-      //   description: error.message || `Could not delete the ${entityName}.`,
-      //   status: 'error',
-      //   duration: 5000,
-      //   isClosable: true,
-      // });
     }
   };
 
-  if (!entityData) return null; // Don't render if no entity data is provided
+  if (!entityData) return null;
 
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} isCentered size={size}>
         <ModalOverlay />
-        <ModalContent bg="bg.surface" color="text.primary">
-          <ModalHeader borderBottomWidth="1px" borderColor="border.base">
+        <ModalContent bg={surfaceBg} color={onSurfaceColor}>
+          <ModalHeader borderBottomWidth="1px" borderColor={decorativeBorder} display="flex" alignItems="center">
+            <AppIcon name="edit" boxSize={5} mr={2} />
             Edit {entityName}: {entityDisplayName}
           </ModalHeader>
-          <ModalCloseButton color="text.secondary" _hover={{ bg: "interaction.hover"}}/>
-          <ModalBody className={styles.modalBody}>
-            {/* Render the specific form fields passed as children */}
-            <div className={styles.formFieldsContainer}>
-                {children}
-            </div>
+          <ModalCloseButton
+            color={textSecondaryColor}
+            _hover={{ bg: interactionHoverBg }}
+          />
+          <ModalBody>
+            <div>{children}</div>
           </ModalBody>
 
-          <ModalFooter borderTopWidth="1px" borderColor="border.base">
-            <div className={styles.modalFooterLayout}>
+          <ModalFooter borderTopWidth="1px" borderColor={decorativeBorder}>
+            <Flex justify="space-between" w="full">
               {!hideDeleteButton && onDelete ? (
                 <Button
                   variant="outline"
-                  color="status.error"
-                  borderColor="status.error"
-                  _hover={{ bg: "bg.danger.subtle" }}
+                  color={errorColor}
+                  borderColor={errorColor}
+                  _hover={{ bg: errorBgSubtle, color: errorColor }}
                   onClick={onAlertOpen}
                   isLoading={isLoadingDelete}
                   loadingText="Deleting..."
+                  leftIcon={<AppIcon name="delete" boxSize={4} />}
                 >
                   Delete
                 </Button>
-              ) : <div />}
+              ) : (
+                <div />
+              )}
               <div>
-                <Button variant="ghost" onClick={onClose} mr={3} isDisabled={isLoadingSave || isLoadingDelete} color="text.secondary">
+                <Button
+                  variant="ghost"
+                  onClick={onClose}
+                  mr={3}
+                  isDisabled={isLoadingSave || isLoadingDelete}
+                  color={textSecondaryColor}
+                  leftIcon={<AppIcon name="close" boxSize={4} />}
+                >
                   Cancel
                 </Button>
                 <Button
-                  bg="bg.button.primary"
-                  color="text.button.primary"
-                  _hover={{ bg: "bg.button.primary.hover" }}
+                  bg={primaryButtonBg}
+                  color={onPrimaryButtonColor}
+                  _hover={{ bg: primaryButtonHoverBg }}
                   onClick={handleSave}
                   isLoading={isLoadingSave}
                   loadingText="Saving..."
                   isDisabled={isLoadingDelete}
+                  leftIcon={<AppIcon name="save" boxSize={4} />}
                 >
                   Save Changes
                 </Button>
               </div>
-            </div>
+            </Flex>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
       {onDelete && (
-          <AlertDialog
-            isOpen={isAlertOpen}
-            leastDestructiveRef={cancelRef}
-            onClose={onAlertClose}
-            isCentered
-          >
+        <AlertDialog
+          isOpen={isAlertOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onAlertClose}
+          isCentered
+        >
           <AlertDialogOverlay>
-            <AlertDialogContent bg="bg.surface" color="text.primary">
-              <AlertDialogHeader fontSize="lg" fontWeight="bold" borderBottomWidth="1px" borderColor="border.base">
+            <AlertDialogContent bg={surfaceBg} color={onSurfaceColor}>
+              <AlertDialogHeader
+                fontSize="lg"
+                fontWeight="bold"
+                borderBottomWidth="1px"
+                borderColor={decorativeBorder}
+                display="flex"
+                alignItems="center"
+              >
+                <AppIcon name="delete" boxSize={5} mr={2} />
                 Delete {entityName}
               </AlertDialogHeader>
-              <AlertDialogBody className={styles.alertDialogBody}>
-                Are you sure you want to delete the {entityName.toLowerCase()} &quot;<span className={styles.entityDisplayNameHighlight}>{entityDisplayName}</span>&quot;? This action cannot be undone.
+              <AlertDialogBody>
+                Are you sure you want to delete the {entityName.toLowerCase()}{" "}
+                &quot;
+                <Text as="span" fontWeight="bold">
+                  {entityDisplayName}
+                </Text>
+                &quot;? This action cannot be undone.
               </AlertDialogBody>
-              <AlertDialogFooter borderTopWidth="1px" borderColor="border.base">
-                <Button variant="ghost" ref={cancelRef} onClick={onAlertClose} isDisabled={isLoadingDelete} color="text.secondary">
+              <AlertDialogFooter
+                borderTopWidth="1px"
+                borderColor={decorativeBorder}
+              >
+                <Button
+                  variant="ghost"
+                  ref={cancelRef}
+                  onClick={onAlertClose}
+                  isDisabled={isLoadingDelete}
+                  color={textSecondaryColor}
+                  leftIcon={<AppIcon name="close" boxSize={4} />}
+                >
                   Cancel
                 </Button>
-                <Button 
-                    bg="bg.button.danger"
-                    color="text.button.primary"
-                    _hover={{ bg: "bg.danger.hover" }}
-                    onClick={handleDeleteConfirm} 
-                    ml={3} 
-                    isLoading={isLoadingDelete} 
-                    loadingText="Deleting..."
+                <Button
+                  bg={dangerButtonBg}
+                  color={onDangerButtonColor}
+                  _hover={{ bg: dangerButtonHoverBg }}
+                  onClick={handleDeleteConfirm}
+                  ml={3}
+                  isLoading={isLoadingDelete}
+                  loadingText="Deleting..."
+                  leftIcon={<AppIcon name="delete" boxSize={4} />}
                 >
                   Delete
                 </Button>
@@ -199,4 +260,4 @@ function EditModalBase<T extends EntityWithIdAndName>({
   );
 }
 
-export default EditModalBase; 
+export default EditModalBase;

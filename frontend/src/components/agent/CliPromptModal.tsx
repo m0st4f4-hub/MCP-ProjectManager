@@ -1,71 +1,102 @@
-'use client';
-
-import React from 'react';
+import React from "react";
 import {
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalCloseButton,
-    ModalFooter,
-    Button,
-    useToast,
-} from '@chakra-ui/react';
-import { CopyIcon } from '@chakra-ui/icons';
-import { formatDisplayName } from '@/lib/utils';
-import styles from './Modals.module.css'; // Using shared modal styles
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Button,
+  Textarea,
+} from "@chakra-ui/react";
+import AppIcon from "../common/AppIcon";
+import { colorPrimitives } from "@/tokens/colors";
 
 interface CliPromptModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    cliPromptText: string;
-    agentName: string;
+  isOpen: boolean;
+  onClose: () => void;
+  cliPromptText: string;
+  agentName?: string;
 }
 
-const CliPromptModal: React.FC<CliPromptModalProps> = ({ isOpen, onClose, cliPromptText, agentName }) => {
-    const toast = useToast();
+const CliPromptModal: React.FC<CliPromptModalProps> = ({
+  isOpen,
+  onClose,
+  cliPromptText,
+  agentName,
+}) => {
+  const handleCopyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(cliPromptText);
+    } catch {
+      // Optionally handle error
+    }
+  };
 
-    const handleCopyPrompt = async () => {
-        if (cliPromptText) {
-            try {
-                await navigator.clipboard.writeText(cliPromptText);
-                toast({ title: 'Prompt copied to clipboard!', status: 'success', duration: 2000, isClosable: true });
-            } catch {
-                toast({ title: 'Failed to copy prompt.', status: 'error', duration: 2000, isClosable: true });
-            }
-        }
-    };
-
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} isCentered size={{ base: 'full', md: '2xl' }}>
-            <ModalOverlay />
-            <ModalContent className={styles.modalContent}>
-                <ModalHeader className={`${styles.modalHeader} ${styles.cliModalHeader}`}>
-                    CLI Prompt for {formatDisplayName(agentName)}
-                </ModalHeader>
-                <ModalCloseButton className={styles.modalCloseButton} />
-                <ModalBody className={`${styles.modalBody} ${styles.cliModalBody}`}>
-                    {cliPromptText}
-                </ModalBody>
-                <ModalFooter className={styles.modalFooter}>
-                    <Button 
-                        onClick={handleCopyPrompt} 
-                        leftIcon={<CopyIcon />} 
-                        className={styles.copyPromptButton}
-                    >
-                        Copy Prompt
-                    </Button>
-                    <Button 
-                        onClick={onClose}
-                        className={styles.actionButton} // You might want a specific style or use Chakra's default
-                    >
-                        Close
-                    </Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="2xl"
+      scrollBehavior="inside"
+      isCentered
+    >
+      <ModalOverlay backdropFilter="blur(3px)" />
+      <ModalContent
+        bg="bgSurfaceElevated"
+        color="textPrimary"
+        borderRadius="lg"
+        maxH="80vh"
+      >
+        <ModalHeader borderBottomWidth="1px" borderColor="borderDecorative">
+          CLI Prompt{agentName ? ` for: ${agentName}` : ""}
+        </ModalHeader>
+        <ModalCloseButton _focus={{ boxShadow: "outline" }} />
+        <ModalBody p={6} overflowY="auto">
+          <Textarea
+            value={cliPromptText}
+            isReadOnly
+            rows={20}
+            fontFamily="monospace"
+            fontSize="sm"
+            bg={colorPrimitives.gray[50]}
+            color={colorPrimitives.gray[900]}
+            borderColor="borderDecorative"
+            _dark={{
+              bg: colorPrimitives.gray[900],
+              color: colorPrimitives.gray[100],
+              borderColor: colorPrimitives.gray[700],
+            }}
+            borderRadius="md"
+            p={4}
+            whiteSpace="pre-wrap"
+          />
+        </ModalBody>
+        <ModalFooter borderTopWidth="1px" borderColor="borderDecorative">
+          <Button
+            variant="ghost"
+            onClick={handleCopyPrompt}
+            leftIcon={<AppIcon name="copy" />}
+            color="textLink"
+            _hover={{ bg: "bgInteractiveSubtleHover" }}
+          >
+            Copy Prompt
+          </Button>
+          <Button
+            bg="bgInteractive"
+            color="textInverse"
+            _hover={{ bg: "bgInteractiveHover" }}
+            _active={{ bg: "bgInteractiveActive" }}
+            ml={3}
+            onClick={onClose}
+          >
+            Close
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
 };
 
-export default CliPromptModal; 
+export default CliPromptModal;

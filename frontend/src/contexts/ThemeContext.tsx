@@ -1,8 +1,14 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, ReactNode, useLayoutEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useLayoutEffect,
+} from "react";
 
-type Theme = 'light' | 'dark';
+type Theme = "light" | "dark";
 
 interface ThemeContextProps {
   theme: Theme;
@@ -11,21 +17,27 @@ interface ThemeContextProps {
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
+// ThemeContext provides light/dark mode state and toggling for the entire app.
+// This context is the bridge between user/system preference, Chakra UI, and the TypeScript token system.
+
 // Helper function to get initial theme (avoids repeating logic)
 const getInitialTheme = (): Theme => {
-    if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
         // Default for server-side rendering (or if window access fails)
-        return 'light'; 
+    return "light";
     }
     try {
-        const storedTheme = localStorage.getItem('theme') as Theme | null;
+    const storedTheme = localStorage.getItem("theme") as Theme | null;
         if (storedTheme) {
             return storedTheme;
         }
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    // If no stored preference, use OS-level preference
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
     } catch (error) {
         console.error("Error reading theme preference:", error);
-        return 'light'; // Fallback
+    return "light"; // Fallback
     }
 };
 
@@ -34,43 +46,48 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  // Initialize state WITH the initial theme determined client-side or default
+  // State holds the current theme ('light' or 'dark')
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
-  // Use useLayoutEffect to apply the class ASAP before browser paint
+  // useLayoutEffect ensures the theme class and data-theme attribute are set on <html> before paint
+  // This enables Chakra UI's color mode system and the TypeScript token system to pick up the correct theme instantly
   useLayoutEffect(() => {
-    console.log('[ThemeContext] Effect running. Theme:', theme); // DEBUG LOG
+    console.log("[ThemeContext] Effect running. Theme:", theme); // DEBUG LOG
     // No need for isMounted check here as it runs client-side anyway
     // And we want the class applied immediately based on initial state.
     try {
         const root = window.document.documentElement;
-        if (theme === 'dark') {
-          root.classList.add('dark');
-          root.classList.remove('light');
+      if (theme === "dark") {
+        root.classList.add("dark");
+        root.classList.remove("light");
         } else {
-          root.classList.add('light');
-          root.classList.remove('dark');
+        root.classList.add("light");
+        root.classList.remove("dark");
         }
-        // Only update localStorage if the theme isn't the initial guess
-        // This avoids writing default 'light' if preference was actually 'dark'
-        // A second effect could handle just localStorage if needed for cleaner separation.
-        localStorage.setItem('theme', theme); 
+      // Set data-theme attribute for theme scoping (used by Tailwind and for potential future extensions)
+      root.setAttribute("data-theme", theme);
+      // Persist theme preference in localStorage
+      localStorage.setItem("theme", theme);
     } catch (error) {
         console.error("Error applying theme:", error);
     }
     // Update localStorage whenever theme changes
   }, [theme]); 
 
+  // toggleTheme switches between light and dark mode
+  // This triggers a re-render and updates the DOM, enabling token-based theming
   const toggleTheme = () => {
-    console.log('[ThemeContext] toggleTheme called.'); // DEBUG LOG
+    console.log("[ThemeContext] toggleTheme called."); // DEBUG LOG
     setTheme((prevTheme) => {
-      const newTheme = prevTheme === 'light' ? 'dark' : 'light';
-      console.log(`[ThemeContext] Changing theme from ${prevTheme} to ${newTheme}`); // DEBUG LOG
+      const newTheme = prevTheme === "light" ? "dark" : "light";
+      console.log(
+        `[ThemeContext] Changing theme from ${prevTheme} to ${newTheme}`,
+      ); // DEBUG LOG
       return newTheme;
     });
   };
 
-  // Render children immediately now
+  // Provide theme state and toggler to all children
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
@@ -81,7 +98,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 export const useTheme = (): ThemeContextProps => {
   const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;
 }; 
