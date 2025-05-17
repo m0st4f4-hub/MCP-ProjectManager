@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 : "/assets/images/icon_light.png"
             }
             alt="Project Manager Icon"
-            boxSize="12"
+            boxSize="36"
             objectFit="contain"
             mb="2"
           />
@@ -95,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 : "/assets/images/logo_light.png"
             }
             alt="Project Manager Logo"
-            h="30"
+            h="90"
             w="auto"
             objectFit="contain"
             mb="2"

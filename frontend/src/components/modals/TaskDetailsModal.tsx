@@ -505,344 +505,83 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       {task && (
         <AlertDialog
           isOpen={isAlertOpen}
-          color="textSecondary"
-          position="absolute"
-          top="2"
-          right="2"
-          bg="transparent"
-          borderRadius="md"
-          p="2"
-          _hover={{ bg: "gray.100", _dark: { bg: "gray.600" } }}
-        />
-        <ModalBody pt="6" pb="6" pl="6" pr="6">
-          {error && (
-            <Box color="textError" mb="4">
-              Error: {error}
-            </Box>
-          )}
-          {isLoading && !task && !error && (
-            <Spinner color="textSecondary" display="block" mx="auto" my="5" />
-          )}
-          {!isLoading && !task && !error && (
-            <Text color="textSecondary">
-              No task selected or details unavailable.
-            </Text>
-          )}
-
-          {task && (
-            <VStack spacing="4" align="stretch">
-              <Box>
-                <Heading
-                  size="sm"
-                  fontWeight="medium"
-                  mb="1"
-                  color="textPrimary"
-                >
-                  Description
-                </Heading>
-                <Text
-                  whiteSpace="pre-wrap"
-                  maxWidth="80ch"
-                  color="textSecondary"
-                >
-                  {task.description || "No description provided."}
-                </Text>
-              </Box>
-              <Divider borderColor="borderDecorative" my="4" />
-              <HStack justify="space-between" align="flex-start">
-                <Box>
-                  <Heading
-                    size="xs"
-                    fontWeight="bold"
-                    textTransform="uppercase"
-                    color="textSecondary"
-                    mb="0.5"
-                  >
-                    Status
-                  </Heading>
-                  <Box ml="2">
-                    {(() => {
-                      const statusId = (task.status || "TO_DO") as StatusID;
-                      const statusInfo = getDisplayableStatus(
-                        statusId,
-                        task.title,
-                      );
-                      if (!statusInfo) {
-                        return (
-                          <Tag
-                            p="1 3"
-                            borderRadius="md"
-                            fontSize="sm"
-                            fontWeight="medium"
-                            bg="gray.100"
-                            color="gray.800"
-                          >
-                            Unknown Status
-                          </Tag>
-                        );
-                      }
-                      const { displayName, colorScheme, icon, dynamicValue } =
-                        statusInfo;
-                      let tagBg = "gray.100";
-                      let tagColor = "gray.800";
-                      switch (colorScheme) {
-                        case "blue":
-                          tagBg = "blue.100";
-                          tagColor = "blue.800";
-                          break;
-                        case "green":
-                          tagBg = "green.100";
-                          tagColor = "green.800";
-                          break;
-                        case "yellow":
-                          tagBg = "yellow.100";
-                          tagColor = "yellow.800";
-                          break;
-                        case "red":
-                          tagBg = "red.100";
-                          tagColor = "red.800";
-                          break;
-                        case "orange":
-                          tagBg = "orange.100";
-                          tagColor = "orange.800";
-                          break;
-                      }
-                      return (
-                        <Tag
-                          p="1 3"
-                          borderRadius="md"
-                          fontSize="sm"
-                          fontWeight="medium"
-                          bg={tagBg}
-                          color={tagColor}
-                        >
-                          {icon && typeof icon !== "string" && (
-                            <TagLeftIcon as={icon} />
-                          )}
-                          <Text>
-                            {dynamicValue
-                              ? `${displayName} (${dynamicValue})`
-                              : displayName}
-                          </Text>
-                        </Tag>
-                      );
-                    })()}
-                  </Box>
-                </Box>
-                <Box>
-                  <Heading
-                    size="xs"
-                    fontWeight="bold"
-                    textTransform="uppercase"
-                    color="textSecondary"
-                    mb="0.5"
-                  >
-                    Project
-                  </Heading>
-                  <Text color="textPrimary" fontSize="base">
-                    {getProjectName(task.project_id)}
-                  </Text>
-                </Box>
-              </HStack>
-              <HStack justify="space-between" align="flex-start">
-                <Box>
-                  <Heading
-                    size="xs"
-                    fontWeight="bold"
-                    textTransform="uppercase"
-                    color="textSecondary"
-                    mb="0.5"
-                  >
-                    Agent
-                  </Heading>
-                  <Text color="textPrimary" fontSize="base">
-                    {agent ? agent.name : task?.agent_name || "Unassigned"}
-                  </Text>
-                </Box>
-              </HStack>
-              <Divider borderColor="borderDecorative" my="4" />
-              <Box>
-                <Heading
-                  size="xs"
-                  fontWeight="bold"
-                  textTransform="uppercase"
-                  color="textSecondary"
-                  mb="0.5"
-                >
-                  Timestamps
-                </Heading>
-                <Text color="textPrimary" fontSize="base">
-                  Created: {new Date(task.created_at).toLocaleString()}
-                </Text>
-                <Text color="textPrimary" fontSize="base">
-                  Updated:{" "}
-                  {task.updated_at
-                    ? new Date(task.updated_at).toLocaleString()
-                    : "N/A"}
-                </Text>
-              </Box>
-            </VStack>
-          )}
-        </ModalBody>
-        <ModalFooter
-          borderTopWidth="DEFAULT"
-          borderTopStyle="solid"
-          borderTopColor="borderDecorative"
-          py="4"
-          px="6"
-          display="flex"
-          justifyContent="flex-end"
-          gap="3"
-        >
-          {task && !task.is_archived && (
-            <>
-              <Button
-                leftIcon={<DownloadIcon />}
-                onClick={handleArchive}
-                variant="outline"
-                borderColor="primary"
-                color="primary"
-                _hover={{ bg: "surfaceElevated" }}
-                px="4"
-                py="2"
-                borderRadius="md"
-                fontSize="sm"
-                fontWeight="medium"
-                lineHeight="condensed"
-              >
-                Archive Task
-              </Button>
-              <Button
-                leftIcon={<DeleteIcon />}
-                onClick={handleDeleteInitiate}
-                variant="outline"
-                borderColor="error"
-                color="error"
-                _hover={{ bg: "errorBgSubtle" }}
-                px="4"
-                py="2"
-                borderRadius="md"
-                fontSize="sm"
-                fontWeight="medium"
-                lineHeight="condensed"
-              >
-                Delete Task
-              </Button>
-            </>
-          )}
-          {task && task.is_archived && (
-            <>
-              <Button
-                leftIcon={<RepeatClockIcon />}
-                onClick={handleUnarchive}
-                variant="outline"
-                borderColor="teal.500"
-                color="teal.600"
-                _hover={{ bg: "teal.50" }}
-                px="4"
-                py="2"
-                borderRadius="md"
-                fontSize="sm"
-                fontWeight="medium"
-                lineHeight="condensed"
-              >
-                Unarchive Task
-              </Button>
-              <Button
-                leftIcon={<DeleteIcon />}
-                onClick={handleDeleteInitiate}
-                variant="outline"
-                borderColor="error"
-                color="error"
-                _hover={{ bg: "errorBgSubtle" }}
-                px="4"
-                py="2"
-                borderRadius="md"
-                fontSize="sm"
-                fontWeight="medium"
-                lineHeight="condensed"
-              >
-                Delete Task Permanently
-              </Button>
-            </>
-          )}
-          <Button
-            onClick={onClose}
-            variant="ghost"
-            color="gray.700"
-            _hover={{ bg: "gray.100" }}
-            px="4"
-            py="2"
-            borderRadius="md"
-            fontSize="sm"
-            fontWeight="medium"
-            lineHeight="condensed"
-          >
-            Close
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-      {task && (
-        <AlertDialog
-          isOpen={isAlertOpen}
           leastDestructiveRef={cancelRef}
           onClose={onAlertClose}
+          isCentered // Ensure it is centered
+          size={{base: "sm", md: "md"}} // Responsive size
         >
-          <AlertDialogOverlay>
-            <AlertDialogContent
-              bg="surface"
-              color="textPrimary"
-              borderWidth="DEFAULT"
-              borderStyle="solid"
+          <AlertDialogOverlay bg="overlayDefault" backdropFilter="blur(2px)" />
+          <AlertDialogContent
+            bg="bgModal" // Consistent with main modal
+            color="onSurface"
+            borderWidth={sizing.borderWidth.DEFAULT}
+            borderColor="borderDecorative"
+            borderRadius={sizing.borderRadius.lg}
+            boxShadow={shadows.lg} // Add elevation shadow
+          >
+            <AlertDialogHeader 
+              fontSize={typography.fontSize.lg} 
+              fontWeight={typography.fontWeight.semibold} 
+              borderBottomWidth={sizing.borderWidth.DEFAULT}
               borderColor="borderDecorative"
-              borderRadius="lg"
+              py={sizing.spacing[3]}
+              px={sizing.spacing[4]}
+              display="flex"
+              alignItems="center"
             >
-              <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                Delete Task
-              </AlertDialogHeader>
+              <AppIcon name="delete" color="iconDanger" mr={sizing.spacing[2]} /> {/* Added iconDanger */}
+              Delete Task
+            </AlertDialogHeader>
 
-              <AlertDialogBody>
-                Are you sure you want to delete this task? This action cannot be
-                undone.
-                {task?.is_archived && " This is an archived task."}
-              </AlertDialogBody>
+            <AlertDialogBody 
+              py={sizing.spacing[4]}
+              px={sizing.spacing[4]}
+              fontSize={typography.fontSize.sm}
+            >
+              Are you sure you want to delete this task? This action cannot be undone.
+              {task?.is_archived && (
+                <Text as="span" fontWeight={typography.fontWeight.semibold} color="textStatusWarning" ml={sizing.spacing[1]}>
+                  This is an archived task.
+                </Text>
+              )}
+            </AlertDialogBody>
 
-              <AlertDialogFooter gap="3">
-                <Button
-                  ref={cancelRef}
-                  onClick={onAlertClose}
-                  variant="ghost"
-                  color="gray.700"
-                  _hover={{ bg: "gray.100" }}
-                  px="4"
-                  py="2"
-                  borderRadius="md"
-                  fontSize="sm"
-                  fontWeight="medium"
-                  lineHeight="condensed"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleDeleteConfirm}
-                  bg="error"
-                  color="onError.DEFAULT"
-                  borderColor="error"
-                  borderWidth="DEFAULT"
-                  borderStyle="solid"
-                  _hover={{ bg: "red.600", borderColor: "red.600" }}
-                  px="4"
-                  py="2"
-                  borderRadius="md"
-                  fontSize="sm"
-                  fontWeight="medium"
-                  lineHeight="condensed"
-                >
-                  Delete Permanently
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialogOverlay>
+            <AlertDialogFooter 
+              borderTopWidth={sizing.borderWidth.DEFAULT}
+              borderColor="borderDecorative"
+              py={sizing.spacing[3]}
+              px={sizing.spacing[4]}
+              bg="bgModal" // Consistent footer bg
+            >
+              <Button
+                ref={cancelRef}
+                onClick={onAlertClose}
+                variant="ghost"
+                color="textSecondary"
+                _hover={{ bg: "interactiveNeutralHover", color: "textPrimary"}}
+                _active={{ bg: "interactiveNeutralActive"}}
+                h={sizing.height.sm}
+                fontSize={typography.fontSize.xs}
+                fontWeight={typography.fontWeight.medium}
+                mr={sizing.spacing[2]}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteConfirm}
+                bg="interactiveDanger" // Changed from error
+                color="onInteractiveDanger" // Changed from onError.DEFAULT
+                _hover={{ bg: "interactiveDangerHover" }}
+                _active={{ bg: "interactiveDangerActive" }}
+                h={sizing.height.sm}
+                fontSize={typography.fontSize.xs}
+                fontWeight={typography.fontWeight.medium}
+                leftIcon={<DeleteIcon boxSize={sizing.spacing[3]} />} // Use Chakra icon directly
+              >
+                Delete Permanently
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
         </AlertDialog>
       )}
     </Modal>

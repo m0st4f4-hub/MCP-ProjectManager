@@ -47,7 +47,7 @@ import UnassignedTasksList from "./dashboard/UnassignedTasksList";
 import TopPerformersLists from "./dashboard/TopPerformersLists";
 import RecentActivityList from "./dashboard/RecentActivityList";
 import DashboardSection from './dashboard/DashboardSection';
-import { sizing, typography, shadows } from "../../tokens";
+import { sizing, typography } from "../tokens";
 
 // Define selectors outside the component for stable references
 const selectTaskFilters = (state: TaskState) => state.filters;
@@ -494,8 +494,8 @@ const Dashboard: React.FC = () => {
           <HStack spacing={sizing.spacing[3] || 3} alignItems="center">
              <AppIcon
               component={FaTasks}
-              w={sizing.iconSizes.lg || 8}
-              h={sizing.iconSizes.lg || 8}
+              w={sizing.spacing[8] || "32px"}
+              h={sizing.spacing[8] || "32px"}
               color="icon.primary"
               mr={sizing.spacing[2] || 2}
               aria-hidden="true"

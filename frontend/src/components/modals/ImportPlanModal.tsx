@@ -17,12 +17,12 @@ import { sizing, typography } from "../../tokens"; // Added sizing and typograph
 
 const AI_REVISION_PROMPT = `Based on our preceding discussion detailing the project plan, please convert that plan into the following JSON format. This JSON will be used to import the project and its tasks into my task manager.\\n\\nThe JSON structure MUST be as follows:\\n\\n{\\n  \"projectName\": \"STRING - The name of the project (required)\",\\n  \"projectDescription\": \"STRING - A brief description of the project (optional)\",\\n  \"projectAgentName\": \"STRING - The name of a default agent for all tasks in this project (optional)\",\\n  \"tasks\": [\\n    {\\n      \"title\": \"STRING - The title of the task (required)\",\\n      \"description\": \"STRING - A description for the task (optional)\",\\n      \"agentName\": \"STRING - The name of a specific agent for this task (optional, overrides projectAgentName if provided for this task)\",\\n      \"completed\": BOOLEAN - Whether the task is completed (optional, defaults to false, true/false)\\n    }\\n    // ... more tasks can be added to the array\\n  ]\\n}\\n\\nPlease provide ONLY the JSON output derived from our preceding conversation. Ensure all string values are correctly quoted and boolean values for \'completed\' are strictly \`true\` or \`false\` (not strings).`;
 
-interface ImportedPlanTask {
-  title: string;
-  description?: string;
-  agentName?: string;
-  completed?: boolean;
-}
+// interface ImportedPlanTask { // Removing unused interface
+//   title: string;
+//   description?: string;
+//   agentName?: string;
+//   completed?: boolean;
+// }
 
 interface ImportPlanModalProps {
   isOpen: boolean;

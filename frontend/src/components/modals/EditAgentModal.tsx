@@ -3,6 +3,7 @@ import { FormControl, FormLabel, Input, useToast, ModalHeader, ModalBody, ModalF
 import { Agent, AgentUpdateData } from "@/types";
 import EditModalBase from "../common/EditModalBase";
 import AppIcon from '../common/AppIcon';
+import { sizing, typography, shadows } from "@/tokens";
 
 interface EditAgentModalProps {
   isOpen: boolean;
@@ -102,39 +103,84 @@ const EditAgentModal: React.FC<EditAgentModalProps> = ({
       isLoadingDelete={isDeleting}
       size="lg"
     >
-      <ModalHeader borderBottomWidth="1px" borderColor={decorativeBorder} display="flex" alignItems="center">
-        <AppIcon name="edit" boxSize={6} mr={2} />
-        Edit Agent
+      <ModalHeader 
+        borderBottomWidth={sizing.borderWidth.DEFAULT} 
+        borderColor="borderDecorative" 
+        display="flex" 
+        alignItems="center"
+        fontSize={typography.fontSize.lg}
+        fontWeight={typography.fontWeight.semibold}
+        color="textPrimary"
+        py={sizing.spacing[3]}
+      >
+        <AppIcon name="edit" boxSize={sizing.icon.md} mr={sizing.spacing[2]} color="iconPrimary" />
+        Edit Agent: {agent?.name}
       </ModalHeader>
-      <ModalBody>
-        <VStack spacing="4" align="stretch">
+      <ModalBody py={sizing.spacing[5]}>
+        <VStack spacing={sizing.spacing[4]} align="stretch">
           <FormControl>
-            <FormLabel display="flex" alignItems="center">
-              <AppIcon name="user" boxSize={4} mr={2} />
+            <FormLabel 
+              display="flex" 
+              alignItems="center"
+              fontSize={typography.fontSize.sm}
+              fontWeight={typography.fontWeight.medium}
+              color="textSecondary"
+              mb={sizing.spacing[1]}
+            >
+              <AppIcon name="agent" boxSize={sizing.icon.sm} mr={sizing.spacing[2]} />
               Name
             </FormLabel>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Agent name"
+              bg="bgInput"
+              color="textInput"
+              borderColor="borderInteractive"
+              borderRadius={sizing.borderRadius.md}
+              fontSize={typography.fontSize.sm}
+              _placeholder={{ color: "textPlaceholder" }}
+              _hover={{ borderColor: "borderHover" }}
+              _focus={{
+                borderColor: "borderFocused",
+                boxShadow: shadows.outline,
+              }}
+              h={sizing.height.md}
             />
           </FormControl>
         </VStack>
       </ModalBody>
-      <ModalFooter borderTopWidth="1px" borderColor={decorativeBorder}>
+      <ModalFooter 
+        borderTopWidth={sizing.borderWidth.DEFAULT} 
+        borderColor="borderDecorative"
+        py={sizing.spacing[3]}
+      >
         <Button
           variant="ghost"
-          mr={3}
+          mr={sizing.spacing[3]}
           onClick={onClose}
-          leftIcon={<AppIcon name="close" boxSize={4} />}
+          isDisabled={isLoading || isDeleting}
+          leftIcon={<AppIcon name="close" boxSize={sizing.icon.sm} />}
+          color="textSecondary"
+          _hover={{ bg: "interactiveNeutralHover", color: "textPrimary" }}
+          _active={{ bg: "interactiveNeutralActive" }}
+          h={sizing.height.md}
+          fontSize={typography.fontSize.sm}
         >
           Cancel
         </Button>
         <Button
-          colorScheme="blue"
+          bg="interactivePrimary"
+          color="onInteractivePrimary"
+          _hover={{ bg: "interactivePrimaryHover" }}
+          _active={{ bg: "interactivePrimaryActive" }}
           onClick={handleSave}
           isLoading={isLoading}
-          leftIcon={<AppIcon name="save" boxSize={4} />}
+          isDisabled={isDeleting}
+          leftIcon={<AppIcon name="save" boxSize={sizing.icon.sm} />}
+          h={sizing.height.md}
+          fontSize={typography.fontSize.sm}
+          fontWeight={typography.fontWeight.medium}
         >
           Save Changes
         </Button>
