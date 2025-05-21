@@ -26,14 +26,12 @@ const EditAgentForm: React.FC<EditAgentFormProps> = ({
   onSubmit,
 }) => {
   // Added onSubmit to destructuring
-  const [name, setName] = useState(""); // Initialize with empty string, useEffect will set it
-  const [isLoading, setIsLoading] = useState(false);
+  const [name, setName] = useState(agent.name);
+  const [loading, setLoading] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
-    if (agent) {
-      setName(agent.name);
-    }
+    setName(agent.name);
   }, [agent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,7 +54,7 @@ const EditAgentForm: React.FC<EditAgentFormProps> = ({
       });
       return;
     }
-    setIsLoading(true);
+    setLoading(true);
     try {
       await onSubmit(agent.id, name.trim()); // This should now align with the prop
       // Parent component (AgentList modal) will handle closing and success toast
@@ -72,7 +70,7 @@ const EditAgentForm: React.FC<EditAgentFormProps> = ({
         isClosable: true,
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -99,9 +97,13 @@ const EditAgentForm: React.FC<EditAgentFormProps> = ({
           <FormLabel htmlFor="agentName">Agent Name</FormLabel>
           <Input
             id="agentName"
+            type="text"
+            aria-label="Agent Name"
+            aria-required="true"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter unique agent name"
+            autoFocus
           />
         </FormControl>
 
@@ -121,10 +123,19 @@ const EditAgentForm: React.FC<EditAgentFormProps> = ({
           lineHeight="regular"
           borderRadius="md"
           _hover={{ bg: "orange.600" }}
-          isLoading={isLoading}
+          isLoading={loading}
           size="lg"
+          isDisabled={!name.trim()}
         >
           Update Agent
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={onClose}
+          isDisabled={loading}
+          size="lg"
+        >
+          Cancel
         </Button>
       </VStack>
     </Box>

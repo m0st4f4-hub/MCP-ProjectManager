@@ -12,18 +12,13 @@ import {
 } from "@chakra-ui/react";
 
 interface AddAgentFormProps {
+  onSubmit: (name: string) => Promise<void>;
   onClose: () => void;
-  onSubmit: (name: string) => Promise<void>; // Parent (AgentList) provides this
-  initialData?: { name: string }; // Made initialData optional
 }
 
-const AddAgentForm: React.FC<AddAgentFormProps> = ({
-  onClose,
-  onSubmit,
-  initialData,
-}) => {
-  const [name, setName] = useState(initialData?.name || ""); // Ensure initialData.name is optional
-  const [isLoading, setIsLoading] = useState(false);
+const AddAgentForm: React.FC<AddAgentFormProps> = ({ onSubmit, onClose }) => {
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
   const toast = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,9 +32,9 @@ const AddAgentForm: React.FC<AddAgentFormProps> = ({
       });
       return;
     }
-    setIsLoading(true);
+    setLoading(true);
     try {
-      await onSubmit(name.trim());
+      await onSubmit(name);
       onClose();
     } catch (error) {
       toast({
@@ -51,7 +46,7 @@ const AddAgentForm: React.FC<AddAgentFormProps> = ({
         isClosable: true,
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -97,10 +92,20 @@ const AddAgentForm: React.FC<AddAgentFormProps> = ({
           lineHeight="regular"
           borderRadius="md"
           _hover={{ bg: "bgInteractiveHover" }}
-          isLoading={isLoading}
+          isLoading={loading}
           size="lg"
+          isDisabled={!name.trim()}
         >
           Register Agent
+        </Button>
+
+        <Button
+          variant="ghost"
+          onClick={onClose}
+          isDisabled={loading}
+          size="lg"
+        >
+          Cancel
         </Button>
       </VStack>
     </Box>

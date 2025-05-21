@@ -71,7 +71,9 @@ const AppIcon: React.FC<AppIconProps> = ({ name, component, ...props }) => {
     (name && standardIcons[name.toLowerCase()]) || component;
   if (!IconComponent) {
     if (name) {
-      console.warn(`AppIcon: Standard icon "${name}" not found. Ensure it's mapped in AppIcon.tsx or pass a component prop.`);
+      console.warn(
+        `AppIcon: Standard icon "${name}" not found. Ensure it's mapped in AppIcon.tsx or pass a component prop.`,
+      );
     }
     return null;
   }

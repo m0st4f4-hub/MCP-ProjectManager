@@ -20,7 +20,7 @@ import {
   useColorMode,
 } from "@chakra-ui/react";
 import { semanticColors, colorPrimitives } from "@/tokens/colors";
-import AppIcon from './AppIcon';
+import AppIcon from "./AppIcon";
 
 // Define a generic constraint for entity data
 // Ensure it has an 'id' and allows accessing a display field via string key
@@ -138,7 +138,12 @@ function EditModalBase<T extends EntityWithIdAndName>({
       <Modal isOpen={isOpen} onClose={onClose} isCentered size={size}>
         <ModalOverlay />
         <ModalContent bg={surfaceBg} color={onSurfaceColor}>
-          <ModalHeader borderBottomWidth="1px" borderColor={decorativeBorder} display="flex" alignItems="center">
+          <ModalHeader
+            borderBottomWidth="1px"
+            borderColor={decorativeBorder}
+            display="flex"
+            alignItems="center"
+          >
             <AppIcon name="edit" boxSize={5} mr={2} />
             Edit {entityName}: {entityDisplayName}
           </ModalHeader>

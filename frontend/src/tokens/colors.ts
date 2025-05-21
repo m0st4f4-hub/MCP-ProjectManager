@@ -120,52 +120,129 @@ export const colorPrimitives = {
 
 export const semanticColors = {
   // Core Brand Colors
-  primary: { DEFAULT: colorPrimitives.blue[500], dark: colorPrimitives.blue[400] },
+  primary: {
+    DEFAULT: colorPrimitives.blue[500],
+    dark: colorPrimitives.blue[400],
+  },
   onPrimary: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.blue[50] },
-  primaryHover: { DEFAULT: colorPrimitives.blue[600], dark: colorPrimitives.blue[300] },
-  primaryActive: { DEFAULT: colorPrimitives.blue[700], dark: colorPrimitives.blue[500] },
-  secondary: { DEFAULT: colorPrimitives.gray[500], dark: colorPrimitives.gray[400] },
-  onSecondary: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.gray[50] },
-  accent: { DEFAULT: colorPrimitives.purple[500], dark: colorPrimitives.purple[400] },
-  onAccent: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.purple[50] },
+  primaryHover: {
+    DEFAULT: colorPrimitives.blue[600],
+    dark: colorPrimitives.blue[300],
+  },
+  primaryActive: {
+    DEFAULT: colorPrimitives.blue[700],
+    dark: colorPrimitives.blue[500],
+  },
+  secondary: {
+    DEFAULT: colorPrimitives.gray[500],
+    dark: colorPrimitives.gray[400],
+  },
+  onSecondary: {
+    DEFAULT: colorPrimitives.white,
+    dark: colorPrimitives.gray[50],
+  },
+  accent: {
+    DEFAULT: colorPrimitives.purple[500],
+    dark: colorPrimitives.purple[400],
+  },
+  onAccent: {
+    DEFAULT: colorPrimitives.white,
+    dark: colorPrimitives.purple[50],
+  },
 
   // UI Surfaces & Backgrounds
-  background: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.gray[900] },
-  onBackground: { DEFAULT: colorPrimitives.gray[800], dark: colorPrimitives.gray[100] },
+  background: {
+    DEFAULT: colorPrimitives.white,
+    dark: colorPrimitives.gray[900],
+  },
+  onBackground: {
+    DEFAULT: colorPrimitives.gray[800],
+    dark: colorPrimitives.gray[100],
+  },
   surface: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.gray[800] },
-  onSurface: { DEFAULT: colorPrimitives.gray[700], dark: colorPrimitives.gray[200] },
-  surfaceElevated: { DEFAULT: colorPrimitives.gray[50], dark: colorPrimitives.gray[700] },
+  onSurface: {
+    DEFAULT: colorPrimitives.gray[700],
+    dark: colorPrimitives.gray[200],
+  },
+  surfaceElevated: {
+    DEFAULT: colorPrimitives.gray[50],
+    dark: colorPrimitives.gray[700],
+  },
   bgModal: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.gray[800] }, // Alias for surface for modals
   bgInput: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.gray[700] }, // Specific for inputs
-  bgDisabled: { DEFAULT: colorPrimitives.gray[100], dark: colorPrimitives.gray[700] },
+  bgDisabled: {
+    DEFAULT: colorPrimitives.gray[100],
+    dark: colorPrimitives.gray[700],
+  },
   overlayDefault: { DEFAULT: "rgba(0, 0, 0, 0.4)", dark: "rgba(0, 0, 0, 0.6)" },
 
-
   // Active Menu Item
-  menuItemActive: { DEFAULT: colorPrimitives.blue[50], dark: colorPrimitives.gray[700] },
-  onMenuItemActive: { DEFAULT: colorPrimitives.blue[700], dark: colorPrimitives.blue[300] },
+  menuItemActive: {
+    DEFAULT: colorPrimitives.blue[50],
+    dark: colorPrimitives.gray[700],
+  },
+  onMenuItemActive: {
+    DEFAULT: colorPrimitives.blue[700],
+    dark: colorPrimitives.blue[300],
+  },
 
   // Text Colors
-  textPrimary: { DEFAULT: colorPrimitives.gray[900], dark: colorPrimitives.gray[50] },
-  textSecondary: { DEFAULT: colorPrimitives.gray[600], dark: colorPrimitives.gray[400] },
-  textTertiary: { DEFAULT: colorPrimitives.gray[500], dark: colorPrimitives.gray[500] },
-  textPlaceholder: { DEFAULT: colorPrimitives.gray[400], dark: colorPrimitives.gray[500] },
-  textDisabled: { DEFAULT: colorPrimitives.gray[400], dark: colorPrimitives.gray[600] },
-  textLink: { DEFAULT: colorPrimitives.blue[600], dark: colorPrimitives.blue[400] },
-  textLinkHover: { DEFAULT: colorPrimitives.blue[700], dark: colorPrimitives.blue[300] },
-  textLinkActive: { DEFAULT: colorPrimitives.blue[800], dark: colorPrimitives.blue[200] },
-  textInput: { DEFAULT: colorPrimitives.gray[800], dark: colorPrimitives.gray[100] }, // For text inside inputs
-  textInverse: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.gray[900] }, // Text on dark/light contrasting backgrounds
+  textPrimary: {
+    DEFAULT: colorPrimitives.gray[900],
+    dark: colorPrimitives.gray[50],
+  },
+  textSecondary: {
+    DEFAULT: colorPrimitives.gray[600],
+    dark: colorPrimitives.gray[400],
+  },
+  textTertiary: {
+    DEFAULT: colorPrimitives.gray[500],
+    dark: colorPrimitives.gray[500],
+  },
+  textPlaceholder: {
+    DEFAULT: colorPrimitives.gray[400],
+    dark: colorPrimitives.gray[500],
+  },
+  textDisabled: {
+    DEFAULT: colorPrimitives.gray[400],
+    dark: colorPrimitives.gray[600],
+  },
+  textLink: {
+    DEFAULT: colorPrimitives.blue[600],
+    dark: colorPrimitives.blue[400],
+  },
+  textLinkHover: {
+    DEFAULT: colorPrimitives.blue[700],
+    dark: colorPrimitives.blue[300],
+  },
+  textLinkActive: {
+    DEFAULT: colorPrimitives.blue[800],
+    dark: colorPrimitives.blue[200],
+  },
+  textInput: {
+    DEFAULT: colorPrimitives.gray[800],
+    dark: colorPrimitives.gray[100],
+  }, // For text inside inputs
+  textInverse: {
+    DEFAULT: colorPrimitives.white,
+    dark: colorPrimitives.gray[900],
+  }, // Text on dark/light contrasting backgrounds
 
   // Borders & Dividers
-  borderDecorative: { DEFAULT: colorPrimitives.gray[200], dark: colorPrimitives.gray[700] },
-  borderInteractive: { DEFAULT: colorPrimitives.gray[400], dark: colorPrimitives.gray[600] },
+  borderDecorative: {
+    DEFAULT: colorPrimitives.gray[200],
+    dark: colorPrimitives.gray[700],
+  },
+  borderInteractive: {
+    DEFAULT: colorPrimitives.gray[400],
+    dark: colorPrimitives.gray[600],
+  },
   borderFocused: {
     // Border for focused elements (often primary color)
     DEFAULT: colorPrimitives.blue[500],
     dark: colorPrimitives.blue[400],
   },
-  borderHover: { 
+  borderHover: {
     DEFAULT: colorPrimitives.gray[500],
     dark: colorPrimitives.gray[500],
   },
@@ -174,88 +251,244 @@ export const semanticColors = {
     dark: colorPrimitives.gray[700],
   },
 
-
   // Status & Feedback
   // Success
-  success: { DEFAULT: colorPrimitives.green[500], dark: colorPrimitives.green[400] },
-  onSuccess: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.green[50] },
-  successBgSubtle: { DEFAULT: colorPrimitives.green[50], dark: colorPrimitives.green[900] },
-  textStatusSuccess: { DEFAULT: colorPrimitives.green[700], dark: colorPrimitives.green[300] },
-  borderSuccess: { DEFAULT: colorPrimitives.green[500], dark: colorPrimitives.green[400] },
+  success: {
+    DEFAULT: colorPrimitives.green[500],
+    dark: colorPrimitives.green[400],
+  },
+  onSuccess: {
+    DEFAULT: colorPrimitives.white,
+    dark: colorPrimitives.green[50],
+  },
+  successBgSubtle: {
+    DEFAULT: colorPrimitives.green[50],
+    dark: colorPrimitives.green[900],
+  },
+  textStatusSuccess: {
+    DEFAULT: colorPrimitives.green[700],
+    dark: colorPrimitives.green[300],
+  },
+  borderSuccess: {
+    DEFAULT: colorPrimitives.green[500],
+    dark: colorPrimitives.green[400],
+  },
   // Warning
-  warning: { DEFAULT: colorPrimitives.yellow[500], dark: colorPrimitives.yellow[400] },
-  onWarning: { DEFAULT: colorPrimitives.gray[900], dark: colorPrimitives.yellow[50] },
-  warningBgSubtle: { DEFAULT: colorPrimitives.yellow[50], dark: colorPrimitives.yellow[900] },
-  textStatusWarning: { DEFAULT: colorPrimitives.yellow[700], dark: colorPrimitives.yellow[300] },
-  borderWarning: { DEFAULT: colorPrimitives.yellow[500], dark: colorPrimitives.yellow[400] },
+  warning: {
+    DEFAULT: colorPrimitives.yellow[500],
+    dark: colorPrimitives.yellow[400],
+  },
+  onWarning: {
+    DEFAULT: colorPrimitives.gray[900],
+    dark: colorPrimitives.yellow[50],
+  },
+  warningBgSubtle: {
+    DEFAULT: colorPrimitives.yellow[50],
+    dark: colorPrimitives.yellow[900],
+  },
+  textStatusWarning: {
+    DEFAULT: colorPrimitives.yellow[700],
+    dark: colorPrimitives.yellow[300],
+  },
+  borderWarning: {
+    DEFAULT: colorPrimitives.yellow[500],
+    dark: colorPrimitives.yellow[400],
+  },
   // Error / Danger
   error: { DEFAULT: colorPrimitives.red[500], dark: colorPrimitives.red[400] },
   onError: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.red[50] },
-  errorBgSubtle: { DEFAULT: colorPrimitives.red[50], dark: colorPrimitives.red[900] },
-  textStatusError: { DEFAULT: colorPrimitives.red[700], dark: colorPrimitives.red[300] },
-  borderDanger: { DEFAULT: colorPrimitives.red[500], dark: colorPrimitives.red[400] },
+  errorBgSubtle: {
+    DEFAULT: colorPrimitives.red[50],
+    dark: colorPrimitives.red[900],
+  },
+  textStatusError: {
+    DEFAULT: colorPrimitives.red[700],
+    dark: colorPrimitives.red[300],
+  },
+  borderDanger: {
+    DEFAULT: colorPrimitives.red[500],
+    dark: colorPrimitives.red[400],
+  },
   // Info
   info: { DEFAULT: colorPrimitives.blue[500], dark: colorPrimitives.blue[400] },
   onInfo: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.blue[50] },
-  infoBgSubtle: { DEFAULT: colorPrimitives.blue[50], dark: colorPrimitives.blue[800] },
-  textStatusInfo: { DEFAULT: colorPrimitives.blue[700], dark: colorPrimitives.blue[300] },
-  borderInfo: { DEFAULT: colorPrimitives.blue[500], dark: colorPrimitives.blue[400] },
+  infoBgSubtle: {
+    DEFAULT: colorPrimitives.blue[50],
+    dark: colorPrimitives.blue[800],
+  },
+  textStatusInfo: {
+    DEFAULT: colorPrimitives.blue[700],
+    dark: colorPrimitives.blue[300],
+  },
+  borderInfo: {
+    DEFAULT: colorPrimitives.blue[500],
+    dark: colorPrimitives.blue[400],
+  },
   // Neutral (for Archived badges, etc.)
-  neutral: { DEFAULT: colorPrimitives.gray[500], dark: colorPrimitives.gray[400] },
+  neutral: {
+    DEFAULT: colorPrimitives.gray[500],
+    dark: colorPrimitives.gray[400],
+  },
   onNeutral: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.gray[50] },
-  neutralBgSubtle: { DEFAULT: colorPrimitives.gray[100], dark: colorPrimitives.gray[700] },
-  textNeutral: { DEFAULT: colorPrimitives.gray[600], dark: colorPrimitives.gray[300] },
-  textNeutralEmphasis: { DEFAULT: colorPrimitives.gray[800], dark: colorPrimitives.gray[100] },
-  borderNeutral: { DEFAULT: colorPrimitives.gray[300], dark: colorPrimitives.gray[600] },
+  neutralBgSubtle: {
+    DEFAULT: colorPrimitives.gray[100],
+    dark: colorPrimitives.gray[700],
+  },
+  textNeutral: {
+    DEFAULT: colorPrimitives.gray[600],
+    dark: colorPrimitives.gray[300],
+  },
+  textNeutralEmphasis: {
+    DEFAULT: colorPrimitives.gray[800],
+    dark: colorPrimitives.gray[100],
+  },
+  borderNeutral: {
+    DEFAULT: colorPrimitives.gray[300],
+    dark: colorPrimitives.gray[600],
+  },
 
   // Icon Colors
-  iconPrimary: { DEFAULT: colorPrimitives.gray[700], dark: colorPrimitives.gray[300] },
-  iconSecondary: { DEFAULT: colorPrimitives.gray[500], dark: colorPrimitives.gray[500] },
-  iconAccent: { DEFAULT: colorPrimitives.blue[500], dark: colorPrimitives.blue[400] },
-  iconDisabled: { DEFAULT: colorPrimitives.gray[400], dark: colorPrimitives.gray[600] },
-  iconInverse: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.gray[900] },
-
+  iconPrimary: {
+    DEFAULT: colorPrimitives.gray[700],
+    dark: colorPrimitives.gray[300],
+  },
+  iconSecondary: {
+    DEFAULT: colorPrimitives.gray[500],
+    dark: colorPrimitives.gray[500],
+  },
+  iconAccent: {
+    DEFAULT: colorPrimitives.blue[500],
+    dark: colorPrimitives.blue[400],
+  },
+  iconDisabled: {
+    DEFAULT: colorPrimitives.gray[400],
+    dark: colorPrimitives.gray[600],
+  },
+  iconInverse: {
+    DEFAULT: colorPrimitives.white,
+    dark: colorPrimitives.gray[900],
+  },
 
   // Interactive States (for buttons, list items, etc.)
   // Primary (usually brand color based)
-  interactivePrimary: { DEFAULT: colorPrimitives.blue[500], dark: colorPrimitives.blue[400] },
-  onInteractivePrimary: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.blue[50] },
-  interactivePrimaryHover: { DEFAULT: colorPrimitives.blue[600], dark: colorPrimitives.blue[300] },
-  interactivePrimaryActive: { DEFAULT: colorPrimitives.blue[700], dark: colorPrimitives.blue[500] },
-  interactivePrimarySubtle: { DEFAULT: colorPrimitives.blue[50], dark: colorPrimitives.blue[800] }, // for subtle backgrounds
-  onInteractivePrimarySubtle: { DEFAULT: colorPrimitives.blue[700], dark: colorPrimitives.blue[200] },
-
+  interactivePrimary: {
+    DEFAULT: colorPrimitives.blue[500],
+    dark: colorPrimitives.blue[400],
+  },
+  onInteractivePrimary: {
+    DEFAULT: colorPrimitives.white,
+    dark: colorPrimitives.blue[50],
+  },
+  interactivePrimaryHover: {
+    DEFAULT: colorPrimitives.blue[600],
+    dark: colorPrimitives.blue[300],
+  },
+  interactivePrimaryActive: {
+    DEFAULT: colorPrimitives.blue[700],
+    dark: colorPrimitives.blue[500],
+  },
+  interactivePrimarySubtle: {
+    DEFAULT: colorPrimitives.blue[50],
+    dark: colorPrimitives.blue[800],
+  }, // for subtle backgrounds
+  onInteractivePrimarySubtle: {
+    DEFAULT: colorPrimitives.blue[700],
+    dark: colorPrimitives.blue[200],
+  },
 
   // Secondary / Neutral (usually gray based)
-  interactiveNeutral: { DEFAULT: colorPrimitives.gray[500], dark: colorPrimitives.gray[400] }, // e.g. secondary button bg
-  onInteractiveNeutral: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.gray[50] },
-  interactiveNeutralHover: { DEFAULT: colorPrimitives.gray[100], dark: colorPrimitives.gray[700] }, // for subtle bg hover like ghost buttons
-  interactiveNeutralActive: { DEFAULT: colorPrimitives.gray[200], dark: colorPrimitives.gray[600] }, // for subtle bg active
-  interactiveNeutralSubtle: { DEFAULT: colorPrimitives.gray[50], dark: colorPrimitives.gray[700] },
-  onInteractiveNeutralSubtle: { DEFAULT: colorPrimitives.gray[700], dark: colorPrimitives.gray[200] },
+  interactiveNeutral: {
+    DEFAULT: colorPrimitives.gray[500],
+    dark: colorPrimitives.gray[400],
+  }, // e.g. secondary button bg
+  onInteractiveNeutral: {
+    DEFAULT: colorPrimitives.white,
+    dark: colorPrimitives.gray[50],
+  },
+  interactiveNeutralHover: {
+    DEFAULT: colorPrimitives.gray[100],
+    dark: colorPrimitives.gray[700],
+  }, // for subtle bg hover like ghost buttons
+  interactiveNeutralActive: {
+    DEFAULT: colorPrimitives.gray[200],
+    dark: colorPrimitives.gray[600],
+  }, // for subtle bg active
+  interactiveNeutralSubtle: {
+    DEFAULT: colorPrimitives.gray[50],
+    dark: colorPrimitives.gray[700],
+  },
+  onInteractiveNeutralSubtle: {
+    DEFAULT: colorPrimitives.gray[700],
+    dark: colorPrimitives.gray[200],
+  },
 
   // Danger (usually red based)
-  interactiveDanger: { DEFAULT: colorPrimitives.red[500], dark: colorPrimitives.red[400] },
-  onInteractiveDanger: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.red[50] },
-  interactiveDangerHover: { DEFAULT: colorPrimitives.red[600], dark: colorPrimitives.red[300] },
-  interactiveDangerActive: { DEFAULT: colorPrimitives.red[700], dark: colorPrimitives.red[500] },
-  interactiveDangerSubtle: { DEFAULT: colorPrimitives.red[50], dark: colorPrimitives.red[800] },
-  onInteractiveDangerSubtle: { DEFAULT: colorPrimitives.red[700], dark: colorPrimitives.red[200] },
+  interactiveDanger: {
+    DEFAULT: colorPrimitives.red[500],
+    dark: colorPrimitives.red[400],
+  },
+  onInteractiveDanger: {
+    DEFAULT: colorPrimitives.white,
+    dark: colorPrimitives.red[50],
+  },
+  interactiveDangerHover: {
+    DEFAULT: colorPrimitives.red[600],
+    dark: colorPrimitives.red[300],
+  },
+  interactiveDangerActive: {
+    DEFAULT: colorPrimitives.red[700],
+    dark: colorPrimitives.red[500],
+  },
+  interactiveDangerSubtle: {
+    DEFAULT: colorPrimitives.red[50],
+    dark: colorPrimitives.red[800],
+  },
+  onInteractiveDangerSubtle: {
+    DEFAULT: colorPrimitives.red[700],
+    dark: colorPrimitives.red[200],
+  },
 
   // Success (usually green based)
-  interactiveSuccess: { DEFAULT: colorPrimitives.green[500], dark: colorPrimitives.green[400] },
-  onInteractiveSuccess: { DEFAULT: colorPrimitives.white, dark: colorPrimitives.green[50] },
-  interactiveSuccessHover: { DEFAULT: colorPrimitives.green[600], dark: colorPrimitives.green[300] },
-  interactiveSuccessActive: { DEFAULT: colorPrimitives.green[700], dark: colorPrimitives.green[500] },
-  interactiveSuccessSubtle: { DEFAULT: colorPrimitives.green[50], dark: colorPrimitives.green[800] },
-  onInteractiveSuccessSubtle: { DEFAULT: colorPrimitives.green[700], dark: colorPrimitives.green[200] },
-  
+  interactiveSuccess: {
+    DEFAULT: colorPrimitives.green[500],
+    dark: colorPrimitives.green[400],
+  },
+  onInteractiveSuccess: {
+    DEFAULT: colorPrimitives.white,
+    dark: colorPrimitives.green[50],
+  },
+  interactiveSuccessHover: {
+    DEFAULT: colorPrimitives.green[600],
+    dark: colorPrimitives.green[300],
+  },
+  interactiveSuccessActive: {
+    DEFAULT: colorPrimitives.green[700],
+    dark: colorPrimitives.green[500],
+  },
+  interactiveSuccessSubtle: {
+    DEFAULT: colorPrimitives.green[50],
+    dark: colorPrimitives.green[800],
+  },
+  onInteractiveSuccessSubtle: {
+    DEFAULT: colorPrimitives.green[700],
+    dark: colorPrimitives.green[200],
+  },
+
   // Brand specific (if primary is not the main brand color for certain elements)
   // These would require defining brand primitives if not blue
   // For now, aliasing to primary, but could be distinct
-  bgBrand: { DEFAULT: colorPrimitives.blue[500], dark: colorPrimitives.blue[400] },
-  textBrand: { DEFAULT: colorPrimitives.blue[600], dark: colorPrimitives.blue[300] }, // For text links or icons
-  borderBrand: { DEFAULT: colorPrimitives.blue[500], dark: colorPrimitives.blue[400] },
+  bgBrand: {
+    DEFAULT: colorPrimitives.blue[500],
+    dark: colorPrimitives.blue[400],
+  },
+  textBrand: {
+    DEFAULT: colorPrimitives.blue[600],
+    dark: colorPrimitives.blue[300],
+  }, // For text links or icons
+  borderBrand: {
+    DEFAULT: colorPrimitives.blue[500],
+    dark: colorPrimitives.blue[400],
+  },
 };
 
 // For type safety and auto-completion in Chakra's theme

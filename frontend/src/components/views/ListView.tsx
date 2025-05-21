@@ -1,19 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
   Button,
-  Checkbox,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   Spinner,
-  IconButton,
   useToast,
   List,
-  ListItem,
-  ModalFooter,
   AlertDialog,
   AlertDialogBody,
   AlertDialogContent,
@@ -22,50 +12,21 @@ import {
   AlertDialogOverlay,
   useDisclosure,
   Box,
-  Flex,
-  Text,
-  CopyIcon as ChakraCopyIcon,
 } from "@chakra-ui/react";
 import { AnimatePresence } from "framer-motion";
 import { Task, Agent } from "@/types";
 import { useAgentStore } from "@/store/agentStore";
 import { useTaskStore } from "@/store/taskStore";
 import EditTaskModal from "../modals/EditTaskModal";
-import TaskItem from "../TaskItem";
 import TaskDetailsModal from "../modals/TaskDetailsModal";
 import { AgentState } from "@/store/agentStore";
 import { TaskState } from "@/store/taskStore";
-import AppIcon from "../common/AppIcon";
-import { typography } from '../../tokens';
-import { sizing } from '../../tokens';
-
-type GroupByType = "status" | "project" | "agent" | "parent";
-
-interface TaskGroup {
-  id: string;
-  name: string;
-  tasks?: Task[];
-  subgroups?: TaskSubgroup[];
-  status?: string;
-}
-
-interface TaskSubgroup {
-  id: string;
-  name: string;
-  tasks: Task[];
-  status?: string;
-}
-
-interface GroupedTasks {
-  type: GroupByType;
-  groups: TaskGroup[];
-}
-
-interface ListViewProps {
-  groupedTasks: GroupedTasks;
-  isLoading: boolean;
-  isMobile: boolean;
-}
+import { typography } from "../../tokens";
+import { sizing } from "../../tokens";
+import AgentAssignmentModal from "../modals/AgentAssignmentModal";
+import ListGroup from "./ListGroup";
+import ListTaskMobile from "./ListTaskMobile";
+import type { ListViewProps } from "./ListView.types";
 
 const ListView: React.FC<ListViewProps> = ({
   groupedTasks,
@@ -118,7 +79,7 @@ const ListView: React.FC<ListViewProps> = ({
         display="flex"
         justifyContent="center"
         alignItems="center"
-        minHeight={sizing.spacing['5']}
+        minHeight={sizing.spacing["5"]}
       >
         <Spinner size="xl" />
       </Box>
@@ -231,38 +192,16 @@ const ListView: React.FC<ListViewProps> = ({
       <List spacing={0}>
         <AnimatePresence initial={false}>
           {flatTasksForMobile.map((task) => (
-            <ListItem
+            <ListTaskMobile
               key={task.id}
-              display="flex"
-              alignItems="center"
-              py="2"
-              px="2"
-              borderBottomWidth="DEFAULT"
-              borderBottomStyle="solid"
-              borderColor="borderDecorative"
-              bg={
-                selectedTaskIds.includes(task.id)
-                  ? "surfaceElevated"
-                  : "transparent"
-              }
-            >
-              <Checkbox
-                isChecked={selectedTaskIds.includes(task.id)}
-                onChange={() => toggleTaskSelection(task.id)}
-                mr="3"
-                colorScheme="blue"
-                aria-label={`Select task ${task.title}`}
-              />
-              <Box flex={1}>
-                <TaskItem
-                  task={task}
-                  onAssignAgent={handleAssignAgent}
-                  onDeleteInitiate={handleDeleteInitiateInListView}
-                  onClick={() => setSelectedTask(task)}
-                  onCopyGetCommand={handleCopyTaskGetCommand}
-                />
-              </Box>
-            </ListItem>
+              task={task}
+              selected={selectedTaskIds.includes(task.id)}
+              onSelect={() => toggleTaskSelection(task.id)}
+              onAssignAgent={handleAssignAgent}
+              onDeleteInitiate={handleDeleteInitiateInListView}
+              onClick={() => setSelectedTask(task)}
+              onCopyGetCommand={handleCopyTaskGetCommand}
+            />
           ))}
         </AnimatePresence>
       </List>
@@ -273,166 +212,18 @@ const ListView: React.FC<ListViewProps> = ({
     <>
       <Box pt="4" pb="4">
         {groupedTasks.groups.map((group) => (
-          <Box key={group.id} mb={4}>
-            <Flex
-              alignItems="center"
-              p="3"
-              cursor="pointer"
-              borderBottomWidth="DEFAULT"
-              borderBottomStyle="solid"
-              borderColor="borderDecorative"
-              onClick={() => toggleGroup(group.id)}
-              _hover={{ bg: "gray.100", _dark: { bg: "gray.600" } }}
-            >
-              <IconButton
-                aria-label={
-                  expandedGroups[group.id] ? "Collapse group" : "Expand group"
-                }
-                icon={
-                  <AppIcon
-                    name={
-                      expandedGroups[group.id] ? "chevrondown" : "chevronright"
-                    }
-                  />
-                }
-                size="sm"
-                variant="ghost"
-              />
-              <Text ml="2" fontWeight={typography.fontWeight.medium} color="textPrimary">
-                {group.name} (
-                {group.tasks?.length ||
-                  group.subgroups?.reduce(
-                    (acc, sg) => acc + sg.tasks.length,
-                    0,
-                  ) ||
-                  0}
-                )
-              </Text>
-            </Flex>
-            {expandedGroups[group.id] && (
-              <List spacing={0}>
-                {group.tasks?.map((task) => (
-                  <ListItem
-                    key={task.id}
-                    display="flex"
-                    alignItems="center"
-                    pl="10"
-                    pr="2"
-                    py="1"
-                    borderBottomWidth="DEFAULT"
-                    borderBottomStyle="solid"
-                    borderColor="borderDecorative"
-                    bg={
-                      selectedTaskIds.includes(task.id)
-                        ? "surfaceElevated"
-                        : "transparent"
-                    }
-                    _hover={{ bg: "gray.100", _dark: { bg: "gray.600" } }}
-                  >
-                    <Checkbox
-                      isChecked={selectedTaskIds.includes(task.id)}
-                      onChange={() => toggleTaskSelection(task.id)}
-                      mr="3"
-                      aria-label={`Select task ${task.title}`}
-                      colorScheme="blue"
-                    />
-                    <Box flex={1}>
-                      <TaskItem
-                        task={task}
-                        onAssignAgent={handleAssignAgent}
-                        onDeleteInitiate={handleDeleteInitiateInListView}
-                        onClick={() => setSelectedTask(task)}
-                        onCopyGetCommand={handleCopyTaskGetCommand}
-                      />
-                    </Box>
-                  </ListItem>
-                ))}
-                {group.subgroups?.map((subgroup) => (
-                  <Box key={subgroup.id}>
-                    <Flex
-                      alignItems="center"
-                      p="2"
-                      pl="8"
-                      cursor="pointer"
-                      borderBottomWidth="DEFAULT"
-                      borderBottomStyle="solid"
-                      borderColor="borderDecorative"
-                      onClick={() => toggleGroup(`${group.id}-${subgroup.id}`)}
-                      _hover={{ bg: "gray.100", _dark: { bg: "gray.600" } }}
-                    >
-                      <IconButton
-                        aria-label={
-                          expandedGroups[`${group.id}-${subgroup.id}`]
-                            ? "Collapse subgroup"
-                            : "Expand subgroup"
-                        }
-                        icon={
-                          <AppIcon
-                            name={
-                              expandedGroups[`${group.id}-${subgroup.id}`]
-                                ? "chevrondown"
-                                : "chevronright"
-                            }
-                          />
-                        }
-                        size="xs"
-                        variant="ghost"
-                        mr="1"
-                      />
-                      <Text ml="2" fontWeight={typography.fontWeight.regular} color="textSecondary">
-                        {subgroup.name} ({subgroup.tasks.length})
-                      </Text>
-                    </Flex>
-                    {expandedGroups[`${group.id}-${subgroup.id}`] && (
-                      <List spacing={0} pl="4">
-                        {subgroup.tasks.map((task) => (
-                          <ListItem
-                            key={task.id}
-                            display="flex"
-                            alignItems="center"
-                            pl="10"
-                            pr="2"
-                            py="1"
-                            borderBottomWidth="DEFAULT"
-                            borderBottomStyle="solid"
-                            borderColor="borderDecorative"
-                            bg={
-                              selectedTaskIds.includes(task.id)
-                                ? "surfaceElevated"
-                                : "transparent"
-                            }
-                            _hover={{
-                              bg: "gray.100",
-                              _dark: { bg: "gray.600" },
-                            }}
-                          >
-                            <Checkbox
-                              isChecked={selectedTaskIds.includes(task.id)}
-                              onChange={() => toggleTaskSelection(task.id)}
-                              mr="3"
-                              aria-label={`Select task ${task.title}`}
-                              colorScheme="blue"
-                            />
-                            <Box flex={1}>
-                              <TaskItem
-                                task={task}
-                                onAssignAgent={handleAssignAgent}
-                                onDeleteInitiate={
-                                  handleDeleteInitiateInListView
-                                }
-                                onClick={() => setSelectedTask(task)}
-                                onCopyGetCommand={handleCopyTaskGetCommand}
-                              />
-                            </Box>
-                          </ListItem>
-                        ))}
-                      </List>
-                    )}
-                  </Box>
-                ))}
-              </List>
-            )}
-          </Box>
+          <ListGroup
+            key={group.id}
+            group={group}
+            expandedGroups={expandedGroups}
+            toggleGroup={toggleGroup}
+            selectedTaskIds={selectedTaskIds}
+            toggleTaskSelection={toggleTaskSelection}
+            handleAssignAgent={handleAssignAgent}
+            handleDeleteInitiate={handleDeleteInitiateInListView}
+            setSelectedTask={setSelectedTask}
+            handleCopyTaskGetCommand={handleCopyTaskGetCommand}
+          />
         ))}
       </Box>
       {selectedTask && (
@@ -453,55 +244,14 @@ const ListView: React.FC<ListViewProps> = ({
           }}
         />
       )}
-      <Modal
+      <AgentAssignmentModal
         isOpen={!!assignAgentTask}
         onClose={() => setAssignAgentTask(null)}
-        size={isMobile ? "full" : "md"}
-        isCentered={!isMobile}
-      >
-        <ModalOverlay />
-        <ModalContent bg="bg.modal">
-          <ModalHeader borderBottomWidth="1px" borderColor="border.base">
-            Assign Agent
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {agentLoading ? (
-              <Box
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                minHeight={sizing.spacing['5']}
-              >
-                <Spinner color="primary" />
-              </Box>
-            ) : (
-              <List spacing={2}>
-                {agents.length === 0 && (
-                  <ListItem>No agents available.</ListItem>
-                )}
-                {agents.map((agent) => (
-                  <ListItem
-                    key={agent.id}
-                    onClick={() => handleAgentSelect(agent)}
-                    cursor="pointer"
-                    _hover={{ bg: "bg.subtle" }}
-                    p={2}
-                    rounded="md"
-                  >
-                    {agent.name}
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </ModalBody>
-          <ModalFooter borderTopWidth="1px" borderColor="border.base">
-            <Button variant="ghost" onClick={() => setAssignAgentTask(null)}>
-              Cancel
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        agents={agents}
+        loading={agentLoading}
+        onSelect={handleAgentSelect}
+        selectedTask={assignAgentTask ?? undefined}
+      />
       <AlertDialog
         isOpen={isAlertOpen}
         leastDestructiveRef={cancelRef}

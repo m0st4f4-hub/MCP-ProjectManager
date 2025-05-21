@@ -1,14 +1,21 @@
 "use client"; // Added 'use client' as it's a client component
 
 import React from "react";
+import { Box, Heading, Text } from "@chakra-ui/react";
 import {
-  Box,
-  Heading,
-  Text,
-} from "@chakra-ui/react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, LabelList, Cell } from "recharts";
-import AppIcon from '../common/AppIcon';
-import { sizing, shadows, typography } from '../../tokens';
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend,
+  LabelList,
+  Cell,
+} from "recharts";
+import AppIcon from "../common/AppIcon";
+import { sizing, shadows, typography } from "../../tokens";
 
 interface AgentWorkloadDataPoint {
   name: string;
@@ -30,7 +37,7 @@ const AgentWorkloadChart: React.FC<AgentWorkloadChartProps> = ({
         bg="bgSurface"
         borderRadius={sizing.borderRadius.lg}
         boxShadow={shadows.md}
-        borderWidth={sizing.borderWidth.xs}
+        borderWidth={sizing.borderWidth.DEFAULT || "1px"}
         borderStyle="solid"
         borderColor="borderDecorative"
         minH={sizing.height.xl}
@@ -48,9 +55,7 @@ const AgentWorkloadChart: React.FC<AgentWorkloadChartProps> = ({
           <AppIcon name="users" boxSize={5} mr={2} />
           Agent Workload (Tasks Assigned)
         </Heading>
-        <Text color="textSecondary">
-          No data available for agent workload.
-        </Text>
+        <Text color="textSecondary">No data available for agent workload.</Text>
       </Box>
     );
   }
@@ -61,7 +66,7 @@ const AgentWorkloadChart: React.FC<AgentWorkloadChartProps> = ({
       bg="bgSurface"
       borderRadius={sizing.borderRadius.lg}
       boxShadow={shadows.md}
-      borderWidth={sizing.borderWidth.xs}
+      borderWidth={sizing.borderWidth.DEFAULT || "1px"}
       borderStyle="solid"
       borderColor="borderDecorative"
       minH={sizing.height.xl}
@@ -93,7 +98,11 @@ const AgentWorkloadChart: React.FC<AgentWorkloadChartProps> = ({
             {agentWorkload.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
-            <LabelList dataKey="tasks" position="top" fontSize={typography.fontSize.sm} />
+            <LabelList
+              dataKey="tasks"
+              position="top"
+              fontSize={typography.fontSize.sm}
+            />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

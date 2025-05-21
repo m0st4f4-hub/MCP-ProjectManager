@@ -13,4 +13,4 @@ export const getTaskCategory = (task: Task): string => {
   const canonicalStatusId = mapStatusToStatusID(task.status);
   const attributes = getStatusAttributes(canonicalStatusId);
   return attributes ? attributes.category : "todo"; // Default if attributes are somehow not found
-}; 
+};

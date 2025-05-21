@@ -7,24 +7,24 @@ import {
   SearchIcon,
 } from "@chakra-ui/icons";
 import {
-    Flex,
-    HStack,
-    VStack,
-    Checkbox,
-    Button,
-    Menu,
-    MenuButton,
-    MenuList,
-    MenuItem,
-    MenuDivider,
-    Select,
-    Spinner,
-    Divider,
-    Text,
-    useDisclosure,
-    FormLabel,
-    InputGroup,
-    InputLeftElement,
+  Flex,
+  HStack,
+  VStack,
+  Checkbox,
+  Button,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  MenuDivider,
+  Select,
+  Spinner,
+  Divider,
+  Text,
+  useDisclosure,
+  FormLabel,
+  InputGroup,
+  InputLeftElement,
   Input,
 } from "@chakra-ui/react";
 import { GroupByType, ViewMode } from "@/types";
@@ -32,30 +32,30 @@ import { useTaskStore } from "@/store/taskStore";
 import * as statusUtils from "@/lib/statusUtils";
 import ConfirmationModal from "./common/ConfirmationModal";
 import AppIcon from "./common/AppIcon";
-import { sizing, typography } from '../tokens';
+import { sizing, typography } from "../tokens";
 
 interface TaskControlsProps {
-    groupBy: GroupByType;
-    setGroupBy: (value: GroupByType) => void;
-    viewMode: ViewMode;
-    setViewMode: (value: ViewMode) => void;
-    hideGroupBy?: boolean;
-    isPolling?: boolean;
-    allFilterableTaskIds: string[];
-    searchTerm: string;
-    setSearchTerm: (value: string) => void;
+  groupBy: GroupByType;
+  setGroupBy: (value: GroupByType) => void;
+  viewMode: ViewMode;
+  setViewMode: (value: ViewMode) => void;
+  hideGroupBy?: boolean;
+  isPolling?: boolean;
+  allFilterableTaskIds: string[];
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
 }
 
 const TaskControls: React.FC<TaskControlsProps> = ({
-    groupBy,
-    setGroupBy,
-    viewMode,
-    setViewMode,
-    hideGroupBy = false,
-    isPolling = false,
-    allFilterableTaskIds,
-    searchTerm,
-    setSearchTerm,
+  groupBy,
+  setGroupBy,
+  viewMode,
+  setViewMode,
+  hideGroupBy = false,
+  isPolling = false,
+  allFilterableTaskIds,
+  searchTerm,
+  setSearchTerm,
 }) => {
   const selectedTaskIds = useTaskStore((state) => state.selectedTaskIds);
   const selectAllTasks = useTaskStore((state) => state.selectAllTasks);
@@ -64,86 +64,86 @@ const TaskControls: React.FC<TaskControlsProps> = ({
   const bulkSetStatusTasks = useTaskStore((state) => state.bulkSetStatusTasks);
   const taskStoreLoading = useTaskStore((state) => state.loading);
 
-    const {
-        isOpen: isDeleteConfirmOpen,
-        onOpen: onDeleteConfirmOpen,
-        onClose: onDeleteConfirmClose,
-    } = useDisclosure();
+  const {
+    isOpen: isDeleteConfirmOpen,
+    onOpen: onDeleteConfirmOpen,
+    onClose: onDeleteConfirmClose,
+  } = useDisclosure();
 
-    const areAllTasksSelected = React.useMemo(() => {
-        if (allFilterableTaskIds.length === 0) return false;
+  const areAllTasksSelected = React.useMemo(() => {
+    if (allFilterableTaskIds.length === 0) return false;
     return allFilterableTaskIds.every((id) => selectedTaskIds.includes(id));
-    }, [selectedTaskIds, allFilterableTaskIds]);
+  }, [selectedTaskIds, allFilterableTaskIds]);
 
-    const handleSelectAllToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.checked) {
-            selectAllTasks(allFilterableTaskIds);
-        } else {
-            deselectAllTasks();
-        }
-    };
+  const handleSelectAllToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      selectAllTasks(allFilterableTaskIds);
+    } else {
+      deselectAllTasks();
+    }
+  };
 
-    const availableStatusesForBulkUpdate = React.useMemo(() => {
+  const availableStatusesForBulkUpdate = React.useMemo(() => {
     return statusUtils.getAllStatusIds().filter((id) => {
-            const attrs = statusUtils.getStatusAttributes(id);
-            return !attrs?.isTerminal && !attrs?.isDynamic;
-        });
-    }, []);
+      const attrs = statusUtils.getStatusAttributes(id);
+      return !attrs?.isTerminal && !attrs?.isDynamic;
+    });
+  }, []);
 
-    const handleBulkDeleteConfirm = async () => {
-        await bulkDeleteTasks();
-        onDeleteConfirmClose();
-    };
+  const handleBulkDeleteConfirm = async () => {
+    await bulkDeleteTasks();
+    onDeleteConfirmClose();
+  };
 
   const showBulkActionsBar =
     selectedTaskIds.length > 0 || allFilterableTaskIds.length > 0;
 
-    return (
-        <VStack 
-            spacing="5" 
-            mb="6" 
-            bg="bgSurface" 
-            p="4" 
-            rounded="lg" 
-            borderWidth="DEFAULT" 
-            borderColor="borderDecorative" 
-            align="stretch"
-        >
-            {showBulkActionsBar && (
-                <>
-                    <Divider borderColor="borderDecorative" />
-                    <Flex justify="space-between" align="center" wrap="wrap" gap="3">
-                        <HStack spacing="3">
+  return (
+    <VStack
+      spacing="5"
+      mb="6"
+      bg="bgSurface"
+      p="4"
+      rounded="lg"
+      borderWidth="DEFAULT"
+      borderColor="borderDecorative"
+      align="stretch"
+    >
+      {showBulkActionsBar && (
+        <>
+          <Divider borderColor="borderDecorative" />
+          <Flex justify="space-between" align="center" wrap="wrap" gap="3">
+            <HStack spacing="3">
               <AppIcon name="info" color="blue.400" mr={2} />
-                            <Checkbox
-                                isChecked={areAllTasksSelected}
-                                onChange={handleSelectAllToggle}
-                                isDisabled={allFilterableTaskIds.length === 0}
-                                colorScheme="brandPrimaryScheme"
-                                size="sm"
-                            >
+              <Checkbox
+                isChecked={areAllTasksSelected}
+                onChange={handleSelectAllToggle}
+                isDisabled={allFilterableTaskIds.length === 0}
+                colorScheme="brandPrimaryScheme"
+                size="sm"
+              >
                 <Text as="span" ml="2" fontSize={typography.fontSize.sm}>
                   Select All ({allFilterableTaskIds.length})
                 </Text>
-                            </Checkbox>
-                            {selectedTaskIds.length > 0 && (
-                                <Text fontSize={typography.fontSize.sm} color="textSecondary">
-                                    {selectedTaskIds.length} selected
-                                </Text>
-                            )}
-                        </HStack>
+              </Checkbox>
+              {selectedTaskIds.length > 0 && (
+                <Text fontSize={typography.fontSize.sm} color="textSecondary">
+                  {selectedTaskIds.length} selected
+                </Text>
+              )}
+            </HStack>
 
-                        {selectedTaskIds.length > 0 && (
-                            <Menu>
-                                <MenuButton 
-                                    as={Button} 
-                                    variant="outline" 
-                                    colorScheme="brandPrimaryScheme"
-                                    size="sm" 
+            {selectedTaskIds.length > 0 && (
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  variant="outline"
+                  colorScheme="brandPrimaryScheme"
+                  size="sm"
                   rightIcon={<ChevronDownIcon />}
-                                >
-                                    Bulk Actions
-                                </MenuButton>
+                >
+                  Bulk Actions
+                </MenuButton>
                 <MenuList
                   bg="bgSurface"
                   borderColor="borderDecorative"
@@ -152,64 +152,64 @@ const TaskControls: React.FC<TaskControlsProps> = ({
                   py="1"
                   zIndex="popover"
                 >
-                                    <MenuItem 
+                  <MenuItem
                     icon={<DeleteIcon />}
-                                        color="error" 
-                                        _hover={{ bg: "errorBgSubtle" }}
-                                        onClick={onDeleteConfirmOpen}
-                                        isDisabled={taskStoreLoading}
-                                    >
-                                        Delete Selected ({selectedTaskIds.length})
-                                    </MenuItem>
-                                    <MenuDivider borderColor="borderDecorative" />
+                    color="error"
+                    _hover={{ bg: "errorBgSubtle" }}
+                    onClick={onDeleteConfirmOpen}
+                    isDisabled={taskStoreLoading}
+                  >
+                    Delete Selected ({selectedTaskIds.length})
+                  </MenuItem>
+                  <MenuDivider borderColor="borderDecorative" />
                   <MenuItem
                     isDisabled={true}
                     _hover={{ bg: "transparent" }}
                     cursor="default"
                     color="textSecondary"
                   >
-                                        Set Status to...
-                                    </MenuItem>
+                    Set Status to...
+                  </MenuItem>
                   {availableStatusesForBulkUpdate.map((statusId) => {
                     const statusAttrs =
                       statusUtils.getStatusAttributes(statusId);
-                                        return (
-                                            <MenuItem 
-                                                key={statusId} 
-                                                onClick={() => bulkSetStatusTasks(statusId)} 
-                                                pl="8"
-                                                _hover={{ bg: "gray.100", _dark: { bg: "gray.700" } }}
-                                            >
-                                                {statusAttrs?.displayName || statusId}
-                                            </MenuItem>
-                                        );
-                                    })}
-                                </MenuList>
-                            </Menu>
-                        )}
-                    </Flex>
-                </>
+                    return (
+                      <MenuItem
+                        key={statusId}
+                        onClick={() => bulkSetStatusTasks(statusId)}
+                        pl="8"
+                        _hover={{ bg: "gray.100", _dark: { bg: "gray.700" } }}
+                      >
+                        {statusAttrs?.displayName || statusId}
+                      </MenuItem>
+                    );
+                  })}
+                </MenuList>
+              </Menu>
             )}
+          </Flex>
+        </>
+      )}
 
-            <Divider borderColor="borderDecorative" />
+      <Divider borderColor="borderDecorative" />
 
-            <Flex 
-                justify="space-between" 
-                direction={{ base: "column", md: "row" }} 
-                align={{ base: "stretch", md: "center" }} 
-                gap={{ base: "3", md: "4" }}
-                mt={!showBulkActionsBar ? `-${sizing.spacing[4]}` : undefined}
-            >
-                <HStack 
-                    align="center" 
-                    wrap="wrap" 
-                    w={{ base: "full", md: "auto" }} 
-                    gap={{ base: "2", md: "3" }}
+      <Flex
+        justify="space-between"
+        direction={{ base: "column", md: "row" }}
+        align={{ base: "stretch", md: "center" }}
+        gap={{ base: "3", md: "4" }}
+        mt={!showBulkActionsBar ? `-${sizing.spacing[4]}` : undefined}
+      >
+        <HStack
+          align="center"
+          wrap="wrap"
+          w={{ base: "full", md: "auto" }}
+          gap={{ base: "2", md: "3" }}
           spacing={{ base: 0, md: 3 }}
-                >
-                    {isPolling && <Spinner size="sm" color="primary" />}
-                    {!hideGroupBy && (
-                        <Flex align="center" gap="2">
+        >
+          {isPolling && <Spinner size="sm" color="primary" />}
+          {!hideGroupBy && (
+            <Flex align="center" gap="2">
               <FormLabel
                 htmlFor="task-group-by-select"
                 mb="0"
@@ -217,20 +217,20 @@ const TaskControls: React.FC<TaskControlsProps> = ({
                 color="textSecondary"
                 whiteSpace="nowrap"
               >
-                               Group:
-                           </FormLabel>
-                            <Select 
-                                id="task-group-by-select"
-                                aria-label="Group by"
-                                value={groupBy}
-                                onChange={(e) => setGroupBy(e.target.value as GroupByType)}
-                                size="sm"
-                                w={{ base: "auto", md: "130px" }}
-                                focusBorderColor="borderFocused"
-                                bg="surface"
-                                borderColor="borderInteractive"
+                Group:
+              </FormLabel>
+              <Select
+                id="task-group-by-select"
+                aria-label="Group by"
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value as GroupByType)}
+                size="sm"
+                w={{ base: "auto", md: "130px" }}
+                focusBorderColor="borderFocused"
+                bg="surface"
+                borderColor="borderInteractive"
                 _hover={{ borderColor: "borderFocused" }}
-                            >
+              >
                 <option
                   value="id"
                   className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
@@ -273,22 +273,22 @@ const TaskControls: React.FC<TaskControlsProps> = ({
                 >
                   Last Updated
                 </option>
-                            </Select>
-                        </Flex>
-                    )}
-                </HStack>
+              </Select>
+            </Flex>
+          )}
+        </HStack>
 
-                <HStack 
-                    wrap="nowrap" 
-                    w={{ base: "full", md: "auto" }} 
-                    justify={{ base: "space-between", md: "flex-end" }} 
-                    gap={{ base: "2", md: "3" }}
+        <HStack
+          wrap="nowrap"
+          w={{ base: "full", md: "auto" }}
+          justify={{ base: "space-between", md: "flex-end" }}
+          gap={{ base: "2", md: "3" }}
           spacing={{ base: 0, md: 3 }}
-                >
-                    <Button
-                        variant="outline"
-                        colorScheme="brandSecondaryScheme"
-                        size="sm"
+        >
+          <Button
+            variant="outline"
+            colorScheme="brandSecondaryScheme"
+            size="sm"
             onClick={() =>
               setViewMode(viewMode === "kanban" ? "list" : "kanban")
             }
@@ -298,39 +298,39 @@ const TaskControls: React.FC<TaskControlsProps> = ({
                 : "Switch to Kanban View"
             }
             leftIcon={viewMode === "kanban" ? <ViewIcon /> : <ViewOffIcon />}
-                    >
+          >
             {viewMode === "kanban" ? "List View" : "Kanban View"}
-                    </Button>
-                </HStack>
-            </Flex>
+          </Button>
+        </HStack>
+      </Flex>
 
-            <ConfirmationModal
-                isOpen={isDeleteConfirmOpen}
-                onClose={onDeleteConfirmClose}
-                onConfirm={handleBulkDeleteConfirm}
-                title="Confirm Bulk Delete"
-                bodyText={`Are you sure you want to delete ${selectedTaskIds.length} selected task(s)? This action cannot be undone.`}
-                confirmButtonText="Delete Tasks"
-                confirmButtonColorScheme="red"
-                isLoading={taskStoreLoading}
-            />
+      <ConfirmationModal
+        isOpen={isDeleteConfirmOpen}
+        onClose={onDeleteConfirmClose}
+        onConfirm={handleBulkDeleteConfirm}
+        title="Confirm Bulk Delete"
+        bodyText={`Are you sure you want to delete ${selectedTaskIds.length} selected task(s)? This action cannot be undone.`}
+        confirmButtonText="Delete Tasks"
+        confirmButtonColorScheme="red"
+        isLoading={taskStoreLoading}
+      />
 
-            <InputGroup size="sm" flexGrow={1} maxW={{ base: "100%", md: "300px" }}>
-                <InputLeftElement pointerEvents="none">
-          <SearchIcon color='textPlaceholder' />
-                </InputLeftElement>
-                <Input 
-                    placeholder="Search tasks..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    borderRadius="md"
-                    borderWidth="DEFAULT"
-                    borderColor="borderDecorative"
-                    _hover={{ borderColor: "borderInteractive" }}
-                />
-            </InputGroup>
-        </VStack>
-    );
+      <InputGroup size="sm" flexGrow={1} maxW={{ base: "100%", md: "300px" }}>
+        <InputLeftElement pointerEvents="none">
+          <SearchIcon color="textPlaceholder" />
+        </InputLeftElement>
+        <Input
+          placeholder="Search tasks..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          borderRadius="md"
+          borderWidth="DEFAULT"
+          borderColor="borderDecorative"
+          _hover={{ borderColor: "borderInteractive" }}
+        />
+      </InputGroup>
+    </VStack>
+  );
 };
 
-export default TaskControls; 
+export default TaskControls;

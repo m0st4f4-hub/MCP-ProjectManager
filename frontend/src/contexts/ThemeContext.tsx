@@ -23,22 +23,22 @@ const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 // Helper function to get initial theme (avoids repeating logic)
 const getInitialTheme = (): Theme => {
   if (typeof window === "undefined") {
-        // Default for server-side rendering (or if window access fails)
+    // Default for server-side rendering (or if window access fails)
     return "light";
-    }
-    try {
+  }
+  try {
     const storedTheme = localStorage.getItem("theme") as Theme | null;
-        if (storedTheme) {
-            return storedTheme;
-        }
+    if (storedTheme) {
+      return storedTheme;
+    }
     // If no stored preference, use OS-level preference
     return window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
-    } catch (error) {
-        console.error("Error reading theme preference:", error);
+  } catch (error) {
+    console.error("Error reading theme preference:", error);
     return "light"; // Fallback
-    }
+  }
 };
 
 interface ThemeProviderProps {
@@ -56,23 +56,23 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     // No need for isMounted check here as it runs client-side anyway
     // And we want the class applied immediately based on initial state.
     try {
-        const root = window.document.documentElement;
+      const root = window.document.documentElement;
       if (theme === "dark") {
         root.classList.add("dark");
         root.classList.remove("light");
-        } else {
+      } else {
         root.classList.add("light");
         root.classList.remove("dark");
-        }
+      }
       // Set data-theme attribute for theme scoping (used by Tailwind and for potential future extensions)
       root.setAttribute("data-theme", theme);
       // Persist theme preference in localStorage
       localStorage.setItem("theme", theme);
     } catch (error) {
-        console.error("Error applying theme:", error);
+      console.error("Error applying theme:", error);
     }
     // Update localStorage whenever theme changes
-  }, [theme]); 
+  }, [theme]);
 
   // toggleTheme switches between light and dark mode
   // This triggers a re-render and updates the DOM, enabling token-based theming
@@ -101,4 +101,4 @@ export const useTheme = (): ThemeContextProps => {
     throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;
-}; 
+};

@@ -19,7 +19,7 @@ export const useFilteredTasks = (
   return useMemo(() => {
     if (!filters) {
       // If no filters, return tasks that are not archived by default
-      return tasks.filter(task => !task.is_archived);
+      return tasks.filter((task) => !task.is_archived);
     }
     return tasks.filter((task) => {
       // Archived filter
@@ -39,11 +39,14 @@ export const useFilteredTasks = (
       if (filters.status && filters.status !== "all") {
         const taskCategory = getTaskCategory(task);
         if (filters.status === "active") {
-          if (taskCategory === "completed" || taskCategory === "failed") return false;
-        } else if (filters.status === "completed") {
-          if (taskCategory !== "completed" && taskCategory !== "failed") return false;
-        } else if (filters.status !== taskCategory) { // Direct category match if not active/completed
+          if (taskCategory === "completed" || taskCategory === "failed")
             return false;
+        } else if (filters.status === "completed") {
+          if (taskCategory !== "completed" && taskCategory !== "failed")
+            return false;
+        } else if (filters.status !== taskCategory) {
+          // Direct category match if not active/completed
+          return false;
         }
       }
 
@@ -92,4 +95,4 @@ export const useFilteredTasks = (
 //   if (statusLower.includes("block")) return "blocked";
 //   if (statusLower.includes("fail")) return "failed";
 //   return "todo";
-// }; 
+// };

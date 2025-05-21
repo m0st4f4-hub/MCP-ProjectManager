@@ -2,12 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  useDisclosure,
-  useToast,
-  useColorMode,
-} from "@chakra-ui/react";
+import { Box, useDisclosure, useToast, useColorMode } from "@chakra-ui/react";
 import {
   AddIcon,
   EditIcon,
@@ -31,21 +26,22 @@ import SettingsContent from "../components/SettingsContent";
 import Sidebar from "../components/layout/Sidebar";
 import MainContent from "../components/layout/MainContent";
 import { ImportPlanModal } from "../components/modals/ImportPlanModal";
-import CreateProjectModal from '../components/modals/CreateProjectModal';
-import AddTaskModal from '../components/modals/AddTaskModal';
-import AddProjectModal from '../components/modals/AddProjectModal';
-import AddAgentModal from '../components/modals/AddAgentModal';
-import DevToolsDrawer from '../components/modals/DevToolsDrawer';
-import FilterPanel from '../components/common/FilterPanel';
-import AppIcon from '../components/common/AppIcon';
+import CreateProjectModal from "../components/modals/CreateProjectModal";
+import AddTaskModal from "../components/modals/AddTaskModal";
+import AddProjectModal from "../components/modals/AddProjectModal";
+import AddAgentModal from "../components/modals/AddAgentModal";
+import DevToolsDrawer from "../components/modals/DevToolsDrawer";
+import FilterPanel from "../components/common/FilterPanel";
+import AppIcon from "../components/common/AppIcon";
 
 import type { TaskState } from "../store/taskStore";
 import type { ProjectState } from "../store/projectStore";
 import type { AgentState } from "../store/agentStore";
 
-import Head from 'next/head';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import Head from "next/head";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { TaskCreateData } from "../types";
 
 export default function Home() {
   const error = useTaskStore((state: TaskState) => state.error);
@@ -99,6 +95,8 @@ export default function Home() {
   const taskFilters = useTaskStore((state) => state.filters);
   const setTaskFilters = useTaskStore((state) => state.setFilters);
 
+  const addTask = useTaskStore((state: TaskState) => state.addTask);
+
   const onAddProjectOpen = () => {
     _internalOnAddProjectOpen();
   };
@@ -124,8 +122,12 @@ export default function Home() {
     }
   }, [error, toast]);
 
-  useEffect(() => {
-  }, [projectFilters, taskFilters, setProjectFilters, setTaskFilters]);
+  useEffect(() => {}, [
+    projectFilters,
+    taskFilters,
+    setProjectFilters,
+    setTaskFilters,
+  ]);
 
   const handleImportSuccess = () => {
     fetchProjects();
@@ -134,6 +136,11 @@ export default function Home() {
 
   const handleProjectCreated = () => {
     fetchProjects();
+  };
+
+  const handleAddTask = async (data: TaskCreateData) => {
+    await addTask(data);
+    onAddTaskClose();
   };
 
   const renderContent = () => {
@@ -237,12 +244,52 @@ export default function Home() {
           onDrawerOpen={onDrawerOpen}
         />
 
-        <AddTaskModal isOpen={isAddTaskOpen} onClose={onAddTaskClose} />
-        <AddProjectModal isOpen={isAddProjectOpen} onClose={onAddProjectClose} onSubmit={async (data: ProjectCreateData) => { await createProject(data); fetchProjects(); onAddProjectClose(); }} />
-        <AddAgentModal isOpen={isAddAgentOpen} onClose={onAddAgentClose} onSubmit={async (name: string) => { if (!name.trim()) { console.error("Agent name cannot be empty."); return; } try { await createAgent(name); fetchAgents(); onAddAgentClose(); } catch (error) { console.error("Failed to create agent:", error); } }} />
-        <ImportPlanModal isOpen={isImportPlanOpen} onClose={onImportPlanClose} onImportSuccess={handleImportSuccess} />
-        <CreateProjectModal isOpen={isAddProjectOpen} onClose={onAddProjectClose} onProjectCreated={handleProjectCreated} />
-        <DevToolsDrawer isOpen={isDevToolsOpen} onClose={onCloseDevTools} colorMode={colorMode} />
+        <AddTaskModal
+          isOpen={isAddTaskOpen}
+          onClose={onAddTaskClose}
+          onAdd={handleAddTask}
+        />
+        <AddProjectModal
+          isOpen={isAddProjectOpen}
+          onClose={onAddProjectClose}
+          onSubmit={async (data: ProjectCreateData) => {
+            await createProject(data);
+            fetchProjects();
+            onAddProjectClose();
+          }}
+        />
+        <AddAgentModal
+          isOpen={isAddAgentOpen}
+          onClose={onAddAgentClose}
+          onSubmit={async (name: string) => {
+            if (!name.trim()) {
+              console.error("Agent name cannot be empty.");
+              return;
+            }
+            try {
+              await createAgent(name);
+              fetchAgents();
+              onAddAgentClose();
+            } catch (error) {
+              console.error("Failed to create agent:", error);
+            }
+          }}
+        />
+        <ImportPlanModal
+          isOpen={isImportPlanOpen}
+          onClose={onImportPlanClose}
+          onImportSuccess={handleImportSuccess}
+        />
+        <CreateProjectModal
+          isOpen={isAddProjectOpen}
+          onClose={onAddProjectClose}
+          onProjectCreated={handleProjectCreated}
+        />
+        <DevToolsDrawer
+          isOpen={isDevToolsOpen}
+          onClose={onCloseDevTools}
+          colorMode={colorMode}
+        />
         <FilterPanel isOpen={isFilterPanelOpen} onClose={onCloseFilterPanel} />
       </Box>
     </DndProvider>

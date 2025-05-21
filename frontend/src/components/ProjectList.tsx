@@ -72,7 +72,9 @@ const ArchiveIcon = (props: React.ComponentProps<typeof LucideArchive>) => (
 );
 
 const ProjectList: React.FC = () => {
-  const projectsFromStore = useProjectStore((state: ProjectState) => state.projects);
+  const projectsFromStore = useProjectStore(
+    (state: ProjectState) => state.projects,
+  );
   const loading = useProjectStore((state: ProjectState) => state.loading);
   const error = useProjectStore((state: ProjectState) => state.error);
   const fetchProjects = useProjectStore(
@@ -338,12 +340,16 @@ const ProjectList: React.FC = () => {
   const projectsToDisplay: ProjectWithMeta[] = useMemo(() => {
     if (!filteredProjects || !allTasksFromStore) return [];
     return filteredProjects.map((p: Project) => {
-      const projectSpecificTasks = allTasksFromStore.filter(t => t.project_id === p.id);
-      const calculatedCompletedCount = projectSpecificTasks.filter(t => t.status === "COMPLETED").length;
+      const projectSpecificTasks = allTasksFromStore.filter(
+        (t) => t.project_id === p.id,
+      );
+      const calculatedCompletedCount = projectSpecificTasks.filter(
+        (t) => t.status === "COMPLETED",
+      ).length;
       const calculatedTotalCount = projectSpecificTasks.length;
-      
+
       // Determine status and progress based on calculated counts
-      let projectStatus: ProjectWithMeta['status'] = "not_started";
+      let projectStatus: ProjectWithMeta["status"] = "not_started";
       if (calculatedTotalCount > 0) {
         if (calculatedCompletedCount === calculatedTotalCount) {
           projectStatus = "completed";
@@ -351,7 +357,10 @@ const ProjectList: React.FC = () => {
           projectStatus = "in_progress";
         }
       }
-      const projectProgress = calculatedTotalCount > 0 ? (calculatedCompletedCount / calculatedTotalCount) * 100 : 0;
+      const projectProgress =
+        calculatedTotalCount > 0
+          ? (calculatedCompletedCount / calculatedTotalCount) * 100
+          : 0;
 
       return {
         ...p, // Spread the original Project object
@@ -461,7 +470,6 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
 
   const getProjectStatusInfo = (project: ProjectWithMeta) => {
     const totalTasks = project.taskCount ?? 0;
-    const completedTasks = project.completedTaskCount ?? 0;
     let colorScheme = "gray";
     let icon: React.ElementType = TimeIcon;
     let fullText = "Pending Start";
@@ -593,35 +601,70 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
                 size="sm"
                 color={project.is_archived ? "iconDisabled" : "iconSecondary"}
                 _hover={{
-                  bg: project.is_archived ? "transparent" : "interactiveNeutralHover",
+                  bg: project.is_archived
+                    ? "transparent"
+                    : "interactiveNeutralHover",
                   color: project.is_archived ? "iconDisabled" : "iconAccent",
                 }}
-                isDisabled={project.is_archived && projectToDelete?.id === project.id}
+                isDisabled={
+                  project.is_archived && projectToDelete?.id === project.id
+                }
                 zIndex="docked"
               />
-              <MenuList bg="bgPopover" borderColor="borderOverlay" zIndex="popover">
+              <MenuList
+                bg="bgPopover"
+                borderColor="borderOverlay"
+                zIndex="popover"
+              >
                 <MenuItem
-                  icon={<AppIcon icon={Edit3} size="1.1rem" color="currentColor" />}
+                  icon={
+                    <AppIcon
+                      component={Edit3}
+                      boxSize="1.1rem"
+                      color="currentColor"
+                    />
+                  }
                   onClick={() => handleEditProject(project)}
                   isDisabled={project.is_archived}
                   color="textSecondary"
-                  _hover={{ bg: "interactiveNeutralHover", color: "textPrimary" }}
+                  _hover={{
+                    bg: "interactiveNeutralHover",
+                    color: "textPrimary",
+                  }}
                 >
                   Edit Details
                 </MenuItem>
                 <MenuItem
-                  icon={<AppIcon icon={ChakraCopyIcon} size="1.1rem" color="currentColor" />}
+                  icon={
+                    <AppIcon
+                      component={ChakraCopyIcon}
+                      boxSize="1.1rem"
+                      color="currentColor"
+                    />
+                  }
                   onClick={() => handleCopyGetCommand(project.id)}
                   color="textSecondary"
-                  _hover={{ bg: "interactiveNeutralHover", color: "textPrimary" }}
+                  _hover={{
+                    bg: "interactiveNeutralHover",
+                    color: "textPrimary",
+                  }}
                 >
                   Copy Get Command
                 </MenuItem>
                 <MenuItem
-                  icon={<AppIcon icon={CopyIcon} size="1.1rem" color="currentColor" />}
+                  icon={
+                    <AppIcon
+                      component={CopyIcon}
+                      boxSize="1.1rem"
+                      color="currentColor"
+                    />
+                  }
                   onClick={() => handleOpenCliPrompt(project)}
                   color="textSecondary"
-                  _hover={{ bg: "interactiveNeutralHover", color: "textPrimary" }}
+                  _hover={{
+                    bg: "interactiveNeutralHover",
+                    color: "textPrimary",
+                  }}
                 >
                   View Full CLI Prompt
                 </MenuItem>
@@ -649,9 +692,9 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
                   }
                   onClick={() => handleDeleteInitiate(project)}
                   color="textError"
-                  _hover={{ 
+                  _hover={{
                     bg: "errorBgSubtle",
-                    color: "textStatusError"
+                    color: "textStatusError",
                   }}
                 >
                   Delete Project
@@ -788,7 +831,12 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
         justifyContent="center"
       >
         <WarningTwoIcon boxSize="40px" color="textStatusError" />
-        <Heading size="md" color="textStatusError" display="flex" alignItems="center">
+        <Heading
+          size="md"
+          color="textStatusError"
+          display="flex"
+          alignItems="center"
+        >
           <WarningTwoIcon boxSize={5} mr={2} />
           An error occurred while fetching projects.
         </Heading>
@@ -825,7 +873,14 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
         justifyContent="center"
       >
         <SearchIcon boxSize="32px" color="iconDefault" mb="1" />
-        <Heading as="h3" size="md" color="textSecondary" fontWeight="medium" display="flex" alignItems="center">
+        <Heading
+          as="h3"
+          size="md"
+          color="textSecondary"
+          fontWeight="medium"
+          display="flex"
+          alignItems="center"
+        >
           <SearchIcon boxSize={5} mr={2} />
           No Projects Found
         </Heading>
@@ -866,7 +921,12 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
         mb="4"
         px={{ base: "2", md: "0" }}
       >
-        <Heading size={{ base: "lg", md: "xl" }} color="textPrimary" display="flex" alignItems="center">
+        <Heading
+          size={{ base: "lg", md: "xl" }}
+          color="textPrimary"
+          display="flex"
+          alignItems="center"
+        >
           <AppIcon name="projects" boxSize={6} mr={2} />
           Projects{" "}
           <Text as="span" color="textSecondary" fontWeight="normal">
@@ -913,7 +973,12 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
           borderRadius="lg"
           maxH="80vh"
         >
-          <ModalHeader borderBottomWidth="1px" borderColor="borderDecorative" display="flex" alignItems="center">
+          <ModalHeader
+            borderBottomWidth="1px"
+            borderColor="borderDecorative"
+            display="flex"
+            alignItems="center"
+          >
             <AppIcon name="terminal" boxSize={5} mr={2} />
             CLI Prompt for: {cliPromptProjectName}
           </ModalHeader>

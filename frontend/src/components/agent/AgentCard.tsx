@@ -155,7 +155,7 @@ const AgentCard: React.FC<AgentCardProps> = ({
             </MenuItem>
             {onCopyGetCommand && (
               <MenuItem
-                icon={<AppIcon icon={ChakraCopyIcon} mr="2" />}
+                icon={<AppIcon component={ChakraCopyIcon} mr="2" />}
                 onClick={() => onCopyGetCommand(agent.id)}
                 color="textPrimary"
                 fontSize="sm"

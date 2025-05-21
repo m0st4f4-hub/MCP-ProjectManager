@@ -9,4 +9,4 @@ export const opacity = {
   none: 0,
 };
 
-export type Opacity = typeof opacity; 
+export type Opacity = typeof opacity;

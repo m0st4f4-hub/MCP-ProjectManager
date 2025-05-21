@@ -9,7 +9,7 @@ import {
   FormLabel,
   Input,
 } from "@chakra-ui/react";
-import AppIcon from './AppIcon';
+import AppIcon from "./AppIcon";
 
 interface AddFormBaseProps {
   formTitle: string;
@@ -49,10 +49,15 @@ const AddFormBase: React.FC<AddFormBaseProps> = ({
     >
       <ModalBody p={0}>
         <VStack spacing={4} align="stretch">
-          <Heading size="sm" color="text.secondary" display="flex" alignItems="center">
+          <Heading
+            size="sm"
+            color="text.secondary"
+            display="flex"
+            alignItems="center"
+          >
             <AppIcon name="add" boxSize={4} mr={2} />
-          {formTitle}
-        </Heading>
+            {formTitle}
+          </Heading>
 
           {children || (
             <FormControl>
@@ -65,17 +70,17 @@ const AddFormBase: React.FC<AddFormBaseProps> = ({
             </FormControl>
           )}
 
-        <Button
-          type="submit"
-          colorScheme={submitButtonColorScheme}
-          isLoading={isLoading}
+          <Button
+            type="submit"
+            colorScheme={submitButtonColorScheme}
+            isLoading={isLoading}
             loadingText="Adding..."
             isDisabled={isLoading}
             leftIcon={<AppIcon name="add" boxSize={4} />}
             mt={2}
-        >
-          {submitButtonText}
-        </Button>
+          >
+            {submitButtonText}
+          </Button>
         </VStack>
       </ModalBody>
     </Box>

@@ -7,8 +7,8 @@ import {
   // Skeleton,
   // HStack,
 } from "@chakra-ui/react";
-import AppIcon from './common/AppIcon';
-import { typography } from '../tokens';
+import AppIcon from "./common/AppIcon";
+import { typography } from "../tokens";
 // import styles from './TaskLoading.module.css';
 
 const TaskLoading: React.FC = () => {

@@ -5,9 +5,8 @@ import {
   Modal,
   ModalOverlay,
   ModalContent,
-  ModalHeader,
-  ModalBody,
   ModalCloseButton,
+  ModalBody,
 } from "@chakra-ui/react";
 import AddAgentForm from "../forms/AddAgentForm"; // Adjusted path
 
@@ -23,17 +22,19 @@ const AddAgentModal: React.FC<AddAgentModalProps> = ({
   onSubmit,
 }) => {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      isCentered
-      size={{ base: "full", md: "xl" }}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Register New Agent</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
+      <ModalContent
+        bg="bgModal"
+        color="onSurface"
+        borderColor="borderDecorative"
+        borderWidth="DEFAULT"
+      >
+        <ModalCloseButton
+          color="iconPrimary"
+          _hover={{ bg: "interactiveNeutralHover", color: "iconAccent" }}
+        />
+        <ModalBody pb={6} pt={3}>
           <AddAgentForm onSubmit={onSubmit} onClose={onClose} />
         </ModalBody>
       </ModalContent>

@@ -1,8 +1,14 @@
-import React from 'react';
-import { Modal, ModalOverlay, ModalContent, ModalCloseButton, ModalBody } from '@chakra-ui/react';
-import AddProjectForm from '../forms/AddProjectForm';
-import { ProjectCreateData } from '../../types/project';
-import { sizing, blur } from '../../tokens';
+import React from "react";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalCloseButton,
+  ModalBody,
+} from "@chakra-ui/react";
+import AddProjectForm from "../forms/AddProjectForm";
+import { ProjectCreateData } from "../../types/project";
+import { sizing, blur } from "../../tokens";
 
 type AddProjectModalProps = {
   isOpen: boolean;
@@ -10,7 +16,11 @@ type AddProjectModalProps = {
   onSubmit: (data: ProjectCreateData) => Promise<void>;
 };
 
-const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onSubmit }) => {
+const AddProjectModal: React.FC<AddProjectModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+}) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay backdropFilter={`blur(${blur.xs})`} bg="overlayDefault" />
@@ -32,4 +42,4 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onSu
   );
 };
 
-export default AddProjectModal; 
+export default AddProjectModal;
