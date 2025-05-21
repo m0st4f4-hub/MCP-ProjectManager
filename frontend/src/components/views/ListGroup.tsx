@@ -23,6 +23,7 @@ interface ListGroupProps {
   handleDeleteInitiate: (task: Task) => void;
   setSelectedTask: (task: Task) => void;
   handleCopyTaskGetCommand: (taskId: string) => void;
+  isMobile?: boolean;
 }
 
 const ListGroup: React.FC<ListGroupProps> = ({

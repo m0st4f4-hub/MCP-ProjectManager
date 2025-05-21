@@ -215,7 +215,6 @@ const ListView: React.FC<ListViewProps> = ({
           <ListGroup
             key={group.id}
             group={group}
-            isMobile={isMobile}
             expandedGroups={expandedGroups}
             toggleGroup={toggleGroup}
             selectedTaskIds={selectedTaskIds}
