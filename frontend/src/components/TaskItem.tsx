@@ -1,4 +1,3 @@
-// D:\mcp\task-manager\frontend\src\components\TaskItem.tsx
 "use client";
 
 import React, { useCallback, memo } from "react";
@@ -24,12 +23,12 @@ const TaskItem: React.FC<TaskItemProps> = memo(
     compact = false,
     style,
     onClick,
+    onCopyGetCommand,
   }) {
     const projects = useProjectStore((state) => state.projects);
     const projectName = projects.find((p) => p.id === task.project_id)?.name;
 
     const editTaskInStore = useTaskStore((state) => state.updateTask);
-
     const toast = useToast();
 
     const currentStatusId = (task.status || "TO_DO") as StatusID;
