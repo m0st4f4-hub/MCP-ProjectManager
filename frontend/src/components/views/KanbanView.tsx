@@ -15,7 +15,7 @@ import {
   AlertDialogOverlay,
   Button,
 } from "@chakra-ui/react";
-import TaskItem from "../TaskItem"; // Assuming TaskItem can be used here
+import TaskItem from "../task/TaskItem"; // Assuming TaskItem can be used here
 import { Task } from "@/types"; // Removed StatusID, KanbanColumns
 import { useTaskStore, TaskState } from "@/store/taskStore"; // Added TaskState import
 import { getDisplayableStatus, StatusID } from "@/lib/statusUtils"; // Added StatusID here

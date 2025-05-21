@@ -1,6 +1,6 @@
 import { useTheme, useToken } from "@chakra-ui/react";
 import { StatusID } from "@/lib/statusUtils";
-import { getStatusTagColors } from "./TaskItem.utils";
+import { getStatusTagColors } from "./task/TaskItem.utils";
 
 export function useTaskItemStyles(currentStatusId: StatusID, compact: boolean) {
   const theme = useTheme();
