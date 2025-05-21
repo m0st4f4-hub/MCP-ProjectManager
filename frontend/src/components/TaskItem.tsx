@@ -16,29 +16,13 @@ import {
   Flex,
   Icon,
   Avatar,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Tooltip,
+  Tooltip, // Still used for other elements (project/agent tags, details button)
   useToast,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  Button,
-  List,
-  ListItem,
-  Spinner,
-  Collapse,
-  Input,
-  Textarea,
+  Collapse, // Used for TaskDetailsSection
+  Input, // Used for inline title editing
+  Textarea, // Used for inline description editing
   useToken,
-  SimpleGrid,
-  useTheme,
+  useTheme, // Restored as it's used elsewhere in the file
 } from "@chakra-ui/react";
 import {
   EditIcon as ChakraEditIcon,
@@ -48,16 +32,17 @@ import {
   WarningTwoIcon as ChakraWarningTwoIcon,
   CheckCircleIcon as ChakraCheckCircleIcon,
   InfoOutlineIcon as ChakraInfoOutlineIcon,
-  QuestionOutlineIcon as ChakraQuestionOutlineIcon,
-  NotAllowedIcon as ChakraNotAllowedIcon,
-  EmailIcon as ChakraEmailIcon,
-  CopyIcon as ChakraCopyIcon,
+  CopyIcon as ChakraCopyIcon, // Keep for now, AppIcon might use it. TaskMenu handles its own.
+  // QuestionOutlineIcon, NotAllowedIcon, EmailIcon, ListOrderedIcon are managed by TaskMenu or not used.
 } from "@chakra-ui/icons";
 import { GoProject } from "react-icons/go";
 import { BsPerson } from "react-icons/bs";
-import { RiListOrdered as ListOrderedIcon } from "react-icons/ri"; // Assuming this is the one used for 'ListOrderedIcon'
 import EditTaskModal from "./modals/EditTaskModal";
 import TaskDetailsModal from "./modals/TaskDetailsModal";
+import TaskDetailsSection from "./TaskDetailsSection";
+import EditTaskButton from "./buttons/EditTaskButton"; // Added import
+import TaskMenu from "./menus/TaskMenu";
+import TaskItemAgentAssignmentModal from "./modals/TaskItemAgentAssignmentModal"; // Added import
 import { useProjectStore } from "@/store/projectStore";
 import { useTaskStore } from "@/store/taskStore";
 import {
@@ -89,7 +74,7 @@ const TaskItem: React.FC<TaskItemProps> = memo(
     onClick,
     onCopyGetCommand,
   }) => {
-    const theme = useTheme();
+    const theme = useTheme(); // Restored as it's used elsewhere in the file
     const {
       isOpen: isEditTaskModalOpen,
       onOpen: onOpenEditTaskModal,
@@ -106,11 +91,11 @@ const TaskItem: React.FC<TaskItemProps> = memo(
     const editTaskInStore = useTaskStore((state) => state.updateTask);
     const archiveTaskInStore = useTaskStore((state) => state.archiveTask);
     const unarchiveTaskInStore = useTaskStore((state) => state.unarchiveTask);
-    const storeAgents = useTaskStore((state) => state.agents || []);
+    const storeAgents = useTaskStore((state) => state.agents || []); // This will be passed to the new modal
 
-    const [isAgentModalOpen, setAgentModalOpen] = useState(false);
-    const [agentLoading, setAgentLoading] = useState(false);
-    const toast = useToast();
+    const [isAgentModalOpen, setAgentModalOpen] = useState(false); // This remains to control visibility
+    // agentLoading state is removed, managed by TaskItemAgentAssignmentModal
+    const toast = useToast(); // This might be passed or used by the new modal if it creates its own toasts
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [isEditingDescription, setIsEditingDescription] = useState(false);
@@ -123,28 +108,28 @@ const TaskItem: React.FC<TaskItemProps> = memo(
     const statusInfo = getDisplayableStatus(currentStatusId, task.title);
 
     const statusDisplayName = statusInfo?.displayName ?? "Unknown Status";
-    const rawStatusIcon = statusInfo?.icon;
+    const rawStatusIcon = statusInfo?.icon; // This is still needed for the Tag's StatusIconComponent
 
-    const iconMap: Record<string, React.ElementType> = {
-      EditIcon: ChakraEditIcon,
-      TimeIcon: ChakraTimeIcon,
-      WarningTwoIcon: ChakraWarningTwoIcon,
-      CheckCircleIcon: ChakraCheckCircleIcon,
-      InfoOutlineIcon: ChakraInfoOutlineIcon,
-      ListOrderedIcon: ListOrderedIcon, // Mapped from react-icons
-      RepeatClockIcon: ChakraRepeatClockIcon,
-      QuestionOutlineIcon: ChakraQuestionOutlineIcon,
-      CheckIcon: ChakraCheckIcon,
-      NotAllowedIcon: ChakraNotAllowedIcon,
-      EmailIcon: ChakraEmailIcon,
-      CopyIcon: ChakraCopyIcon,
-      // Add other icons from STATUS_MAP here if they are strings
+    // iconMap and StatusIconComponent for menu items are moved to TaskMenu.tsx
+    // However, StatusIconComponent for the Tag below needs to be resolved here.
+    // Let's define a minimal iconMap here for the Tag status icon only.
+    const tagIconMap: Record<string, React.ElementType> = {
+        EditIcon: ChakraEditIcon, // Retained for tag
+        TimeIcon: ChakraTimeIcon, // Retained for tag
+        WarningTwoIcon: ChakraWarningTwoIcon, // Retained for tag
+        CheckCircleIcon: ChakraCheckCircleIcon, // Retained for tag
+        InfoOutlineIcon: ChakraInfoOutlineIcon, // Retained for tag
+        RepeatClockIcon: ChakraRepeatClockIcon, // Retained for tag
+        CheckIcon: ChakraCheckIcon, // Retained for tag
+        // QuestionOutlineIcon, NotAllowedIcon, EmailIcon, CopyIcon, ListOrderedIcon are not for status tags.
     };
 
-    const StatusIconComponent =
+    const StatusIconComponent = // This is for the Tag's visual indicator
       typeof rawStatusIcon === "string"
-        ? iconMap[rawStatusIcon]
+        ? tagIconMap[rawStatusIcon]
         : rawStatusIcon;
+
+    // The full iconMap and its related Chakra icon imports are managed by TaskMenu.tsx
 
     const [
       accentToDo,
@@ -279,31 +264,7 @@ const TaskItem: React.FC<TaskItemProps> = memo(
       else setAgentModalOpen(true);
     }, [onAssignAgent, task]);
 
-    const handleAgentSelect = async (agent: { id: string; name: string }) => {
-      setAgentLoading(true);
-      try {
-        await editTaskInStore(task.id, {
-          agent_id: agent.id,
-          agent_name: agent.name,
-        });
-        toast({
-          title: `Agent assigned: ${agent.name}`,
-          status: "success",
-          duration: 2000,
-          isClosable: true,
-        });
-      } catch {
-        toast({
-          title: "Error assigning agent",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      } finally {
-        setAgentLoading(false);
-        setAgentModalOpen(false);
-      }
-    };
+  // handleAgentSelect is removed, its logic is now within TaskItemAgentAssignmentModal
 
     const handleStatusChange = async (newStatus: StatusID) => {
       try {
@@ -468,12 +429,13 @@ const TaskItem: React.FC<TaskItemProps> = memo(
       }
       return theme.fontSizes.sm;
     }, [compact, theme.fontSizes]);
-    const detailTextFontSize = useMemo(() => {
-      if (compact) {
-        return theme.fontSizes.xs;
-      }
-      return theme.fontSizes.sm;
-    }, [compact, theme.fontSizes]);
+    // detailTextFontSize is now derived within TaskDetailsSection
+    // const detailTextFontSize = useMemo(() => {
+    //   if (compact) {
+    //     return theme.fontSizes.xs;
+    //   }
+    //   return theme.fontSizes.sm;
+    // }, [compact, theme.fontSizes]);
 
     const agentTagStyle = useMemo(
       () => ({
@@ -538,52 +500,10 @@ const TaskItem: React.FC<TaskItemProps> = memo(
       ml: 1,
     };
 
-    const menuItemsBaseStyle = {
-      fontSize: theme.fontSizes.sm,
-    };
-
-    const editTaskModalContentStyle = {
-      bg: bgSurfaceElevatedColor,
-      fontSize: theme.fontSizes.sm,
-    };
-
-    const taskDetailsModalContentStyle = {
-      bg: bgSurfaceElevatedColor,
-      fontSize: theme.fontSizes.sm,
-    };
-
-    const subTaskTitleStyle = {
-      fontSize: theme.fontSizes.xs,
-      color: textSecondaryColor,
-      fontWeight: theme.fontWeights.medium,
-      mb: compact ? 0.5 : 1,
-    };
-    const subTaskProjectStyle = {
-      fontWeight: theme.fontWeights.medium,
-      ml: 1,
-    };
-    const subTaskAgentStyle = {
-      fontWeight: theme.fontWeights.medium,
-      ml: 1,
-    };
-    const subTaskStatusStyle = {
-      fontWeight: theme.fontWeights.medium,
-      ml: 1,
-    };
-    const subTaskDetailsIconStyle = {
-      fontWeight: theme.fontWeights.medium,
-      ml: 2,
-      color: textSecondaryColor,
-    };
-
-    const noSubTasksTextStyle = {
-      fontSize: theme.fontSizes.sm,
-      color: textSecondaryColor,
-      fontStyle: "italic",
-      mt: 2,
-      textAlign: "center" as const,
-      fontWeight: theme.fontWeights.semibold,
-    };
+    // menuItemsBaseStyle is removed (moved to TaskMenu.tsx)
+    // editTaskModalContentStyle should be within EditTaskModal.tsx
+    // taskDetailsModalContentStyle should be within TaskDetailsModal.tsx
+    // subTask... styles and noSubTasksTextStyle are likely for TaskDetailsModal or similar, not directly used in TaskItem's JSX.
 
     return (
       <Box
@@ -827,204 +747,31 @@ const TaskItem: React.FC<TaskItemProps> = memo(
               }}
             />
             <HStack spacing="spacing.1">
-              <Tooltip label="Edit Task" placement="top">
-                <IconButton
-                  aria-label="Edit task"
-                  icon={<AppIcon name="edit" />}
-                  onClick={(e) => { e.stopPropagation(); onOpenEditTaskModal(); }}
-                  size="sm"
-                  variant="ghost"
-                  color={textColor}
-                  _hover={{ bg: bgInteractiveSubtleHoverColor, color: theme.colors.blue[500] }}
-                />
-              </Tooltip>
-
-              <Menu placement="bottom-end">
-                <Tooltip label="Change Status" placement="top">
-                  <MenuButton
-                    as={IconButton}
-                    aria-label="Change task status"
-                    icon={<AppIcon name="repeatclock" />}
-                    onClick={(e) => e.stopPropagation()} // Prevent main card click
-                    size="sm"
-                    variant="ghost"
-                    color={textColor}
-                    _hover={{ bg: bgInteractiveSubtleHoverColor, color: theme.colors.orange[500] }}
-                  />
-                </Tooltip>
-                <MenuList
-                  bg={bgSurfaceColor}
-                  borderWidth="borders.width.xs"
-                  borderColor={borderDecorativeColor}
-                  boxShadow="shadows.md"
-                  borderRadius="radii.md"
-                  minW="sizes.menu"
-                  py="spacing.1"
-                  zIndex="popover" // Ensure it's above other elements
-                >
-                  {availableStatuses.map((statusId) => {
-                    const sInfo = getDisplayableStatus(statusId);
-                    const ResolvedIcon =
-                      typeof sInfo?.icon === "string"
-                        ? iconMap[sInfo.icon]
-                        : sInfo?.icon;
-                    return (
-                      <MenuItem
-                        key={statusId}
-                        onClick={(e) => { e.stopPropagation(); handleStatusChange(statusId); }}
-                        icon={
-                          ResolvedIcon ? (
-                            <Icon as={ResolvedIcon} />
-                          ) : undefined
-                        }
-                        sx={{
-                          px: "spacing.3",
-                          py: "spacing.2",
-                          gap: "spacing.2",
-                          fontSize: menuItemsBaseStyle.fontSize,
-                          color: textPrimaryColor,
-                          borderRadius: "radii.sm",
-                          mx: "spacing.1",
-                          _hover: { bg: bgInteractiveSubtleHoverColor },
-                        }}
-                      >
-                        {sInfo?.displayName || statusId}
-                      </MenuItem>
-                    );
-                  })}
-                  <MenuItem
-                    icon={<AppIcon icon={ChakraEditIcon} size="1rem" />}
-                    onClick={onOpenEditTaskModal}
-                    color="textSecondary"
-                    _hover={{ bg: "interactiveNeutralHover", color: "textPrimary" }}
-                  >
-                    Edit Full Task
-                  </MenuItem>
-                  {onCopyGetCommand && (
-                    <MenuItem
-                      icon={<AppIcon icon={ChakraCopyIcon} size="1rem" />}
-                      onClick={() => onCopyGetCommand(task.id)}
-                      color="textSecondary"
-                      _hover={{ bg: "interactiveNeutralHover", color: "textPrimary" }}
-                    >
-                      Copy Get Command
-                    </MenuItem>
-                  )}
-                  <MenuItem
-                    icon={<AppIcon icon={ChakraCopyIcon} size="1rem" />}
-                    onClick={handleCopyPrompt}
-                    color="textSecondary"
-                    _hover={{ bg: "interactiveNeutralHover", color: "textPrimary" }}
-                  >
-                    Copy Detailed Prompt
-                  </MenuItem>
-                  {task.is_archived ? (
-                    <MenuItem
-                      onClick={(e) => { e.stopPropagation(); handleUnarchiveTask(); }}
-                      icon={<AppIcon name="download" transform="rotate(180deg)" />}
-                      color={textColor}
-                      _hover={{ bg: bgInteractiveSubtleHoverColor, color: theme.colors.green[500] }}
-                    >
-                      Unarchive Task
-                    </MenuItem>
-                  ) : (
-                    <MenuItem
-                      onClick={(e) => { e.stopPropagation(); handleArchiveTask(); }}
-                      icon={<AppIcon name="download" />}
-                      color={textColor}
-                      _hover={{ bg: bgInteractiveSubtleHoverColor, color: theme.colors.yellow[500] }}
-                    >
-                      Archive Task
-                    </MenuItem>
-                  )}
-                  <MenuItem
-                    onClick={(e) => { e.stopPropagation(); onDeleteInitiate(task); }}
-                    icon={<AppIcon name="delete" />}
-                    color={coreRed600}
-                    _hover={{ bg: coreRed50, color: coreRed700 }}
-                  >
-                    Delete Task
-                  </MenuItem>
-                </MenuList>
-              </Menu>
+              <EditTaskButton
+                onClick={onOpenEditTaskModal}
+                isArchived={task.is_archived}
+              />
+              <TaskMenu
+                task={task}
+                availableStatuses={availableStatuses}
+                // currentStatusIconName={rawStatusIcon} // Not needed for TaskMenu's MenuButton icon itself. TaskMenu handles its internal item icons.
+                onStatusChange={handleStatusChange}
+                onOpenEditTaskModal={onOpenEditTaskModal}
+                onCopyGetCommand={onCopyGetCommand}
+                onCopyDetailedPrompt={handleCopyPrompt}
+                onArchiveTask={handleArchiveTask}
+                onUnarchiveTask={handleUnarchiveTask}
+                onDeleteInitiate={onDeleteInitiate}
+              />
             </HStack>
           </Flex>
         </HStack>
 
-        <Collapse in={detailsOpen} animateOpacity>
-          <Box pt={compact ? 2 : 3} pb={compact ? 1 : 2}>
-            <SimpleGrid
-              columns={2}
-              spacingX="spacing.3"
-              spacingY="spacing.1"
-              fontSize={detailTextFontSize}
-            >
-              <Text
-                color={textSecondaryColor}
-                fontWeight={theme.fontWeights.medium}
-                textAlign="right"
-              >
-                ID:
-              </Text>
-              <Text color={textPrimaryColor} wordBreak="break-word">
-                {task.id}
-              </Text>
-
-              <Text
-                color={textSecondaryColor}
-                fontWeight={theme.fontWeights.medium}
-                textAlign="right"
-              >
-                Created:
-              </Text>
-              <Text color={textPrimaryColor} wordBreak="break-word">
-                {new Date(task.created_at).toLocaleString()}
-              </Text>
-
-              <Text
-                color={textSecondaryColor}
-                fontWeight={theme.fontWeights.medium}
-                textAlign="right"
-              >
-                Updated:
-              </Text>
-              <Text color={textPrimaryColor} wordBreak="break-word">
-                {task.updated_at
-                  ? new Date(task.updated_at).toLocaleString()
-                  : "N/A"}
-              </Text>
-
-              {task.project_id && (
-                <>
-                  <Text
-                    color={textSecondaryColor}
-                    fontWeight={theme.fontWeights.medium}
-                    textAlign="right"
-                  >
-                    Project ID:
-                  </Text>
-                  <Text color={textPrimaryColor} wordBreak="break-word">
-                    {task.project_id}
-                  </Text>
-                </>
-              )}
-              {task.agent_id && (
-                <>
-                  <Text
-                    color={textSecondaryColor}
-                    fontWeight={theme.fontWeights.medium}
-                    textAlign="right"
-                  >
-                    Agent ID:
-                  </Text>
-                  <Text color={textPrimaryColor} wordBreak="break-word">
-                    {task.agent_id}
-                  </Text>
-                </>
-              )}
-            </SimpleGrid>
-          </Box>
-        </Collapse>
+        <TaskDetailsSection
+          task={task}
+          isOpen={detailsOpen}
+          compact={compact}
+        />
 
         <EditTaskModal
           isOpen={isEditTaskModalOpen}
@@ -1038,79 +785,22 @@ const TaskItem: React.FC<TaskItemProps> = memo(
           taskId={task?.id || null}
         />
 
-        <Modal
+        <TaskItemAgentAssignmentModal
           isOpen={isAgentModalOpen}
           onClose={() => setAgentModalOpen(false)}
-          isCentered
-        >
-          <ModalOverlay />
-          <ModalContent
-            bg={bgSurfaceColor}
-            color={textPrimaryColor}
-            borderWidth="borders.width.xs"
-            borderColor={borderDecorativeColor}
-            borderRadius="radii.md"
-          >
-            <ModalHeader
-              borderBottomWidth="borders.width.xs"
-              borderColor={borderDecorativeColor}
-            >
-              Assign Agent to: {task.title}
-            </ModalHeader>
-            <ModalCloseButton
-              color={textSecondaryColor}
-              _hover={{
-                bg: bgInteractiveSubtleHoverColor,
-                color: textPrimaryColor,
-              }}
-            />
-            <ModalBody py="spacing.4">
-              {agentLoading && <Spinner color="brandPrimary" />}
-              {!agentLoading && (
-                <List
-                  spacing={3}
-                  maxH="sizes.menu"
-                  overflowY="auto"
-                  mt="spacing.2"
-                >
-                  {storeAgents.map((agent) => (
-                    <ListItem
-                      key={agent.id}
-                      onClick={() => handleAgentSelect(agent)}
-                      p="spacing.2"
-                      borderRadius="radii.md"
-                      fontSize={theme.fontSizes.sm}
-                      cursor="pointer"
-                      _hover={{ bg: bgInteractiveSubtleHoverColor }}
-                      sx={
-                        task.agent_id === agent.id
-                          ? {
-                              bg: coreBlue100,
-                              color: coreBlue700,
-                              fontWeight: theme.fontWeights.semibold,
-                            }
-                          : {}
-                      }
-                    >
-                      {agent.name}
-                    </ListItem>
-                  ))}
-                  {storeAgents.length === 0 && (
-                    <Text color={textSecondaryColor}>No agents available.</Text>
-                  )}
-                </List>
-              )}
-            </ModalBody>
-            <ModalFooter
-              borderTopWidth="borders.width.xs"
-              borderColor={borderDecorativeColor}
-            >
-              <Button onClick={() => setAgentModalOpen(false)} variant="ghost">
-                Cancel
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+          task={task}
+          agents={storeAgents}
+          editTaskInStore={editTaskInStore}
+          // Pass styling props
+          bgSurfaceColor={bgSurfaceColor}
+          textPrimaryColor={textPrimaryColor}
+          textSecondaryColor={textSecondaryColor}
+          borderDecorativeColor={borderDecorativeColor}
+          bgInteractiveSubtleHoverColor={bgInteractiveSubtleHoverColor}
+          coreBlue100={coreBlue100}
+          coreBlue700={coreBlue700}
+          theme={theme}
+        />
       </Box>
     );
   },
