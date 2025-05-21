@@ -16,8 +16,8 @@ import { useTaskStore } from "@/store/taskStore";
 import { useProjectStore, ProjectState } from "@/store/projectStore";
 import { useAgentStore, AgentState } from "@/store/agentStore";
 import { semanticColors, colorPrimitives } from "@/tokens/colors";
-import AppIcon from './common/AppIcon';
-import { typography } from '../tokens';
+import AppIcon from "./common/AppIcon";
+import { typography } from "../tokens";
 
 const SettingsContent: React.FC = () => {
   const taskFilters = useTaskStore((state) => state.filters);
@@ -146,7 +146,7 @@ const SettingsContent: React.FC = () => {
                 mb="0"
                 color={textSecondaryColor}
                 fontSize={typography.fontSize.md}
-                lineHeight={typography.lineHeight.base}
+                lineHeight={typography.lineHeight.regular}
               >
                 Hide Completed Tasks
               </FormLabel>
@@ -167,7 +167,7 @@ const SettingsContent: React.FC = () => {
                 mb="0"
                 color={textSecondaryColor}
                 fontSize={typography.fontSize.md}
-                lineHeight={typography.lineHeight.base}
+                lineHeight={typography.lineHeight.regular}
               >
                 Show Archived Tasks
               </FormLabel>
@@ -188,7 +188,7 @@ const SettingsContent: React.FC = () => {
                 mb="0"
                 color={textSecondaryColor}
                 fontSize={typography.fontSize.md}
-                lineHeight={typography.lineHeight.base}
+                lineHeight={typography.lineHeight.regular}
               >
                 Show Archived Projects
               </FormLabel>
@@ -209,7 +209,7 @@ const SettingsContent: React.FC = () => {
                 mb="0"
                 color={textSecondaryColor}
                 fontSize={typography.fontSize.md}
-                lineHeight={typography.lineHeight.base}
+                lineHeight={typography.lineHeight.regular}
               >
                 Show Archived Agents
               </FormLabel>

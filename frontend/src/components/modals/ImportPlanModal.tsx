@@ -49,7 +49,8 @@ export const ImportPlanModal: React.FC<ImportPlanModalProps> = ({
       setImportStatus("Import placeholder: processing completed.");
       toast({
         title: "Import (Placeholder)",
-        description: "Plan processed (no actual data imported in this placeholder).",
+        description:
+          "Plan processed (no actual data imported in this placeholder).",
         status: "info",
         duration: 3000,
         isClosable: true,
@@ -57,7 +58,8 @@ export const ImportPlanModal: React.FC<ImportPlanModalProps> = ({
       onImportSuccess(); // Call success callback
       // onClose(); // Optionally close modal on success
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error during import.";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error during import.";
       setImportStatus(`Error during import: ${errorMessage}`);
       toast({
         title: "Import Error",
@@ -97,7 +99,11 @@ export const ImportPlanModal: React.FC<ImportPlanModalProps> = ({
           right="12px"
         />
         <ModalBody pt={6} pb={6}>
-          <Text mb={sizing.spacing[2]} fontSize={typography.fontSize.sm} color="textSecondary">
+          <Text
+            mb={sizing.spacing[2]}
+            fontSize={typography.fontSize.sm}
+            color="textSecondary"
+          >
             Paste the JSON content of the project plan below:
           </Text>
           <Textarea
@@ -115,8 +121,13 @@ export const ImportPlanModal: React.FC<ImportPlanModalProps> = ({
             _hover={{ borderColor: "borderHover" }}
             _focus={{
               borderColor: "borderFocused",
-              boxShadow: `0 0 0 1px ${// Accessing colorPrimitives directly for boxShadow is okay if semantic token not available
-                typeof window !== 'undefined' ? getComputedStyle(document.documentElement).getPropertyValue('--chakra-colors-blue-500').trim() : 'blue.500'
+              boxShadow: `0 0 0 1px ${
+                // Accessing colorPrimitives directly for boxShadow is okay if semantic token not available
+                typeof window !== "undefined"
+                  ? getComputedStyle(document.documentElement)
+                      .getPropertyValue("--chakra-colors-blue-500")
+                      .trim()
+                  : "blue.500"
               }`,
             }}
           />
@@ -136,17 +147,29 @@ export const ImportPlanModal: React.FC<ImportPlanModalProps> = ({
             Import Plan
           </Button>
           {importStatus && (
-            <Box 
+            <Box
               p={sizing.spacing[3]}
-              borderWidth={sizing.borderWidth.DEFAULT} 
-              borderRadius={sizing.borderRadius.md} 
-              bg={importStatus.startsWith("Error") ? "statusErrorBgSubtle" : "statusSuccessBgSubtle"}
-              borderColor={importStatus.startsWith("Error") ? "statusErrorBorder" : "statusSuccessBorder"}
+              borderWidth={sizing.borderWidth.DEFAULT}
+              borderRadius={sizing.borderRadius.md}
+              bg={
+                importStatus.startsWith("Error")
+                  ? "statusErrorBgSubtle"
+                  : "statusSuccessBgSubtle"
+              }
+              borderColor={
+                importStatus.startsWith("Error")
+                  ? "statusErrorBorder"
+                  : "statusSuccessBorder"
+              }
               mb={sizing.spacing[4]}
             >
-              <Text 
-                fontSize={typography.fontSize.sm} 
-                color={importStatus.startsWith("Error") ? "textStatusError" : "textStatusSuccess"}
+              <Text
+                fontSize={typography.fontSize.sm}
+                color={
+                  importStatus.startsWith("Error")
+                    ? "textStatusError"
+                    : "textStatusSuccess"
+                }
               >
                 {importStatus}
               </Text>
@@ -158,8 +181,11 @@ export const ImportPlanModal: React.FC<ImportPlanModalProps> = ({
             onClick={() => navigator.clipboard.writeText(AI_REVISION_PROMPT)}
             rightIcon={<CopyIcon />}
             color="textLink"
-            _hover={{ color: "textLinkHover", bg: "interactiveNeutralHover"}}
-            _active={{ color: "textLinkActive", bg: "interactiveNeutralActive"}}
+            _hover={{ color: "textLinkHover", bg: "interactiveNeutralHover" }}
+            _active={{
+              color: "textLinkActive",
+              bg: "interactiveNeutralActive",
+            }}
             fontSize={typography.fontSize.sm}
             fontWeight={typography.fontWeight.medium}
           >
@@ -173,5 +199,3 @@ export const ImportPlanModal: React.FC<ImportPlanModalProps> = ({
 
 // Removed export default if it's not the main export or if causing issues with named export
 // export default ImportPlanModal; // If it was like this, ensure it's consistent
-
- 

@@ -4,8 +4,8 @@ import React from "react";
 import { FixedSizeList } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { Box, VStack, Text } from "@chakra-ui/react";
-import AppIcon from './common/AppIcon';
-import { typography } from '../tokens';
+import AppIcon from "./common/AppIcon";
+import { typography } from "../tokens";
 
 interface VirtualizedListProps<T> {
   items: T[];

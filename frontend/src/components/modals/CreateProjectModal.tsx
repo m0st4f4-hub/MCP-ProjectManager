@@ -13,10 +13,11 @@ import {
   Textarea,
   useToast,
   VStack,
-} from '@chakra-ui/react';
-import { useState } from 'react';
-import { createProject, ProjectCreateData } from '@/services/api/projects'; // Assuming API functions are here
-import { sizing, typography } from '@/tokens'; // Added sizing and typography
+} from "@chakra-ui/react";
+import { useState } from "react";
+import { createProject } from "@/services/api/projects";
+import { ProjectCreateData } from "@/types/project";
+import { sizing, typography } from "@/tokens"; // Added sizing and typography
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -29,16 +30,16 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   onClose,
   onProjectCreated,
 }) => {
-  const [projectName, setProjectName] = useState('');
-  const [projectDescription, setProjectDescription] = useState('');
+  const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
   const handleCreateProject = async () => {
     if (!projectName.trim()) {
       toast({
-        title: 'Project name is required.',
-        status: 'error',
+        title: "Project name is required.",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -52,22 +53,23 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       };
       await createProject(projectData);
       toast({
-        title: 'Project created.',
+        title: "Project created.",
         description: "We've created your project for you.",
-        status: 'success',
+        status: "success",
         duration: 3000,
         isClosable: true,
       });
       onProjectCreated(); // Refresh the project list
       onClose(); // Close the modal
-      setProjectName(''); // Reset form
-      setProjectDescription('');
+      setProjectName(""); // Reset form
+      setProjectDescription("");
     } catch (error) {
-      console.error('Failed to create project:', error);
+      console.error("Failed to create project:", error);
       toast({
-        title: 'Failed to create project.',
-        description: (error as Error).message || 'An unexpected error occurred.',
-        status: 'error',
+        title: "Failed to create project.",
+        description:
+          (error as Error).message || "An unexpected error occurred.",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -93,13 +95,19 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     _hover: { borderColor: "borderHover" },
     _focus: {
       borderColor: "borderFocused",
-      boxShadow: `0 0 0 1px ${typeof window !== 'undefined' ? getComputedStyle(document.documentElement).getPropertyValue('--chakra-colors-blue-500').trim() : 'blue.500'}`, // Placeholder focus
+      boxShadow: `0 0 0 1px ${typeof window !== "undefined" ? getComputedStyle(document.documentElement).getPropertyValue("--chakra-colors-blue-500").trim() : "blue.500"}`, // Placeholder focus
     },
     h: sizing.height.md,
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg" scrollBehavior="inside" isCentered>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="lg"
+      scrollBehavior="inside"
+      isCentered
+    >
       <ModalOverlay backdropFilter="blur(2px)" bg="overlayDefault" />
       <ModalContent
         bg="bgModal"
@@ -122,7 +130,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           color="iconPrimary"
           _hover={{ bg: "interactiveNeutralHover", color: "iconAccent" }}
           _active={{ bg: "interactiveNeutralActive" }}
-          top="10px" 
+          top="10px"
           right="10px"
         />
         <ModalBody py={sizing.spacing[5]}>
@@ -137,29 +145,37 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               />
             </FormControl>
             <FormControl>
-              <FormLabel sx={formLabelStyles}>Project Description (Optional)</FormLabel>
+              <FormLabel sx={formLabelStyles}>
+                Project Description (Optional)
+              </FormLabel>
               <Textarea
                 placeholder="Enter project description"
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
-                sx={{ ...inputStyles, h: 'auto', minH: sizing.spacing[24], pt: sizing.spacing[2], pb: sizing.spacing[2] }}
+                sx={{
+                  ...inputStyles,
+                  h: "auto",
+                  minH: sizing.spacing[24],
+                  pt: sizing.spacing[2],
+                  pb: sizing.spacing[2],
+                }}
                 rows={3}
               />
             </FormControl>
           </VStack>
         </ModalBody>
-        <ModalFooter 
+        <ModalFooter
           borderTopWidth={sizing.borderWidth.DEFAULT}
           borderColor="borderDecorative"
           py={sizing.spacing[3]}
         >
-          <Button 
-            variant="ghost" 
-            mr={sizing.spacing[3]} 
-            onClick={onClose} 
+          <Button
+            variant="ghost"
+            mr={sizing.spacing[3]}
+            onClick={onClose}
             isDisabled={isLoading}
             color="textSecondary"
-            _hover={{ bg: "interactiveNeutralHover", color: "textPrimary"}}
+            _hover={{ bg: "interactiveNeutralHover", color: "textPrimary" }}
             _active={{ bg: "interactiveNeutralActive" }}
             h={sizing.height.md}
             fontSize={typography.fontSize.sm}
@@ -185,4 +201,4 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   );
 };
 
-export default CreateProjectModal; 
+export default CreateProjectModal;

@@ -8,7 +8,6 @@ import {
   useToast,
   useDisclosure,
   StackDivider,
-  CopyIcon as ChakraCopyIcon,
 } from "@chakra-ui/react";
 import { useAgentStore } from "@/store/agentStore";
 import { useTaskStore } from "@/store/taskStore";
@@ -284,11 +283,11 @@ const AgentList: React.FC = () => {
           <AgentCard
             key={agent.id}
             agent={agent}
-            stats={getAgentStats(agent.id)}
-            onEdit={() => handleOpenEditModal(agent)}
-            onDelete={() => handleAgentDelete(agent.id, agent.name)}
-            onCopyId={() => handleCopyAgentId(agent.id)}
-            onOpenCliPrompt={() => handleOpenCliPrompt(agent)}
+            agentStats={getAgentStats(agent.id)}
+            onOpenEditModal={() => handleOpenEditModal(agent)}
+            onCopyAgentId={handleCopyAgentId}
+            onOpenCliPrompt={handleOpenCliPrompt}
+            onAgentDelete={handleAgentDelete}
             onCopyGetCommand={handleCopyAgentGetCommand}
           />
         ))}
@@ -300,12 +299,17 @@ const AgentList: React.FC = () => {
         onSubmit={handleAddAgentSubmit}
       />
 
-      <EditAgentModal
-        isOpen={isEditOpen}
-        onClose={onEditClose}
-        onSubmit={handleEditAgentSubmit}
-        agent={selectedAgent}
-      />
+      {selectedAgent && (
+        <EditAgentModal
+          isOpen={isEditOpen && !!selectedAgent}
+          onClose={() => {
+            onEditClose();
+            setSelectedAgent(null);
+          }}
+          onSubmit={handleEditAgentSubmit}
+          agent={selectedAgent}
+        />
+      )}
 
       <CliPromptModal
         isOpen={cliPromptModalOpen}

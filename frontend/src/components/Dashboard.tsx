@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   Heading,
   VStack,
   HStack,
-  Spinner,
   Text,
   SimpleGrid,
   useToken,
@@ -28,11 +27,7 @@ import { useAgentStore, AgentState } from "@/store/agentStore";
 
 import { getTaskCategory } from "@/lib/taskUtils";
 
-import { Project } from "@/types/project";
-import { Task } from "@/types/task";
 import { Agent } from "@/types/agent";
-
-import * as api from "@/services/api";
 
 import { useFilteredTasks } from "@/hooks/useFilteredTasks";
 import { useFilteredProjects } from "@/hooks/useFilteredProjects";
@@ -46,8 +41,11 @@ import AgentWorkloadChart from "./dashboard/AgentWorkloadChart";
 import UnassignedTasksList from "./dashboard/UnassignedTasksList";
 import TopPerformersLists from "./dashboard/TopPerformersLists";
 import RecentActivityList from "./dashboard/RecentActivityList";
-import DashboardSection from './dashboard/DashboardSection';
+import DashboardSection from "./dashboard/DashboardSection";
 import { sizing, typography, semanticColors } from "../tokens";
+import { useDashboardData } from "./dashboard/useDashboardData";
+import DashboardLoading from "./dashboard/DashboardLoading";
+import DashboardError from "./dashboard/DashboardError";
 
 // Define selectors outside the component for stable references
 const selectTaskFilters = (state: TaskState) => state.filters;
@@ -68,10 +66,12 @@ const Dashboard: React.FC = () => {
   const isLoadingAgents = useAgentStore((state: AgentState) => state.loading);
   const agentsError = useAgentStore((state: AgentState) => state.error);
 
-  const [allProjects, setAllProjects] = useState<Project[]>([]);
-  const [allTasks, setAllTasks] = useState<Task[]>([]);
-  const [isLoadingAll, setIsLoadingAll] = useState(true);
-  const [initialLoadError, setInitialLoadError] = useState<string | null>(null);
+  const {
+    allProjects,
+    allTasks,
+    isLoadingAll,
+    initialLoadError,
+  } = useDashboardData();
 
   const [
     blue500,
@@ -116,35 +116,11 @@ const Dashboard: React.FC = () => {
     ],
   );
 
-  useEffect(() => {
-    const fetchAllData = async () => {
-      setIsLoadingAll(true);
-      setInitialLoadError(null);
-      try {
-        const [projectsFromApi, tasksFromApi] = await Promise.all([
-          api.getProjects({ is_archived: null }),
-          api.getTasks({ is_archived: null }),
-        ]);
-        setAllProjects(projectsFromApi || []);
-        setAllTasks(tasksFromApi || []);
-      } catch (error) {
-        console.error(
-          "Error fetching all projects/tasks for dashboard totals:",
-          error,
-        );
-        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during initial data load.";
-        setInitialLoadError(errorMessage);
-        setAllProjects([]);
-        setAllTasks([]);
-      } finally {
-        setIsLoadingAll(false);
-      }
-    };
-    fetchAllData();
-  }, []);
-
   // Use the new custom hooks for filtering
-  const filteredTasksForDashboard = useFilteredTasks(tasksFromStore, taskFiltersFromStore);
+  const filteredTasksForDashboard = useFilteredTasks(
+    tasksFromStore,
+    taskFiltersFromStore,
+  );
   const filteredProjectsForDashboard = useFilteredProjects(
     projectsFromStore,
     projectFiltersFromStore,
@@ -336,10 +312,16 @@ const Dashboard: React.FC = () => {
   );
 
   const projectSummaryStats = useMemo(() => {
-    const activeFilteredProjects = filteredProjectsForDashboard.filter(p => !p.is_archived).length;
+    const activeFilteredProjects = filteredProjectsForDashboard.filter(
+      (p) => !p.is_archived,
+    ).length;
     // allProjects contains all projects fetched initially (archived and non-archived)
-    const totalNonArchivedSystemProjects = allProjects.filter(p => !p.is_archived).length;
-    const totalArchivedSystemProjects = allProjects.filter(p => p.is_archived).length;
+    const totalNonArchivedSystemProjects = allProjects.filter(
+      (p) => !p.is_archived,
+    ).length;
+    const totalArchivedSystemProjects = allProjects.filter(
+      (p) => p.is_archived,
+    ).length;
     return {
       activeFiltered: activeFilteredProjects, // Active projects matching current filters
       totalSystemActive: totalNonArchivedSystemProjects, // All active projects in the system
@@ -439,39 +421,25 @@ const Dashboard: React.FC = () => {
   const combinedLoading = isLoadingAll || isLoadingProjects || isLoadingAgents;
 
   if (isLoadingAll && !initialLoadError) {
-    return (
-      <Box as="main" w="full" h="70vh" display="flex" justifyContent="center" alignItems="center" p={{ base: 3, md: 6 }} aria-busy="true">
-        <VStack spacing={4}>
-          <Spinner size="xl" />
-          <Text>Loading Dashboard Data...</Text>
-        </VStack>
-      </Box>
-    );
+    return <DashboardLoading />;
   }
 
   if (initialLoadError) {
-    return (
-      <Box as="main" w="full" h="70vh" display="flex" justifyContent="center" alignItems="center" p={{ base: 3, md: 6 }}>
-        <Box role="alert" w="full" maxW="lg" textAlign="center">
-          <VStack spacing={4}>
-            <WarningTwoIcon w={12} h={12} color="red.500" />
-            <Heading as="h2" size="lg" color="red.500">
-              Error Loading Dashboard
-            </Heading>
-            <Text>
-              We encountered an issue fetching the necessary data for the dashboard. Please try refreshing the page. If the problem persists, contact support.
-            </Text>
-            <Text fontSize="sm" color="gray.500">Details: {initialLoadError}</Text>
-          </VStack>
-        </Box>
-      </Box>
-    );
+    return <DashboardError message={initialLoadError} />;
   }
-  
+
   const otherError = projectsError || agentsError;
   if (otherError && !initialLoadError) {
     return (
-      <Box as="main" w="full" h="70vh" display="flex" justifyContent="center" alignItems="center" p={{ base: 3, md: 6 }}>
+      <Box
+        as="main"
+        w="full"
+        h="70vh"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        p={{ base: 3, md: 6 }}
+      >
         <Box role="alert" w="full" maxW="lg" textAlign="center">
           <VStack spacing={4}>
             <WarningTwoIcon w={10} h={10} color="orange.400" />
@@ -479,8 +447,16 @@ const Dashboard: React.FC = () => {
               Data Loading Issue
             </Heading>
             <Text>There was a problem loading some dashboard components.</Text>
-            {projectsError && <Text fontSize="sm" color="red.400">Project data error: {projectsError}</Text>}
-            {agentsError && <Text fontSize="sm" color="red.400">Agent data error: {agentsError}</Text>}
+            {projectsError && (
+              <Text fontSize="sm" color="red.400">
+                Project data error: {projectsError}
+              </Text>
+            )}
+            {agentsError && (
+              <Text fontSize="sm" color="red.400">
+                Agent data error: {agentsError}
+              </Text>
+            )}
           </VStack>
         </Box>
       </Box>
@@ -488,11 +464,16 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <Box as="main" w="full" p={{ base: 3, md: 6 }} aria-busy={!!combinedLoading && !initialLoadError && !otherError}>
+    <Box
+      as="main"
+      w="full"
+      p={{ base: 3, md: 6 }}
+      aria-busy={!!combinedLoading && !initialLoadError && !otherError}
+    >
       <VStack spacing={sizing.spacing[6] || 6} align="stretch">
         <HStack justifyContent="space-between" alignItems="center">
           <HStack spacing={sizing.spacing[3] || 3} alignItems="center">
-             <AppIcon
+            <AppIcon
               component={FaTasks}
               w={sizing.spacing[8] || "32px"}
               h={sizing.spacing[8] || "32px"}
@@ -500,7 +481,12 @@ const Dashboard: React.FC = () => {
               mr={sizing.spacing[2] || 2}
               aria-hidden="true"
             />
-            <Heading as="h1" size="xl" color={semanticColors.textHeading?.DEFAULT || 'inherit'} fontFamily={typography.fontFamily.heading.join(',')}>
+            <Heading
+              as="h1"
+              size="xl"
+              color={semanticColors.textPrimary?.DEFAULT || "inherit"}
+              fontFamily={typography.fontFamily.heading.join(",")}
+            >
               Dashboard Overview
             </Heading>
           </HStack>
@@ -509,43 +495,89 @@ const Dashboard: React.FC = () => {
         <DashboardStatsGrid stats={overallStats} isLoading={isLoadingAll} />
 
         {tasksError && !initialLoadError && !otherError && (
-          <Box role="alert" p={sizing.spacing[2]} borderWidth="1px" borderRadius={sizing.borderRadius.md} borderColor={semanticColors.borderError?.DEFAULT} bg={semanticColors.surfaceErrorSubtle?.DEFAULT} my={sizing.spacing[2]}>
-            <Text color={semanticColors.textError?.DEFAULT} fontSize={typography.fontSize.sm}>Note: There was an issue loading some task-related charts/data. {tasksError}</Text>
+          <Box
+            role="alert"
+            p={sizing.spacing[2]}
+            borderWidth="1px"
+            borderRadius={sizing.borderRadius.md}
+            borderColor={"red.500"}
+            bg={"red.100"}
+            my={sizing.spacing[2]}
+          >
+            <Text color={"red.700"} fontSize={typography.fontSize.sm}>
+              Note: There was an issue loading some task-related charts/data.{" "}
+              {tasksError}
+            </Text>
           </Box>
         )}
 
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={sizing.spacing[6] || 6}>
-          <DashboardSection title="Task Status Distribution" isLoading={isLoadingTasks} error={tasksError}>
+        <SimpleGrid
+          columns={{ base: 1, md: 2 }}
+          spacing={sizing.spacing[6] || 6}
+        >
+          <DashboardSection
+            title="Task Status Distribution"
+            isLoading={isLoadingTasks}
+            error={tasksError}
+          >
             <TaskStatusChart statusCounts={statusCounts} />
           </DashboardSection>
-          <DashboardSection title="Tasks - Created vs Completed (Last 14 Days)" isLoading={isLoadingTasks} error={tasksError}>
+          <DashboardSection
+            title="Tasks - Created vs Completed (Last 14 Days)"
+            isLoading={isLoadingTasks}
+            error={tasksError}
+          >
             <TasksOverTimeChart tasksOverTime={tasksOverTime} />
           </DashboardSection>
         </SimpleGrid>
 
-        <DashboardSection title="Project Progress" isLoading={isLoadingProjects || isLoadingTasks} error={projectsError || tasksError}>
+        <DashboardSection
+          title="Project Progress"
+          isLoading={isLoadingProjects || isLoadingTasks}
+          error={projectsError || tasksError}
+        >
           <ProjectProgressChart tasksPerProject={tasksPerProject} />
         </DashboardSection>
 
-        <DashboardSection title="Agent Workload" isLoading={isLoadingAgents || isLoadingTasks} error={agentsError || tasksError}>
+        <DashboardSection
+          title="Agent Workload"
+          isLoading={isLoadingAgents || isLoadingTasks}
+          error={agentsError || tasksError}
+        >
           <AgentWorkloadChart agentWorkload={tasksPerAgent} />
         </DashboardSection>
-        
-        <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={sizing.spacing[6] || 6}>
+
+        <SimpleGrid
+          columns={{ base: 1, lg: 2 }}
+          spacing={sizing.spacing[6] || 6}
+        >
           <VStack spacing={sizing.spacing[6] || 6} align="stretch">
             {unassignedTasks.length > 0 && (
-              <DashboardSection title="Unassigned Tasks" isLoading={isLoadingTasks} error={tasksError}>
-                <UnassignedTasksList unassignedTasks={unassignedTasks} projects={filteredProjectsForDashboard}/>
+              <DashboardSection
+                title="Unassigned Tasks"
+                isLoading={isLoadingTasks}
+                error={tasksError}
+              >
+                <UnassignedTasksList
+                  unassignedTasks={unassignedTasks}
+                  projects={filteredProjectsForDashboard}
+                />
               </DashboardSection>
             )}
           </VStack>
 
-          <DashboardSection title="Recent Activity & Top Performers" isLoading={isLoadingAgents || isLoadingTasks} error={agentsError || tasksError}>
-            <TopPerformersLists topAgents={topAgentsForList} topProjects={topProjects} />
+          <DashboardSection
+            title="Recent Activity & Top Performers"
+            isLoading={isLoadingAgents || isLoadingTasks}
+            error={agentsError || tasksError}
+          >
+            <TopPerformersLists
+              topAgents={topAgentsForList}
+              topProjects={topProjects}
+            />
             <RecentActivityList recentActivity={recentActivity} />
           </DashboardSection>
         </SimpleGrid>
-
       </VStack>
     </Box>
   );

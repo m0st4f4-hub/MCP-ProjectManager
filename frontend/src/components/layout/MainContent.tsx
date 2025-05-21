@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Box,
-  Flex,
-  IconButton,
-  Heading,
-} from "@chakra-ui/react";
+import { Box, Flex, IconButton, Heading } from "@chakra-ui/react";
 import { HamburgerIcon } from "@chakra-ui/icons";
 
 interface MainContentProps {
@@ -64,4 +59,4 @@ const MainContent: React.FC<MainContentProps> = ({
   );
 };
 
-export default MainContent; 
+export default MainContent;

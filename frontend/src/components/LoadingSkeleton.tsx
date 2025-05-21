@@ -10,7 +10,7 @@ import {
   useColorMode,
 } from "@chakra-ui/react";
 import { semanticColors } from "@/tokens/colors";
-import { sizing } from '../tokens';
+import { sizing } from "../tokens";
 
 interface LoadingSkeletonProps {
   count?: number;

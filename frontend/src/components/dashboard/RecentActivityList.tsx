@@ -10,11 +10,11 @@ import {
   Text, // Added for styled text elements
   // List, ListItem, HStack // Alternatives
 } from "@chakra-ui/react";
-import AppIcon from '../common/AppIcon';
+import AppIcon from "../common/AppIcon";
 // import styles from './RecentActivityList.module.css'; // To be removed
 
 // Import tokens
-import { sizing, shadows, typography } from '../../tokens';
+import { sizing, shadows, typography } from "../../tokens";
 
 interface ActivityItem {
   type: string;
@@ -82,21 +82,24 @@ const RecentActivityList: React.FC<RecentActivityListProps> = ({
                     item.type === "Completed"
                       ? "checkcircle"
                       : item.type === "Error"
-                      ? "warning"
-                      : "history"
+                        ? "warning"
+                        : "history"
                   }
                   boxSize={4}
                   mr={1}
                 />
                 <Badge
-                  colorScheme={item.type === "Completed" ? "green" : item.type === "Error" ? "red" : "gray"}
+                  colorScheme={
+                    item.type === "Completed"
+                      ? "green"
+                      : item.type === "Error"
+                        ? "red"
+                        : "gray"
+                  }
                 >
                   {item.type}
                 </Badge>
-                <Text
-                  as="span"
-                  fontWeight={typography.fontWeight.bold}
-                >
+                <Text as="span" fontWeight={typography.fontWeight.bold}>
                   {item.title}
                 </Text>
                 {item.agent && (

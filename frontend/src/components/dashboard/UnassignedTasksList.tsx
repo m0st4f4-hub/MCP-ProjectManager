@@ -17,8 +17,8 @@ import { getStatusAttributes } from "@/lib/statusUtils";
 import { mapStatusToStatusID } from "@/lib/utils";
 import { FaTasks } from "react-icons/fa";
 import { semanticColors } from "@/tokens/colors";
-import AppIcon from '../common/AppIcon';
-import { sizing, shadows, typography } from '../../tokens';
+import AppIcon from "../common/AppIcon";
+import { sizing, shadows, typography } from "../../tokens";
 
 interface UnassignedTasksListProps {
   unassignedTasks: Task[];
@@ -74,11 +74,7 @@ const UnassignedTasksList: React.FC<UnassignedTasksListProps> = ({
         <AppIcon name="warning" boxSize={5} mr={2} />
         Unassigned Tasks (All Active Projects)
       </Heading>
-      <VStack
-        as="ul"
-        spacing={sizing.spacing[2]}
-        align="stretch"
-      >
+      <VStack as="ul" spacing={sizing.spacing[2]} align="stretch">
         {unassignedTasks.slice(0, 5).map((task) => {
           const statusId = task.status
             ? mapStatusToStatusID(task.status)
@@ -90,9 +86,19 @@ const UnassignedTasksList: React.FC<UnassignedTasksListProps> = ({
             <Box as="li" key={task.id}>
               <HStack spacing={sizing.spacing[2]} align="center">
                 <AppIcon name="warning" boxSize={4} mr={2} />
-                <Tag colorScheme={statusAttributes?.colorScheme || "gray"} size="sm">
+                <Tag
+                  colorScheme={statusAttributes?.colorScheme || "gray"}
+                  size="sm"
+                >
                   <TagLeftIcon>
-                    <AppIcon component={typeof statusAttributes?.icon !== 'string' && statusAttributes?.icon ? statusAttributes.icon : FaTasks} />
+                    <AppIcon
+                      component={
+                        typeof statusAttributes?.icon !== "string" &&
+                        statusAttributes?.icon
+                          ? statusAttributes.icon
+                          : FaTasks
+                      }
+                    />
                   </TagLeftIcon>
                   {task.status || "Unknown"}
                 </Tag>
@@ -119,11 +125,7 @@ const UnassignedTasksList: React.FC<UnassignedTasksListProps> = ({
           );
         })}
         {unassignedTasks.length > 5 && (
-          <Text
-            fontSize="sm"
-            color={textSecondaryColor}
-            mt={sizing.spacing[2]}
-          >
+          <Text fontSize="sm" color={textSecondaryColor} mt={sizing.spacing[2]}>
             ...and {unassignedTasks.length - 5} more.
           </Text>
         )}

@@ -28,7 +28,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { mcpTools, ApiToolDefinition, ApiToolParameter } from "@/lib/mcpTools";
-import AppIcon from './common/AppIcon';
+import AppIcon from "./common/AppIcon";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -232,7 +232,11 @@ const MCPDevTools: React.FC = () => {
                   )}
                   <Wrap spacing={4} align="stretch">
                     {selectedTool.parameters.map((param) => (
-                      <FormControl key={param.name} isRequired={param.required} minW="250px">
+                      <FormControl
+                        key={param.name}
+                        isRequired={param.required}
+                        minW="250px"
+                      >
                         <FormLabel htmlFor={param.name}>
                           {param.name} ({param.type})
                           {param.isPathParameter ? " (Path)" : ""}
@@ -251,7 +255,8 @@ const MCPDevTools: React.FC = () => {
                               )
                             }
                             placeholder={
-                              param.description || `Enter JSON for ${param.name}`
+                              param.description ||
+                              `Enter JSON for ${param.name}`
                             }
                             rows={5}
                             fontFamily="mono"
@@ -261,9 +266,15 @@ const MCPDevTools: React.FC = () => {
                         ) : param.type === "boolean" ? (
                           <Checkbox
                             id={param.name}
-                            isChecked={(parameters[param.name] as boolean) || false}
+                            isChecked={
+                              (parameters[param.name] as boolean) || false
+                            }
                             onChange={(e) =>
-                              handleParameterChange(param.name, e.target, param.type)
+                              handleParameterChange(
+                                param.name,
+                                e.target,
+                                param.type,
+                              )
                             }
                             colorScheme="brandPrimaryScheme"
                           >
@@ -281,7 +292,9 @@ const MCPDevTools: React.FC = () => {
                                 param.type,
                               )
                             }
-                            placeholder={param.description || `Enter ${param.name}`}
+                            placeholder={
+                              param.description || `Enter ${param.name}`
+                            }
                             focusBorderColor="borderFocused"
                           />
                         )}
@@ -394,10 +407,10 @@ const MCPDevTools: React.FC = () => {
               </Heading>
               <HStack spacing="2">
                 <Badge colorScheme={true ? "green" : "red"}>
-                  <AppIcon 
-                    name={true ? "checkcircle" : "error"} 
-                    boxSize={3} 
-                    mr={1} 
+                  <AppIcon
+                    name={true ? "checkcircle" : "error"}
+                    boxSize={3}
+                    mr={1}
                   />
                   {true ? "Connected" : "Disconnected"}
                 </Badge>

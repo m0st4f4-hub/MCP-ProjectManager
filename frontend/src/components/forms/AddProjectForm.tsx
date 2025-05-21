@@ -17,7 +17,7 @@ import { ProjectCreateData /*, Project*/ } from "@/types"; // Project is unused
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { projectCreateSchema } from "@/types/project";
-import AppIcon from '../common/AppIcon';
+import AppIcon from "../common/AppIcon";
 // import { useRouter } from 'next/navigation'; // useRouter is unused
 
 interface AddProjectFormProps {
@@ -31,6 +31,8 @@ const AddProjectForm: React.FC<AddProjectFormProps> = ({
 }) => {
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
 
   const {
     register,
@@ -112,6 +114,8 @@ const AddProjectForm: React.FC<AddProjectFormProps> = ({
             _hover={{ borderColor: "borderInteractiveHover" }}
             _focus={{ borderColor: "borderFocused", boxShadow: "outline" }}
             _placeholder={{ color: "textPlaceholder" }}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
           <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
         </FormControl>
@@ -132,6 +136,8 @@ const AddProjectForm: React.FC<AddProjectFormProps> = ({
             _hover={{ borderColor: "borderInteractiveHover" }}
             _focus={{ borderColor: "borderFocused", boxShadow: "outline" }}
             _placeholder={{ color: "textPlaceholder" }}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
           <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
         </FormControl>
@@ -141,8 +147,12 @@ const AddProjectForm: React.FC<AddProjectFormProps> = ({
           colorScheme="primary"
           isLoading={isLoading}
           leftIcon={<AppIcon name="add" boxSize={5} />}
+          isDisabled={!name.trim()}
         >
           Create Project
+        </Button>
+        <Button variant="ghost" onClick={onClose} isDisabled={isLoading}>
+          Cancel
         </Button>
       </VStack>
     </Box>

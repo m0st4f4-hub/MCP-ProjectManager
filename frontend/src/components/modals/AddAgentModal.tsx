@@ -1,7 +1,13 @@
-import React from 'react';
-import { Modal, ModalOverlay, ModalContent, ModalCloseButton, ModalBody } from '@chakra-ui/react';
-import AddAgentForm from '../forms/AddAgentForm';
-import { blur } from '../../tokens';
+import React from "react";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalCloseButton,
+  ModalBody,
+} from "@chakra-ui/react";
+import AddAgentForm from "../forms/AddAgentForm";
+import { blur } from "../../tokens";
 
 type AddAgentModalProps = {
   isOpen: boolean;
@@ -9,7 +15,11 @@ type AddAgentModalProps = {
   onSubmit: (name: string) => Promise<void>;
 };
 
-const AddAgentModal: React.FC<AddAgentModalProps> = ({ isOpen, onClose, onSubmit }) => {
+const AddAgentModal: React.FC<AddAgentModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+}) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay backdropFilter={`blur(${blur.xs})`} bg="overlayDefault" />
@@ -24,11 +34,14 @@ const AddAgentModal: React.FC<AddAgentModalProps> = ({ isOpen, onClose, onSubmit
           _hover={{ bg: "interactiveNeutralHover", color: "iconAccent" }}
         />
         <ModalBody pb={6} pt={3}>
-          <AddAgentForm onSubmit={onSubmit} onClose={onClose} initialData={{ name: "" }} />
+          <AddAgentForm
+            onSubmit={onSubmit}
+            onClose={onClose}
+          />
         </ModalBody>
       </ModalContent>
     </Modal>
   );
 };
 
-export default AddAgentModal; 
+export default AddAgentModal;

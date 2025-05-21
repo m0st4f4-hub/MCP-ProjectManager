@@ -12,7 +12,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { semanticColors, colorPrimitives } from "@/tokens/colors";
-import AppIcon from './AppIcon';
+import AppIcon from "./AppIcon";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -85,7 +85,12 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
       <ModalContent bg={modalSurfaceBg} color={onSurfaceColor}>
-        <ModalHeader borderBottomWidth="1px" borderColor={decorativeBorder} display="flex" alignItems="center">
+        <ModalHeader
+          borderBottomWidth="1px"
+          borderColor={decorativeBorder}
+          display="flex"
+          alignItems="center"
+        >
           <AppIcon name="warning" boxSize={5} mr={2} />
           {title}
         </ModalHeader>

@@ -11,10 +11,7 @@ import {
   Tooltip,
   Flex,
 } from "@chakra-ui/react";
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-} from "@chakra-ui/icons";
+import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { ThemeToggleButton } from "../ThemeToggleButton";
 
 interface NavItem {
@@ -40,7 +37,9 @@ interface UtilityNavItem {
 
 interface SidebarProps {
   isSidebarCollapsed: boolean;
-  setIsSidebarCollapsed: (isCollapsed: boolean | ((prevState: boolean) => boolean)) => void;
+  setIsSidebarCollapsed: (
+    isCollapsed: boolean | ((prevState: boolean) => boolean),
+  ) => void;
   activeView: string;
   setActiveView: (view: string) => void;
   navItems: NavItem[];
@@ -146,16 +145,15 @@ const Sidebar: React.FC<SidebarProps> = ({
               justifyContent={isSidebarCollapsed ? "center" : "flex-start"}
               px={isSidebarCollapsed ? "0" : "4"}
               h="10"
-              bg={
-                activeView === item.view ? "menuItemActive" : "transparent"
-              }
+              bg={activeView === item.view ? "menuItemActive" : "transparent"}
               color={activeView === item.view ? "onMenuItemActive" : "inherit"}
               _hover={{
                 bg:
                   activeView === item.view
                     ? "menuItemActive"
                     : "surfaceElevated", // Explicitly use surfaceElevated for hover
-                color: activeView === item.view ? "onMenuItemActive" : "inherit",
+                color:
+                  activeView === item.view ? "onMenuItemActive" : "inherit",
               }}
             >
               <Box mr={isSidebarCollapsed ? "0" : "3"}>{item.icon}</Box>
@@ -168,8 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <VStack mt="auto" spacing="1" align="stretch">
         {actionNavItems
           .filter(
-            (item) =>
-              !item.showInView || item.showInView.includes(activeView),
+            (item) => !item.showInView || item.showInView.includes(activeView),
           )
           .map((item) => (
             <Tooltip
@@ -221,7 +218,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                   activeView === item.label
                     ? "menuItemActive"
                     : "surfaceElevated",
-                color: activeView === item.label ? "onMenuItemActive" : "inherit",
+                color:
+                  activeView === item.label ? "onMenuItemActive" : "inherit",
               }}
             >
               <Box mr={isSidebarCollapsed ? "0" : "3"}>{item.icon}</Box>
@@ -234,4 +232,4 @@ const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-export default Sidebar; 
+export default Sidebar;

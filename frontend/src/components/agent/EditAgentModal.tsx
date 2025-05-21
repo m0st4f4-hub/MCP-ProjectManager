@@ -5,13 +5,11 @@ import {
   Modal,
   ModalOverlay,
   ModalContent,
-  ModalHeader,
-  ModalBody,
   ModalCloseButton,
+  ModalBody,
 } from "@chakra-ui/react";
 import EditAgentForm from "../forms/EditAgentForm"; // Adjusted path
 import { Agent } from "@/types";
-import { formatDisplayName } from "@/lib/utils";
 
 interface EditAgentModalProps {
   isOpen: boolean;
@@ -29,17 +27,19 @@ const EditAgentModal: React.FC<EditAgentModalProps> = ({
   if (!agent) return null;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      isCentered
-      size={{ base: "full", md: "xl" }}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Edit Agent: {formatDisplayName(agent.name)}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
+      <ModalContent
+        bg="bgModal"
+        color="onSurface"
+        borderColor="borderDecorative"
+        borderWidth="DEFAULT"
+      >
+        <ModalCloseButton
+          color="iconPrimary"
+          _hover={{ bg: "interactiveNeutralHover", color: "iconAccent" }}
+        />
+        <ModalBody pb={6} pt={3}>
           <EditAgentForm agent={agent} onSubmit={onSubmit} onClose={onClose} />
         </ModalBody>
       </ModalContent>

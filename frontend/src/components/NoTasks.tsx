@@ -12,7 +12,7 @@ import {
 import { AddIcon } from "@chakra-ui/icons";
 import { semanticColors } from "@/tokens/colors"; // Added import
 import { typography } from "@/tokens/typography"; // Added import
-import AppIcon from './common/AppIcon';
+import AppIcon from "./common/AppIcon";
 // import styles from './NoTasks.module.css'; // Removed
 
 interface NoTasksProps {
@@ -96,7 +96,13 @@ const NoTasks: React.FC<NoTasksProps> = ({ onAddTask }) => {
           <AppIcon name="listordered" boxSize={6} mr={2} />
           No Tasks Found
         </Heading>
-        <Text color={secondaryTextColor} mb="4" maxW="80%" display="flex" alignItems="center">
+        <Text
+          color={secondaryTextColor}
+          mb="4"
+          maxW="80%"
+          display="flex"
+          alignItems="center"
+        >
           <AppIcon name="infooutline" boxSize={4} mr={2} />
           There are no tasks matching your current filters, or no tasks have
           been created yet.

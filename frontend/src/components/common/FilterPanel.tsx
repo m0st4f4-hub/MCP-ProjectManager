@@ -26,8 +26,8 @@ import { TaskFilters, TaskSortOptions, TaskSortField } from "@/types";
 import { formatDisplayName } from "@/lib/utils";
 import { useProjectStore, ProjectState } from "@/store/projectStore";
 import { useAgentStore, AgentState } from "@/store/agentStore";
-import { sizing, shadows, typography } from '../../tokens';
-import AppIcon from './AppIcon'; // Assuming AppIcon is in the same directory
+import { sizing, shadows, typography } from "../../tokens";
+import AppIcon from "./AppIcon"; // Assuming AppIcon is in the same directory
 
 interface FilterPanelProps {
   isOpen: boolean;
@@ -71,7 +71,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
     interactiveNeutralHoverToken,
     interactiveNeutralActiveToken,
     bgSurface, // for panel bg
-    overlayZIndex, // for zIndex - this won't actually get a zIndex value here, useToken needs specific categories
   ] = useToken("colors", [
     "surface",
     "textPrimary",
@@ -88,14 +87,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
     "interactiveNeutralActive",
     "bgSurface", // MCPDevTools uses bgSurface
     // The following were incorrect attempts to get shadow/border/zIndex via colors
-    // "shadows.lg", 
-    // "borders.width.DEFAULT", 
+    // "shadows.lg",
+    // "borders.width.DEFAULT",
   ]);
-  
-  // Using useToken for zIndex and shadow if they are in the theme
-  const panelZIndex = useToken('zIndices', 'overlay');
-  const panelShadow = useToken('shadows', 'lg');
 
+  // Using useToken for zIndex and shadow if they are in the theme
+  const panelZIndex = useToken("zIndices", "overlay");
+  const panelShadow = useToken("shadows", "lg");
 
   const uniqueAgentsForDropdown = React.useMemo(() => {
     if (!agents) return [];
@@ -157,22 +155,22 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
   };
 
   const formLabelStyles = {
-    fontFamily: typography.fontFamily.sans.join(", "), 
-    fontSize: typography.fontSize.base, 
-    fontWeight: typography.fontWeight.medium, 
+    fontFamily: typography.fontFamily.sans.join(", "),
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.medium,
     color: textSecondaryToken,
     display: "block",
-    mb: sizing.spacing["1.5"], 
-    lineHeight: typography.lineHeight.regular, 
+    mb: sizing.spacing["1.5"],
+    lineHeight: typography.lineHeight.regular,
   };
 
   const inputBaseStyles = {
-    fontFamily: typography.fontFamily.sans.join(", "), 
-    fontSize: typography.fontSize.base, 
+    fontFamily: typography.fontFamily.sans.join(", "),
+    fontSize: typography.fontSize.base,
     h: sizing.height.lg,
-    borderRadius: sizing.borderRadius.sm, 
+    borderRadius: sizing.borderRadius.sm,
     bg: surfaceToken,
-    borderWidth: sizing.borderWidth.DEFAULT, 
+    borderWidth: sizing.borderWidth.DEFAULT,
     borderStyle: "solid",
     borderColor: borderInteractiveToken,
     color: textPrimaryToken,
@@ -189,7 +187,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
     },
     _focus: {
       borderColor: borderFocusedToken,
-      boxShadow: shadows.outline, 
+      boxShadow: shadows.outline,
       outline: "none",
       bg: surfaceToken,
     },
@@ -199,7 +197,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
     ...inputBaseStyles,
     paddingX: sizing.spacing[3],
     paddingY: sizing.spacing[2],
-    lineHeight: typography.lineHeight.regular, 
+    lineHeight: typography.lineHeight.regular,
     iconColor: iconPrimaryToken,
     iconSize: sizing.spacing[4],
     _hover: {
@@ -212,11 +210,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
     ...inputBaseStyles,
     paddingLeft: sizing.spacing[10],
     paddingRight: sizing.spacing[4],
-    lineHeight: typography.lineHeight.regular, 
+    lineHeight: typography.lineHeight.regular,
     textAlign: "left",
   };
-  
-  const panelWidth = useBreakpointValue({ base: "100%", sm: "360px", md: "400px" });
+
+  const panelWidth = useBreakpointValue({
+    base: "100%",
+    sm: "360px",
+    md: "400px",
+  });
 
   if (!isOpen) {
     return null;
@@ -247,8 +249,17 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
         justifyContent="space-between"
         flexShrink={0} // Prevent header from shrinking
       >
-        <Heading size="sm" display="flex" alignItems="center" color={textPrimaryToken}>
-          <AppIcon name="settings" boxSize={sizing.spacing[5]} mr={sizing.spacing[2]} /> 
+        <Heading
+          size="sm"
+          display="flex"
+          alignItems="center"
+          color={textPrimaryToken}
+        >
+          <AppIcon
+            name="settings"
+            boxSize={sizing.spacing[5]}
+            mr={sizing.spacing[2]}
+          />
           Filters & Sort
         </Heading>
         <IconButton
@@ -260,7 +271,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
           color={iconPrimaryToken}
         />
       </Flex>
-      
+
       <Box flexGrow={1} overflowY="auto" p={sizing.spacing[5]}>
         <VStack
           w="100%"
@@ -279,7 +290,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
             color={textSecondaryToken}
             alignSelf="flex-start"
           >
-            Sort and Filter 
+            Sort and Filter
           </Text>
 
           <FormControl w="100%">
@@ -309,7 +320,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
                 placeholder="Search by title or description"
                 value={searchTermFilter || ""}
                 onChange={handleSearchChange}
-                sx={searchInputStyles} 
+                sx={searchInputStyles}
               />
             </InputGroup>
             <FormHelperText
@@ -317,7 +328,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
               fontSize={typography.fontSize.xs}
               color={textSecondaryToken}
               mt={sizing.spacing[1]}
-              lineHeight={typography.lineHeight.tight}
+              lineHeight={typography.lineHeight.condensed}
             >
               Filters tasks by title or description content.
             </FormHelperText>
@@ -392,7 +403,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
             color={textPrimaryToken}
             mt={sizing.spacing[5]}
             mb={sizing.spacing[3]}
-            borderTopWidth={sizing.borderWidth.xs}
+            borderTopWidth={sizing.borderWidth.DEFAULT}
             borderTopStyle="solid"
             borderTopColor={borderDecorativeToken}
             pt={sizing.spacing[4]}
@@ -412,7 +423,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
                   sortOptions.direction,
                 )
               }
-              sx={{...selectInputStyles, flex: 1}}
+              sx={{ ...selectInputStyles, flex: 1 }}
             >
               <option value="created_at">Created Date</option>
               <option value="title">Title</option>
@@ -477,8 +488,55 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose }) => {
           </Button>
         </VStack>
       </Box>
+
+      {/* Footer with Clear and Apply buttons */}
+      <Box
+        as="footer"
+        p={sizing.spacing[3]}
+        borderTopWidth={sizing.borderWidth.DEFAULT}
+        borderColor={borderDecorativeToken}
+        mt="auto" // Push footer to the bottom
+        flexShrink={0} // Prevent footer from shrinking
+      >
+        <Button
+          onClick={handleClearFilters}
+          fontFamily={typography.fontFamily.sans.join(", ")}
+          fontSize={typography.fontSize.sm}
+          fontWeight={typography.fontWeight.medium}
+          px={sizing.spacing[3]}
+          py="0.5rem"
+          h="2.25rem"
+          borderRadius={sizing.borderRadius.sm}
+          bg="transparent"
+          borderWidth={sizing.borderWidth.DEFAULT}
+          borderStyle="solid"
+          borderColor={borderDecorativeToken}
+          color={textLinkToken}
+          cursor="pointer"
+          w="100%"
+          transition="all 0.2s ease-in-out"
+          lineHeight={typography.lineHeight.regular}
+          _hover={{
+            bg: interactiveNeutralHoverToken,
+            borderColor: textLinkHoverToken,
+            color: textLinkHoverToken,
+          }}
+          _active={{
+            bg: interactiveNeutralActiveToken,
+            borderColor: textLinkHoverToken,
+            color: textLinkHoverToken,
+            transform: "translateY(1px)",
+          }}
+          _focusVisible={{
+            outline: "none",
+            boxShadow: shadows.outline,
+          }}
+        >
+          Clear Filters & Sort
+        </Button>
+      </Box>
     </Box>
   );
 };
 
-export default FilterPanel; 
+export default FilterPanel;

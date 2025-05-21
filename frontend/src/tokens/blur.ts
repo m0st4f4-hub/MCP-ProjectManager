@@ -10,4 +10,4 @@ export const blur = {
   "3xl": "64px",
 };
 
-export type Blur = typeof blur; 
+export type Blur = typeof blur;

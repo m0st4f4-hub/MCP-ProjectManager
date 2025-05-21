@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { FormControl, FormLabel, Input, useToast, ModalHeader, ModalBody, ModalFooter, Button, VStack } from "@chakra-ui/react";
+import {
+  FormControl,
+  FormLabel,
+  Input,
+  useToast,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  VStack,
+} from "@chakra-ui/react";
 import { Agent, AgentUpdateData } from "@/types";
 import EditModalBase from "../common/EditModalBase";
-import AppIcon from '../common/AppIcon';
+import AppIcon from "../common/AppIcon";
 import { sizing, typography, shadows } from "@/tokens";
 
 interface EditAgentModalProps {
@@ -103,31 +113,36 @@ const EditAgentModal: React.FC<EditAgentModalProps> = ({
       isLoadingDelete={isDeleting}
       size="lg"
     >
-      <ModalHeader 
-        borderBottomWidth={sizing.borderWidth.DEFAULT} 
-        borderColor="borderDecorative" 
-        display="flex" 
+      <ModalHeader
+        borderBottomWidth={sizing.borderWidth.DEFAULT}
+        borderColor="borderDecorative"
+        display="flex"
         alignItems="center"
         fontSize={typography.fontSize.lg}
         fontWeight={typography.fontWeight.semibold}
         color="textPrimary"
         py={sizing.spacing[3]}
       >
-        <AppIcon name="edit" boxSize={sizing.icon.md} mr={sizing.spacing[2]} color="iconPrimary" />
+        <AppIcon
+          name="edit"
+          boxSize={"24px"}
+          mr={sizing.spacing[2]}
+          color="iconPrimary"
+        />
         Edit Agent: {agent?.name}
       </ModalHeader>
       <ModalBody py={sizing.spacing[5]}>
         <VStack spacing={sizing.spacing[4]} align="stretch">
           <FormControl>
-            <FormLabel 
-              display="flex" 
+            <FormLabel
+              display="flex"
               alignItems="center"
               fontSize={typography.fontSize.sm}
               fontWeight={typography.fontWeight.medium}
               color="textSecondary"
               mb={sizing.spacing[1]}
             >
-              <AppIcon name="agent" boxSize={sizing.icon.sm} mr={sizing.spacing[2]} />
+              <AppIcon name="agent" boxSize={"20px"} mr={sizing.spacing[2]} />
               Name
             </FormLabel>
             <Input
@@ -150,8 +165,8 @@ const EditAgentModal: React.FC<EditAgentModalProps> = ({
           </FormControl>
         </VStack>
       </ModalBody>
-      <ModalFooter 
-        borderTopWidth={sizing.borderWidth.DEFAULT} 
+      <ModalFooter
+        borderTopWidth={sizing.borderWidth.DEFAULT}
         borderColor="borderDecorative"
         py={sizing.spacing[3]}
       >
@@ -160,7 +175,7 @@ const EditAgentModal: React.FC<EditAgentModalProps> = ({
           mr={sizing.spacing[3]}
           onClick={onClose}
           isDisabled={isLoading || isDeleting}
-          leftIcon={<AppIcon name="close" boxSize={sizing.icon.sm} />}
+          leftIcon={<AppIcon name="close" boxSize={"20px"} />}
           color="textSecondary"
           _hover={{ bg: "interactiveNeutralHover", color: "textPrimary" }}
           _active={{ bg: "interactiveNeutralActive" }}
@@ -177,7 +192,7 @@ const EditAgentModal: React.FC<EditAgentModalProps> = ({
           onClick={handleSave}
           isLoading={isLoading}
           isDisabled={isDeleting}
-          leftIcon={<AppIcon name="save" boxSize={sizing.icon.sm} />}
+          leftIcon={<AppIcon name="save" boxSize={"20px"} />}
           h={sizing.height.md}
           fontSize={typography.fontSize.sm}
           fontWeight={typography.fontWeight.medium}

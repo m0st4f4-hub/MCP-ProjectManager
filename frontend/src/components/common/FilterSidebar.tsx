@@ -23,7 +23,7 @@ import { TaskFilters, TaskSortOptions, TaskSortField } from "@/types";
 import { formatDisplayName } from "@/lib/utils";
 import { useProjectStore, ProjectState } from "@/store/projectStore";
 import { useAgentStore, AgentState } from "@/store/agentStore";
-import { sizing, shadows, typography } from '../../tokens';
+import { sizing, shadows, typography } from "../../tokens";
 
 const FilterSidebar: React.FC = () => {
   const projectsFromStore = useTaskStore((state) => state.projects);
@@ -137,22 +137,22 @@ const FilterSidebar: React.FC = () => {
   };
 
   const formLabelStyles = {
-    fontFamily: typography.fontFamily.sans.join(", "), 
-    fontSize: typography.fontSize.base, 
-    fontWeight: typography.fontWeight.medium, 
+    fontFamily: typography.fontFamily.sans.join(", "),
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.medium,
     color: textSecondaryToken,
     display: "block",
-    mb: sizing.spacing["1.5"], 
-    lineHeight: typography.lineHeight.regular, 
+    mb: sizing.spacing["1.5"],
+    lineHeight: typography.lineHeight.regular,
   };
 
   const inputBaseStyles = {
-    fontFamily: typography.fontFamily.sans.join(", "), 
-    fontSize: typography.fontSize.base, 
+    fontFamily: typography.fontFamily.sans.join(", "),
+    fontSize: typography.fontSize.base,
     h: sizing.height.lg,
-    borderRadius: sizing.borderRadius.sm, 
+    borderRadius: sizing.borderRadius.sm,
     bg: surfaceToken,
-    borderWidth: sizing.borderWidth.DEFAULT, 
+    borderWidth: sizing.borderWidth.DEFAULT,
     borderStyle: "solid",
     borderColor: borderInteractiveToken,
     color: textPrimaryToken,
@@ -169,7 +169,7 @@ const FilterSidebar: React.FC = () => {
     },
     _focus: {
       borderColor: borderFocusedToken,
-      boxShadow: shadows.outline, 
+      boxShadow: shadows.outline,
       outline: "none",
       bg: surfaceToken,
     },
@@ -179,7 +179,7 @@ const FilterSidebar: React.FC = () => {
     ...inputBaseStyles,
     paddingX: sizing.spacing[3],
     paddingY: sizing.spacing[2],
-    lineHeight: typography.lineHeight.regular, 
+    lineHeight: typography.lineHeight.regular,
     iconColor: iconPrimaryToken,
     iconSize: sizing.spacing[4],
     _hover: {
@@ -192,7 +192,7 @@ const FilterSidebar: React.FC = () => {
     ...inputBaseStyles,
     paddingLeft: sizing.spacing[10],
     paddingRight: sizing.spacing[4],
-    lineHeight: typography.lineHeight.regular, 
+    lineHeight: typography.lineHeight.regular,
     textAlign: "left",
   };
 
@@ -251,7 +251,7 @@ const FilterSidebar: React.FC = () => {
               placeholder="Search by title or description"
               value={searchTermFilter || ""}
               onChange={handleSearchChange}
-              sx={searchInputStyles} 
+              sx={searchInputStyles}
             />
           </InputGroup>
           <FormHelperText
@@ -259,7 +259,7 @@ const FilterSidebar: React.FC = () => {
             fontSize={typography.fontSize.xs}
             color={textSecondaryToken}
             mt={sizing.spacing[1]}
-            lineHeight={typography.lineHeight.tight}
+            lineHeight={typography.lineHeight.condensed}
           >
             Filters tasks by title or description content.
           </FormHelperText>
@@ -334,7 +334,7 @@ const FilterSidebar: React.FC = () => {
           color={textPrimaryToken}
           mt={sizing.spacing[5]}
           mb={sizing.spacing[3]}
-          borderTopWidth={sizing.borderWidth.xs}
+          borderTopWidth={sizing.borderWidth.DEFAULT}
           borderTopStyle="solid"
           borderTopColor={borderDecorativeToken}
           pt={sizing.spacing[4]}
@@ -354,7 +354,7 @@ const FilterSidebar: React.FC = () => {
                 sortOptions.direction,
               )
             }
-            sx={{...selectInputStyles, flex: 1}}
+            sx={{ ...selectInputStyles, flex: 1 }}
           >
             <option value="created_at">Created Date</option>
             <option value="title">Title</option>

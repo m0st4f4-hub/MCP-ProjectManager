@@ -28,14 +28,13 @@ import {
   AlertDialogOverlay,
   useDisclosure,
   Badge,
-  Flex,
 } from "@chakra-ui/react";
 import { Task } from "@/types"; // Corrected import for Task
 import { getTaskById } from "@/services/api"; // Assuming getTaskById exists
 import { useTaskStore } from "@/store/taskStore"; // To potentially get project/agent names if not in task detail
 import { getDisplayableStatus, StatusID } from "@/lib/statusUtils"; // Added import
-import { DeleteIcon, DownloadIcon, RepeatClockIcon, ArchiveIcon as ChakraArchiveIcon } from "@chakra-ui/icons"; // Renamed ArchiveIcon to avoid conflict
-import AppIcon from '../common/AppIcon';
+import { DeleteIcon, DownloadIcon, RepeatClockIcon } from "@chakra-ui/icons";
+import AppIcon from "../common/AppIcon";
 import { typography, sizing, shadows } from "@/tokens"; // Added tokens
 
 interface TaskDetailsModalProps {
@@ -219,7 +218,12 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           <AppIcon name="task" boxSize={5} mr={sizing.spacing[2]} />
           {task ? task.title : "Task Details"}
           {isLoading && (
-            <Spinner size="sm" ml={sizing.spacing[2]} color="textSecondary" thickness="2px" />
+            <Spinner
+              size="sm"
+              ml={sizing.spacing[2]}
+              color="textSecondary"
+              thickness="2px"
+            />
           )}
           {task?.is_archived && (
             <Badge
@@ -244,14 +248,38 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           right="10px"
         />
         {isLoading && (
-          <ModalBody display="flex" alignItems="center" justifyContent="center" minH="200px">
+          <ModalBody
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            minH="200px"
+          >
             <Spinner size="xl" color="brandPrimary" thickness="4px" />
           </ModalBody>
         )}
         {error && !isLoading && (
-          <ModalBody display="flex" flexDirection="column" alignItems="center" justifyContent="center" minH="200px" textAlign="center">
-            <AppIcon name="warning" boxSize={12} color="textStatusError" mb={sizing.spacing[3]} />
-            <Heading as="h3" size="md" color="textStatusError" mb={sizing.spacing[2]}>Error Loading Task</Heading>
+          <ModalBody
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            minH="200px"
+            textAlign="center"
+          >
+            <AppIcon
+              name="warning"
+              boxSize={12}
+              color="textStatusError"
+              mb={sizing.spacing[3]}
+            />
+            <Heading
+              as="h3"
+              size="md"
+              color="textStatusError"
+              mb={sizing.spacing[2]}
+            >
+              Error Loading Task
+            </Heading>
             <Text color="textSecondary">{error}</Text>
           </ModalBody>
         )}
@@ -418,14 +446,14 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           </ModalBody>
         )}
         {!isLoading && !error && task && (
-          <ModalFooter 
-            borderTopWidth={sizing.borderWidth.DEFAULT} 
+          <ModalFooter
+            borderTopWidth={sizing.borderWidth.DEFAULT}
             borderColor="borderDecorative"
             py={sizing.spacing[3]}
             px={sizing.spacing[4]}
           >
             <Button variant="outline" onClick={onClose} mr={sizing.spacing[3]}>
-                Close
+              Close
             </Button>
             {task && !task.is_archived && (
               <>
@@ -508,7 +536,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           leastDestructiveRef={cancelRef}
           onClose={onAlertClose}
           isCentered // Ensure it is centered
-          size={{base: "sm", md: "md"}} // Responsive size
+          size={{ base: "sm", md: "md" }} // Responsive size
         >
           <AlertDialogOverlay bg="overlayDefault" backdropFilter="blur(2px)" />
           <AlertDialogContent
@@ -519,9 +547,9 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             borderRadius={sizing.borderRadius.lg}
             boxShadow={shadows.lg} // Add elevation shadow
           >
-            <AlertDialogHeader 
-              fontSize={typography.fontSize.lg} 
-              fontWeight={typography.fontWeight.semibold} 
+            <AlertDialogHeader
+              fontSize={typography.fontSize.lg}
+              fontWeight={typography.fontWeight.semibold}
               borderBottomWidth={sizing.borderWidth.DEFAULT}
               borderColor="borderDecorative"
               py={sizing.spacing[3]}
@@ -529,24 +557,35 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               display="flex"
               alignItems="center"
             >
-              <AppIcon name="delete" color="iconDanger" mr={sizing.spacing[2]} /> {/* Added iconDanger */}
+              <AppIcon
+                name="delete"
+                color="iconDanger"
+                mr={sizing.spacing[2]}
+              />{" "}
+              {/* Added iconDanger */}
               Delete Task
             </AlertDialogHeader>
 
-            <AlertDialogBody 
+            <AlertDialogBody
               py={sizing.spacing[4]}
               px={sizing.spacing[4]}
               fontSize={typography.fontSize.sm}
             >
-              Are you sure you want to delete this task? This action cannot be undone.
+              Are you sure you want to delete this task? This action cannot be
+              undone.
               {task?.is_archived && (
-                <Text as="span" fontWeight={typography.fontWeight.semibold} color="textStatusWarning" ml={sizing.spacing[1]}>
+                <Text
+                  as="span"
+                  fontWeight={typography.fontWeight.semibold}
+                  color="textStatusWarning"
+                  ml={sizing.spacing[1]}
+                >
                   This is an archived task.
                 </Text>
               )}
             </AlertDialogBody>
 
-            <AlertDialogFooter 
+            <AlertDialogFooter
               borderTopWidth={sizing.borderWidth.DEFAULT}
               borderColor="borderDecorative"
               py={sizing.spacing[3]}
@@ -558,8 +597,8 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 onClick={onAlertClose}
                 variant="ghost"
                 color="textSecondary"
-                _hover={{ bg: "interactiveNeutralHover", color: "textPrimary"}}
-                _active={{ bg: "interactiveNeutralActive"}}
+                _hover={{ bg: "interactiveNeutralHover", color: "textPrimary" }}
+                _active={{ bg: "interactiveNeutralActive" }}
                 h={sizing.height.sm}
                 fontSize={typography.fontSize.xs}
                 fontWeight={typography.fontWeight.medium}

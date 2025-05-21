@@ -1,5 +1,5 @@
 export const zIndex = {
-  auto: 'auto',
+  auto: "auto",
   base: 0,
   dropdown: 1000,
   sticky: 1100,
@@ -9,4 +9,4 @@ export const zIndex = {
   tooltip: 1500,
 };
 
-export type ZIndex = typeof zIndex; 
+export type ZIndex = typeof zIndex;
