@@ -1,6 +1,6 @@
 import React from "react";
 import { ListItem, Checkbox, Box } from "@chakra-ui/react";
-import TaskItem from "../TaskItem";
+import TaskItem from "../task/TaskItem";
 import { Task } from "@/types";
 
 interface ListTaskMobileProps {

@@ -37,19 +37,10 @@ Below are summaries of some of the primary components in this directory. Most co
   - Provides callbacks for opening modals to add/edit tasks.
   - Displays toast notifications for polling errors and mutation errors from the task store.
 
-### `TaskItem.tsx`
+### Task Rendering and Management (`./task/`)
 
-- **Purpose**: Renders an individual task item with its details and actions.
-- **Props**: `task: Task`, `compact?: boolean`, `style?: React.CSSProperties`, `onDeleteInitiate: (task: Task) => void`.
-- **Key Features**:
-  - Displays task title, description (expandable), project name, assigned agent, and status.
-  - Uses `getDisplayableStatus` from `statusUtils.ts` to show status with appropriate color and icon.
-  - Provides actions like editing (inline for title/description, or via `EditTaskModal`), deleting (initiates delete process), archiving/unarchiving, assigning an agent, and changing status via a dropdown.
-  - Includes a subtask display area (if subtasks exist for the task).
-  - Allows copying a pre-formatted prompt for the assigned agent to execute the task.
-  - Uses `EditTaskModal` and `TaskDetailsModal` for more complex interactions.
-  - Interacts with `useTaskStore` for updating task details (status, agent, archive state) and `useProjectStore` to get project names.
-  - Styling is responsive and uses Chakra UI components and theme tokens.
+- **Overview**: Components responsible for displaying and interacting with individual tasks are grouped within the `frontend/src/components/task/` directory. This includes `TaskItem.tsx` itself, along with helper components for different parts of the task UI (e.g., main section, details section) and related modals like `EditTaskModal.tsx`.
+- **Detailed Documentation**: For an in-depth explanation of the `TaskItem` architecture, its sub-components, data flow, and JSDoc references, see the dedicated **[Task Component Documentation](./task/README.md)**.
 
 ### `ProjectList.tsx`
 
@@ -121,7 +112,6 @@ For more details, see:
 - `KanbanView.tsx`: Renders tasks in a Kanban board layout (columns by status).
 - `ListView.tsx`: Renders tasks in a list layout, potentially hierarchical.
 - `ThemeToggleButton.tsx`: A button to toggle between light and dark themes.
-- `EditTaskModal.tsx`: Modal for editing task details.
 - `MCPDevTools.tsx`: A development tool panel for interacting with MCP functionalities.
 - `LoadingSkeleton.tsx`: Generic skeleton loader for various content types.
 - `AddProjectForm.tsx`: Form for creating new projects.

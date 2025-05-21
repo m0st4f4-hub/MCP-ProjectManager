@@ -4,7 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { sizing } from "../../tokens";
 import { Task } from "@/types";
 import { motion } from "framer-motion";
-import TaskItem from "../TaskItem";
+import TaskItem from "../task/TaskItem";
 import { useToken } from "@chakra-ui/react";
 import { getDisplayableStatus, StatusID } from "@/lib/statusUtils";
 import { useSortable } from "@dnd-kit/sortable";
