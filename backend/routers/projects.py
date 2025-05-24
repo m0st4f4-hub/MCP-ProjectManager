@@ -25,6 +25,12 @@ from . import tasks # Import tasks router
 # Import specific schema classes from their files
 from backend.schemas.project import Project, ProjectCreate, ProjectUpdate, ProjectFileAssociation, ProjectFileAssociationCreate # Correct import location
 
+# Import standardized API response models
+from backend.schemas.api_responses import DataResponse, ListResponse, ErrorResponse, PaginationParams
+
+# Import service exceptions
+from backend.services.exceptions import EntityNotFoundError, DuplicateEntityError, ValidationError
+
 # Import auth dependencies and UserRoleEnum
 from backend.auth import get_current_active_user, RoleChecker
 from backend.enums import UserRoleEnum
@@ -92,7 +98,7 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
     return AuditLogService(db)
 
 
-@router.post("/", response_model=Project, summary="Create Project", operation_id="create_project",
+@router.post("/", response_model=DataResponse[Project], summary="Create Project", operation_id="create_project",
              dependencies=[Depends(RoleChecker([UserRoleEnum.ADMIN]))]) # Protect endpoint
 def create_project(
     project: ProjectCreate,
@@ -108,25 +114,35 @@ def create_project(
     - **description**: Optional description.
     - **template_id**: Optional ID of a project template to use.
     """
-    db_project = project_service.get_project_by_name(
-        name=project.name, is_archived=None)
-    if db_project:
-        raise HTTPException(
-            status_code=400, detail="Project name already registered")
-    db_project = project_service.create_project(project=project, created_by_user_id=current_user.id)
-    
-    # Log project creation
-    audit_log_service.create_log(
-        action="create_project",
-        user_id=current_user.id,
-        details={"project_id": db_project.id, "project_name": db_project.name}
-    )
-    return Project.model_validate(db_project)
+    try:
+        db_project = project_service.create_project(project=project, created_by_user_id=current_user.id)
+        
+        # Log project creation
+        audit_log_service.create_log(
+            action="create_project",
+            user_id=current_user.id,
+            details={"project_id": db_project.id, "project_name": db_project.name}
+        )
+        
+        # Return standardized response
+        return DataResponse[Project](
+            data=Project.model_validate(db_project),
+            message="Project created successfully"
+        )
+    except DuplicateEntityError as e:
+        # Convert to FastAPI HTTPException
+        raise HTTPException(status_code=409, detail=str(e))
+    except ValidationError as e:
+        # Convert to FastAPI HTTPException
+        raise HTTPException(status_code=400, detail=str(e))
+    except EntityNotFoundError as e:
+        # This could happen if template_id is invalid
+        raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.get("/", response_model=List[Project], summary="List Projects", operation_id="list_projects")
+@router.get("/", response_model=ListResponse[Project], summary="List Projects", operation_id="list_projects")
 def get_project_list(
-    skip: int = 0,
+    pagination: PaginationParams = Depends(),
     search: Optional[str] = None,
     status: Optional[str] = None,
     is_archived: Optional[bool] = Query(
@@ -134,17 +150,40 @@ def get_project_list(
     project_service: ProjectService = Depends(get_project_service)
 ):
     """Retrieves a list of projects."""
-    projects = project_service.get_projects(
-        skip=skip, search=search, status=status, is_archived=is_archived)
+    try:
+        # Get total count for pagination
+        # Assuming you have a method to count projects with filters
+        total = len(project_service.get_projects(
+            skip=0, search=search, status=status, is_archived=is_archived))
+        
+        # Get paginated projects
+        projects = project_service.get_projects(
+            skip=pagination.offset, search=search, status=status, is_archived=is_archived)
 
-    # Convert SQLAlchemy models to Pydantic models
-    pydantic_projects = [Project.model_validate(
-        project) for project in projects]
+        # Convert SQLAlchemy models to Pydantic models
+        pydantic_projects = [Project.model_validate(
+            project) for project in projects]
 
-    return pydantic_projects
+        # Return standardized response
+        return ListResponse[Project](
+            data=pydantic_projects,
+            total=total,
+            page=pagination.page,
+            page_size=pagination.page_size,
+            has_more=pagination.offset + len(projects) < total,
+            message=f"Retrieved {len(projects)} projects"
+        )
+    except Exception as e:
+        # Log unexpected errors
+        import logging
+        logging.error(f"Error in get_project_list: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving projects: {str(e)}"
+        )
 
 
-@router.get("/{project_id}", response_model=Project, summary="Get Project by ID", operation_id="get_project_by_id")
+@router.get("/{project_id}", response_model=DataResponse[Project], summary="Get Project by ID", operation_id="get_project_by_id")
 def get_project_by_id_endpoint(
     project_id: str,
     is_archived: Optional[bool] = Query(
@@ -152,17 +191,27 @@ def get_project_by_id_endpoint(
     project_service: ProjectService = Depends(get_project_service)
 ):
     """Retrieves a specific project by its ID."""
-    db_project = project_service.get_project(
-        project_id=project_id, is_archived=is_archived)
-    if db_project is None:
+    try:
+        db_project = project_service.get_project(
+            project_id=project_id, is_archived=is_archived)
+        
+        # Return standardized response
+        return DataResponse[Project](
+            data=Project.model_validate(db_project),
+            message=f"Project '{db_project.name}' retrieved successfully"
+        )
+    except EntityNotFoundError as e:
+        # Status message based on filter
         status_search_message = ""
         if is_archived is True:
             status_search_message = " (archived)"
         elif is_archived is False:
             status_search_message = " (active)"
+            
         raise HTTPException(
-            status_code=404, detail=f"Project not found{status_search_message}")
-    return db_project
+            status_code=404, 
+            detail=f"Project not found{status_search_message}"
+        )
 
 
 @router.post("/{project_id}/archive", response_model=Project, summary="Archive Project", operation_id="archive_project")

@@ -23,6 +23,12 @@ from backend.schemas.file_association import TaskFileAssociation, TaskFileAssoci
 from backend.schemas.task_dependency import TaskDependency, TaskDependencyCreate # Import from task_dependency.py
 from backend.schemas.comment import Comment # Import Comment from comment.py
 
+# Import standardized API response models
+from backend.schemas.api_responses import DataResponse, ListResponse, ErrorResponse, PaginationParams
+
+# Import service exceptions
+from backend.services.exceptions import EntityNotFoundError, DuplicateEntityError, ValidationError, AuthorizationError
+
 # Import the TaskStatusEnum for router parameters
 from backend.enums import TaskStatusEnum
 
@@ -59,7 +65,7 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
 
 @router.post(
     "/{project_id}/tasks/",
-    response_model=Task, # Use the directly imported class
+    response_model=DataResponse[Task], # Use standardized response model
     summary="Create Task in Project",
     tags=["Tasks"],
     operation_id="projects_tasks_create_task"
@@ -77,19 +83,26 @@ def create_task_for_project(
             project_id=uuid.UUID(project_id),
             task=task
         )
+        
         # Log task creation
         audit_log_service.create_log(
             action="create_task",
             user_id=current_user.id,
             details={
                 "project_id": project_id,
-                "task_id": db_task.id, # Assuming task model has an id field
                 "task_number": db_task.task_number,
                 "task_title": db_task.title
             }
         )
-        return db_task
-    except ValueError as e:
+        
+        # Return standardized response
+        return DataResponse[Task](
+            data=Task.model_validate(db_task),
+            message="Task created successfully"
+        )
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValidationError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(
@@ -100,13 +113,14 @@ def create_task_for_project(
 
 @router.get(
     "/{project_id}/tasks/",
-    response_model=List[Task], # Use the directly imported class
+    response_model=ListResponse[Task], # Use standardized response model
     summary="Get Tasks in Project",
     tags=["Tasks"],
     operation_id="projects_tasks_get_tasks"
 )
 async def get_tasks_list(
     project_id: str,
+    pagination: PaginationParams = Depends(),
     agent_id: Optional[str] = Query(
         None, description="Filter tasks by agent ID."),
     agent_name: Optional[str] = Query(
@@ -120,7 +134,6 @@ async def get_tasks_list(
         None,
         description="Filter by archived status. False for non-archived, True for archived, null/None for all."
     ),
-    skip: int = 0,
     sort_by: Optional[str] = Query(
         "created_at", description="Field to sort by. Supported: 'created_at', 'updated_at', 'title', 'status', 'task_number', 'agent_id'"),
     sort_direction: Optional[str] = Query(
@@ -131,30 +144,72 @@ async def get_tasks_list(
     """Retrieve a list of tasks in a project, with optional filtering and sorting.
     Supported sort fields: created_at, updated_at, title, status, task_number, agent_id
     """
-    agent_id_val: Optional[str] = None
-    if agent_name:
-        agent = agent_service.get_agent_by_name(name=agent_name)
-        if agent:
-            agent_id_val = agent.id
-        else:
-            if agent_name is not None:
-                return []
-    tasks = task_service.get_tasks_by_project(
-        project_id=uuid.UUID(project_id),
-        skip=skip,
-        agent_id=agent_id_val or agent_id,
-        search=search,
-        status=status,
-        is_archived=is_archived,
-        sort_by=sort_by,
-        sort_direction=sort_direction
-    )
-    return tasks
+    try:
+        agent_id_val: Optional[str] = None
+        if agent_name:
+            agent = agent_service.get_agent_by_name(name=agent_name)
+            if agent:
+                agent_id_val = agent.id
+            else:
+                if agent_name is not None:
+                    # Return empty list if agent name is specified but not found
+                    return ListResponse[Task](
+                        data=[],
+                        total=0,
+                        page=pagination.page,
+                        page_size=pagination.page_size,
+                        has_more=False,
+                        message=f"No tasks found for agent '{agent_name}'"
+                    )
+        
+        # Get all tasks for total count
+        all_tasks = task_service.get_tasks_by_project(
+            project_id=uuid.UUID(project_id),
+            skip=0,
+            agent_id=agent_id_val or agent_id,
+            search=search,
+            status=status,
+            is_archived=is_archived
+        )
+        total = len(all_tasks)
+        
+        # Get paginated tasks
+        tasks = task_service.get_tasks_by_project(
+            project_id=uuid.UUID(project_id),
+            skip=pagination.offset,
+            agent_id=agent_id_val or agent_id,
+            search=search,
+            status=status,
+            is_archived=is_archived,
+            sort_by=sort_by,
+            sort_direction=sort_direction
+        )
+        
+        # Convert to Pydantic models
+        pydantic_tasks = [Task.model_validate(task) for task in tasks]
+        
+        # Return standardized response
+        return ListResponse[Task](
+            data=pydantic_tasks,
+            total=total,
+            page=pagination.page,
+            page_size=pagination.page_size,
+            has_more=pagination.offset + len(pydantic_tasks) < total,
+            message=f"Retrieved {len(pydantic_tasks)} tasks" + 
+                    (f" for agent '{agent_name}'" if agent_name else "")
+        )
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}"
+        )
 
 
 @router.get(
     "/{project_id}/tasks/{task_number}",
-    response_model=Task, # Use the directly imported class
+    response_model=DataResponse[Task], # Use standardized response model
     summary="Get Task by Project and Number",
     tags=["Tasks"],
     operation_id="projects_tasks_get_task_by_project_and_number"
@@ -166,13 +221,24 @@ def read_task(
     task_service: TaskService = Depends(get_task_service)
 ):
     """Retrieve a specific task by project and task number."""
-    db_task = task_service.get_task(
-        project_id=uuid.UUID(project_id),
-        task_number=task_number
-    )
-    if db_task is None:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return db_task
+    try:
+        db_task = task_service.get_task(
+            project_id=uuid.UUID(project_id),
+            task_number=task_number
+        )
+        
+        # Return standardized response
+        return DataResponse[Task](
+            data=Task.model_validate(db_task),
+            message=f"Task #{task_number} retrieved successfully"
+        )
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}"
+        )
 
 
 @router.post(
@@ -237,7 +303,7 @@ def unarchive_task_endpoint(
 
 @router.put(
     "/{project_id}/tasks/{task_number}",
-    response_model=Task, # Use the directly imported class
+    response_model=DataResponse[Task], # Use standardized response model
     summary="Update Task (incl. Project/Agent)",
     tags=["Tasks"],
     operation_id="projects_tasks_update_task_by_project_and_number"
@@ -246,7 +312,9 @@ def update_task(
     project_id: str,
     task_number: int,
     task_update: TaskUpdate, # Use the directly imported class
-    task_service: TaskService = Depends(get_task_service)
+    task_service: TaskService = Depends(get_task_service),
+    current_user: UserModel = Depends(get_current_active_user), # Inject current user
+    audit_log_service: AuditLogService = Depends(get_audit_log_service) # Inject AuditLogService
 ):
     """Update a task, including project or agent assignment."""
     try:
@@ -255,13 +323,27 @@ def update_task(
             task_number=task_number,
             task_update=task_update
         )
-        if db_task is None:
-            raise HTTPException(status_code=404, detail="Task not found")
-        return db_task
-    except ValueError as e:
+        
+        # Log task update
+        audit_log_service.create_log(
+            action="update_task",
+            user_id=current_user.id,
+            details={
+                "project_id": project_id,
+                "task_number": task_number,
+                "updated_fields": task_update.model_dump(exclude_unset=True).keys()
+            }
+        )
+        
+        # Return standardized response
+        return DataResponse[Task](
+            data=Task.model_validate(db_task),
+            message=f"Task #{task_number} updated successfully"
+        )
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValidationError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except HTTPException as http_exc:
-        raise http_exc
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -271,7 +353,7 @@ def update_task(
 
 @router.delete(
     "/{project_id}/tasks/{task_number}",
-    response_model=dict,
+    response_model=DataResponse[Task], # Use standardized response model
     summary="Delete Task",
     tags=["Tasks"],
     operation_id="projects_tasks_delete_task_by_project_and_number"
@@ -279,20 +361,39 @@ def update_task(
 def delete_task(
     project_id: str,
     task_number: int,
-    task_service: TaskService = Depends(get_task_service)
+    task_service: TaskService = Depends(get_task_service),
+    current_user: UserModel = Depends(get_current_active_user), # Inject current user
+    audit_log_service: AuditLogService = Depends(get_audit_log_service) # Inject AuditLogService
 ):
     """Delete a task."""
     try:
-        success = task_service.delete_task(
+        # Task service now returns the deleted task
+        deleted_task = task_service.delete_task(
             project_id=uuid.UUID(project_id),
             task_number=task_number
         )
-        if not success:
-            raise HTTPException(status_code=404, detail="Task not found")
-        return {"ok": True}
-    except HTTPException:
-        raise
-    except Exception:
+        
+        # Log task deletion
+        audit_log_service.create_log(
+            action="delete_task",
+            user_id=current_user.id,
+            details={
+                "project_id": project_id,
+                "task_number": task_number,
+                "task_title": deleted_task.title
+            }
+        )
+        
+        # Return standardized response
+        return DataResponse[Task](
+            data=Task.model_validate(deleted_task),
+            message=f"Task #{task_number} deleted successfully"
+        )
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Error deleting task: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail="Internal server error during task deletion: Something went wrong"

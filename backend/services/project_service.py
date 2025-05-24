@@ -208,9 +208,30 @@ class ProjectService:
                     raise
                 raise ValidationError(f"Error updating project: {str(e)}")
 
-    def delete_project(self, project_id: str) -> bool:
-        # Delegate to CRUD
-        return delete_project(self.db, project_id)
+    def delete_project(self, project_id: str) -> models.Project:
+        """
+        Delete a project by ID.
+        
+        Args:
+            project_id: The project ID
+            
+        Returns:
+            The deleted project
+            
+        Raises:
+            EntityNotFoundError: If the project is not found
+        """
+        # Check if project exists
+        existing_project = get_project(self.db, project_id, is_archived=None)
+        if not existing_project:
+            raise EntityNotFoundError("Project", project_id)
+        
+        # Use transaction context manager
+        with service_transaction(self.db, "delete_project") as tx_db:
+            deleted_project = delete_project(tx_db, project_id)
+            if not deleted_project:
+                raise EntityNotFoundError("Project", project_id)
+            return deleted_project
 
     def add_member_to_project(
         self, project_id: str, user_id: str, role: str

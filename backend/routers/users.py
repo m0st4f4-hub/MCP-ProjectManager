@@ -21,6 +21,12 @@ from backend.schemas.user import User, UserCreate, UserUpdate # Import User, Use
 # Define a Token schema for the response model
 from pydantic import BaseModel
 
+# Import standardized API response models
+from backend.schemas.api_responses import DataResponse, ListResponse, ErrorResponse, PaginationParams
+
+# Import service exceptions
+from backend.services.exceptions import EntityNotFoundError, DuplicateEntityError, ValidationError, AuthorizationError
+
 # Import auth dependencies and UserRoleEnum
 from backend.auth import get_current_active_user, RoleChecker
 from backend.enums import UserRoleEnum
@@ -55,42 +61,95 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
     return AuditLogService(db)
 
 
-@router.post("/", response_model=User)
+@router.post("/", response_model=DataResponse[User])
 def create_user(
     user: UserCreate,
-    user_service: UserService = Depends(get_user_service)
+    user_service: UserService = Depends(get_user_service),
+    audit_log_service: AuditLogService = Depends(get_audit_log_service) # Inject AuditLogService
 ):
     """Create a new user."""
-    db_user = user_service.get_user_by_username(username=user.username)
-    if db_user:
-        raise HTTPException(
-            status_code=400, detail="Username already registered"
+    try:
+        db_user = user_service.create_user(user=user)
+        
+        # Log user creation
+        audit_log_service.create_log(
+            action="create_user",
+            details={"username": user.username}
         )
-    # In a real app, hash the password before storing
-    return user_service.create_user(user=user)
+        
+        # Return standardized response
+        return DataResponse[User](
+            data=User.model_validate(db_user),
+            message=f"User '{user.username}' created successfully"
+        )
+    except DuplicateEntityError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error creating user: {str(e)}"
+        )
 
 
-@router.get("/{user_id}", response_model=User)
+@router.get("/{user_id}", response_model=DataResponse[User])
 def read_user(
     user_id: str,
     user_service: UserService = Depends(get_user_service)
 ):
     """Retrieve a user by ID."""
-    db_user = user_service.get_user(user_id=user_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
+    try:
+        db_user = user_service.get_user(user_id=user_id)
+        
+        # Return standardized response
+        return DataResponse[User](
+            data=User.model_validate(db_user),
+            message=f"User retrieved successfully"
+        )
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving user: {str(e)}"
+        )
 
 
-@router.get("/", response_model=List[User])
+@router.get("/", response_model=ListResponse[User])
 def read_users(
-    skip: int = 0,
-    limit: int = 100,
+    pagination: PaginationParams = Depends(),
     user_service: UserService = Depends(get_user_service)
 ):
     """Retrieve a list of users."""
-    users = user_service.get_users(skip=skip, limit=limit)
-    return users
+    try:
+        # Get all users for total count
+        all_users = user_service.get_users(skip=0)
+        total = len(all_users)
+        
+        # Get paginated users
+        users = user_service.get_users(
+            skip=pagination.offset, 
+            limit=pagination.page_size
+        )
+        
+        # Convert to Pydantic models
+        pydantic_users = [User.model_validate(user) for user in users]
+        
+        # Return standardized response
+        return ListResponse[User](
+            data=pydantic_users,
+            total=total,
+            page=pagination.page,
+            page_size=pagination.page_size,
+            has_more=pagination.offset + len(users) < total,
+            message=f"Retrieved {len(users)} users"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving users: {str(e)}"
+        )
 
 
 @router.put("/{user_id}", response_model=User)

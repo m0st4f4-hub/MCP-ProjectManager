@@ -6,6 +6,10 @@ from datetime import datetime, timedelta
 # Import token generation library
 from jose import JWTError, jwt
 
+# Import service utilities
+from backend.services.utils import service_transaction
+from backend.services.exceptions import EntityNotFoundError, DuplicateEntityError, ValidationError, AuthorizationError
+
 # Import CRUD operations
 from backend.crud.users import (
     create_user,
@@ -21,16 +25,27 @@ from backend.crud.users import (
 # Import configuration settings
 from backend.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
-# No longer need to import validation helpers in service
-# from backend.crud.user_validation import some_validation_function
-
 class UserService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_user(self, user_id: str) -> Optional[models.User]:
-        # Delegate to CRUD
-        return get_user(self.db, user_id)
+    def get_user(self, user_id: str) -> models.User:
+        """
+        Get a user by ID.
+        
+        Args:
+            user_id: The user ID
+            
+        Returns:
+            The user
+            
+        Raises:
+            EntityNotFoundError: If the user is not found
+        """
+        user = get_user(self.db, user_id)
+        if not user:
+            raise EntityNotFoundError("User", user_id)
+        return user
 
     def get_user_by_username(self, username: str) -> Optional[models.User]:
         # Delegate to CRUD
@@ -43,16 +58,34 @@ class UserService:
         return get_users(self.db, skip=skip, limit=limit)
 
     def create_user(self, user_create: schemas.UserCreate) -> models.User:
-        # Service layer orchestrates data preparation and calls CRUD.
-        # Validation for username existence, password strength, etc. would go here or in validation module.
-
+        """
+        Create a new user.
+        
+        Args:
+            user_create: The user data
+            
+        Returns:
+            The created user
+            
+        Raises:
+            DuplicateEntityError: If the username already exists
+            ValidationError: If the user data is invalid
+        """
         # Check if username already exists at the service layer
         if username_exists(self.db, user_create.username):
-            # Raise a ValueError or a more specific service-level exception
-            raise ValueError(f"Username '{user_create.username}' already exists")
-
-        # Delegate to CRUD create function if username is unique
-        return create_user(self.db, user_create)
+            # Use the proper service exception
+            raise DuplicateEntityError("User", user_create.username)
+        
+        # Use transaction context manager
+        with service_transaction(self.db, "create_user") as tx_db:
+            try:
+                # Delegate to CRUD create function if username is unique
+                return create_user(tx_db, user_create)
+            except Exception as e:
+                # Convert any exceptions to service exceptions
+                if isinstance(e, (EntityNotFoundError, DuplicateEntityError, ValidationError)):
+                    raise
+                raise ValidationError(f"Error creating user: {str(e)}")
 
     def update_user(self, user_id: str, user_update: schemas.UserUpdate) -> Optional[models.User]:
         # Delegate to CRUD update function
@@ -62,9 +95,24 @@ class UserService:
         # Delegate to CRUD delete function
         return delete_user(self.db, user_id)
 
-    def authenticate_user(self, username: str, password: str) -> Optional[models.User]:
-        # Delegate authentication to CRUD
-        return crud_authenticate_user(self.db, username, password)
+    def authenticate_user(self, username: str, password: str) -> models.User:
+        """
+        Authenticate a user by username and password.
+        
+        Args:
+            username: The username
+            password: The password
+            
+        Returns:
+            The authenticated user
+            
+        Raises:
+            AuthorizationError: If authentication fails
+        """
+        user = crud_authenticate_user(self.db, username, password)
+        if not user:
+            raise AuthorizationError("Invalid username or password")
+        return user
 
     def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None):
         """Create a JWT access token."""

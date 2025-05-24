@@ -16,6 +16,10 @@ from backend.schemas.task import TaskCreate, TaskUpdate
 # Import the TaskStatusEnum
 from backend.enums import TaskStatusEnum
 
+# Import service utilities
+from backend.services.utils import service_transaction
+from backend.services.exceptions import EntityNotFoundError, ValidationError, DuplicateEntityError
+
 # Import CRUD operations for tasks
 from backend.crud.tasks import (
     get_task as crud_get_task,
@@ -49,9 +53,25 @@ class TaskService:
     def get_task(
         self, project_id: UUID, task_number: int,
         is_archived: Optional[bool] = False
-    ) -> Optional[models.Task]:
-        # Delegate to CRUD
-        return crud_get_task(self.db, project_id=str(project_id), task_number=task_number, is_archived=is_archived)
+    ) -> models.Task:
+        """
+        Get a task by project ID and task number.
+        
+        Args:
+            project_id: The project ID
+            task_number: The task number
+            is_archived: Filter by archived status
+            
+        Returns:
+            The task
+            
+        Raises:
+            EntityNotFoundError: If the task is not found
+        """
+        task = crud_get_task(self.db, project_id=str(project_id), task_number=task_number, is_archived=is_archived)
+        if not task:
+            raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
+        return task
 
     def get_tasks_by_project(
         self,
@@ -105,23 +125,115 @@ class TaskService:
         task: TaskCreate,
         agent_id: Optional[str] = None
     ) -> models.Task:
-        # Delegate to CRUD create function. CRUD handles task numbering and validation.
-        return crud_create_task(self.db, project_id=str(project_id), task=task, agent_id=agent_id)
+        """
+        Create a new task for a project.
+        
+        Args:
+            project_id: The project ID
+            task: The task data
+            agent_id: Optional agent ID to assign
+            
+        Returns:
+            The created task
+            
+        Raises:
+            EntityNotFoundError: If the project or agent is not found
+            ValidationError: If the task data is invalid
+        """
+        try:
+            # Use transaction context manager
+            with service_transaction(self.db, "create_task") as tx_db:
+                try:
+                    # CRUD function handles task numbering and validation
+                    db_task = crud_create_task(tx_db, project_id=str(project_id), task=task, agent_id=agent_id)
+                    return db_task
+                except ValueError as e:
+                    # Convert ValueError to ValidationError
+                    raise ValidationError(str(e))
+        except Exception as e:
+            # Convert any other exceptions to service exceptions
+            if isinstance(e, (EntityNotFoundError, ValidationError)):
+                raise
+            # If it's a database-specific error about foreign key constraints
+            if "foreign key constraint" in str(e).lower():
+                raise EntityNotFoundError("Project or Agent", f"Project: {project_id}, Agent: {agent_id}")
+            raise ValidationError(f"Error creating task: {str(e)}")
 
     def update_task(
         self,
         project_id: UUID,
         task_number: int,
         task_update: TaskUpdate,
-    ) -> Optional[models.Task]:
-        # Use the correct CRUD function for composite key
-        return crud_update_task(
-            self.db, project_id=str(project_id), task_number=task_number, task=task_update
-        )
+    ) -> models.Task:
+        """
+        Update a task by project ID and task number.
+        
+        Args:
+            project_id: The project ID
+            task_number: The task number
+            task_update: The update data
+            
+        Returns:
+            The updated task
+            
+        Raises:
+            EntityNotFoundError: If the task is not found
+            ValidationError: If the update data is invalid
+        """
+        # Check if task exists
+        existing_task = crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
+        if not existing_task:
+            raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
+        
+        # Use transaction context manager
+        with service_transaction(self.db, "update_task") as tx_db:
+            try:
+                updated_task = crud_update_task(
+                    tx_db, project_id=str(project_id), task_number=task_number, task=task_update
+                )
+                if not updated_task:
+                    raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
+                return updated_task
+            except ValueError as e:
+                # Convert ValueError to ValidationError
+                raise ValidationError(str(e))
+            except Exception as e:
+                # Convert any other exceptions to service exceptions
+                if isinstance(e, (EntityNotFoundError, ValidationError)):
+                    raise
+                raise ValidationError(f"Error updating task: {str(e)}")
 
-    def delete_task(self, project_id: UUID, task_number: int) -> bool:
-        # Use the correct CRUD function for composite key
-        return crud_delete_task(self.db, project_id=str(project_id), task_number=task_number)
+    def delete_task(self, project_id: UUID, task_number: int) -> models.Task:
+        """
+        Delete a task by project ID and task number.
+        
+        Args:
+            project_id: The project ID
+            task_number: The task number
+            
+        Returns:
+            The deleted task data
+            
+        Raises:
+            EntityNotFoundError: If the task is not found
+        """
+        # Check if task exists
+        existing_task = crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
+        if not existing_task:
+            raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
+        
+        # Store task data for return
+        from backend.schemas.task import Task
+        task_data = Task.model_validate(existing_task)
+        
+        # Use transaction context manager
+        with service_transaction(self.db, "delete_task") as tx_db:
+            success = crud_delete_task(tx_db, project_id=str(project_id), task_number=task_number)
+            if not success:
+                raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
+            
+            # Return the task data that was deleted
+            return existing_task
 
     def archive_task(
         self,

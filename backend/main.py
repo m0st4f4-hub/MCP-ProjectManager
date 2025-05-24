@@ -38,7 +38,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Create all tables in the database
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine) # REMOVED module-level call
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,7 +47,7 @@ async def lifespan(app: FastAPI):
     
     # Initialize database tables
     try:
-        # Base.metadata.create_all(bind=engine)
+        Base.metadata.create_all(bind=engine) # MOVED call into lifespan
         logger.info("Database tables initialized")
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
