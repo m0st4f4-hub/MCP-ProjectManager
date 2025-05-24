@@ -1,41 +1,62 @@
+"""Service layer for Audit Logs."""
+
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import datetime
 import uuid
 import json
 from backend import models
+
+from backend.schemas.audit_log import AuditLogCreate
+from backend.models.audit_log import AuditLog as AuditLogModel
+from backend.crud import audit_logs as audit_log_crud # Alias to avoid name collision
 
 
 class AuditLogService:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_log_entry(
+    def create_log(
         self,
-        entity_type: str,
-        entity_id: str,
         action: str,
         user_id: Optional[str] = None,
-        details: Optional[dict] = None
-    ) -> models.AuditLog:
-        # Explicitly serialize details to JSON string for SQLite
-        details_json = json.dumps(details) if details is not None else None
+        details: Optional[Dict[str, Any]] = None
+    ) -> AuditLogModel:
+        """Helper method to create an audit log entry.
 
-        db_log_entry = models.AuditLog(
-            entity_type=entity_type,
-            entity_id=entity_id,
-            action=action,
+        Args:
+            action: Description of the action.
+            user_id: ID of the user performing the action (if any).
+            details: JSON-serializable dictionary of action details.
+        Returns:
+            The created AuditLog database model instance.
+        """
+        audit_log_create = AuditLogCreate(
             user_id=user_id,
-            details=details_json,
-            timestamp=datetime.datetime.now(datetime.timezone.utc)
+            action=action,
+            details=details
         )
-        self.db.add(db_log_entry)
-        self.db.commit()
-        self.db.refresh(db_log_entry)
-        # Optionally refresh user relationship if user_id is present
-        # if user_id:
-        #     self.db.refresh(db_log_entry, attribute_names=['user'])
-        return db_log_entry
+        return audit_log_crud.create_audit_log(db=self.db, audit_log=audit_log_create)
+
+    def get_log(self, audit_log_id: str) -> Optional[AuditLogModel]:
+        """Retrieve a single audit log entry by its ID."""
+        return audit_log_crud.get_audit_log(db=self.db, audit_log_id=audit_log_id)
+
+    def get_logs(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        user_id: Optional[str] = None,
+        action: Optional[str] = None
+    ) -> List[AuditLogModel]:
+        """Retrieve multiple audit log entries with optional filtering and pagination."""
+        return audit_log_crud.get_audit_logs(
+            db=self.db,
+            skip=skip,
+            limit=limit,
+            user_id=user_id,
+            action=action
+        )
 
     def get_log_entry(self, log_id: str) -> Optional[models.AuditLog]:
         # Eagerly load user if needed

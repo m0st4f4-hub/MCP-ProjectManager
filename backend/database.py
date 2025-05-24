@@ -1,13 +1,19 @@
+"""
+Database configuration and session management.
+
+This module sets up the SQLAlchemy engine and session factory.
+It also provides a dependency to get a database session.
+"""
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import os
 from dotenv import load_dotenv
-
-load_dotenv()
+from backend.config.app_config import settings # Import settings
 
 # --- SQLite Configuration (Default) ---
-SQLALCHEMY_DATABASE_URL = "sqlite:///D:/mcp/task-manager/sql_app.db"  # Use absolute path
-# SQLALCHEMY_DATABASE_URL = "sqlite:///../sql_app.db" # Original relative path
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///../sql_app.db") # Use os.getenv or default
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={
         "check_same_thread": False}  # Needed only for SQLite

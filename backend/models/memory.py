@@ -3,11 +3,13 @@ Memory and knowledge graph models.
 """
 
 from sqlalchemy import String, Integer, ForeignKey, Text, JSON, UniqueConstraint, DateTime
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 
 from .base import Base, BaseModel
+from .user import User
 
 
 class MemoryEntity(Base):
@@ -15,10 +17,15 @@ class MemoryEntity(Base):
     __tablename__ = "memory_entities"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    type: Mapped[str] = mapped_column(String, index=True)
-    name: Mapped[str] = mapped_column(String, unique=True, index=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    metadata_: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    entity_type: Mapped[str] = mapped_column(String, index=True)
+    content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    source: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    source_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=True)
+    created_by_user_id: Mapped[Optional[str]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_by_user: Mapped[User] = relationship("User", backref="created_memory_entities")
 
     observations: Mapped[List["MemoryObservation"]] = relationship(
         back_populates="entity", cascade="all, delete-orphan")
@@ -35,6 +42,9 @@ class MemoryEntity(Base):
         "ProjectFileAssociation", back_populates="file_entity", cascade="all, delete-orphan")
     task_file_associations: Mapped[List["TaskFileAssociation"]] = relationship(
         "TaskFileAssociation", back_populates="file_entity", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<MemoryEntity(id={self.id}, type='{self.entity_type}', source='{self.source}')>"
 
 
 class MemoryObservation(Base):

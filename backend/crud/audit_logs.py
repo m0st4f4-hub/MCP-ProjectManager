@@ -1,48 +1,32 @@
+"""CRUD operations for Audit Logs."""
+
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import datetime
 import uuid
 import json
 from backend import models
+from backend.models.audit_log import AuditLog as AuditLogModel
+from backend.schemas.audit_log import AuditLogCreate
 
 # Function to create a new audit log entry
-def create_audit_log(
-    db: Session,
-    entity_type: str,
-    entity_id: str,
-    action: str,
-    user_id: Optional[str] = None,
-    details: Optional[dict] = None
-) -> models.AuditLog:
-    # Explicitly serialize details to JSON string for SQLite
-    details_json = json.dumps(details) if details is not None else None
-
-    db_log_entry = models.AuditLog(
-        entity_type=entity_type,
-        entity_id=entity_id,
-        action=action,
-        user_id=user_id,
-        details=details_json,
-        timestamp=datetime.datetime.now(datetime.timezone.utc)
+def create_audit_log(db: Session, audit_log: AuditLogCreate) -> AuditLogModel:
+    """Create a new audit log entry."""
+    db_audit_log = AuditLogModel(
+        user_id=audit_log.user_id,
+        action=audit_log.action,
+        details=audit_log.details
+        # timestamp is handled by the model default
     )
-    db.add(db_log_entry)
+    db.add(db_audit_log)
     db.commit()
-    db.refresh(db_log_entry)
-    # Optionally refresh user relationship if user_id is present
-    # if user_id:
-    #     db.refresh(db_log_entry, attribute_names=['user'])
-    return db_log_entry
+    db.refresh(db_audit_log)
+    return db_audit_log
 
 # Function to get a single audit log entry by ID
-def get_audit_log(db: Session, log_id: int) -> Optional[models.AuditLog]: # Changed log_id type to int
-    # Eagerly load user if needed
-    return (
-        db.query(models.AuditLog)
-        # .options(joinedload(models.AuditLog.user)) # Uncomment if user
-        # relationship needs to be eagerly loaded
-        .filter(models.AuditLog.id == log_id)
-        .first()
-    )
+def get_audit_log(db: Session, audit_log_id: str) -> Optional[AuditLogModel]:
+    """Retrieve a single audit log entry by its ID."""
+    return db.query(AuditLogModel).filter(AuditLogModel.id == audit_log_id).first()
 
 # Function to get audit log entries by entity
 def get_audit_logs_by_entity(
@@ -97,3 +81,21 @@ def delete_audit_log(db: Session, log_id: int) -> bool: # Changed log_id type to
 
 # Add functions for getting log entries by date range, action type, etc.
 # as needed.
+
+def get_audit_logs(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    user_id: Optional[str] = None,
+    action: Optional[str] = None
+) -> List[AuditLogModel]:
+    """Retrieve multiple audit log entries with optional filtering and pagination."""
+    query = db.query(AuditLogModel)
+
+    if user_id:
+        query = query.filter(AuditLogModel.user_id == user_id)
+    
+    if action:
+        query = query.filter(AuditLogModel.action.ilike(f"%{action}%")) # Case-insensitive search for action
+
+    return query.order_by(AuditLogModel.timestamp.desc()).offset(skip).limit(limit).all()

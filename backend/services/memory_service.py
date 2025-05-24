@@ -8,6 +8,19 @@ import json # Needed for json.dumps
 # Import specific schema classes from their files
 from backend.schemas.memory import MemoryEntityCreate, MemoryEntityUpdate, MemoryObservationCreate, MemoryRelationCreate # Import from the specific file
 
+# Assuming a schema for MemoryEntityCreate exists
+from backend.crud.memory import ( # Assuming memory CRUD exists
+    create_memory_entity,
+    get_memory_entity,
+    get_memory_entities,
+    update_memory_entity,
+    delete_memory_entity,
+    get_memory_entities_by_source_type # Assuming this exists for filtering
+)
+
+# Assuming Desktop Commander tools can be accessed or wrapped
+# from mcp_desktop_commander import read_file, get_file_info # Conceptual import
+
 logger = logging.getLogger(__name__)
 
 class MemoryService:
@@ -15,6 +28,53 @@ class MemoryService:
 
     def __init__(self, db: Session):
         self.db = db
+
+    def create_entity(self, entity_data: MemoryEntityCreate) -> models.MemoryEntity:
+        """Create a new MemoryEntity."""
+        return create_memory_entity(self.db, entity_data)
+
+    def get_entity(self, entity_id: int) -> Optional[models.MemoryEntity]:
+        """Retrieve a MemoryEntity by ID."""
+        return get_memory_entity(self.db, entity_id)
+
+    def get_entities(self, skip: int = 0, limit: int = 100) -> List[models.MemoryEntity]:
+        """Retrieve multiple MemoryEntities."""
+        return get_memory_entities(self.db, skip, limit)
+
+    def update_entity(self, entity_id: int, entity_update: MemoryEntityUpdate) -> Optional[models.MemoryEntity]:
+        """Update a MemoryEntity."""
+        return update_memory_entity(self.db, entity_id, entity_update)
+
+    def delete_entity(self, entity_id: int) -> bool:
+        """Delete a MemoryEntity."""
+        return delete_memory_entity(self.db, entity_id)
+
+    def ingest_file(self, file_path: str, user_id: Optional[str] = None) -> models.MemoryEntity:
+        """Ingest a file into the Knowledge Graph as a MemoryEntity.
+
+        Reads file content and metadata, creates a MemoryEntity.
+        """
+        # TODO: Implement actual file reading and metadata extraction using Desktop Commander tools.
+        # This might require a separate service/agent interaction depending on framework.
+        # For now, simulate or add placeholder.
+
+        file_content = "Placeholder file content." # Replace with tool call
+        file_info = {"filename": file_path.split('/')[-1], "path": file_path, "size": len(file_content)} # Replace with tool call
+
+        # Create a MemoryEntityCreate schema instance
+        entity_create = MemoryEntityCreate(
+            entity_type="file",
+            content=file_content,
+            metadata=file_info,
+            source="file_ingestion",
+            source_metadata={"path": file_path},
+            created_by_user_id=user_id
+        )
+
+        # Use the CRUD function to create the entity
+        return self.create_entity(entity_create)
+
+    # Add other ingestion methods as needed (e.g., from URLs, text snippets)
 
     def create_memory_entity(self, entity: MemoryEntityCreate) -> models.MemoryEntity:
         """Creates a new memory entity."""
@@ -42,10 +102,6 @@ class MemoryService:
         """Gets a memory entity by its unique name."""
         return self.db.query(models.MemoryEntity).filter(models.MemoryEntity.name == name).first()
 
-    def get_memory_entity_by_id(self, entity_id: int) -> Optional[models.MemoryEntity]:
-        """Gets a memory entity by its ID."""
-        return self.db.query(models.MemoryEntity).filter(models.MemoryEntity.id == entity_id).first()
-
     def get_memory_entities(self, type: Optional[str] = None, name: Optional[str] = None, skip: int = 0, limit: int = 100) -> List[models.MemoryEntity]:
         """Gets a list of memory entities, optionally filtered by type or name."""
         query = self.db.query(models.MemoryEntity)
@@ -58,18 +114,6 @@ class MemoryService:
     def get_memory_entities_by_type(self, entity_type: str, skip: int = 0, limit: int = 100) -> List[models.MemoryEntity]:
         """Gets a list of memory entities filtered by type."""
         return self.db.query(models.MemoryEntity).filter(models.MemoryEntity.type == entity_type).offset(skip).limit(limit).all()
-
-    def update_memory_entity(self, entity_id: int, entity_update: MemoryEntityUpdate) -> Optional[models.MemoryEntity]:
-        """Updates an existing memory entity."""
-        db_entity = self.get_memory_entity_by_id(entity_id)
-        if db_entity:
-            update_data = entity_update.model_dump(exclude_unset=True)
-            for key, value in update_data.items():
-                setattr(db_entity, key, value)
-            self.db.commit()
-            self.db.refresh(db_entity)
-            logger.info(f"Updated memory entity: {db_entity.id}")
-        return db_entity
 
     def delete_memory_entity(self, entity_id: int) -> Optional[models.MemoryEntity]:
         """Deletes a memory entity and its associated observations and relations."""

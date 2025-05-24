@@ -5,6 +5,9 @@ Handles router configuration and logging setup.
 
 import logging
 from fastapi import FastAPI
+from pydantic_settings import BaseSettings
+import os
+from typing import Optional
 
 # Import routers
 from backend.routers.projects import router as projects_router
@@ -15,6 +18,22 @@ from backend.routers.rules import router as rules_router
 from backend.routers.memory import router as memory_router
 from backend.routers.mcp import router as mcp_tools_router
 
+# Pydantic BaseSettings for application configuration
+class Settings(BaseSettings):
+    """
+    Application settings loaded from environment variables or a .env file.
+    
+    This class uses Pydantic's BaseSettings to manage application configuration.
+    Settings are loaded from environment variables, with values from a .env file
+    taking precedence over defaults defined here.
+    """
+    DATABASE_URL: str = "sqlite:///D:/mcp/task-manager/sql_app.db" # Default database URL, can be overridden by DATABASE_URL env var in .env
+    # Add other configuration variables here as needed
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
 
 def configure_logging():
     """Configure application logging."""

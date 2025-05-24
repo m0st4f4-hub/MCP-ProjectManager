@@ -13,6 +13,9 @@ from backend.crud.task_file_associations import (
 # Import validation helpers (if needed for service-specific checks, but aiming to push to CRUD)
 # from backend.crud.task_file_association_validation import file_entity_exists, task_entity_exists
 
+# Import schema for TaskFileAssociationCreate
+from backend.schemas.file_association import TaskFileAssociationCreate # Import schema
+
 
 class TaskFileAssociationService:
     def __init__(self, db: Session):
@@ -44,3 +47,24 @@ class TaskFileAssociationService:
     def disassociate_file_from_task(self, task_project_id: str, task_task_number: int, file_memory_entity_id: int) -> bool:
         # Delegate to CRUD delete function
         return delete_task_file_association(self.db, task_project_id, task_task_number, file_memory_entity_id)
+
+    def associate_multiple_files_with_task(
+        self,
+        task_project_id: str,
+        task_task_number: int,
+        file_memory_entity_ids: List[int]
+    ) -> List[models.TaskFileAssociation]:
+        """Associate multiple files with a task."""
+        created_associations = []
+        for file_memory_entity_id in file_memory_entity_ids:
+            # Check if association already exists to avoid duplicates
+            existing_association = self.get_association(task_project_id, task_task_number, file_memory_entity_id)
+            if not existing_association:
+                association_schema = TaskFileAssociationCreate(
+                    task_project_id=task_project_id,
+                    task_task_number=task_task_number,
+                    file_memory_entity_id=file_memory_entity_id
+                )
+                db_association = create_task_file_association(self.db, association_schema)
+                created_associations.append(db_association)
+        return created_associations

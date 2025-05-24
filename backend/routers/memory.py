@@ -1,27 +1,111 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Path, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from .. import crud
-from backend.database import get_db # Corrected import
-from ..crud import memory as memory_crud
+from backend.database import get_db
+from backend.services.memory_service import MemoryService
+from backend.schemas.memory import MemoryEntity, MemoryEntityCreate, MemoryEntityUpdate, MemoryEntityBase # Assuming these schemas exist
 
-# Import schemas directly from the memory schema module
-from backend.schemas.memory import (\
-    MemoryEntity,\
-    MemoryEntityCreate,\
-    MemoryEntityUpdate,\
-    MemoryObservation,\
-    MemoryObservationCreate,\
-    MemoryRelation,\
-    MemoryRelationCreate\
-)
+# Import auth dependency if needed for protected endpoints
+from backend.auth import get_current_active_user # Assuming this exists
+from backend.models import User as UserModel # For type hinting current_user
+from pydantic import BaseModel, Field # Import BaseModel and Field at the top
 
 router = APIRouter(
     prefix="/memory",
-    tags=["memory"],
-    responses={404: {"description": "Not found"}},
+    tags=["Memory / Knowledge Graph"],
+    # Optionally add dependencies for authentication for all endpoints here
+    # dependencies=[Depends(get_current_active_user)]
 )
+
+def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
+    return MemoryService(db)
+
+# Endpoint for creating a MemoryEntity directly (if needed)
+@router.post("/", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
+def create_memory_entity_endpoint(
+    entity_data: MemoryEntityCreate,
+    memory_service: MemoryService = Depends(get_memory_service),
+    # current_user: UserModel = Depends(get_current_active_user) # If protected
+):
+    """Create a new MemoryEntity."""
+    return memory_service.create_entity(entity_data)
+
+# Endpoint for getting a MemoryEntity by ID
+@router.get("/{entity_id}", response_model=MemoryEntity)
+def read_memory_entity_endpoint(
+    entity_id: int = Path(..., description="ID of the MemoryEntity"),
+    memory_service: MemoryService = Depends(get_memory_service)
+):
+    """Retrieve a MemoryEntity by ID."""
+    db_entity = memory_service.get_entity(entity_id)
+    if db_entity is None:
+        raise HTTPException(status_code=404, detail="Memory entity not found")
+    return db_entity
+
+# Endpoint for listing MemoryEntities
+@router.get("/", response_model=List[MemoryEntity])
+def list_memory_entities_endpoint(
+    skip: int = 0,
+    limit: int = 100,
+    memory_service: MemoryService = Depends(get_memory_service)
+):
+    """Retrieve a list of MemoryEntities."""
+    return memory_service.get_entities(skip=skip, limit=limit)
+
+# Endpoint for updating a MemoryEntity
+@router.put("/{entity_id}", response_model=MemoryEntity)
+def update_memory_entity_endpoint(
+    entity_id: int = Path(..., description="ID of the MemoryEntity"),
+    entity_update: MemoryEntityUpdate,
+    memory_service: MemoryService = Depends(get_memory_service),
+    # current_user: UserModel = Depends(get_current_active_user) # If protected
+):
+    """Update a MemoryEntity by ID."""
+    db_entity = memory_service.update_entity(entity_id, entity_update)
+    if db_entity is None:
+        raise HTTPException(status_code=404, detail="Memory entity not found")
+    return db_entity
+
+# Endpoint for deleting a MemoryEntity
+@router.delete("/{entity_id}", response_model=dict)
+def delete_memory_entity_endpoint(
+    entity_id: int = Path(..., description="ID of the MemoryEntity"),
+    memory_service: MemoryService = Depends(get_memory_service),
+    # current_user: UserModel = Depends(get_current_active_user) # If protected
+):
+    """Delete a MemoryEntity by ID."""
+    success = memory_service.delete_entity(entity_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Memory entity not found")
+    return {"message": "Memory entity deleted successfully"}
+
+# Endpoint for file ingestion
+
+class FileIngestInput(BaseModel):
+    file_path: str = Field(..., description="Absolute path to the file to ingest.")
+
+@router.post("/ingest/file", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
+def ingest_file_endpoint(
+    ingest_input: FileIngestInput = Body(..., description="Input data for file ingestion."),
+    memory_service: MemoryService = Depends(get_memory_service),
+    current_user: UserModel = Depends(get_current_active_user) # Protect endpoint
+):
+    """Ingest a file into the Knowledge Graph.
+
+    Reads the file content and metadata and creates a MemoryEntity.
+    Requires authentication.
+    """
+    try:
+        # Delegate ingestion to the service layer
+        db_entity = memory_service.ingest_file(file_path=ingest_input.file_path, user_id=current_user.id)
+        return db_entity
+    except Exception as e:
+        # TODO: Handle specific file reading/metadata extraction errors more gracefully
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to ingest file: {e}")
+
+# TODO: Add endpoints for retrieving file content/metadata by MemoryEntity ID.
+# TODO: Add endpoints for other ingestion types (e.g., URL, text snippet).
 
 @router.post("/entities/", response_model=MemoryEntity)
 def create_entity(entity: MemoryEntityCreate, db: Session = Depends(get_db)):

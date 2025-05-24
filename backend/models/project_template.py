@@ -1,24 +1,29 @@
-# Task ID: <taskId>
-# Agent Role: CodeStructureSpecialist
-# Request ID: <requestId>
-# Project: task-manager
-# Timestamp: <timestamp>
+"""Project Template model."""
 
-from sqlalchemy import Column, String, Text
+from sqlalchemy import String, Text, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
-from typing import Optional
-import uuid
+from sqlalchemy.dialects.postgresql import JSONB
+# from sqlalchemy import JSON # For SQLite or other DBs
+from typing import Optional, Dict, Any
+import datetime
 
-from ..database import Base  # Import Base from backend/database.py
-
+from .base import Base, generate_uuid_with_hyphens
 
 class ProjectTemplate(Base):
     __tablename__ = "project_templates"
 
-    id: Mapped[str] = mapped_column(
-        String(32), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=generate_uuid_with_hyphens)
     name: Mapped[str] = mapped_column(String, unique=True, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    # template_data stores the structure, e.g., default tasks, task statuses, member roles
+    template_data: Mapped[Dict[str, Any]] = mapped_column(JSONB) 
+    # For SQLite, use Text and manually handle JSON serialization/deserialization
+    # template_data: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+    def __repr__(self):
+        return f"<ProjectTemplate(id={self.id}, name='{self.name}')>"
 
     # Assuming a relationship to default tasks/roles defined elsewhere or through a linking table
     # For now, no direct relationship defined here. 

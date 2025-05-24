@@ -26,6 +26,11 @@ from backend.schemas.comment import Comment # Import Comment from comment.py
 # Import the TaskStatusEnum for router parameters
 from backend.enums import TaskStatusEnum
 
+# Import auth dependencies and AuditLogService
+from backend.auth import get_current_active_user # Assuming get_current_active_user is needed
+from backend.services.audit_log_service import AuditLogService
+from backend.models import User as UserModel # For type hinting current_user
+
 router = APIRouter(
     tags=["Tasks"],
 )
@@ -47,6 +52,11 @@ def get_task_dependency_service(db: Session = Depends(get_db)) -> TaskDependency
     return TaskDependencyService(db)
 
 
+# Dependency for AuditLogService
+def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
+    return AuditLogService(db)
+
+
 @router.post(
     "/{project_id}/tasks/",
     response_model=Task, # Use the directly imported class
@@ -57,14 +67,28 @@ def get_task_dependency_service(db: Session = Depends(get_db)) -> TaskDependency
 def create_task_for_project(
     project_id: str,
     task: TaskCreate, # Use the directly imported class
-    task_service: TaskService = Depends(get_task_service)
+    task_service: TaskService = Depends(get_task_service),
+    current_user: UserModel = Depends(get_current_active_user), # Inject current user
+    audit_log_service: AuditLogService = Depends(get_audit_log_service) # Inject AuditLogService
 ):
     """Create a new task in a project."""
     try:
-        return task_service.create_task(
+        db_task = task_service.create_task(
             project_id=uuid.UUID(project_id),
             task=task
         )
+        # Log task creation
+        audit_log_service.create_log(
+            action="create_task",
+            user_id=current_user.id,
+            details={
+                "project_id": project_id,
+                "task_id": db_task.id, # Assuming task model has an id field
+                "task_number": db_task.task_number,
+                "task_title": db_task.title
+            }
+        )
+        return db_task
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

@@ -28,8 +28,9 @@ class ProjectBase(BaseModel):
 
 
 class ProjectCreate(ProjectBase):
-    """Schema for creating a new project."""
-    pass
+    """Schema used for creating a new project."""
+    # Add optional template_id field
+    template_id: Optional[str] = Field(None, description="Optional ID of a project template to use.")
 
 
 # Schema for updating a project (all fields optional)

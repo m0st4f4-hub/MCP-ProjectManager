@@ -7,6 +7,9 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List
 
+# Import UserRoleEnum
+from backend.enums import UserRoleEnum
+
 # Forward references for relationships
 # Comment = "backend.schemas.comment.Comment" # If Comment is in a separate module
 # ProjectMember = "backend.schemas.project.ProjectMember" # If ProjectMember is in a separate module
@@ -48,8 +51,10 @@ class User(UserBase):
 class UserRoleBase(BaseModel):
     """Base schema for user role attributes."""
     user_id: str = Field(..., description="The ID of the user.")
-    role_name: str = Field(
-        ..., description="The name of the role (e.g., 'admin', 'member', 'agent').")
+    # Use UserRoleEnum for role_name
+    role_name: UserRoleEnum = Field(
+        ..., description="The name of the role."
+    )
 
 
 class UserRoleCreate(UserRoleBase):

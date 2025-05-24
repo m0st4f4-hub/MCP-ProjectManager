@@ -2,11 +2,12 @@
 User and authentication related models.
 """
 
-from sqlalchemy import String, Boolean, ForeignKey, PrimaryKeyConstraint
+from sqlalchemy import String, Boolean, ForeignKey, PrimaryKeyConstraint, Enum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
 
 from .base import Base, generate_uuid_with_hyphens
+from backend.enums import UserRoleEnum
 
 
 class User(Base):
@@ -38,6 +39,6 @@ class UserRole(Base):
     __table_args__ = (PrimaryKeyConstraint('user_id', 'role_name'),)
 
     user_id: Mapped[str] = mapped_column(String(32), ForeignKey("users.id"))
-    role_name: Mapped[str] = mapped_column(String)  # e.g., "admin", "member", "agent"
+    role_name: Mapped[UserRoleEnum] = mapped_column(Enum(UserRoleEnum))
 
     user: Mapped["User"] = relationship(back_populates="user_roles")

@@ -25,6 +25,21 @@ from . import tasks # Import tasks router
 # Import specific schema classes from their files
 from backend.schemas.project import Project, ProjectCreate, ProjectUpdate, ProjectFileAssociation, ProjectFileAssociationCreate # Correct import location
 
+# Import auth dependencies and UserRoleEnum
+from backend.auth import get_current_active_user, RoleChecker
+from backend.enums import UserRoleEnum
+from backend.models import User as UserModel # For type hinting current_user
+
+# Import AuditLogService
+from backend.services.audit_log_service import AuditLogService
+
+# Import Pydantic for bulk association schema
+from pydantic import BaseModel
+
+# Define schema for bulk file association input
+class BulkFileAssociationInput(BaseModel):
+    file_memory_entity_ids: List[int]
+
 router = APIRouter(
     prefix="/projects",
     tags=["Projects"],
@@ -72,22 +87,40 @@ def get_task_dependency_service(db: Session = Depends(get_db)) -> TaskDependency
 def get_project_file_association_service(db: Session = Depends(get_db)) -> ProjectFileAssociationService:
     return ProjectFileAssociationService(db)
 
+# Dependency for AuditLogService
+def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
+    return AuditLogService(db)
 
-@router.post("/", response_model=Project, summary="Create Project", operation_id="create_project")
+
+@router.post("/", response_model=Project, summary="Create Project", operation_id="create_project",
+             dependencies=[Depends(RoleChecker([UserRoleEnum.ADMIN]))]) # Protect endpoint
 def create_project(
     project: ProjectCreate,
-    project_service: ProjectService = Depends(get_project_service)
+    project_service: ProjectService = Depends(get_project_service),
+    current_user: UserModel = Depends(get_current_active_user), # Inject current user
+    audit_log_service: AuditLogService = Depends(get_audit_log_service) # Inject AuditLogService
 ):
-    """Creates a new project.
+    """Creates a new project. Requires ADMIN role.
+
+    Optionally uses a project template.
+
     - **name**: Unique name for the project (required).
     - **description**: Optional description.
+    - **template_id**: Optional ID of a project template to use.
     """
     db_project = project_service.get_project_by_name(
         name=project.name, is_archived=None)
     if db_project:
         raise HTTPException(
             status_code=400, detail="Project name already registered")
-    db_project = project_service.create_project(project=project)
+    db_project = project_service.create_project(project=project, created_by_user_id=current_user.id)
+    
+    # Log project creation
+    audit_log_service.create_log(
+        action="create_project",
+        user_id=current_user.id,
+        details={"project_id": db_project.id, "project_name": db_project.name}
+    )
     return Project.model_validate(db_project)
 
 
@@ -341,3 +374,36 @@ def disassociate_file_from_project_by_file_memory_entity_id_endpoint( # Function
     if not success:
         raise HTTPException(status_code=404, detail="Project file association not found")
     return {"message": "Project file association deleted successfully"}
+
+@router.post(
+    "/{project_id}/files/bulk", # New endpoint for bulk association
+    response_model=List[ProjectFileAssociation],
+    summary="Associate Multiple Files with Project",
+    tags=["Project Files"],
+    operation_id="associate_multiple_files_with_project"
+)
+def associate_multiple_files_with_project_endpoint(
+    project_id: str,
+    bulk_input: BulkFileAssociationInput, # Use the new input schema
+    project_file_association_service: ProjectFileAssociationService = Depends(get_project_file_association_service),
+    current_user: UserModel = Depends(get_current_active_user) # Require authentication
+):
+    """Associate a list of files with a project using their memory entity IDs.
+
+    Requires authentication.
+    """
+    try:
+        # Delegate to the new service function
+        return project_file_association_service.associate_multiple_files_with_project(
+            project_id=project_id,
+            file_memory_entity_ids=bulk_input.file_memory_entity_ids
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Unexpected error in POST /projects/{project_id}/files/bulk: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}"
+        )

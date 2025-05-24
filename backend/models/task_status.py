@@ -8,7 +8,7 @@
 Model definition for task statuses.
 """
 
-from sqlalchemy import Column, String, DateTime, Boolean
+from sqlalchemy import Column, String, DateTime, Boolean, Integer
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime, timezone
 from typing import List, Optional
@@ -23,7 +23,8 @@ class TaskStatus(Base):
     Example statuses: "To Do", "In Progress", "Done", etc.
 
     Attributes:
-        name: The name of the status, serves as the primary key.
+        id: Integer primary key.
+        name: The name of the status.
         description: Optional detailed description of what this status means.
         is_default: Boolean flag indicating if this is the default status for new tasks.
         is_completed: Boolean flag indicating if tasks with this status are considered completed.
@@ -33,7 +34,8 @@ class TaskStatus(Base):
     """
     __tablename__ = "task_statuses"
 
-    name: Mapped[str] = mapped_column(String, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String, unique=True, index=True)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     is_default: Mapped[bool] = mapped_column(Boolean, default=False)
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False)

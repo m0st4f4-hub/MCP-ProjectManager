@@ -29,3 +29,22 @@ class ProjectFileAssociationService:
 
     def disassociate_file_from_project(self, project_id: str, file_memory_entity_id: int):
         return delete_project_file_association(self.db, project_id, file_memory_entity_id)
+
+    def associate_multiple_files_with_project(
+        self,
+        project_id: str,
+        file_memory_entity_ids: List[int]
+    ) -> List[models.ProjectFileAssociation]:
+        """Associate multiple files with a project."""
+        created_associations = []
+        for file_memory_entity_id in file_memory_entity_ids:
+            # Check if association already exists to avoid duplicates
+            existing_association = self.get_association(project_id, file_memory_entity_id)
+            if not existing_association:
+                association_schema = ProjectFileAssociationCreate(
+                    project_id=project_id,
+                    file_memory_entity_id=file_memory_entity_id
+                )
+                db_association = create_project_file_association(self.db, association_schema)
+                created_associations.append(db_association)
+        return created_associations

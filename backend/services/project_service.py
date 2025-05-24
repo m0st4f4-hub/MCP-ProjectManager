@@ -12,6 +12,11 @@ import uuid
 
 # Import specific schema classes from their files
 from backend.schemas.project import ProjectCreate, ProjectUpdate, ProjectMemberCreate, ProjectFileAssociationCreate
+# Import schema for ProjectTemplate
+from backend.schemas.project_template import ProjectTemplate
+# Import task and project member schemas for template population
+from backend.schemas import task as task_schemas
+from backend.schemas import project as project_schemas
 
 # Import CRUD operations
 from backend.crud.projects import (
@@ -33,6 +38,13 @@ from backend.crud.project_file_associations import (
     get_files_for_project,
     get_project_file_association
 )
+
+# Import CRUD for Project Templates
+from backend.crud import project_templates as project_template_crud
+# Import Task CRUD to create tasks from template
+from backend.crud import tasks as tasks_crud
+# Import Project Member CRUD to add members from template
+from backend.crud import project_members as project_members_crud
 
 # No need to import validation helpers in service, they are used in CRUD
 # from backend.crud.project_validation import project_name_exists
@@ -65,9 +77,56 @@ class ProjectService:
         # Delegate to CRUD
         return get_projects(self.db, skip, search, status, is_archived)
 
-    def create_project(self, project: ProjectCreate) -> models.Project:
-        # Delegate to CRUD
-        return create_project(self.db, project)
+    def create_project(
+        self, project: ProjectCreate, created_by_user_id: Optional[str] = None
+    ) -> models.Project:
+        """Create a new project, optionally using a template."""
+        template_data = None
+        if project.template_id:
+            # Fetch the template data
+            template = project_template_crud.get_project_template(
+                self.db, project.template_id
+            )
+            if not template:
+                raise ValueError(f"Project template with ID {project.template_id} not found.")
+            template_data = template.template_data
+
+        # Create the basic project first
+        db_project = create_project(self.db, project)
+
+        # If template data exists, use it to populate the project
+        if template_data:
+            # Example: Create default tasks from template_data
+            default_tasks = template_data.get("default_tasks", [])
+            for task_data in default_tasks:
+                # Assuming task_data is compatible with TaskCreate schema structure (title, description, status, etc.)
+                task_create_schema = task_schemas.TaskCreate(**task_data)
+                # Need to import TaskCreate and the tasks crud/service
+                tasks_crud.create_task(
+                    self.db, project_id=db_project.id, task=task_create_schema
+                )
+            
+            # Example: Add default members from template_data
+            default_members = template_data.get("default_members", [])
+            for member_data in default_members:
+                # Assuming member_data has 'user_id' and 'role'
+                # Need to import ProjectMemberCreate and project_members crud/service
+                member_create_schema = project_schemas.ProjectMemberCreate(**member_data, project_id=db_project.id)
+                project_members_crud.add_project_member(self.db, member_create_schema)
+            
+            # Add created_by_user to members if not already included and template specifies default members
+            if created_by_user_id and default_members:
+                 user_is_member = any(m.get("user_id") == created_by_user_id for m in default_members)
+                 if not user_is_member:
+                     # Add the user who created the project as a default member (e.g., with 'owner' role)
+                     # You might need a specific schema/logic for adding the owner
+                     # For now, just a placeholder or assume owner is added by default project creation
+                     pass # TODO: Implement adding creator as default member if needed
+
+        # Refresh the project to load the new tasks and members
+        self.db.refresh(db_project)
+
+        return db_project
 
     def update_project(
         self, project_id: str, project_update: ProjectUpdate

@@ -24,6 +24,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Import validation helpers
 from .user_validation import username_exists
 
+# Import UserRoleEnum for default role assignment
+from backend.enums import UserRoleEnum
+
 # Helper function to verify passwords
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plain password against a hashed password."""
@@ -43,6 +46,11 @@ def create_user(db: Session, user: UserCreate) -> models.User:
     hashed_password = get_password_hash(user.password)
     db_user = models.User(username=user.username,
                           hashed_password=hashed_password)
+    
+    # Assign a default role (e.g., USER) to the new user
+    default_role = models.UserRole(user=db_user, role_name=UserRoleEnum.USER)
+    db_user.user_roles.append(default_role) # Associate role with user
+
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

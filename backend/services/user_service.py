@@ -14,13 +14,12 @@ from backend.crud.users import (
     get_users,
     update_user,
     delete_user,
-    authenticate_user as crud_authenticate_user
+    authenticate_user as crud_authenticate_user,
+    username_exists
 )
 
-# Placeholder for token related logic (Should be moved to config)
-SECRET_KEY = "your-super-secret-key-change-me"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# Import configuration settings
+from backend.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 # No longer need to import validation helpers in service
 # from backend.crud.user_validation import some_validation_function
@@ -47,7 +46,12 @@ class UserService:
         # Service layer orchestrates data preparation and calls CRUD.
         # Validation for username existence, password strength, etc. would go here or in validation module.
 
-        # Delegate to CRUD create function
+        # Check if username already exists at the service layer
+        if username_exists(self.db, user_create.username):
+            # Raise a ValueError or a more specific service-level exception
+            raise ValueError(f"Username '{user_create.username}' already exists")
+
+        # Delegate to CRUD create function if username is unique
         return create_user(self.db, user_create)
 
     def update_user(self, user_id: str, user_update: schemas.UserUpdate) -> Optional[models.User]:
@@ -68,7 +72,8 @@ class UserService:
         if expires_delta:
             expire = datetime.utcnow() + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(minutes=15) # Default expiry
+            # Use expiry from config
+            expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
