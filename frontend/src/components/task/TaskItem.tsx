@@ -8,6 +8,7 @@ import {
   HStack,
   VStack,
   useToast,
+  Button,
 } from "@chakra-ui/react";
 import { useProjectStore } from "@/store/projectStore";
 import { useTaskStore } from "@/store/taskStore";
@@ -54,6 +55,8 @@ const TaskItem: React.FC<TaskItemProps> = memo(
     const projectName = projects.find((p) => p.id === task.project_id)?.name; // Fetches project name from store
 
     const editTaskInStore = useTaskStore((state) => state.updateTask); // Zustand store action for updating tasks
+    const archiveTask = useTaskStore((state) => state.archiveTask);
+    const unarchiveTask = useTaskStore((state) => state.unarchiveTask);
 
     const toast = useToast(); // Chakra UI toast for notifications
 
@@ -70,7 +73,7 @@ const TaskItem: React.FC<TaskItemProps> = memo(
       const newStatus = task.status !== "COMPLETED" ? "COMPLETED" : "TO_DO";
       try {
         // Attempt to update the task in the store.
-        await editTaskInStore(task.id, { status: newStatus });
+        await editTaskInStore(task.project_id, task.task_number, { status: newStatus });
       } catch {
         // If the update fails, show an error toast.
         toast({
@@ -80,7 +83,7 @@ const TaskItem: React.FC<TaskItemProps> = memo(
           isClosable: true,
         });
       }
-    }, [task.id, task.status, editTaskInStore, toast]); // Dependencies for useCallback
+    }, [task.project_id, task.task_number, task.status, editTaskInStore, toast]); // Dependencies for useCallback
 
     // Determine the accent color for the left border based on the task status.
     const currentAccentColor = getStatusAccentColor(
@@ -177,6 +180,19 @@ const TaskItem: React.FC<TaskItemProps> = memo(
         {/* Modals related to task actions (e.g., edit, details) */}
         {/* This component likely handles its own visibility based on internal state or props from TaskItem */}
         <TaskItemModals task={task} />
+        <Button
+          size="xs"
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent task item click when clicking the button
+            if (task.is_archived) {
+              unarchiveTask({ project_id: task.project_id, task_number: task.task_number });
+            } else {
+              archiveTask({ project_id: task.project_id, task_number: task.task_number });
+            }
+          }}
+        >
+          {task.is_archived ? "Unarchive" : "Archive"}
+        </Button>
       </Box>
     );
   }

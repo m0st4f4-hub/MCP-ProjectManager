@@ -10,10 +10,10 @@ An open-source, full-stack suite for collaborative project management, empowerin
 
 *   **Backend:**
     *   FastAPI (Python 3.x)
-    *   SQLAlchemy (ORM)
+    *   SQLAlchemy (ORM) - *Used for Project Management, Agent Roles, and Knowledge Graph/Memory*
     *   Pydantic (Data Validation)
     *   Alembic (Database Migrations)
-    *   SQLite (Default) / PostgreSQL (Optional)
+    *   SQLite (Default) / PostgreSQL (Optional) - *Used for Project Management, Agent Roles, and Knowledge Graph/Memory*
     *   Uvicorn (ASGI Server)
     *   `python-dotenv` (Environment Variables)
     *   MCP Server Integration (`fastapi-mcp`)
@@ -42,11 +42,14 @@ project-manager/
 │                           # (Subdirectories like alembic/, tests/ also have READMEs)
 │   ├── .venv/              # Python virtual environment
 │   ├── alembic/            # Alembic migration scripts
-│   ├── crud.py             # Database CRUD functions
+│   ├── crud/               # Database CRUD functions
+│   │   └── memory.py       # CRUD operations for memory models
 │   ├── database.py         # Database engine, session, Base
 │   ├── main.py             # FastAPI application, routes, MCP integration
-│   ├── models.py           # SQLAlchemy ORM models
-│   ├── schemas.py          # Pydantic schemas for API data
+│   ├── models.py           # SQLAlchemy ORM models (*Updated with memory models*)
+│   ├── routers/            # API Routers
+│   │   └── memory.py       # Endpoints for the memory service
+│   ├── schemas.py          # Pydantic schemas for API data (*Updated with memory schemas*)
 │   ├── tests/              # Backend tests
 │   ├── pyproject.toml      # Project metadata and dependencies (or requirements.txt)
 │   └── sql_app.db          # SQLite database file
@@ -74,6 +77,10 @@ project-manager/
 *   **Collaborative Project Management:** Enables seamless collaboration between human users and AI agents.
 *   **MCP Integration:** Leverages the Model Context Protocol for rule-driven agent orchestration, automation, and task delegation.
 *   **Agentic Capabilities:** Define and utilize different AI agents for specialized tasks within projects.
+*   **Knowledge Graph / Memory Service:**
+    *   Provides a centralized, database-backed store for structured information.
+    *   Enables agents and potentially human users to store, retrieve, and relate entities, observations, and facts.
+    *   Powers enhanced contextual understanding and persistent memory for agents.
 *   **Unified Interface:** Modern WebGUI (Next.js/Chakra UI) for human interaction, monitoring, and guidance.
 *   **Comprehensive Task Management:** Create, view, update, delete, and assign tasks and subtasks.
 *   **Project Organization:** Group tasks into projects with descriptions and statuses.
@@ -106,7 +113,7 @@ python -m venv .venv
 # Install dependencies
 # The cli.js installs these directly: fastapi, uvicorn, sqlalchemy, alembic, psycopg2-binary
 # Ensure these are captured in a requirements.txt or pyproject.toml for manual setup if preferred.
-pip install fastapi uvicorn sqlalchemy alembic psycopg2-binary
+pip install fastapi uvicorn sqlalchemy alembic psycopg2-binary python-dotenv
 
 # (Optional) Configure PostgreSQL
 # 1. Create a .env file in the backend/ directory
@@ -148,7 +155,7 @@ A `dev_launcher.bat` script is available in the project root. This batch file at
 ## How It Works
 
 1.  The **MCP Project Manager CLI** (`cli.js`) orchestrates the setup and launching of all services.
-2.  The **FastAPI backend** (Python) serves the main API, manages database interactions (via SQLAlchemy and Pydantic), and integrates the MCP server (`fastapi-mcp`) for agentic operations based on `.cursor/rules`.
+2.  The **FastAPI backend** (Python) serves the main API, manages database interactions (via SQLAlchemy and Pydantic), and integrates the MCP server (`fastapi-mcp`) for agentic operations based on `.cursor/rules`. *It now also includes a dedicated Knowledge Graph/Memory service for storing and retrieving structured information.*
 3.  The **Next.js frontend** (TypeScript, Chakra UI) provides a responsive and themeable user interface for project and task management, interacting with the backend API.
 4.  **Zustand** is used for client-side state management in the frontend.
 5.  **Chakra UI** provides the component library and styling, ensuring a consistent and modern look and feel with light/dark mode support.

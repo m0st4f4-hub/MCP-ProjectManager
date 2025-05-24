@@ -26,7 +26,7 @@ const TaskItemModals: React.FC<TaskItemModalsProps> = ({ task }) => {
       <TaskDetailsModal
         isOpen={isDetailsModalOpen}
         onClose={handleCloseDetailsModal}
-        taskId={task.id}
+        taskId={`${task.project_id}-${task.task_number}`}
       />
     </>
   );

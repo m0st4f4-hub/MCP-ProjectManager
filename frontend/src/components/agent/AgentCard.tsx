@@ -20,17 +20,8 @@ import { formatDisplayName } from "@/lib/utils";
 import AppIcon from "../common/AppIcon";
 import { CopyIcon as ChakraCopyIcon } from "@chakra-ui/icons";
 
-export interface AgentStats {
-  taskCount: number;
-  projectCount: number;
-  projectNames: string[];
-  status: string;
-  statusColorScheme: string;
-}
-
 interface AgentCardProps {
   agent: Agent;
-  agentStats: AgentStats;
   onOpenEditModal: (agent: Agent) => void;
   onCopyAgentId: (id: string) => void;
   onOpenCliPrompt: (agent: Agent) => void;
@@ -40,33 +31,26 @@ interface AgentCardProps {
 
 const AgentCard: React.FC<AgentCardProps> = ({
   agent,
-  agentStats,
   onOpenEditModal,
   onCopyAgentId,
   onOpenCliPrompt,
   onAgentDelete,
   onCopyGetCommand,
 }) => {
-  const {
-    taskCount,
-    projectCount,
-    projectNames,
-    status /* statusColorScheme */,
-  } = agentStats;
+  const totalTasks = agent.task_count ?? 0;
+  const completedTasks = agent.completed_task_count ?? 0;
 
-  // Determine dynamic styles based on status
-  let statusStyles: { bg: string; color: string } = { bg: "", color: "" };
-  if (status.toLowerCase() === "active") {
-    statusStyles = {
-      bg: "agentStatusActiveBg",
-      color: "agentStatusActiveText",
-    };
-  } else if (status.toLowerCase() === "idle") {
-    statusStyles = {
-      bg: "agentStatusIdleBg",
-      color: "agentStatusIdleText",
-    };
+  // Use only backend-provided status for display, default to 'Offline' if missing
+  const status = agent.status ? agent.status.charAt(0).toUpperCase() + agent.status.slice(1).toLowerCase() : "Offline";
+  let statusStyles: { bg: string; color: string } = { bg: "agentStatusOfflineBg", color: "agentStatusOfflineText" };
+
+  if (status.toLowerCase() === "busy") {
+    statusStyles = { bg: "agentStatusActiveBg", color: "agentStatusActiveText" };
+  } else if (status.toLowerCase() === "available") {
+    statusStyles = { bg: "agentStatusIdleBg", color: "agentStatusIdleText" };
   }
+
+  const projectCount = agent.project_names?.length ?? 0;
 
   return (
     <Box
@@ -181,7 +165,7 @@ const AgentCard: React.FC<AgentCardProps> = ({
           Tasks:
         </Text>
         <Text fontSize="sm" color="textPrimary" ml="1">
-          {taskCount}
+          {agent.task_count ?? 0}
         </Text>
       </HStack>
       <HStack alignItems="baseline" mb="1">
@@ -194,7 +178,7 @@ const AgentCard: React.FC<AgentCardProps> = ({
       </HStack>
       {projectCount > 0 && (
         <Text fontSize="xs" color="textSecondary" mt="0.5" pl="1">
-          ({projectNames.join(", ")})
+          {(agent.project_names ?? []).join(", ")}
         </Text>
       )}
     </Box>

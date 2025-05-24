@@ -31,7 +31,7 @@ interface EditTaskModalProps {
    * Callback function invoked when the user submits the form to save changes.
    * It receives the ID of the task being updated and an object containing the updated task fields.
    */
-  onUpdate: (id: string, data: TaskUpdateData) => Promise<void>;
+  onUpdate: (project_id: string, task_number: number, data: TaskUpdateData) => Promise<void>;
 }
 
 /**
@@ -62,7 +62,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
   // Wrapper function for the onUpdate prop to match TaskForm's onSubmit signature.
   // TaskForm's onSubmit expects to pass only the data, but we also need the task.id here.
   const handleUpdate = async (data: TaskUpdateData) => {
-    await onUpdate(task.id, data); // Call the passed onUpdate function with task ID and new data
+    await onUpdate(task.project_id, task.task_number, data);
   };
 
   return (

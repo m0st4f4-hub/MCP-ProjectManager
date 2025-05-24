@@ -19,10 +19,10 @@ import { useAgentStore } from "./agentStore";
 
 // Improved upsertTasks: preserve references for unchanged items
 const upsertTasks = (tasksToUpsert: Task[], existingTasks: Task[]): Task[] => {
-  const taskMap = new Map(existingTasks.map((task) => [task.id, task]));
+  const taskMap = new Map(existingTasks.map((task) => [`${task.project_id}-${task.task_number}`, task]));
   const result: Task[] = [];
   for (const newTask of tasksToUpsert) {
-    const oldTask = taskMap.get(newTask.id);
+    const oldTask = taskMap.get(`${newTask.project_id}-${newTask.task_number}`);
     if (oldTask && shallow(oldTask, newTask)) {
       result.push(oldTask); // preserve reference
     } else {
@@ -32,11 +32,17 @@ const upsertTasks = (tasksToUpsert: Task[], existingTasks: Task[]): Task[] => {
   return result;
 };
 
-// Utility: Compare arrays of tasks by id and shallow equality
+// Utility: Compare arrays of tasks by composite key and shallow equality
 const areTasksEqual = (a: Task[], b: Task[]): boolean => {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
-    if (a[i].id !== b[i].id || !shallow(a[i], b[i])) return false;
+    if (
+      a[i].project_id !== b[i].project_id ||
+      a[i].task_number !== b[i].task_number ||
+      !shallow(a[i], b[i])
+    ) {
+      return false;
+    }
   }
   return true;
 };
@@ -72,30 +78,37 @@ export interface TaskState {
   projects: Project[];
   agents: Agent[];
   pollingIntervalId: NodeJS.Timeout | null;
-  selectedTaskIds: string[]; // New state for selected task IDs
+  selectedTaskIds: string[]; // Now stores composite keys like "project_id-task_number"
 
   // Actions
   fetchTasks: (filters?: TaskFilters, isPoll?: boolean) => Promise<void>; // MODIFIED to accept isPoll to differentiate behavior
   fetchProjectsAndAgents: () => Promise<void>;
   addTask: (taskData: TaskCreateData) => Promise<void>;
   updateTask: (
-    taskId: string,
+    project_id: string,
+    task_number: number,
     taskData: Partial<TaskUpdateData>,
   ) => Promise<void>;
-  deleteTask: (taskId: string) => Promise<void>;
+  deleteTask: (
+    project_id: string,
+    task_number: number,
+  ) => Promise<void>;
   setSortOptions: (sortOptions: TaskSortOptions) => void;
   setFilters: (filters: Partial<TaskFilters>) => void; // MODIFIED: Partial for filters
   setEditingTask: (task: Task | null) => void;
   clearError: () => void;
   clearPollingError: () => void;
   clearMutationError: () => void;
-  getTaskById: (id: string) => Task | undefined;
+  getTaskById: (
+    project_id: string,
+    task_number: number,
+  ) => Task | undefined;
   startPolling: () => void;
   stopPolling: () => void;
 
   // Selection Actions
-  toggleTaskSelection: (taskId: string) => void;
-  selectAllTasks: (taskIds: string[]) => void;
+  toggleTaskSelection: (taskKey: string) => void;
+  selectAllTasks: (taskKeys: string[]) => void; // Expects composite keys
   deselectAllTasks: () => void;
   // Bulk actions
   bulkDeleteTasks: () => Promise<void>;
@@ -103,8 +116,14 @@ export interface TaskState {
   removeTasksByProjectId: (projectId: string) => void;
 
   // Archive actions ADDED
-  archiveTask: (taskId: string) => Promise<void>;
-  unarchiveTask: (taskId: string) => Promise<void>;
+  archiveTask: (
+    project_id: string,
+    task_number: number,
+  ) => Promise<void>;
+  unarchiveTask: (
+    project_id: string,
+    task_number: number,
+  ) => Promise<void>;
   archiveTasksByProjectId: (projectId: string) => void;
   unarchiveTasksByProjectId: (projectId: string) => void;
 }
@@ -143,17 +162,20 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       set({ isPolling: true, pollingError: null });
     }
     const currentActiveFilters = filtersToApply || get().filters;
+    const currentSortOptions = get().sortOptions;
     console.log(
       "[TaskStore] Fetching tasks with filters:",
       currentActiveFilters,
+      "and sort options:",
+      currentSortOptions,
     );
     try {
-      const fetchedTasks = await api.getTasks(currentActiveFilters);
+      // Pass sortOptions to API so backend handles sorting
+      const fetchedTasks = await api.getTasks(currentActiveFilters, currentSortOptions);
       set((state) => {
         let updatedTasks = upsertTasks(fetchedTasks, state.tasks);
-        const fetchedIds = new Set(fetchedTasks.map((t) => t.id));
-        updatedTasks = updatedTasks.filter((t) => fetchedIds.has(t.id));
-
+        const fetchedIds = new Set(fetchedTasks.map((t) => `${t.project_id}-${t.task_number}`));
+        updatedTasks = updatedTasks.filter((t) => fetchedIds.has(`${t.project_id}-${t.task_number}`));
         const newState: Partial<TaskState> = {};
         if (
           !isPoll &&
@@ -163,7 +185,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
           newState.loading = false;
           return newState;
         }
-        newState.tasks = sortTasks(updatedTasks, state.sortOptions);
+        newState.tasks = updatedTasks; // No local sort, backend handles order
         if (!isPoll) newState.loading = false;
         if (isPoll) newState.isPolling = false;
         if (filtersToApply) newState.filters = currentActiveFilters;
@@ -173,7 +195,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       let errorMessage = "Failed to fetch tasks";
       if (error instanceof Error) errorMessage = error.message;
       else if (typeof error === "string") errorMessage = error;
-
       if (!isPoll) {
         set({ error: errorMessage, loading: false });
       } else {
@@ -240,12 +261,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   addTask: async (taskData: TaskCreateData) => {
     set({ loading: true, mutationError: null });
     try {
-      const newTask = await api.createTask(taskData);
+      const project_id = taskData.project_id;
+      if (!project_id) {
+        throw new Error("Project ID is required to add a task.");
+      }
+      const newTask = await api.createTask(project_id, taskData);
       set((state) => {
-        const newTasks = sortTasks(
-          [...state.tasks, newTask],
-          state.sortOptions,
-        );
+        // Insert new task at the start (or end) as desired, backend will re-sort on next fetch
+        const newTasks = [newTask, ...state.tasks];
         return {
           tasks: newTasks,
           loading: false,
@@ -268,21 +291,22 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     }
   },
 
-  updateTask: async (taskId: string, taskData: Partial<TaskUpdateData>) => {
+  updateTask: async (project_id: string, task_number: number, taskData: Partial<TaskUpdateData>) => {
     set({ loading: true, mutationError: null });
-    const originalTask = get().tasks.find((t) => t.id === taskId);
+    const originalTask = get().tasks.find((t) => t.project_id === project_id && t.task_number === task_number);
     try {
       const updatedTask = await api.updateTask(
-        taskId,
+        project_id,
+        task_number,
         taskData as TaskUpdateData,
       );
       set(
         produce((state: TaskState) => {
-          const index = state.tasks.findIndex((t) => t.id === taskId);
+          const index = state.tasks.findIndex((t) => t.project_id === project_id && t.task_number === task_number);
           if (index !== -1) {
             state.tasks[index] = updatedTask;
-            state.tasks = sortTasks(state.tasks, state.sortOptions);
           }
+          // No local sort, backend handles order
         }),
       );
       const currentFilters = get().filters;
@@ -300,7 +324,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         mutationError: {
           type: "edit",
           message: errorMessage,
-          taskId,
+          taskId: `${project_id}-${task_number}`,
           originalTask,
         },
         loading: false,
@@ -310,15 +334,15 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     }
   },
 
-  deleteTask: async (taskId: string) => {
+  deleteTask: async (project_id: string, task_number: number) => {
     set({ loading: true, mutationError: null });
     try {
-      await api.deleteTask(taskId);
+      await api.deleteTask(project_id, task_number);
       set((state) => {
-        const newTasks = state.tasks.filter((t) => t.id !== taskId);
+        const newTasks = state.tasks.filter((t) => t.project_id !== project_id || t.task_number !== task_number);
         return {
-          tasks: sortTasks(newTasks, state.sortOptions),
-          selectedTaskIds: state.selectedTaskIds.filter((id) => id !== taskId),
+          tasks: newTasks, // No local sort
+          selectedTaskIds: state.selectedTaskIds.filter((id) => id !== `${project_id}-${task_number}`),
           loading: false,
         };
       });
@@ -371,24 +395,24 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   clearPollingError: () => set({ pollingError: null }),
   clearMutationError: () => set({ mutationError: null }),
 
-  getTaskById: (id: string) => {
-    return get().tasks.find((task) => task.id === id);
+  getTaskById: (project_id: string, task_number: number) => {
+    return get().tasks.find((task) => task.project_id === project_id && task.task_number === task_number);
   },
 
-  toggleTaskSelection: (taskId: string) => {
+  toggleTaskSelection: (taskKey: string) => {
     set(
       produce((state: TaskState) => {
-        const index = state.selectedTaskIds.indexOf(taskId);
+        const index = state.selectedTaskIds.indexOf(taskKey);
         if (index > -1) {
           state.selectedTaskIds.splice(index, 1);
         } else {
-          state.selectedTaskIds.push(taskId);
+          state.selectedTaskIds.push(taskKey);
         }
       }),
     );
   },
-  selectAllTasks: (taskIds: string[]) => {
-    set({ selectedTaskIds: taskIds });
+  selectAllTasks: (taskKeys: string[]) => {
+    set({ selectedTaskIds: taskKeys });
   },
   deselectAllTasks: () => {
     set({ selectedTaskIds: [] });
@@ -398,11 +422,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     if (selectedTaskIds.length === 0) return;
     set({ loading: true, mutationError: null });
     try {
-      await Promise.all(selectedTaskIds.map((id) => api.deleteTask(id)));
+      await Promise.all(selectedTaskIds.map((id) => {
+        const [project_id, task_number] = id.split('-');
+        return api.deleteTask(project_id, parseInt(task_number));
+      }));
       set(
         produce((draft: TaskState) => {
           draft.tasks = draft.tasks.filter(
-            (task) => !selectedTaskIds.includes(task.id),
+            (task) => !selectedTaskIds.includes(`${task.project_id}-${task.task_number}`),
           );
           draft.selectedTaskIds = [];
         }),
@@ -424,14 +451,16 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
     const originalTasks: Task[] = [];
     selectedTaskIds.forEach((id) => {
-      const task = tasks.find((t) => t.id === id);
+      const [project_id, task_number] = id.split('-');
+      const task = tasks.find((t) => t.project_id === project_id && t.task_number === parseInt(task_number));
       if (task) originalTasks.push(JSON.parse(JSON.stringify(task)));
     });
 
     set(
       produce((draft: TaskState) => {
         selectedTaskIds.forEach((id) => {
-          const task = draft.tasks.find((t) => t.id === id);
+          const [project_id, task_number] = id.split('-');
+          const task = draft.tasks.find((t) => t.project_id === project_id && t.task_number === parseInt(task_number));
           if (task) task.status = status;
         });
       }),
@@ -439,9 +468,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
     try {
       await Promise.all(
-        selectedTaskIds.map((id) =>
-          api.updateTask(id, { status } as Partial<TaskUpdateData>),
-        ),
+        selectedTaskIds.map((id) => {
+          const [project_id, task_number] = id.split('-');
+          return api.updateTask(project_id, parseInt(task_number), { status } as Partial<TaskUpdateData>);
+        }),
       );
       await get().fetchTasks(get().filters);
     } catch (error) {
@@ -451,7 +481,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         produce((draft: TaskState) => {
           originalTasks.forEach((originalTask) => {
             const taskIndex = draft.tasks.findIndex(
-              (t) => t.id === originalTask.id,
+              (t) => t.project_id === originalTask.project_id && t.task_number === originalTask.task_number,
             );
             if (taskIndex !== -1) {
               draft.tasks[taskIndex] = originalTask;
@@ -470,24 +500,24 @@ export const useTaskStore = create<TaskState>((set, get) => ({
           (task) => task.project_id !== projectId,
         );
         draft.selectedTaskIds = draft.selectedTaskIds.filter((taskId) => {
-          const task = draft.tasks.find((t) => t.id === taskId);
+          const [project_id, task_number] = taskId.split('-');
+          const task = draft.tasks.find((t) => t.project_id === project_id && t.task_number === parseInt(task_number));
           return task ? task.project_id !== projectId : false;
         });
       }),
     );
   },
-  archiveTask: async (taskId: string) => {
+  archiveTask: async (project_id: string, task_number: number) => {
     set({ loading: true, mutationError: null });
-    const originalTask = get().tasks.find((t) => t.id === taskId);
+    const originalTask = get().tasks.find((t) => t.project_id === project_id && t.task_number === task_number);
     try {
-      const archivedTask = await api.archiveTask(taskId);
+      const archivedTask = await api.archiveTask(project_id, task_number);
       set(
         produce((state: TaskState) => {
-          const index = state.tasks.findIndex((t) => t.id === taskId);
+          const index = state.tasks.findIndex((t) => t.project_id === project_id && t.task_number === task_number);
           if (index !== -1) {
             state.tasks[index] = archivedTask;
           }
-          state.tasks = sortTasks(state.tasks, state.sortOptions);
         }),
       );
       const currentFilters = get().filters;
@@ -506,7 +536,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         mutationError: {
           type: "archive",
           message: errorMessage,
-          taskId,
+          taskId: `${project_id}-${task_number}`,
           originalTask,
         },
         loading: false,
@@ -515,18 +545,17 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       throw error;
     }
   },
-  unarchiveTask: async (taskId: string) => {
+  unarchiveTask: async (project_id: string, task_number: number) => {
     set({ loading: true, mutationError: null });
-    const originalTask = get().tasks.find((t) => t.id === taskId);
+    const originalTask = get().tasks.find((t) => t.project_id === project_id && t.task_number === task_number);
     try {
-      const unarchivedTask = await api.unarchiveTask(taskId);
+      const unarchivedTask = await api.unarchiveTask(project_id, task_number);
       set(
         produce((state: TaskState) => {
-          const index = state.tasks.findIndex((t) => t.id === taskId);
+          const index = state.tasks.findIndex((t) => t.project_id === project_id && t.task_number === task_number);
           if (index !== -1) {
             state.tasks[index] = unarchivedTask;
           }
-          state.tasks = sortTasks(state.tasks, state.sortOptions);
         }),
       );
       const currentFilters = get().filters;
@@ -545,7 +574,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         mutationError: {
           type: "unarchive",
           message: errorMessage,
-          taskId,
+          taskId: `${project_id}-${task_number}`,
           originalTask,
         },
         loading: false,
@@ -563,7 +592,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             task.updated_at = new Date().toISOString();
           }
         });
-        state.tasks = sortTasks(state.tasks, state.sortOptions);
       }),
     );
     if (get().filters.is_archived === false) {
@@ -579,7 +607,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             task.updated_at = new Date().toISOString();
           }
         });
-        state.tasks = sortTasks(state.tasks, state.sortOptions);
       }),
     );
     if (get().filters.is_archived === true) {

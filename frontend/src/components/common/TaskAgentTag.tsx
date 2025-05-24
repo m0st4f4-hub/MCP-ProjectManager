@@ -1,5 +1,5 @@
 import React from "react";
-import { Tag, TagLabel, Avatar, TagLeftIcon, Tooltip } from "@chakra-ui/react";
+import { Tag, TagLabel, Avatar, TagLeftIcon, Tooltip, Badge } from "@chakra-ui/react";
 
 interface TaskAgentTagProps {
   agentName: string;
@@ -10,15 +10,26 @@ interface TaskAgentTagProps {
   };
   fontSize?: string | number;
   style?: React.CSSProperties;
+  status?: string;
 }
+
+const statusColorMap: Record<string, string> = {
+  available: "green",
+  busy: "orange",
+  offline: "gray",
+};
 
 const TaskAgentTag: React.FC<TaskAgentTagProps> = ({
   agentName,
   agentTagStyle,
   fontSize,
   style,
-}) => (
-  <Tooltip label={`Agent: ${agentName}`}>
+  status,
+}) => {
+  const displayStatus = status ? status.toLowerCase() : "offline";
+  const badgeColor = statusColorMap[displayStatus] || "gray";
+  return (
+    <Tooltip label={`Agent: ${agentName}${status ? ` (${displayStatus})` : ""}`}>
     <Tag
       size="sm"
       bg={agentTagStyle.bg}
@@ -34,8 +45,12 @@ const TaskAgentTag: React.FC<TaskAgentTagProps> = ({
         as={() => <Avatar name={agentName} size="xs" mr="spacing.1" />}
       />
       <TagLabel>{agentName}</TagLabel>
+        <Badge ml={2} colorScheme={badgeColor} fontSize="0.7em" variant="subtle">
+          {displayStatus}
+        </Badge>
     </Tag>
   </Tooltip>
 );
+};
 
 export default TaskAgentTag;

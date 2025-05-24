@@ -32,10 +32,10 @@ interface TaskItemMainSectionProps {
   /** If true, renders a more compact version of this section. */
   compact?: boolean;
   /** 
-   * Optional callback to update the task in the store. 
+   * Optional callback to update the task in the store.
    * Used for inline edits of title and description.
    */
-  editTaskInStore?: (id: string, update: Partial<TaskUpdateData>) => Promise<void>;
+  editTaskInStore?: (project_id: string, task_number: number, update: Partial<TaskUpdateData>) => Promise<void>;
 }
 
 
@@ -86,7 +86,7 @@ const TaskItemMainSection: React.FC<TaskItemMainSectionProps> = ({
     // If task is not already "IN_PROGRESS", update its status
     // This is an optimistic update or side-effect of starting to edit.
     if (task.status !== "IN_PROGRESS" && editTaskInStore) {
-      editTaskInStore(task.id, { status: "IN_PROGRESS" });
+      editTaskInStore(task.project_id, task.task_number, { status: "IN_PROGRESS" });
     }
   };
 
@@ -96,7 +96,7 @@ const TaskItemMainSection: React.FC<TaskItemMainSectionProps> = ({
     setIsEditingDescription(true); // Set editing mode to true
     // If task is not already "IN_PROGRESS", update its status
     if (task.status !== "IN_PROGRESS" && editTaskInStore) {
-      editTaskInStore(task.id, { status: "IN_PROGRESS" });
+      editTaskInStore(task.project_id, task.task_number, { status: "IN_PROGRESS" });
     }
   };
 
@@ -104,7 +104,7 @@ const TaskItemMainSection: React.FC<TaskItemMainSectionProps> = ({
   const saveTitle = async () => {
     // Only save if the title has actually changed and editTaskInStore is available
     if (editTitle.trim() !== task.title && editTaskInStore) {
-      await editTaskInStore(task.id, { title: editTitle.trim() });
+      await editTaskInStore(task.project_id, task.task_number, { title: editTitle.trim() });
     }
     setIsEditingTitle(false); // Exit editing mode
   };
@@ -113,7 +113,7 @@ const TaskItemMainSection: React.FC<TaskItemMainSectionProps> = ({
   const saveDescription = async () => {
     // Only save if the description has actually changed and editTaskInStore is available
     if (editDescription.trim() !== (task.description || "") && editTaskInStore) {
-      await editTaskInStore(task.id, { description: editDescription.trim() });
+      await editTaskInStore(task.project_id, task.task_number, { description: editDescription.trim() });
     }
     setIsEditingDescription(false); // Exit editing mode
   };

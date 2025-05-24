@@ -158,3 +158,70 @@ export const unarchiveProject = async (projectId: string): Promise<Project> => {
       typeof rawProject.task_count === "number" ? rawProject.task_count : 0,
   } as Project;
 };
+
+export interface ProjectMember {
+  user_id: string;
+  role: string;
+  // Potentially add user details here if the backend relation includes them
+}
+
+export interface AddProjectMemberData {
+  user_id: string;
+  role: string;
+}
+
+export const getProjectMembers = async (projectId: string): Promise<ProjectMember[]> => {
+  return request<ProjectMember[]>(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/members`);
+};
+
+export const addMemberToProject = async (
+  projectId: string,
+  data: AddProjectMemberData,
+): Promise<ProjectMember> => {
+  return request<ProjectMember>(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/members`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+};
+
+export const removeMemberFromProject = async (projectId: string, userId: string): Promise<void> => {
+  return request<void>(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/members/${userId}`, {
+    method: "DELETE",
+  });
+};
+
+export interface ProjectFileAssociation {
+  project_id: string;
+  file_id: string;
+  // Potentially add file details here if the backend relation includes them, or fetch separately
+}
+
+export interface AssociateFileWithProjectData {
+  file_id: string;
+}
+
+export const getProjectFiles = async (projectId: string): Promise<ProjectFileAssociation[]> => {
+  return request<ProjectFileAssociation[]>(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/files`);
+};
+
+export const associateFileWithProject = async (
+  projectId: string,
+  data: AssociateFileWithProjectData,
+): Promise<ProjectFileAssociation> => {
+  return request<ProjectFileAssociation>(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/files`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+  );
+};
+
+export const disassociateFileFromProject = async (projectId: string, fileId: string): Promise<void> => {
+  return request<void>(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/files/${fileId}`, {
+    method: "DELETE",
+  });
+};

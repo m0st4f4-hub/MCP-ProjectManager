@@ -16,15 +16,18 @@ down_revision: Union[str, None] = 'a30db8a4b419'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
+
 def upgrade() -> None:
     # Drop the 'completed' column from 'tasks' table
     with op.batch_alter_table('tasks', schema=None) as batch_op:
         batch_op.drop_column('completed')
-        batch_op.add_column(sa.Column('status', sa.String(), nullable=False, server_default='To Do'))
+        batch_op.add_column(sa.Column('status', sa.String(),
+                            nullable=False, server_default='To Do'))
 
 
 def downgrade() -> None:
     # Add the 'completed' column back to 'tasks' table
     with op.batch_alter_table('tasks', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('completed', sa.Boolean(), nullable=True, server_default=sa.false()))
-        batch_op.drop_column('status') 
+        batch_op.add_column(
+            sa.Column('completed', sa.Boolean(), nullable=True, server_default=sa.false()))
+        batch_op.drop_column('status')

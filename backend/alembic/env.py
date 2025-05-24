@@ -1,13 +1,15 @@
+# ADD THIS LINE TO EXPLICITLY IMPORT MODELS
+from backend.models import Project, Agent, Task, MemoryEntity, MemoryObservation, MemoryRelation
+from backend.models import Base  # Adjusted import
+from alembic import context
+from sqlalchemy import pool
+from sqlalchemy import engine_from_config
+from logging.config import fileConfig
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from logging.config import fileConfig
-
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
-from alembic import context
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -20,8 +22,6 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from backend.models import Base  # Adjusted import
-from backend.models import Project, Agent, Task # ADD THIS LINE TO EXPLICITLY IMPORT MODELS
 target_metadata = Base.metadata  # Adjusted target_metadata
 # target_metadata = None # Removed this line
 

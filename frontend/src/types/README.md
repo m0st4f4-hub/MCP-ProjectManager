@@ -6,10 +6,13 @@ This directory centralizes all TypeScript type definitions, interfaces, enums, a
 
 ### `index.ts`
 
-- **Purpose**: Acts as the primary entry point for all types. It re-exports all definitions from the other type files in this directory (`project.ts`, `agent.ts`, `task.ts`).
-- **Common Types Defined Locally**:
-  - `SortDirection`: `'asc' | 'desc'`.
+- **Purpose**: Acts as the primary entry point for all types. It re-exports all definitions from the other type files in this directory (`project.ts`, `agent.ts`, `task.ts`) and defines canonical shared types.
+- **Canonical Shared Types Defined Locally**:
+  - `SortDirection`: `"asc" | "desc"` (Used by all entity sort options).
+  - `TaskSortField`: Union type for all valid task sorting fields (e.g., `"created_at"`, `"title"`).
+  - `TaskSortOptions`: Interface `{ field: TaskSortField; direction: SortDirection; }`.
   - `PaginationParams`: Interface `{ page: number; pageSize: number; }`.
+- **Common Types Defined Locally**:
   - `ApiResponse<T>`: Generic interface for API responses containing a single data item and an optional error object.
   - `ApiListResponse<T>`: Generic interface for API responses containing a list of items, total count, and pagination details.
   - `ThemeMode`: `'light' | 'dark' | 'system'`.

@@ -232,12 +232,6 @@ const TaskControls: React.FC<TaskControlsProps> = ({
                 _hover={{ borderColor: "borderFocused" }}
               >
                 <option
-                  value="id"
-                  className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-                >
-                  ID
-                </option>
-                <option
                   value="title"
                   className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
                 >
@@ -315,20 +309,83 @@ const TaskControls: React.FC<TaskControlsProps> = ({
         isLoading={taskStoreLoading}
       />
 
-      <InputGroup size="sm" flexGrow={1} maxW={{ base: "100%", md: "300px" }}>
+      {/* Search Input */}
+      {/* <InputGroup size="sm" width="100%" maxW="300px">
         <InputLeftElement pointerEvents="none">
-          <SearchIcon color="textPlaceholder" />
+          <SearchIcon color="textSecondary" />
         </InputLeftElement>
         <Input
+          type="text"
           placeholder="Search tasks..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          borderRadius="md"
-          borderWidth="DEFAULT"
-          borderColor="borderDecorative"
-          _hover={{ borderColor: "borderInteractive" }}
+          bg="surface"
+          borderColor="borderInteractive"
+          _hover={{ borderColor: "borderFocused" }}
+          focusBorderColor="borderFocused"
+          color="textPrimary"
         />
-      </InputGroup>
+      </InputGroup> */}
+
+      {/* Group By Select */}
+      {/* {!hideGroupBy && (
+        <HStack spacing={sizing.sm} alignItems="center">
+          <FormLabel htmlFor="task-group-by-select" mb="0">
+            Group by:
+          </FormLabel>
+          <Select
+            id="task-group-by-select"
+            aria-label="Group by"
+            value={groupBy}
+            onChange={(e) => setGroupBy(e.target.value as GroupByType)}
+            size="sm"
+            w={{ base: "auto", md: "130px" }}
+            focusBorderColor="borderFocused"
+            bg="surface"
+            borderColor="borderInteractive"
+            _hover={{ borderColor: "borderFocused" }}
+          >
+            <option
+              value="id"
+              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
+            >
+              ID
+            </option>
+            <option
+              value="title"
+              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
+            >
+              Title
+            </option>
+            <option
+              value="status"
+              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
+            >
+              Status
+            </option>
+            <option
+              value="project"
+              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
+            >
+              Project
+            </option>
+            <option
+              value="agent"
+              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
+            >
+              Agent
+            </option>
+            <option
+              value="createdAt"
+              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
+            >
+              Creation Date
+            </option>
+          </Select>
+        </HStack>
+      )} */}
+
+      {/* View Mode Toggle */}
     </VStack>
   );
 };

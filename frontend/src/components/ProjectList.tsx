@@ -338,17 +338,11 @@ const ProjectList: React.FC = () => {
   }, [projectsFromStore, projectFilters, allTasksFromStore]);
 
   const projectsToDisplay: ProjectWithMeta[] = useMemo(() => {
-    if (!filteredProjects || !allTasksFromStore) return [];
+    if (!filteredProjects) return [];
     return filteredProjects.map((p: Project) => {
-      const projectSpecificTasks = allTasksFromStore.filter(
-        (t) => t.project_id === p.id,
-      );
-      const calculatedCompletedCount = projectSpecificTasks.filter(
-        (t) => t.status === "COMPLETED",
-      ).length;
-      const calculatedTotalCount = projectSpecificTasks.length;
+      const calculatedCompletedCount = p.completed_task_count ?? 0;
+      const calculatedTotalCount = p.task_count ?? 0;
 
-      // Determine status and progress based on calculated counts
       let projectStatus: ProjectWithMeta["status"] = "not_started";
       if (calculatedTotalCount > 0) {
         if (calculatedCompletedCount === calculatedTotalCount) {
@@ -363,15 +357,14 @@ const ProjectList: React.FC = () => {
           : 0;
 
       return {
-        ...p, // Spread the original Project object
-        tasks: projectSpecificTasks, // Attach the actual task objects
-        taskCount: calculatedTotalCount, // Use calculated total (camelCase)
-        completedTaskCount: calculatedCompletedCount, // Use calculated completed (camelCase)
+        ...p,
+        taskCount: calculatedTotalCount,
+        completedTaskCount: calculatedCompletedCount,
         progress: projectProgress,
         status: projectStatus,
       };
     });
-  }, [filteredProjects, allTasksFromStore]);
+  }, [filteredProjects]);
 
   const handleOpenCliPrompt = (project: ProjectWithMeta) => {
     const projectTasks: TaskWithMeta[] = (project.tasks || []).map(
@@ -420,9 +413,9 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
         const taskStatusDisplay = task.completed
           ? "Completed"
           : task.status || "To Do";
-        prompt += `\n### Task ${idx + 1}: ${task.title} (ID: ${task.id})\n  Status: ${taskStatusDisplay}\n  Assigned Agent: ${agentDisplay}\n  Description: ${task.description || "No description."}\n`;
+        prompt += `\n### Task ${idx + 1}: ${task.title} (ID: ${task.project_id}/${task.task_number})\n  Status: ${taskStatusDisplay}\n  Assigned Agent: ${agentDisplay}\n  Description: ${task.description || "No description."}\n`;
         if (!task.agent_id && !task.completed) {
-          prompt += `  Suggested Action: Assign an agent. Example: mcp_project-manager_update_task_by_id(task_id='${task.id}', agent_name='TARGET_AGENT_NAME')\n`;
+          prompt += `  Suggested Action: Assign an agent. Example: mcp_project-manager_update_task_by_id(project_id='${task.project_id}', task_number=${task.task_number}, agent_name='TARGET_AGENT_NAME')\n`;
         } else if (!task.completed) {
           prompt += `  Suggested Action: Monitor progress. If blocked, investigate. Current agent: ${agentDisplay}.\n`;
         } else {
@@ -469,7 +462,7 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
   };
 
   const getProjectStatusInfo = (project: ProjectWithMeta) => {
-    const totalTasks = project.taskCount ?? 0;
+    const totalTasks = project.task_count ?? 0;
     let colorScheme = "gray";
     let icon: React.ElementType = TimeIcon;
     let fullText = "Pending Start";
@@ -501,9 +494,13 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
       fullText: statusFullText,
     } = getProjectStatusInfo(project);
 
-    const displayTotalTasks = project.taskCount ?? 0;
-    const displayCompletedTasks = project.completedTaskCount ?? 0;
-    const displayProgress = project.progress ?? 0;
+    // Use backend-provided task counts and progress
+    const displayTotalTasks = project.task_count ?? 0;
+    const displayCompletedTasks = project.completed_task_count ?? 0;
+    const displayProgress = displayTotalTasks > 0 ? (displayCompletedTasks / displayTotalTasks) * 100 : 0;
+
+    // Always use backend-provided description
+    const displayDescription = project.description || "No description provided.";
 
     const cardBaseStyles: BoxProps = {
       p: 4,
@@ -703,28 +700,17 @@ Last Activity: ${project.updated_at ? formatRelative(new Date(project.updated_at
             </Menu>
           </Flex>
 
-          {project.description ? (
             <Text
               fontSize="sm"
-              color="textSecondary"
+            color={project.description ? "textSecondary" : "textPlaceholder"}
               fontWeight="normal"
               lineHeight="condensed"
               noOfLines={2}
-              title={project.description}
+            title={displayDescription}
+            fontStyle={project.description ? undefined : "italic"}
             >
-              {project.description}
+            {displayDescription}
             </Text>
-          ) : (
-            <Text
-              fontSize="sm"
-              color="textPlaceholder"
-              fontStyle="italic"
-              lineHeight="condensed"
-              noOfLines={2}
-            >
-              No description provided.
-            </Text>
-          )}
 
           <Flex
             justifyContent="space-between"

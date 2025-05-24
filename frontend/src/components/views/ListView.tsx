@@ -94,7 +94,7 @@ const ListView: React.FC<ListViewProps> = ({
   const handleDeleteConfirmInListView = async () => {
     if (!taskToDelete) return;
     try {
-      await deleteTaskFromStore(taskToDelete.id);
+      await deleteTaskFromStore(taskToDelete.project_id, taskToDelete.task_number);
       toast({
         title: taskToDelete.is_archived
           ? "Archived task permanently deleted"
@@ -129,7 +129,7 @@ const ListView: React.FC<ListViewProps> = ({
     if (!assignAgentTask) return;
     setAgentLoading(true);
     try {
-      await editTaskInStore(assignAgentTask.id, {
+      await editTaskInStore(assignAgentTask.project_id, assignAgentTask.task_number, {
         agent_id: agent.id,
         agent_name: agent.name,
       });
@@ -153,8 +153,8 @@ const ListView: React.FC<ListViewProps> = ({
     }
   };
 
-  const handleCopyTaskGetCommand = async (taskId: string) => {
-    const command = `mcp task get --id ${taskId}`;
+  const handleCopyTaskGetCommand = async (project_id: string, task_number: number) => {
+    const command = `mcp task get --id ${project_id}-${task_number}`;
     try {
       await navigator.clipboard.writeText(command);
       toast({
@@ -191,18 +191,21 @@ const ListView: React.FC<ListViewProps> = ({
     return (
       <List spacing={0}>
         <AnimatePresence initial={false}>
-          {flatTasksForMobile.map((task) => (
+          {flatTasksForMobile.map((task) => {
+            const taskKey = `${task.project_id}-${task.task_number}`;
+            return (
             <ListTaskMobile
-              key={task.id}
+                key={taskKey}
               task={task}
-              selected={selectedTaskIds.includes(task.id)}
-              onSelect={() => toggleTaskSelection(task.id)}
+                selected={selectedTaskIds.includes(taskKey)}
+                onSelect={() => toggleTaskSelection(taskKey)}
               onAssignAgent={handleAssignAgent}
               onDeleteInitiate={handleDeleteInitiateInListView}
               onClick={() => setSelectedTask(task)}
-              onCopyGetCommand={handleCopyTaskGetCommand}
+              onCopyGetCommand={() => handleCopyTaskGetCommand(task.project_id, task.task_number)}
             />
-          ))}
+            );
+          })}
         </AnimatePresence>
       </List>
     );
@@ -222,7 +225,7 @@ const ListView: React.FC<ListViewProps> = ({
             handleAssignAgent={handleAssignAgent}
             handleDeleteInitiate={handleDeleteInitiateInListView}
             setSelectedTask={setSelectedTask}
-            handleCopyTaskGetCommand={handleCopyTaskGetCommand}
+            handleCopyTaskGetCommand={(task) => handleCopyTaskGetCommand(task.project_id, task.task_number)}
           />
         ))}
       </Box>
@@ -230,7 +233,7 @@ const ListView: React.FC<ListViewProps> = ({
         <TaskDetailsModal
           isOpen={!!selectedTask}
           onClose={() => setSelectedTask(null)}
-          taskId={selectedTask.id}
+          taskId={`${selectedTask.project_id}-${selectedTask.task_number}`}
         />
       )}
       {editTask && (
@@ -238,8 +241,8 @@ const ListView: React.FC<ListViewProps> = ({
           isOpen={!!editTask}
           onClose={() => setEditTask(null)}
           task={editTask as Task}
-          onUpdate={async (id, data) => {
-            await editTaskInStore(id, data);
+          onUpdate={async (project_id, task_number, data) => {
+            await editTaskInStore(project_id, task_number, data);
             setEditTask(null);
           }}
         />

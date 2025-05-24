@@ -1,556 +1,283 @@
+# Task ID: <taskId>
+# Agent Role: ImplementationSpecialist
+# Request ID: <requestId>
+# Project: task-manager
+# Timestamp: <timestamp>
+
 import asyncio
-from fastapi import FastAPI, Depends, HTTPException, Request, Query
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from pydantic import BaseModel
 from contextlib import asynccontextmanager
-import multiprocessing
 import logging
 
-# Import database components and CRUD functions
-from . import models, schemas, crud
-from .database import engine, get_db
+# Import database components
+from backend.database import get_db, Base, engine, SessionLocal
 
 # Import FastApiMCP
 from fastapi_mcp import FastApiMCP
 
+# Import routers
+from backend.routers import projects
+from backend.routers import agents
+from backend.routers import audit_logs
+from backend.routers import tasks
+from backend.routers import rules
+from backend.routers import memory
+
+# Import schemas
+from backend import schemas
+
+# Import Planning schemas and function
+from backend.routers.projects import PlanningRequest, PlanningResponse
+from backend.planning import generate_project_manager_planning_prompt
+
 # Set up logging
 logger = logging.getLogger(__name__)
 
-# Database tables are now created by migrations (for production) 
-# or by test setup (for testing), not here directly.
-# models.Base.metadata.create_all(bind=engine) # MODIFIED: Commented out for Alembic-driven schema
 
-# Global state for MCP initialization
-# mcp_initialized = False # REMOVED
-# mcp_instance = None # REMOVED
-
-# Attempt to set multiprocessing start method to 'spawn'
-# This is a guess, hoping it might resolve recursion if MCP uses multiprocessing.
-# try:
-#     multiprocessing.set_start_method('spawn', force=True)
-#     print(">>> Multiprocessing start method set to 'spawn'")
-# except RuntimeError:
-#     print(">>> Multiprocessing start method already set or failed to set.")
-#     pass # Might already be set or not applicable on this OS/context
-
-# Lifespan context manager for logging startup and shutdown
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("[LIFESPAN] Application startup...")
-    # print("[LIFESPAN] Initializing Database...") # REMOVED - Assumes DB is managed by migrations (Alembic)
-    # await init_db() # REMOVED - Assumes DB is managed by migrations (Alembic)
-    # print("[LIFESPAN] Database initialized.") # REMOVED
+    # Handles startup and shutdown events.
+    # On startup logic
+    logger.info("Starting up...")
+    # Example: Initialize database connections, load models, etc.
+    # Initialize database tables
+    Base.metadata.create_all(bind=engine)
+    
+    # Initialize default rules framework data
+    try:
+        from backend.services.rules_service import RulesService
+        with SessionLocal() as db:
+            rules_service = RulesService(db)
+            rules_service.initialize_default_rules()
+            logger.info("Rules framework initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize rules framework: {e}")
+    
+    yield  # Application runs here.
+    # On shutdown logic
+    logger.info("Shutting down...")
+    # Example: Close database connections, clean up resources, etc.
 
-    # --- FastApiMCP Integration ---
-    print("[LIFESPAN] Initializing FastApiMCP...")
-    # Instantiate MCP inside the lifespan
-    mcp_instance = FastApiMCP(app) # Create instance HERE
-    print("[LIFESPAN] FastApiMCP instance created.")
 
-    app.state.mcp_instance = mcp_instance # Assign the created instance
-    print(f"[LIFESPAN] Stored MCP instance in app.state.mcp_instance")
+app = FastAPI(lifespan=lifespan)  # Apply the lifespan context manager
 
-    print(f"[LIFESPAN] Calling mcp_instance.setup_server()...")
-    mcp_instance.setup_server() # Mounts routes - Pass app if needed by your setup_server version
-    print(f"[LIFESPAN] mcp_instance.setup_server() called.")
 
-    print(f"[LIFESPAN] Calling mcp_instance.mount()...")
-    mcp_instance.mount() # This might have internal async init
-    print(f"[LIFESPAN] mcp_instance.mount() called. MCP endpoint should be available.")
-
-    print("[LIFESPAN] Adding a small delay to allow MCP internal tasks to fully initialize...")
-    await asyncio.sleep(1) # Reduced delay slightly
-    print("[LIFESPAN] Delay finished.")
-    # End --- FastApiMCP Integration ---
-
-    yield
-    print("[LIFESPAN] Application shutdown...")
-    # Perform cleanup here if needed for mcp_instance
-    # For example, if mcp_instance has a shutdown method:
-    # await mcp_instance.shutdown()
-
-app = FastAPI(
-    title="Project Manager API",
-    description="API for managing projects, agents, tasks, and subtasks.",
-    version="0.2.0",
-    lifespan=lifespan
-)
-
-# --- NEW: Add Logging Middleware FIRST ---
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    print(f"[Connection Log] Incoming request from {request.client.host} for {request.url.path}", flush=True)
-    response = await call_next(request)
-    # You could add response status logging here too if needed
-    # print(f"[Connection Log] Response status: {response.status_code}")
-    return response
-# --- END Logging Middleware ---
-
-# --- CORS Configuration ---
-# Adjust origins for production deployments
+# CORS middleware
+# Add CORS middleware to allow cross-origin requests from the frontend.
+# Adjust origins as needed for your frontend deployment.
 origins = [
-    "http://localhost",       # Allow localhost (standard)
-    "http://localhost:3000",  # Allow Next.js default dev port
-    "*"                     # Allow all origins (for development simplicity)
-    # Add your frontend deployment URL here in production
-    # e.g., "https://your-frontend-domain.com"
+    "http://localhost:3000",  # Allow your frontend development server
+    # Add other origins for production if necessary
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"], # Allows all methods (GET, POST, PUT, DELETE, etc.)
-    allow_headers=["*"], # Allows all headers
+    allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers
 )
-# --- End CORS Configuration ---
 
-# --- Define SAFE Endpoints First ---
 
-@app.get("/", summary="Get API Root Message")
-async def get_root_message(): # MODIFIED to remove 'request: Request'
-    print("[Backend Log] Request received for /") # EXISTING LOG
-    print("[Backend Log] Processing / endpoint...", flush=True) # ADDED LOG with flush
-    response_data = {"message": "Welcome to the Project Manager API"} # REVERTED to simple message
-    print("[Backend Log] Sending response for /...", flush=True) # ADDED LOG with flush
-    return response_data
+# Dependency to get the DB session
+def get_db_session():
+    db = get_db()
+    try:
+        yield db
+    finally:
+        db.close()
 
-@app.get("/mcp-docs", summary="Get MCP Tools Documentation", tags=["MCP Documentation"])
-async def get_mcp_tool_documentation(request: Request):
-    """Get documentation for all MCP tools."""
-    logger.info("Request received for /mcp-docs")
-    
-    # Get MCP instance reliably from app state
-    mcp_instance = getattr(request.app.state, 'mcp_instance', None)
-    if mcp_instance is None:
-        # Log an error or raise an exception if MCP instance is not found
-        logger.error("MCP instance not found in app.state during /mcp-docs request.")
+
+# Include routers
+app.include_router(projects.router, tags=["projects"])
+app.include_router(tasks.router, tags=["tasks"])
+app.include_router(agents.router, tags=["agents"])
+app.include_router(audit_logs.router, tags=["audit_logs"])
+app.include_router(rules.router, tags=["rules"])
+app.include_router(memory.router, tags=["memory"])
+
+
+# Basic GET endpoint
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Project Manager API"}
+
+
+# Health check endpoint
+@app.get("/health")
+def health_check(db: Session = Depends(get_db_session)):
+    # Dependency injection for DB session
+    # Check database connection by attempting to query
+    try:
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))  # Use sqlalchemy.text for literal SQL
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        logger.error(f"Database connection error: {e}")
         raise HTTPException(
-            status_code=500,
-            detail="MCP integration not properly initialized or found in application state."
-        )
-    
-    tools_dict = {}
-    try:
-        if hasattr(mcp_instance, 'tools') and isinstance(mcp_instance.tools, dict):
-            tools_dict = mcp_instance.tools
-    except Exception as e:
-        logger.error(f"Error accessing MCP instance tools: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error accessing MCP tools: {str(e)}"
-        )
+            status_code=500, detail="Database connection failed")
 
-    # Process routes and tools
-    routes = []
-    for route in request.app.router.routes:
-        if not hasattr(route, "path"):
-            continue
-            
-        path = route.path or ""
-        if not path:
-            continue
-            
-        name = getattr(route, "name", None) or path
-        description = getattr(route, "description", "") or ""
-        methods = list(route.methods) if hasattr(route, "methods") and route.methods else []
+
+# MCP agent endpoint
+@app.post("/mcp-agent/{agent_name}")
+async def mcp_agent_endpoint(
+    agent_name: str,
+    request: Request,
+    db: Session = Depends(get_db_session)  # Dependency injection
+):
+    """MCP agent endpoint with rules framework integration"""
+    from backend.services.rules_service import RulesService
+    import time
+    
+    start_time = time.time()
+    rules_service = RulesService(db)
+    
+    try:
+        # Get request body
+        request_body = await request.json()
         
-        routes.append({
-            "path": path,
-            "name": name,
-            "description": description,
-            "methods": methods
-        })
-
-    # Format the response in the expected format
-    mcp_tool_docs_md = "# MCP Project Manager Tools Documentation\n\n"
-    
-    # Add tools documentation
-    if tools_dict:
-        for tool_name, tool_info in tools_dict.items():
-            mcp_tool_docs_md += f"## `{tool_name}`\n"
-            if isinstance(tool_info, dict) and "description" in tool_info:
-                mcp_tool_docs_md += f"- **Description**: {tool_info['description']}\n\n"
-            else:
-                mcp_tool_docs_md += f"- **Description**: Tool information not available\n\n"
-    
-    # Add routes documentation
-    route_docs_added = False
-    for route in routes:
-        if route["path"].startswith("/mcp") or route["path"] in ["/mcp-docs", "/openapi.json", "/docs"]:
-            continue
-            
-        route_docs_added = True
-        tool_name = route["name"]
-        if not tool_name or tool_name == "/{}" or tool_name == "/":
-            tool_name = "unnamed_route"
-            
-        mcp_tool_name = f"mcp_project-manager_{tool_name}"
+        # Log agent action start
+        rules_service.log_agent_action(
+            agent_name=agent_name,
+            action_type="mcp_request_start",
+            action_description=f"Started processing MCP request",
+            action_data={"endpoint": f"/mcp-agent/{agent_name}"}
+        )
         
-        mcp_tool_docs_md += f"## `{mcp_tool_name}` (derived from `{tool_name}`)\n"
-        mcp_tool_docs_md += f"- **Original Path**: `{route['path']}`\n"
-        mcp_tool_docs_md += f"- **Methods**: `{', '.join(route['methods'])}`\n"
-        mcp_tool_docs_md += f"- **Description**: {route['description']}\n\n"
-
-    if not tools_dict and not route_docs_added:
-        mcp_tool_docs_md += "No MCP Project Manager tools found via route inspection or MCP router not fully initialized at the time of this request for the /mcp-docs path."
-
-    return JSONResponse(content={"documentation": mcp_tool_docs_md})
-
-# --- Project Endpoints (SAFE) ---
-
-@app.post("/projects/", response_model=schemas.Project, summary="Create Project", tags=["Projects"], operation_id="create_project")
-def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db)):
-    """Creates a new project.
-    - **name**: Unique name for the project (required).
-    - **description**: Optional description.
-    """
-    db_project = crud.get_project_by_name(db, name=project.name)
-    if db_project:
-        raise HTTPException(status_code=400, detail="Project name already registered")
-    return crud.create_project(db=db, project=project)
-
-@app.get("/projects/", response_model=List[schemas.Project], summary="List Projects", tags=["Projects"], operation_id="list_projects")
-def get_project_list(
-    skip: int = 0, 
-    limit: int = 100, 
-    search: Optional[str] = None,
-    status: Optional[str] = None,  # Added status parameter (though Project model doesn't have status yet)
-    is_archived: Optional[bool] = Query(None, description="Filter by archived status. False for non-archived, True for archived, null/None for all."), # MODIFIED DEFAULT TO None
-    db: Session = Depends(get_db)
-):
-    """Retrieves a list of projects."""
-    print(f"[API /projects] Received is_archived: {is_archived} (type: {type(is_archived)})") # ADD THIS LINE
-    projects = crud.get_projects(db, skip=skip, limit=limit, search=search, status=status, is_archived=is_archived) # Pass new params
-    return projects
-
-@app.get("/projects/{project_id}", response_model=schemas.Project, summary="Get Project by ID", tags=["Projects"], operation_id="get_project_by_id")
-def get_project_by_id_endpoint(project_id: str, is_archived: Optional[bool] = Query(False, description="Set to true to fetch if archived, null/None to fetch regardless of status."), db: Session = Depends(get_db)): # MODIFIED name and added param
-    """Retrieves a specific project by its ID."""
-    db_project = crud.get_project(db, project_id=project_id, is_archived=is_archived)
-    if db_project is None:
-        # If specifically searching for archived or non-archived, and not found, detail the message.
-        status_search_message = ""
-        if is_archived is True:
-            status_search_message = " (archived)"
-        elif is_archived is False:
-            status_search_message = " (active)"
-        raise HTTPException(status_code=404, detail=f"Project not found{status_search_message}")
-    return db_project
-
-@app.post("/projects/{project_id}/archive", response_model=schemas.Project, summary="Archive Project", tags=["Projects"], operation_id="archive_project")
-def archive_project_endpoint(project_id: str, db: Session = Depends(get_db)):
-    """Archives a project and all its active tasks."""
-    try:
-        return crud.archive_project(db, project_id)
-    except HTTPException as e: # Catch HTTPExceptions from CRUD
-        raise e
+        # Validate agent can perform requested task
+        validation_result = rules_service.validate_agent_task(agent_name, request_body)
+        
+        if not validation_result["is_valid"]:
+            # Log rule violation
+            for violation in validation_result["violations"]:
+                rules_service.log_rule_violation(
+                    agent_name=agent_name,
+                    violation_type="task_validation_failed",
+                    description=violation,
+                    severity="high"
+                )
+            
+            duration = int(time.time() - start_time)
+            rules_service.log_agent_action(
+                agent_name=agent_name,
+                action_type="mcp_request_failed",
+                action_description="Request failed rule validation",
+                success=False,
+                error_message=f"Rule violations: {', '.join(validation_result['violations'])}",
+                duration_seconds=duration
+            )
+            
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Agent {agent_name} cannot perform requested task. Violations: {validation_result['violations']}"
+            )
+        
+        # Get agent prompt with rules
+        agent_prompt = rules_service.get_agent_prompt(agent_name, request_body)
+        
+        # TODO: Here you would integrate with actual MCP/agent processing
+        # For now, return the rules-based response
+        
+        duration = int(time.time() - start_time)
+        rules_service.log_agent_action(
+            agent_name=agent_name,
+            action_type="mcp_request_completed",
+            action_description="Successfully processed MCP request with rules",
+            success=True,
+            duration_seconds=duration
+        )
+        
+        return {
+            "message": f"MCP request processed for {agent_name}",
+            "agent_name": agent_name,
+            "validation_passed": True,
+            "agent_prompt": agent_prompt,
+            "request_body": request_body
+        }
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
     except Exception as e:
-        # Log the exception details for debugging
-        print(f"Error archiving project {project_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to archive project: {str(e)}")
+        # Log unexpected errors
+        duration = int(time.time() - start_time)
+        rules_service.log_agent_action(
+            agent_name=agent_name,
+            action_type="mcp_request_error",
+            action_description="Unexpected error during MCP request",
+            success=False,
+            error_message=str(e),
+            duration_seconds=duration
+        )
+        
+        # Get error protocol if available
+        error_protocol = rules_service.get_error_protocol(agent_name, "unexpected_error")
+        if error_protocol:
+            logger.info(f"Following error protocol for {agent_name}: {error_protocol}")
+        
+        raise HTTPException(status_code=500, detail=f"Internal error processing request for {agent_name}")
 
-@app.post("/projects/{project_id}/unarchive", response_model=schemas.Project, summary="Unarchive Project", tags=["Projects"], operation_id="unarchive_project")
-def unarchive_project_endpoint(project_id: str, db: Session = Depends(get_db)):
-    """Unarchives a project and all its tasks."""
-    try:
-        return crud.unarchive_project(db, project_id)
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        print(f"Error unarchiving project {project_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to unarchive project: {str(e)}")
 
-# --- Agent Endpoints (SAFE) ---
-
-@app.post("/agents/", response_model=schemas.Agent, summary="Create Agent", tags=["Agents"], operation_id="create_agent")
-def create_agent(agent: schemas.AgentCreate, db: Session = Depends(get_db)):
-    """Registers a new agent.
-    - **name**: Unique name for the agent (required).
-    """
-    db_agent = crud.get_agent_by_name(db, name=agent.name)
-    if db_agent:
-        raise HTTPException(status_code=400, detail="Agent name already registered")
-    return crud.create_agent(db=db, agent=agent)
-
-@app.get("/agents/", response_model=List[schemas.Agent], summary="Get Agents", tags=["Agents"], operation_id="get_agents")
-def get_agent_list(
-    skip: int = 0, 
-    limit: int = 100, 
-    search: Optional[str] = None,  # Added search parameter
-    status: Optional[str] = None,  # Added status parameter (though Agent model doesn't have status yet)
-    is_archived: Optional[bool] = Query(False, description="Filter by archived status. False for non-archived, True for archived, null/None for all."), # ADDED
-    db: Session = Depends(get_db) # ADDED db session dependency
+# Planning endpoint
+@app.post("/planning")
+async def planning_endpoint(
+    planning_request: PlanningRequest,
+    db: Session = Depends(get_db_session)  # Dependency injection
 ):
-    """Retrieves a list of registered agents."""
-    agents = crud.get_agents(db, skip=skip, limit=limit, search=search, status=status, is_archived=is_archived) # Pass new params
-    return agents
-
-@app.get("/agents/{agent_name}", response_model=schemas.Agent, summary="Get Agent by Name", tags=["Agents"], operation_id="get_agent_by_name")
-def get_agent_by_name(agent_name: str, db: Session = Depends(get_db)):
-    """Retrieves a specific agent by its unique name."""
-    db_agent = crud.get_agent_by_name(db, name=agent_name)
-    if db_agent is None:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    return db_agent
-
-# --- Task Endpoints (Updated SAFE) ---
-
-@app.post("/tasks/", response_model=schemas.Task, summary="Create Task with Project/Agent", tags=["Tasks"], operation_id="create_task")
-def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
-    """Creates a new task, optionally linking to a project_id, agent_id, and parent_task_id.
-    - **title**: Required.
-    - **project_id**: Optional ID of an existing project.
-    - **agent_id**: Optional ID of an existing agent.
-    - **parent_task_id**: Optional ID of an existing parent task.
-    """
-    try:
-        return crud.create_task(db=db, task=task)
-    except ValueError as e: # Catch specific errors like Project/Agent/ParentTask not found
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print(f"Error in create_task: {e}") # Log the specific error
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
-
-@app.get("/tasks/", response_model=List[schemas.Task], summary="Get Tasks with Filtering", tags=["Tasks"], operation_id="get_tasks")
-async def get_tasks_list(
-    project_id: Optional[str] = Query(None, description="Filter tasks by project ID."),
-    agent_id: Optional[str] = Query(None, description="Filter tasks by agent ID."), # Added agent_id
-    agent_name: Optional[str] = Query(None, description="Filter tasks by agent name."), # Added agent_name
-    # parent_task_id: Optional[str] = Query(None, description="Filter tasks by parent task ID."), # TODO: Add parent_task_id to crud
-    top_level_only: Optional[bool] = Query(None, description="Filter for top-level tasks only (tasks with no parent_id)."),
-    search: Optional[str] = Query(None, description="Search term for task titles and descriptions."),
-    status: Optional[str] = Query(None, description="Filter tasks by status (e.g., 'completed', 'pending')."),
-    is_archived: Optional[bool] = Query(None, description="Filter by archived status. False for non-archived, True for archived, null/None for all."), # MODIFIED DEFAULT TO None
-    hide_completed: Optional[bool] = Query(False, description="Hide completed tasks."),
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db),
-    # TODO: Add more query parameters as needed, e.g., date ranges, priorities
-    # current_user: schemas.User = Depends(auth.get_current_active_user) # Example of protected route
-):
-    """
-    Retrieve a list of tasks, with optional filtering by project, agent, search term, and status.
-
-    - **project_id**: Filter tasks by project ID.
-    - **agent_name**: Filter tasks by agent name.
-    - **search**: Filter tasks by a search term in title or description (case-insensitive).
-    - **status**: Filter tasks by status (e.g., 'completed', 'pending', 'true', 'false').
-    """
-    # We need agent_id, not agent_name for CRUD filtering
-    agent_id: Optional[str] = None
-    if agent_name:
-        agent = crud.get_agent_by_name(db, name=agent_name)
-        if agent:
-            agent_id = agent.id
-        else:
-            # If agent_name is provided but not found, return empty list
-            return [] 
-
-    tasks = crud.get_tasks(
-        db, 
-        skip=skip, 
-        limit=limit, 
-        project_id=project_id, 
-        agent_id=agent_id, # Use derived agent_id
-        search=search,  # Pass search
-        status=status,   # Pass status
-        is_archived=is_archived # Pass is_archived
+    """Planning endpoint with rules framework integration"""
+    from backend.services.rules_service import RulesService
+    
+    rules_service = RulesService(db)
+    
+    # Generate basic planning prompt
+    planning_prompt = generate_project_manager_planning_prompt(planning_request)
+    
+    # Get ProjectManager agent prompt with rules
+    agent_prompt = rules_service.get_agent_prompt("ProjectManager", {
+        "goal": planning_request.goal,
+        "context": planning_request.model_dump()
+    })
+    
+    # Log planning action
+    rules_service.log_agent_action(
+        agent_name="ProjectManager",
+        action_type="planning_request",
+        action_description=f"Generated planning prompt for goal: {planning_request.goal}",
+        action_data={"goal": planning_request.goal}
     )
-    return tasks
-
-@app.get("/tasks/{task_id}", response_model=schemas.Task, summary="Get Task by ID with Project", tags=["Tasks"], operation_id="get_task_by_id")
-def get_task_by_id_endpoint(task_id: str, is_archived: Optional[bool] = Query(False, description="Set to true to fetch if archived, null/None to fetch regardless of status."), db: Session = Depends(get_db)): # MODIFIED name and added param
-    """Retrieves a specific task by ID."""
-    db_task = crud.get_task(db, task_id=task_id, is_archived=is_archived)
-    if db_task is None:
-        status_search_message = ""
-        if is_archived is True:
-            status_search_message = " (archived)"
-        elif is_archived is False:
-            status_search_message = " (active)"
-        raise HTTPException(status_code=404, detail=f"Task not found{status_search_message}")
-    return db_task
-
-@app.post("/tasks/{task_id}/archive", response_model=schemas.Task, summary="Archive Task", tags=["Tasks"], operation_id="archive_task")
-def archive_task_endpoint(task_id: str, db: Session = Depends(get_db)):
-    """Archives a task."""
-    try:
-        return crud.archive_task(db, task_id)
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        print(f"Error archiving task {task_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to archive task: {str(e)}")
-
-@app.post("/tasks/{task_id}/unarchive", response_model=schemas.Task, summary="Unarchive Task", tags=["Tasks"], operation_id="unarchive_task")
-def unarchive_task_endpoint(task_id: str, db: Session = Depends(get_db)):
-    """Unarchives a task."""
-    try:
-        return crud.unarchive_task(db, task_id)
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        print(f"Error unarchiving task {task_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to unarchive task: {str(e)}")
-
-# --- Define UNSAFE Endpoints Last ---
-
-# --- Project Update/Delete Endpoints ---
-@app.put("/projects/{project_id}", response_model=schemas.Project, summary="Update Project", tags=["Projects"], operation_id="update_project_by_id")
-def update_project(project_id: str, project_update: schemas.ProjectUpdate, db: Session = Depends(get_db)):
-    try:
-        db_project = crud.update_project(db, project_id=project_id, project_update=project_update)
-        if db_project is None:
-            raise HTTPException(status_code=404, detail="Project not found")
-        db.refresh(db_project)
-        return db_project
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except HTTPException as http_exc:
-        raise http_exc
-    except Exception as e:
-        print(f"Unexpected error in PUT /projects/{project_id}: {e}")
-        # Check if the exception wraps an HTTPException
-        if isinstance(e.__cause__, HTTPException) or isinstance(e.args[0], HTTPException):
-            http_exc = e.__cause__ if isinstance(e.__cause__, HTTPException) else e.args[0]
-            raise http_exc
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
-
-@app.delete("/projects/{project_id}", response_model=schemas.Project, summary="Delete Project", tags=["Projects"], operation_id="delete_project_by_id")
-def delete_project(project_id: str, db: Session = Depends(get_db)):
-    db_project = crud.delete_project(db, project_id=project_id)
-    if db_project is None:
-        raise HTTPException(status_code=404, detail="Project not found")
-    return db_project # Return the deleted object
-
-# --- Agent GetById/Update/Delete Endpoints ---
-# Added GET by ID for consistency
-@app.get("/agents/id/{agent_id}", response_model=schemas.Agent, summary="Get Agent by ID", tags=["Agents"], operation_id="get_agent_by_id")
-def get_agent_by_id_endpoint(agent_id: str, db: Session = Depends(get_db)):
-    db_agent = crud.get_agent(db, agent_id=agent_id)
-    if db_agent is None:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    return db_agent
-
-@app.put("/agents/{agent_id}", response_model=schemas.Agent, summary="Update Agent", tags=["Agents"], operation_id="update_agent_by_id")
-def update_agent(agent_id: str, agent_update: schemas.AgentUpdate, db: Session = Depends(get_db)):
-    try:
-        db_agent = crud.update_agent(db, agent_id=agent_id, agent_update=agent_update)
-        if db_agent is None:
-            raise HTTPException(status_code=404, detail="Agent not found")
-        return db_agent
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except HTTPException as http_exc:
-        raise http_exc
-    except Exception as e:
-        print(f"Unexpected error in PUT /agents/{agent_id}: {e}")
-        # Check if the exception wraps an HTTPException
-        if isinstance(e.__cause__, HTTPException) or isinstance(e.args[0], HTTPException):
-            http_exc = e.__cause__ if isinstance(e.__cause__, HTTPException) else e.args[0]
-            raise http_exc
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
-
-@app.delete("/agents/{agent_id}", response_model=schemas.Agent, summary="Delete Agent", tags=["Agents"], operation_id="delete_agent_by_id")
-def delete_agent(agent_id: str, db: Session = Depends(get_db)):
-    db_agent = crud.delete_agent(db, agent_id=agent_id)
-    if db_agent is None:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    return db_agent # Return the deleted object
-
-# --- Task Update/Delete Endpoints ---
-@app.put("/tasks/{task_id}", response_model=schemas.Task, summary="Update Task (incl. Project/Agent)", tags=["Tasks"], operation_id="update_task_by_id")
-def update_task(task_id: str, task_update: schemas.TaskUpdate, db: Session = Depends(get_db)):
-    try:
-        # crud.update_task now raises HTTPException(404) if task not found
-        updated_task_orm = crud.update_task(db=db, task_id=task_id, task_update=task_update)
-        # The check for updated_task_orm is None is no longer needed here
-        return updated_task_orm
-    except HTTPException as http_exc: # Re-raise HTTPExceptions from crud (like 404)
-        raise http_exc 
-    except ValueError as e: # Catch other validation errors from crud (e.g., invalid project_id)
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        print(f"Unexpected error in PUT /tasks/{task_id}: {e}")
-        # Check if the exception wraps an HTTPException
-        if isinstance(e.__cause__, HTTPException) or isinstance(e.args[0], HTTPException):
-            http_exc = e.__cause__ if isinstance(e.__cause__, HTTPException) else e.args[0]
-            raise http_exc
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
-
-@app.delete("/tasks/{task_id}", response_model=schemas.Task, summary="Delete Task", tags=["Tasks"], operation_id="delete_task_by_id")
-def delete_task(task_id: str, db: Session = Depends(get_db)):
-    try:
-        db_task = crud.delete_task(db, task_id=task_id)
-        if db_task is None:
-            raise HTTPException(status_code=404, detail="Task not found")
-        return db_task
-    except HTTPException as http_exc:
-        raise http_exc
-    except Exception as e:
-        print(f"Unexpected error in DELETE /tasks/{task_id}: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error during task deletion: Something went wrong")
-
-# --- MCP Integration (Old Placement - Removed) ---
-# try:
-#     print("Attempting to initialize and mount FastApiMCP...")
-#     mcp = FastApiMCP(app) # Try simplest initialization first
-#     mcp.mount() # Try simplest mount first
-#     print("FastApiMCP initialized and mounted successfully.")
-# except TypeError as e:
-#     print(f"ERROR initializing/mounting FastApiMCP: {e}")
-#     print("FastApiMCP integration might be incompatible or misconfigured.")
-# # --- End MCP Integration ---
-
-# --- Placeholder for future planning endpoint (if needed outside MCP) ---
-class PlanningRequest(BaseModel):
-    goal: str
-
-class PlanningResponse(BaseModel):
-    prompt: str
-
-# MODIFIED: Renamed function, updated route, added DB dependency, enhanced prompt
-@app.post("/projects/generate-planning-prompt", 
-          response_model=PlanningResponse, 
-          summary="Generate Project Manager Planning Prompt", 
-          tags=["Projects", "Planning"], 
-          operation_id="generate_project_manager_planning_prompt")
-async def generate_project_manager_planning_prompt(request: PlanningRequest, db: Session = Depends(get_db)):
-    """Generates a planning prompt instructing an LLM to utilize available agents."""
     
-    # Fetch available agents
-    agents = crud.get_agents(db=db, skip=0, limit=200) # Fetch a reasonable number of agents
-    agent_list_str = "\n".join([f"- {agent.name} (ID: {agent.id})" for agent in agents])
-    if not agent_list_str:
-        agent_list_str = "- No agents found in the database."
+    # Combine planning prompt with agent rules
+    enhanced_prompt = f"""# Project Manager Planning Request
 
-    # Construct the enhanced prompt
-    prompt_content = f"""Goal: {request.goal}
+## Rules and Guidelines
+{agent_prompt}
 
-Please generate a detailed, step-by-step plan to achieve the stated goal. 
+## Planning Context
+{planning_prompt}
 
-Available Project Manager Agents:
-{agent_list_str}
-
-Instructions:
-1.  Break down the goal into smaller, manageable tasks suitable for assignment.
-2.  For each task, suggest which of the available agents listed above would be most appropriate to assign it to, considering their likely roles or specializations based on their names.
-3.  Identify potential challenges or dependencies between tasks.
-4.  Structure the output clearly as a plan.
+## Instructions
+Follow the above rules and guidelines while creating the project plan. Ensure all mandates are adhered to and verify your plan against the agent capabilities and requirements.
 """
     
-    return PlanningResponse(prompt=prompt_content)
+    return PlanningResponse(prompt=enhanced_prompt)
 
-# --- MOVE FastApiMCP setup TO HERE (END OF FILE) ---
-# Ensure this block is after ALL @app.route definitions
-# print("\n>>> Initializing and mounting FastApiMCP at the end of the file...")
-# mcp_instance_at_end = FastApiMCP(app)
-# mcp_instance_at_end.setup_server()
-# print(">>> FastApiMCP setup_server() called (at end).")
-# mcp_instance_at_end.mount()
-# print(">>> FastApiMCP mounted (at end). MCP endpoint should be available.")
-# --- END REMOVED BLOCK ---
+
+# Example of including other routers
+# app.include_router(other_router)
+
+# Example of custom exception handler
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"message": exc.detail}
+    )
+
+
+# Example of including MCP FastAPI router
+# mcp_router = FastApiMCP()
+# app.include_router(mcp_router)

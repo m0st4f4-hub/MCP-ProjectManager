@@ -96,15 +96,31 @@ The API provides endpoints for managing the following resources. Refer to the au
     -   `PUT /agents/{agent_id}`
     -   `DELETE /agents/{agent_id}`
 -   **Tasks**: Create, list (with filters), retrieve, update, delete, archive, unarchive.
-    -   `POST /tasks/`
-    -   `GET /tasks/`
-    -   `GET /tasks/{task_id}`
-    -   `PUT /tasks/{task_id}`
-    -   `DELETE /tasks/{task_id}`
+    -   `POST /projects/{project_id}/tasks/`
+    -   `GET /projects/{project_id}/tasks/{task_number}`
+    -   `PUT /projects/{project_id}/tasks/{task_number}`
+    -   `DELETE /projects/{project_id}/tasks/{task_number}`
     -   `POST /tasks/{task_id}/archive`
     -   `POST /tasks/{task_id}/unarchive`
 -   **MCP**:
     -   `/mcp-docs`: Dynamically provides documentation for MCP tools derived from API endpoints and the `FastApiMCP` instance.
     -   Other MCP-specific endpoints are managed by the `FastApiMCP` integration.
 -   **Planning**:
-    -   `POST /projects/generate-planning-prompt`: Generates a planning prompt based on a goal. 
+    -   `POST /projects/generate-planning-prompt`: Generates a planning prompt based on a goal.
+
+## Task Identification
+
+Tasks are now identified by a combination of `project_id` and `task_number` (an integer unique within each project). There is no global task ID. The `task_number` is automatically assigned as the next available integer within the project when a new task is created.
+
+### Example API Usage
+
+- **Create Task:**
+  - `POST /projects/{project_id}/tasks/` (returns the new `task_number`)
+- **Get Task:**
+  - `GET /projects/{project_id}/tasks/{task_number}`
+- **Update Task:**
+  - `PUT /projects/{project_id}/tasks/{task_number}`
+- **Delete Task:**
+  - `DELETE /projects/{project_id}/tasks/{task_number}`
+
+There are no subtasks or parent_task_id fields. All tasks are flat within their project. 

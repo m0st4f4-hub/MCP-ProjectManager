@@ -56,8 +56,12 @@ const AgentAssignmentModal: React.FC<AgentAssignmentModalProps> = ({
                 _hover={{ bg: "bg.subtle" }}
                 p={2}
                 rounded="md"
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
               >
-                {agent.name}
+                <span>{agent.name}</span>
+                <span style={{ fontSize: '0.85em', color: '#888' }}>{agent.status || 'offline'}</span>
               </ListItem>
             ))}
           </List>

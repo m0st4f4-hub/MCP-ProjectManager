@@ -83,7 +83,7 @@ const UnassignedTasksList: React.FC<UnassignedTasksListProps> = ({
             ? getStatusAttributes(statusId)
             : undefined;
           return (
-            <Box as="li" key={task.id}>
+            <Box as="li" key={`${task.project_id}-${task.task_number}`}>
               <HStack spacing={sizing.spacing[2]} align="center">
                 <AppIcon name="warning" boxSize={4} mr={2} />
                 <Tag

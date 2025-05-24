@@ -1,0 +1,24 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+**Memory**
+:   **Definition:** A persistent store of entities, relations, and observations, forming a Knowledge Graph.
+:   **Cross-reference:** [protocol.mdc](mdc:.cursor/rules/protocol.mdc) (Phases A, C, E), Specific agent rules.
+
+**Entity**
+:   **Definition:** A node in the Knowledge Graph representing a distinct concept, object, or piece of information (e.g., a task, a file, an agent, a finding).
+:   **Cross-reference:** Memory tools (create_entities, delete_entities, open_nodes).
+
+**Relation**
+:   **Definition:** A directed link or edge between two entities in the Knowledge Graph, representing a relationship (e.g., "dependsOn", "createdBy", "mentions").
+:   **Cross-reference:** Memory tools (create_relations, delete_relations, update_relations).
+
+**Observation**
+:   **Definition:** A piece of information or data associated with a specific entity in the Knowledge Graph, providing details, findings, or context.
+:   **Cross-reference:** Memory tools (add_observations, delete_observations).
+
+**Knowledge Graph (KG)**
+:   **Definition:** The collective structure of entities, relations, and observations stored in memory, representing the system's accumulated understanding.
+:   **Cross-reference:** [protocol.mdc](mdc:.cursor/rules/protocol.mdc), Memory tools.

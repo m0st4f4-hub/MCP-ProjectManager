@@ -1,34 +1,54 @@
 import { z } from "zod";
 import { Task } from "./task";
+import { SortDirection } from "./index";
 
-// Base Agent schema for validation
-export const agentSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, "Name is required"),
-  created_at: z.string(),
-  updated_at: z.string().optional(),
+// --- Agent Schemas ---
+export const agentBaseSchema = z.object({
+  name: z.string(),
+  description: z.string().nullable().optional(),
+  is_archived: z.boolean().default(false), // Assuming default false based on backend query param
 });
 
-// Runtime type for Agent
-export type Agent = z.infer<typeof agentSchema>;
-
-// Schema for creating a new agent
-export const agentCreateSchema = agentSchema.omit({
-  id: true,
-  created_at: true,
-  updated_at: true,
-});
+export const agentCreateSchema = agentBaseSchema.omit({ is_archived: true });
 
 export type AgentCreateData = z.infer<typeof agentCreateSchema>;
 
-// Schema for updating an agent
-export const agentUpdateSchema = agentSchema.partial().omit({
-  id: true,
-  created_at: true,
-  updated_at: true,
-});
+export const agentUpdateSchema = agentBaseSchema.partial();
 
 export type AgentUpdateData = z.infer<typeof agentUpdateSchema>;
+
+export const agentSchema = agentBaseSchema.extend({
+  id: z.string(), // Assuming UUID as string
+});
+
+export type Agent = z.infer<typeof agentSchema>;
+
+// --- Agent Rule Association Schema ---
+export const agentRuleSchema = z.object({
+  agent_id: z.string(), // Assuming UUID as string
+  rule_id: z.string(), // Assuming rule ID as string
+});
+
+export type AgentRule = z.infer<typeof agentRuleSchema>;
+
+// --- Agent Archive/Unarchive Response Schema ---
+// Backend returns the updated Agent object
+export const agentArchiveResponseSchema = agentSchema;
+export type AgentArchiveResponse = z.infer<typeof agentArchiveResponseSchema>;
+
+export const agentUnarchiveResponseSchema = agentSchema;
+export type AgentUnarchiveResponse = z.infer<typeof agentUnarchiveResponseSchema>;
+
+// --- Agent Rule Add/Remove Response Schemas ---
+// Backend add rule returns AgentRule object
+export const agentRuleAddResponseSchema = agentRuleSchema;
+export type AgentRuleAddResponse = z.infer<typeof agentRuleAddResponseSchema>;
+
+// Backend remove rule returns a message dict
+export const agentRuleRemoveResponseSchema = z.object({
+  message: z.string(),
+});
+export type AgentRuleRemoveResponse = z.infer<typeof agentRuleRemoveResponseSchema>;
 
 // Agent with computed fields and relationships
 export interface AgentWithMeta extends Agent {
@@ -50,7 +70,6 @@ export interface AgentFilters {
 
 // Agent sort options
 export type AgentSortField = "created_at" | "name" | "efficiency" | "status";
-export type SortDirection = "asc" | "desc";
 
 export interface AgentSortOptions {
   field: AgentSortField;

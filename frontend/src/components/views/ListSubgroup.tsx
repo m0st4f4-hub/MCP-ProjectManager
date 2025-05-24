@@ -88,7 +88,7 @@ const ListSubgroup: React.FC<ListSubgroupProps> = ({
         <List spacing={0} pl="4">
           {subgroup.tasks.map((task) => (
             <ListTaskItem
-              key={task.id}
+              key={`${task.project_id}-${task.task_number}`}
               task={task}
               selectedTaskIds={selectedTaskIds}
               toggleTaskSelection={toggleTaskSelection}

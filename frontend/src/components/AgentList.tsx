@@ -58,30 +58,6 @@ const AgentList: React.FC = () => {
     fetchTasks();
   }, [fetchAgents, fetchProjects, fetchTasks]);
 
-  const getAgentStats = (agentId: string) => {
-    const agentTasks = tasks.filter((task) => task.agent_id === agentId);
-    const taskCount = agentTasks.length;
-    const projectIds = Array.from(
-      new Set(agentTasks.map((task) => task.project_id).filter(Boolean)),
-    );
-    const projectCount = projectIds.length;
-    const projectNames = projectIds
-      .map((pid) => projects.find((p) => p.id === pid)?.name)
-      .filter((name): name is string => !!name);
-    const isActive = agentTasks.some(
-      (task) => task.status !== TaskStatus.COMPLETED,
-    );
-    const status = isActive ? "Active" : "Idle";
-    const statusColorScheme = status === "Active" ? "green" : "gray";
-    return {
-      taskCount,
-      projectCount,
-      projectNames,
-      status,
-      statusColorScheme,
-    };
-  };
-
   const handleAddAgentSubmit = async (name: string) => {
     try {
       await addAgent({ name });
@@ -181,7 +157,7 @@ const AgentList: React.FC = () => {
     } else {
       prompt += "\nTasks:";
       agentTasks.forEach((task, idx) => {
-        prompt += `\n${idx + 1}. Task ID: ${task.id}`;
+        prompt += `\n${idx + 1}. Task ID: ${task.project_id}/${task.task_number}`;
         prompt += `\n   - Task Name: ${task.title}`;
         if (task.description)
           prompt += `\n   - Description: ${task.description}`;
@@ -223,32 +199,17 @@ const AgentList: React.FC = () => {
         if (!agent.name?.toLowerCase().includes(searchTermLower)) return false;
       }
       if (agentFilters.status && agentFilters.status !== "all") {
-        const agentTasks = tasks.filter(
-          (task) =>
-            task.agent_name === agent.name || task.agent_id === agent.id,
-        );
-        const isActive = agentTasks.some(
-          (task) => task.status !== TaskStatus.COMPLETED,
-        );
-        const currentStatus = isActive
-          ? "busy"
-          : agentTasks.length > 0
-            ? "available"
-            : "offline";
-        if (
-          agentFilters.status === "available" &&
-          currentStatus !== "available" &&
-          currentStatus !== "offline"
-        )
+        const status = agent.status ? agent.status.toLowerCase() : "offline";
+        if (agentFilters.status === "available" && status !== "available")
           return false;
-        if (agentFilters.status === "busy" && currentStatus !== "busy")
+        if (agentFilters.status === "busy" && status !== "busy")
           return false;
-        if (agentFilters.status === "offline" && currentStatus !== "offline")
+        if (agentFilters.status === "offline" && status !== "offline")
           return false;
       }
       return true;
     });
-  }, [agents, agentFilters, tasks]);
+  }, [agents, agentFilters]);
 
   if (agentsLoading)
     return <Text color="textPlaceholder">Loading agents...</Text>;
@@ -283,7 +244,6 @@ const AgentList: React.FC = () => {
           <AgentCard
             key={agent.id}
             agent={agent}
-            agentStats={getAgentStats(agent.id)}
             onOpenEditModal={() => handleOpenEditModal(agent)}
             onCopyAgentId={handleCopyAgentId}
             onOpenCliPrompt={handleOpenCliPrompt}

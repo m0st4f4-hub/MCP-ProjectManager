@@ -172,21 +172,21 @@ const TaskList: React.FC = () => {
   }, [tasks, filters]);
 
   const allFilterableTaskIds = useMemo(
-    () => allFilterableTasks.map((t) => t.id),
+    () => allFilterableTasks.map((t) => `${t.project_id}-${t.task_number}`),
     [allFilterableTasks],
   );
 
   // This memo is for tasks that will be displayed in the List View, respecting top_level_only for grouping.
-  const filteredTasksForListView = useMemo(() => {
-    // if (filters.top_level_only === false) { // top_level_only filter is removed
-    // If not filtering for top-level only, all filterable tasks are candidates for the list view structure.
-    // The grouping logic will handle parent_task_id.
-    return allFilterableTasks;
-    // } else {
-    // If top_level_only IS true, then filter down to actual top-level tasks for the initial grouping.
-    //     return allFilterableTasks.filter(task => !task.parent_task_id); // Removed parent_task_id check
-    // }
-  }, [allFilterableTasks]); // Removed filters.top_level_only from dependencies
+  // const filteredTasksForListView = useMemo(() => {
+  //   // if (filters.top_level_only === false) { // top_level_only filter is removed
+  //   // If not filtering for top-level only, all filterable tasks are candidates for the list view structure.
+  //   // The grouping logic will handle parent_task_id.
+  //   return allFilterableTasks;
+  //   // } else {
+  //   // If top_level_only IS true, then filter down to actual top-level tasks for the initial grouping.
+  //   //     return allFilterableTasks.filter(task => !task.parent_task_id); // Removed parent_task_id check
+  //   // }
+  // }, [allFilterableTasks]); // Removed filters.top_level_only from dependencies
 
   const tasksForKanbanView = useMemo(() => {
     // Kanban view typically shows all tasks that pass filters, regardless of parent_task_id, as it's flat.
@@ -194,16 +194,16 @@ const TaskList: React.FC = () => {
   }, [allFilterableTasks]);
 
   // Force groupBy to 'status' in Kanban view
-  const effectiveGroupBy = viewMode === "kanban" ? "status" : "status";
+  // const effectiveGroupBy = viewMode === "kanban" ? "status" : "status";
 
-  const groupedAndFilteredTasks: GroupedTasks = useMemo(() => {
-    const topLevelTasks = filteredTasksForListView;
+  // const groupedAndFilteredTasks: GroupedTasks = useMemo(() => {
+  //   const topLevelTasks = filteredTasksForListView;
 
-    return groupTasksByStatus(topLevelTasks, sortOptions);
-  }, [
-    filteredTasksForListView,
-    sortOptions,
-  ]);
+  //   return groupTasksByStatus(topLevelTasks, sortOptions);
+  // }, [
+  //   filteredTasksForListView,
+  //   sortOptions,
+  // ]);
 
   if (loading && isInitialLoad) {
     return <TaskLoading />;
@@ -219,18 +219,18 @@ const TaskList: React.FC = () => {
   }
 
   const noTasksToShow =
-    groupedAndFilteredTasks.groups.every((group) => {
-      if (group.tasks?.length) return false;
-      if (group.subgroups?.every((sub) => !sub.tasks.length)) return true;
-      if (
-        group.subgroups &&
-        group.subgroups.length > 0 &&
-        !group.subgroups.some((sub) => sub.tasks.length > 0)
-      )
-        return true;
-      if (!group.tasks && !group.subgroups) return true;
-      return false;
-    }) &&
+    // groupedAndFilteredTasks.groups.every((group) => {
+    //   if (group.tasks?.length) return false;
+    //   if (group.subgroups?.every((sub) => !sub.tasks.length)) return true;
+    //   if (
+    //     group.subgroups &&
+    //     group.subgroups.length > 0 &&
+    //     !group.subgroups.some((sub) => sub.tasks.length > 0)
+    //   )
+    //     return true;
+    //   if (!group.tasks && !group.subgroups) return true;
+    //   return false;
+    // }) &&
     !loading &&
     !isInitialLoad;
 
@@ -241,7 +241,7 @@ const TaskList: React.FC = () => {
   return (
     <Box>
       <TaskControls
-        groupBy={effectiveGroupBy}
+        groupBy={"status"}
         setGroupBy={(value: GroupByType) => setGroupBy(value)}
         viewMode={viewMode}
         setViewMode={setViewMode}
@@ -256,14 +256,14 @@ const TaskList: React.FC = () => {
       {/* Conditional Rendering based on viewMode */}
       {viewMode === "list" && (
         <ListView
-          groupedTasks={groupedAndFilteredTasks}
+          groupedTasks={tasks}
           isLoading={loading && isInitialLoad}
           isMobile={isMobile}
         />
       )}
       {viewMode === "kanban" && (
         <KanbanView
-          filteredTasks={tasksForKanbanView}
+          filteredTasks={tasks}
           // onOpenModal={handleOpenAddTaskModalCallback} // If needed later for Kanban
           compactView={isMobile} // Or a specific compact state for Kanban
         />

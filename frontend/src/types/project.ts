@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Task } from "./task";
+import { SortDirection } from "./index";
 
 // Base Project schema for validation
 export const projectSchema = z.object({
@@ -56,7 +57,6 @@ export interface ProjectFilters {
 
 // Project sort options
 export type ProjectSortField = "created_at" | "name" | "progress" | "status";
-export type SortDirection = "asc" | "desc";
 
 export interface ProjectSortOptions {
   field: ProjectSortField;

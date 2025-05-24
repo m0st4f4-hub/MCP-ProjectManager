@@ -87,6 +87,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const cancelRef = React.useRef<HTMLButtonElement | null>(null);
 
+  // Use a string representing the composite key (project_id-task_number) for activeId
   const [activeId, setActiveId] = useState<string | null>(null); // For DND
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -154,11 +155,14 @@ const KanbanView: React.FC<KanbanViewProps> = ({
 
   const activeTask = useMemo(() => {
     if (!activeId) return null;
-    return filteredTasks.find((task) => task.id === activeId);
+    // Find the task using the composite key
+    const [project_id, task_number] = activeId.split('-');
+    return filteredTasks.find((task) => task.project_id === project_id && task.task_number === parseInt(task_number));
   }, [activeId, filteredTasks]);
 
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
+    // Set activeId to the composite key string
+    setActiveId(event.active.id as string); // event.active.id should already be the composite key string if set correctly in KanbanColumn
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -166,22 +170,26 @@ const KanbanView: React.FC<KanbanViewProps> = ({
     setActiveId(null);
 
     console.log("[KanbanView.tsx] handleDragEnd event:", event);
-    console.log("[KanbanView.tsx] Active item:", active);
+    console.log("[KanbanView.tsx] Active item (composite key):", active.id);
     console.log("[KanbanView.tsx] Over item/container:", over);
 
     if (over && active.id !== over.id) {
+      // Extract project_id and task_number from the active.id (composite key)
+      const [project_id, task_number_str] = (active.id as string).split('-');
+      const task_number = parseInt(task_number_str);
+
       const sourceTask = filteredTasks.find(
-        (t) => t.id === (active.id as string),
+        (t) => t.project_id === project_id && t.task_number === task_number,
       );
       if (!sourceTask) {
-        console.error("[KanbanView.tsx] Dragged task not found:", active.id);
+        console.error("[KanbanView.tsx] Dragged task not found for ID:", active.id);
         return;
       }
 
       const targetColumnId =
         over.data?.current?.sortable?.containerId || over.id;
       console.log(
-        `[KanbanView.tsx] Drag End: Task ID: ${active.id}, Original Status: ${sourceTask.status}, Target Column ID Attempt: ${targetColumnId}`,
+        `[KanbanView.tsx] Drag End: Task Composite ID: ${active.id}, Original Status: ${sourceTask.status}, Target Column ID Attempt: ${targetColumnId}`,
       );
 
       const isValidStatusId = KANBAN_COLUMN_RENDER_IDS.includes(
@@ -201,7 +209,8 @@ const KanbanView: React.FC<KanbanViewProps> = ({
           `[KanbanView.tsx] Attempting to update task ${active.id} to new status: ${newStatus}`,
         );
         try {
-          await updateTask(active.id as string, { status: newStatus });
+          // Call updateTask with project_id and task_number
+          await updateTask(project_id, task_number, { status: newStatus });
           toast({
             title: `Task "${sourceTask.title}" moved to ${kanbanColumns[newStatus]?.title || newStatus}.`,
             status: "success",
@@ -255,7 +264,8 @@ const KanbanView: React.FC<KanbanViewProps> = ({
   const handleDeleteConfirmInKanban = async () => {
     if (!taskToDelete) return;
     try {
-      await deleteTaskFromStore(taskToDelete.id);
+      // Use composite key for deletion
+      await deleteTaskFromStore(taskToDelete.project_id, taskToDelete.task_number);
       toast({
         title: taskToDelete.is_archived
           ? "Archived task permanently deleted"

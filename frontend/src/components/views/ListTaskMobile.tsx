@@ -10,7 +10,7 @@ interface ListTaskMobileProps {
   onAssignAgent: (task: Task) => void;
   onDeleteInitiate: (task: Task) => void;
   onClick: () => void;
-  onCopyGetCommand: (taskId: string) => void;
+  onCopyGetCommand: (project_id: string, task_number: number) => void;
 }
 
 const ListTaskMobile: React.FC<ListTaskMobileProps> = ({
@@ -45,7 +45,7 @@ const ListTaskMobile: React.FC<ListTaskMobileProps> = ({
         onAssignAgent={onAssignAgent}
         onDeleteInitiate={onDeleteInitiate}
         onClick={onClick}
-        onCopyGetCommand={onCopyGetCommand}
+        onCopyGetCommand={(projectId, taskNumber) => onCopyGetCommand(projectId, taskNumber)}
       />
     </Box>
   </ListItem>

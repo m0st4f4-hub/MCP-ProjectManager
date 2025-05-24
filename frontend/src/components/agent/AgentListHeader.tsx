@@ -38,10 +38,7 @@ const AgentListHeader: React.FC<AgentListHeaderProps> = ({
 
   const totalAgents = agents.length;
   const activeAgents = agents.filter((agent) =>
-    tasks.some(
-      (task) =>
-        task.agent_id === agent.id && task.status !== TaskStatus.COMPLETED,
-    ),
+    agent.status && ["busy", "available"].includes(agent.status.toLowerCase())
   ).length;
   const totalTasks = tasks.length;
 

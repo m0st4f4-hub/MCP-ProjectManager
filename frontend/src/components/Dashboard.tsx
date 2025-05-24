@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Heading,
   VStack,
@@ -9,6 +9,10 @@ import {
   SimpleGrid,
   useToken,
   Box,
+  Select,
+  FormControl,
+  FormLabel,
+  Checkbox,
 } from "@chakra-ui/react";
 import {
   CheckCircleIcon,
@@ -28,6 +32,7 @@ import { useAgentStore, AgentState } from "@/store/agentStore";
 import { getTaskCategory } from "@/lib/taskUtils";
 
 import { Agent } from "@/types/agent";
+import { Task } from "@/types/task";
 
 import { useFilteredTasks } from "@/hooks/useFilteredTasks";
 import { useFilteredProjects } from "@/hooks/useFilteredProjects";
@@ -46,16 +51,19 @@ import { sizing, typography, semanticColors } from "../tokens";
 import { useDashboardData } from "./dashboard/useDashboardData";
 import DashboardLoading from "./dashboard/DashboardLoading";
 import DashboardError from "./dashboard/DashboardError";
+import TaskList from "./TaskList";
 
 // Define selectors outside the component for stable references
 const selectTaskFilters = (state: TaskState) => state.filters;
 const selectProjectFilters = (state: ProjectState) => state.filters;
+const selectSetTaskFilters = (state: TaskState) => state.setFilters;
 
 const Dashboard: React.FC = () => {
   const tasksFromStore = useTaskStore((state) => state.tasks);
   const isLoadingTasks = useTaskStore((state) => state.loading);
   const tasksError = useTaskStore((state) => state.error);
   const taskFiltersFromStore = useTaskStore(selectTaskFilters);
+  const setTaskFilters = useTaskStore(selectSetTaskFilters);
 
   const projectsFromStore = useProjectStore((state) => state.projects);
   const isLoadingProjects = useProjectStore((state) => state.loading);
@@ -124,8 +132,25 @@ const Dashboard: React.FC = () => {
   const filteredProjectsForDashboard = useFilteredProjects(
     projectsFromStore,
     projectFiltersFromStore,
-    taskFiltersFromStore?.projectId, // Pass task's project filter for consistency
+    taskFiltersFromStore?.projectId,
   );
+
+  // State for local filtering and sorting UI controls
+  const [agentFilter, setAgentFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [showArchived, setShowArchived] = useState<boolean>(false);
+  const [sortBy, setSortBy] = useState<string>("created_at");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
+  // Update task store filters when local state changes
+  useMemo(() => {
+    setTaskFilters({
+      ...taskFiltersFromStore,
+      agentId: agentFilter || undefined,
+      status: statusFilter === "all" ? undefined : statusFilter,
+      is_archived: showArchived ? undefined : false,
+    });
+  }, [agentFilter, statusFilter, showArchived, setTaskFilters, taskFiltersFromStore]);
 
   const totalArchivedTasks = useMemo(() => {
     const filtered = allTasks.filter((task) => task.is_archived);
@@ -204,31 +229,21 @@ const Dashboard: React.FC = () => {
     return filteredProjectsForDashboard
       .map((project, i) => ({
         name: project.name,
-        value: filteredTasksForDashboard.filter(
-          (t) => t.project_id === project.id,
-        ).length,
+        value: project.task_count ?? 0,
         color: THEME_COLORS[i % THEME_COLORS.length],
-        progress: (() => {
-          const totalProjectTasks = filteredTasksForDashboard.filter(
-            (t) => t.project_id === project.id,
-          ).length;
-          const doneProjectTasks = filteredTasksForDashboard.filter(
-            (t) =>
-              t.project_id === project.id && getTaskCategory(t) === "completed",
-          ).length;
-          return totalProjectTasks > 0
-            ? Math.round((doneProjectTasks / totalProjectTasks) * 100)
-            : 0;
-        })(),
+        progress: project.progress ?? (
+          project.task_count && project.completed_task_count
+            ? Math.round((project.completed_task_count / project.task_count) * 100)
+            : 0
+        ),
       }))
       .sort((a, b) => b.value - a.value);
-  }, [filteredProjectsForDashboard, filteredTasksForDashboard, THEME_COLORS]);
+  }, [filteredProjectsForDashboard, THEME_COLORS]);
 
   const tasksPerAgent = useMemo(() => {
     const agentData = agents.map((agent: Agent, i: number) => ({
       name: agent.name,
-      tasks: filteredTasksForDashboard.filter((t) => t.agent_id === agent.id)
-        .length,
+      tasks: agent.task_count ?? 0,
       color: THEME_COLORS[i % THEME_COLORS.length],
     }));
     const unassignedCount = unassignedTasks.length;
@@ -244,7 +259,6 @@ const Dashboard: React.FC = () => {
     );
   }, [
     agents,
-    filteredTasksForDashboard,
     unassignedTasks,
     THEME_COLORS,
     neutralGray600,
@@ -305,8 +319,7 @@ const Dashboard: React.FC = () => {
     () =>
       topAgents.map((agent) => ({
         name: agent.name,
-        value: agent.tasks, // Map tasks to value
-        // color property is not used by TopPerformersLists, so it can be omitted here
+        value: agent.tasks,
       })),
     [topAgents],
   );
@@ -323,9 +336,9 @@ const Dashboard: React.FC = () => {
       (p) => p.is_archived,
     ).length;
     return {
-      activeFiltered: activeFilteredProjects, // Active projects matching current filters
-      totalSystemActive: totalNonArchivedSystemProjects, // All active projects in the system
-      totalSystemArchived: totalArchivedSystemProjects, // All archived projects in the system
+      activeFiltered: activeFilteredProjects,
+      totalSystemActive: totalNonArchivedSystemProjects,
+      totalSystemArchived: totalArchivedSystemProjects,
     };
   }, [filteredProjectsForDashboard, allProjects]);
 
@@ -371,7 +384,7 @@ const Dashboard: React.FC = () => {
         id: "blocked-tasks",
         label: "Blocked",
         value: blocked,
-        icon: WarningTwoIcon, // Consider a different icon for blocked
+        icon: WarningTwoIcon,
         iconColor: "orange.500",
       },
       {
@@ -386,13 +399,13 @@ const Dashboard: React.FC = () => {
         label: "Total Active Projects (System)",
         value: projectSummaryStats.totalSystemActive,
         icon: GoProject,
-        iconColor: "teal.600", // Slightly different color
+        iconColor: "teal.600",
       },
       {
         id: "total-agents",
         label: "Total Agents",
         value: agents.length,
-        icon: BsPerson, // Or FiUsers
+        icon: BsPerson,
         iconColor: "cyan.500",
       },
       {
@@ -405,18 +418,46 @@ const Dashboard: React.FC = () => {
       {
         id: "archived-tasks-system",
         label: "Archived Tasks (System)",
-        value: totalArchivedTasks, // totalArchivedTasks is from a separate useMemo using allTasks
+        value: totalArchivedTasks,
         icon: LucideArchive,
-        iconColor: "gray.400", // Slightly different color
+        iconColor: "gray.400",
       },
     ];
   }, [
     taskStats,
     filteredTasksForDashboard.length,
-    projectSummaryStats, // Added dependency
+    projectSummaryStats,
     agents.length,
-    totalArchivedTasks, // Already a dependency
+    totalArchivedTasks,
   ]);
+
+  // Apply sorting to the filtered tasks
+  const sortedTasks = useMemo(() => {
+    const tasksToSort = [...filteredTasksForDashboard];
+    tasksToSort.sort((a, b) => {
+      let comparison = 0;
+      if (sortBy === "created_at" || sortBy === "updated_at") {
+        const dateA = new Date(a[sortBy] || 0).getTime();
+        const dateB = new Date(b[sortBy] || 0).getTime();
+        comparison = dateA - dateB;
+      } else if (sortBy === "status") {
+        const statusOrder: Record<string, number> = {
+          "TO_DO": 0,
+          "IN_PROGRESS": 1,
+          "PENDING_INPUT": 2,
+          "BLOCKED": 3,
+          "COMPLETED": 4,
+          "FAILED": 5,
+        };
+        const statusA = statusOrder[a.status || "TO_DO"];
+        const statusB = statusOrder[b.status || "TO_DO"];
+        comparison = statusA - statusB;
+      }
+      // Apply sort direction
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+    return tasksToSort;
+  }, [filteredTasksForDashboard, sortBy, sortDirection]);
 
   const combinedLoading = isLoadingAll || isLoadingProjects || isLoadingAgents;
 
@@ -578,6 +619,14 @@ const Dashboard: React.FC = () => {
             <RecentActivityList recentActivity={recentActivity} />
           </DashboardSection>
         </SimpleGrid>
+
+        <DashboardSection
+          title="All Tasks"
+          isLoading={isLoadingTasks}
+          error={tasksError}
+        >
+          <TaskList tasks={sortedTasks} />
+        </DashboardSection>
       </VStack>
     </Box>
   );

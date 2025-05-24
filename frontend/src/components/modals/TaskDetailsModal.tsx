@@ -40,13 +40,15 @@ import { typography, sizing, shadows } from "@/tokens"; // Added tokens
 interface TaskDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  taskId: string | null; // Changed number back to string
+  project_id: string | null; // Use project_id as part of composite key
+  task_number: number | null; // Use task_number as part of composite key
 }
 
 const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   isOpen,
   onClose,
-  taskId,
+  project_id, // Get project_id from props
+  task_number, // Get task_number from props
 }) => {
   const [task, setTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,18 +71,20 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   const cancelRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
-    if (isOpen && taskId !== null) {
+    // Check for both project_id and task_number
+    if (isOpen && project_id !== null && task_number !== null) {
       const fetchTaskDetails = async () => {
         setIsLoading(true);
         setError(null);
         try {
-          // Use tasks from top-level hook
-          const storeTask = tasks.find((t) => t.id === taskId);
+          // Use composite key to find task in store
+          const storeTask = tasks.find((t) => t.project_id === project_id && t.task_number === task_number);
           if (storeTask) {
             setTask(storeTask);
           } else {
             try {
-              const fetchedTask = await getTaskById(taskId);
+              // Use composite key for API call
+              const fetchedTask = await getTaskById(project_id, task_number);
               setTask(fetchedTask);
             } catch (fetchError) {
               console.error("Failed to fetch task by ID:", fetchError);
@@ -104,12 +108,13 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       setIsLoading(false);
       setError(null);
     }
-  }, [isOpen, taskId, tasks]);
+  // Add project_id and task_number to the dependency array
+  }, [isOpen, project_id, task_number, tasks]);
 
   const handleArchive = async () => {
     if (!task) return;
     try {
-      await archiveTaskStore(task.id);
+      await archiveTaskStore(task.project_id, task.task_number);
       toast({
         title: "Task archived",
         status: "success",
@@ -131,7 +136,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   const handleUnarchive = async () => {
     if (!task) return;
     try {
-      await unarchiveTaskStore(task.id);
+      await unarchiveTaskStore(task.project_id, task.task_number);
       toast({
         title: "Task unarchived",
         status: "success",
@@ -157,7 +162,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   const handleDeleteConfirm = async () => {
     if (!task) return;
     try {
-      await deleteTaskStore(task.id);
+      await deleteTaskStore(task.project_id, task.task_number);
       toast({
         title: task.is_archived
           ? "Archived task permanently deleted"
@@ -322,11 +327,8 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     </Heading>
                     <Box ml="2">
                       {(() => {
-                        const statusId = (task.status || "TO_DO") as StatusID;
-                        const statusInfo = getDisplayableStatus(
-                          statusId,
-                          task.title,
-                        );
+                        const statusId = (task.status || "Unknown") as StatusID;
+                        const statusInfo = getDisplayableStatus(statusId, task.title);
                         if (!statusInfo) {
                           return (
                             <Tag
@@ -341,8 +343,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                             </Tag>
                           );
                         }
-                        const { displayName, colorScheme, icon, dynamicValue } =
-                          statusInfo;
+                        const { displayName, colorScheme, icon } = statusInfo;
                         let tagBg = "gray.100";
                         let tagColor = "gray.800";
                         switch (colorScheme) {
@@ -379,11 +380,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                             {icon && typeof icon !== "string" && (
                               <TagLeftIcon as={icon} />
                             )}
-                            <Text>
-                              {dynamicValue
-                                ? `${displayName} (${dynamicValue})`
-                                : displayName}
-                            </Text>
+                            <Text>{displayName}</Text>
                           </Tag>
                         );
                       })()}

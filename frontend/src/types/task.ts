@@ -1,4 +1,5 @@
 import { z } from "zod";
+// import { SortDirection, TaskSortField, TaskSortOptions } from "./index";
 
 export enum TaskStatus {
   PENDING = "pending",
@@ -16,17 +17,22 @@ export enum TaskPriority {
 
 // Base Task schema for validation
 export const taskSchema = z.object({
-  id: z.string(),
+  project_id: z.string(),
+  task_number: z.number(),
   title: z.string().min(1, "Title is required"),
   description: z.string().nullable().optional(),
   status: z.string().default("TO_DO"),
-  project_id: z.string().nullable(),
   assignee_id: z.string().nullable().optional(),
   created_at: z.string(),
   updated_at: z.string().optional(),
   agent_id: z.string().nullable().optional(),
   agent_name: z.string().nullable().optional(),
+  agent_status: z.string().optional(),
   is_archived: z.boolean().optional(),
+  dependencies: z.array(z.object({
+    project_id: z.string(),
+    task_number: z.number(),
+  })).optional(),
 });
 
 // Runtime type for Task
@@ -34,7 +40,7 @@ export type Task = z.infer<typeof taskSchema>;
 
 // Schema for creating a new task
 export const taskCreateSchema = taskSchema.omit({
-  id: true,
+  task_number: true,
   created_at: true,
   updated_at: true,
 });
@@ -43,7 +49,8 @@ export type TaskCreateData = z.infer<typeof taskCreateSchema>;
 
 // Schema for updating a task
 export const taskUpdateSchema = taskSchema.partial().omit({
-  id: true,
+  project_id: true,
+  task_number: true,
   created_at: true,
   updated_at: true,
 });
@@ -56,23 +63,14 @@ export interface TaskWithMeta extends Task {
 }
 
 // Task filter options
-export interface TaskFilters {
-  projectId?: string;
-  agentId?: string;
-  status?: "all" | "completed" | "active";
-  search?: string;
-  hideCompleted?: boolean;
-  is_archived?: boolean | null;
-}
-
-// Task sort options
-export type TaskSortField = "created_at" | "title" | "status";
-export type SortDirection = "asc" | "desc";
-
-export interface TaskSortOptions {
-  field: TaskSortField;
-  direction: SortDirection;
-}
+// export interface TaskFilters {
+//   projectId?: string;
+//   agentId?: string;
+//   status?: "all" | "completed" | "active";
+//   search?: string;
+//   hideCompleted?: boolean;
+//   is_archived?: boolean | null;
+// }
 
 // Task error types
 export interface TaskError {
@@ -94,3 +92,39 @@ export interface TaskListResponse {
   pageSize: number;
   error?: TaskError;
 }
+
+// --- Task File Association Schemas ---
+export const taskFileAssociationBaseSchema = z.object({
+  file_id: z.string(), // The ID of the associated file
+});
+
+export const taskFileAssociationCreateSchema = taskFileAssociationBaseSchema;
+
+export type TaskFileAssociationCreateData = z.infer<typeof taskFileAssociationCreateSchema>;
+
+export const taskFileAssociationSchema = taskFileAssociationBaseSchema.extend({
+  task_project_id: z.string(), // The project ID of the associated task
+  task_number: z.number(), // The task number within the project
+});
+
+export type TaskFileAssociation = z.infer<typeof taskFileAssociationSchema>;
+
+// --- Task Dependency Schemas ---
+export const taskDependencyBaseSchema = z.object({
+  dependent_task_project_id: z.string(), // Project ID of the task that depends
+  dependent_task_number: z.number(), // Task number of the task that depends
+  depends_on_task_project_id: z.string(), // Project ID of the task being depended on
+  depends_on_task_number: z.number(), // Task number of the task being depended on
+  dependency_type: z.string(), // Type of dependency (e.g., 'finishes_before_starts')
+});
+
+export const taskDependencyCreateSchema = taskDependencyBaseSchema;
+
+export type TaskDependencyCreateData = z.infer<typeof taskDependencyCreateSchema>;
+
+export const taskDependencySchema = taskDependencyBaseSchema.extend({
+  // If backend returns an ID for the relationship itself, add it here
+  // id: z.string(),
+});
+
+export type TaskDependency = z.infer<typeof taskDependencySchema>;

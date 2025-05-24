@@ -3,6 +3,7 @@ export * from "./agent";
 export * from "./task";
 
 // Common types used across the application
+// Canonical shared sort direction type for all entities
 export type SortDirection = "asc" | "desc";
 
 export interface PaginationParams {
@@ -38,11 +39,13 @@ export interface ToastMessage {
   duration?: number;
 }
 
-export type TaskSortField = "created_at" | "title" | "status" | "agent";
+// Canonical task sort field type (should match all UI/usage fields)
+export type TaskSortField = "created_at" | "title" | "status" | "agent" | "project_id" | "updated_at";
 
+// Canonical task sort options type
 export interface TaskSortOptions {
   field: TaskSortField;
-  direction: "asc" | "desc";
+  direction: SortDirection;
 }
 
 // Add shared types for group by and view mode
