@@ -8,7 +8,7 @@ import json
 from backend import models
 
 from backend.schemas.audit_log import AuditLogCreate
-from backend.models.audit_log import AuditLog as AuditLogModel
+from backend.models.audit import AuditLog as AuditLogModel
 from backend.crud import audit_logs as audit_log_crud # Alias to avoid name collision
 
 

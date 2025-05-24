@@ -47,7 +47,7 @@ def create_task(db: Session, project_id: str, task: TaskCreate, agent_id: Option
         task_number=next_task_number,
         title=task.title,
         description=task.description,
-        status=task.status if isinstance(task.status, models.TaskStatusEnum) else task.status,
+        status=task.status if isinstance(task.status, TaskStatusEnum) else task.status,
         is_archived=task.is_archived,
         agent_id=agent_id_to_assign # Use the validated agent_id
     )

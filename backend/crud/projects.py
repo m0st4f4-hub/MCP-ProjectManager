@@ -75,7 +75,13 @@ def get_projects(db: Session, skip: int = 0, search: Optional[str] = None, statu
 
 def create_project(db: Session, project: ProjectCreate):
     # Use the imported ProjectCreate directly
-    db_project = ProjectModel(name=project.name, description=project.description)
+
+    # Check if a project with the same name already exists
+    existing_project = get_project_by_name(db, project.name)
+    if existing_project:
+        raise ValueError(f"Project with name '{project.name}' already exists")
+
+    db_project = ProjectModel(id=str(uuid.uuid4()), name=project.name, description=project.description)
     db.add(db_project)
     db.commit()
     db.refresh(db_project)
@@ -89,7 +95,8 @@ def create_project(db: Session, project: ProjectCreate):
         metadata_={
             "project_id": db_project.id,
             "created_at": db_project.created_at.isoformat()
-        }
+        },
+        entity_type="project"
     )
     memory_crud.create_memory_entity(db=db, entity=memory_entity_data)
 
@@ -113,7 +120,7 @@ def update_project(db: Session, project_id: str, project_update: ProjectUpdate):
         db.refresh(db_project)
 
         # Update the corresponding MemoryEntity
-        memory_entity = memory_crud.get_memory_entity_by_name(db, name=db_project.name)
+        memory_entity = memory_crud.get_entity_by_name(db, name=db_project.name)
         if memory_entity:
             # Only update description for now, can expand later
             memory_update_data = MemoryEntityUpdate(description=db_project.description)
@@ -133,7 +140,7 @@ def delete_project(db: Session, project_id: str):
         project_data_to_return = Project.model_validate(db_project)
 
         # Get the corresponding MemoryEntity by name before deleting the project
-        memory_entity = memory_crud.get_memory_entity_by_name(db, name=db_project.name)
+        memory_entity = memory_crud.get_entity_by_name(db, name=db_project.name)
 
         # Delete the project from the database
         db.delete(db_project)

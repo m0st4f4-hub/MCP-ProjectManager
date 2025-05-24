@@ -19,7 +19,7 @@ def file_entity_exists(db: Session, file_memory_entity_id: int) -> bool:
     """
     Returns True if the file memory entity exists in the memory store.
     """
-    return memory_crud.get_memory_entity_by_id(db, entity_id=file_memory_entity_id) is not None
+    return memory_crud.get_memory_entity(db, entity_id=file_memory_entity_id) is not None
 
 
 def task_entity_exists(db: Session, task_project_id: Union[str, UUID], task_number: int) -> bool:
@@ -27,7 +27,7 @@ def task_entity_exists(db: Session, task_project_id: Union[str, UUID], task_numb
     Returns True if the task memory entity exists in the memory store.
     """
     task_entity_name = f"task_{str(task_project_id)}_{task_number}"
-    return memory_crud.get_memory_entity_by_name(db, name=task_entity_name) is not None
+    return memory_crud.get_entity_by_name(db, name=task_entity_name) is not None
 
 
 def association_exists(db: Session, task_project_id: Union[str, UUID], task_number: int, file_memory_entity_id: int) -> bool:
@@ -46,9 +46,9 @@ def delete_associated_memory_relation(db: Session, task_project_id: Union[str, U
     """
     Deletes the associated memory relation between the file and task entities.
     """
-    file_memory_entity = memory_crud.get_memory_entity_by_id(db, entity_id=file_memory_entity_id)
+    file_memory_entity = memory_crud.get_memory_entity(db, entity_id=file_memory_entity_id)
     task_entity_name = f"task_{str(task_project_id)}_{task_number}"
-    task_memory_entity = memory_crud.get_memory_entity_by_name(db, name=task_entity_name)
+    task_memory_entity = memory_crud.get_entity_by_name(db, name=task_entity_name)
 
     if file_memory_entity and task_memory_entity:
         relations_to_delete = memory_crud.get_memory_relations_between_entities(

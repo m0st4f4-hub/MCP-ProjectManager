@@ -15,7 +15,7 @@ class Project(Base, BaseModel, ArchivedMixin):
     """Represents a project in the Project Manager."""
     __tablename__ = "projects"
 
-    id: Mapped[str] = mapped_column(String(32), primary_key=True, index=True)
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, index=True, default=generate_uuid_with_hyphens)
     name: Mapped[str] = mapped_column(String, index=True, unique=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     task_count: Mapped[int] = mapped_column(Integer, default=0)
@@ -27,16 +27,6 @@ class Project(Base, BaseModel, ArchivedMixin):
     comments_on_project: Mapped[List["Comment"]] = relationship("Comment", back_populates="project", cascade="all, delete-orphan")
     # Add the project_files relationship defined in the ProjectFileAssociation model
     project_files = relationship("ProjectFileAssociation", back_populates="project", cascade="all, delete-orphan")
-
-
-class ProjectTemplate(Base):
-    """Template for creating projects."""
-    __tablename__ = "project_templates"
-
-    id: Mapped[str] = mapped_column(
-        String(32), primary_key=True, default=generate_uuid_with_hyphens, index=True)
-    name: Mapped[str] = mapped_column(String, unique=True, index=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
 
 class ProjectMember(Base, BaseModel):

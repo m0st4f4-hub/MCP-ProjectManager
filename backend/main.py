@@ -26,8 +26,8 @@ from backend.database import get_db, Base, engine
 # Import middleware initialization
 from backend.middleware import init_middleware
 
-# Import routers
-from backend.routers import mcp, projects, agents, audit_logs, memory, rules, tasks, users
+# Explicitly import models to ensure they are loaded early
+import backend.models
 
 # Add import for MCP (mock if not available)
 try:
@@ -39,6 +39,21 @@ logger = logging.getLogger(__name__)
 
 # Create all tables in the database
 # Base.metadata.create_all(bind=engine) # REMOVED module-level call
+
+# Function to include routers dynamically
+def include_app_routers(application: FastAPI):
+    # Import routers inside the function
+    from backend.routers import mcp, projects, agents, audit_logs, memory, rules, tasks, users
+
+    # Include routers
+    application.include_router(agents.router, prefix="/api/v1", tags=["Agents"])
+    application.include_router(audit_logs.router, prefix="/api/v1", tags=["Audit"])
+    application.include_router(memory.router, prefix="/api/v1", tags=["Memory"])
+    application.include_router(mcp.router, prefix="/api/v1/mcp-tools", tags=["Mcp Tools"])
+    application.include_router(projects.router, prefix="/api/v1", tags=["Projects"])
+    application.include_router(rules.router, prefix="/api/v1", tags=["Rules"])
+    application.include_router(tasks.router, prefix="/api/v1", tags=["Tasks"])
+    application.include_router(users.router, prefix="/api/v1", tags=["Users"])
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -53,6 +68,10 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to initialize database: {e}")
         raise
     
+    # Include routers after database is initialized
+    include_app_routers(app)
+    logger.info("Routers included")
+
     yield
     logger.info("Shutting down...")
 
@@ -142,16 +161,6 @@ async def mcp_docs(request: Request):
         "routes": routes,
         "mcp_project_manager_tools_documentation": md_doc
     }
-
-# Include routers
-app.include_router(agents.router, prefix="/api/v1", tags=["Agents"])
-app.include_router(audit_logs.router, prefix="/api/v1", tags=["Audit"])
-app.include_router(memory.router, prefix="/api/v1", tags=["Memory"])
-app.include_router(mcp.router, prefix="/api/v1/mcp-tools", tags=["Mcp Tools"])
-app.include_router(projects.router, prefix="/api/v1", tags=["Projects"])
-app.include_router(rules.router, prefix="/api/v1", tags=["Rules"])
-app.include_router(tasks.router, prefix="/api/v1", tags=["Tasks"])
-app.include_router(users.router, prefix="/api/v1", tags=["Users"])
 
 # CORS middleware
 app.add_middleware(

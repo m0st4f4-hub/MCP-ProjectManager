@@ -1,6 +1,6 @@
 """Project Template model."""
 
-from sqlalchemy import String, Text, DateTime
+from sqlalchemy import String, Text, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column
 # from sqlalchemy.dialects.postgresql import JSONB # Removed JSONB import
 from sqlalchemy import JSON # For SQLite or other DBs # Uncommented JSON import
@@ -11,7 +11,6 @@ from .base import Base, generate_uuid_with_hyphens
 
 class ProjectTemplate(Base):
     __tablename__ = "project_templates"
-    __table_args__ = {'extend_existing': True}
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=generate_uuid_with_hyphens)
     name: Mapped[str] = mapped_column(String, unique=True, index=True)
@@ -28,3 +27,6 @@ class ProjectTemplate(Base):
 
     # Assuming a relationship to default tasks/roles defined elsewhere or through a linking table
     # For now, no direct relationship defined here. 
+
+# Explicitly named unique index for the 'name' column
+Index('ix_project_templates_name_explicit_unique', ProjectTemplate.name, unique=True) 

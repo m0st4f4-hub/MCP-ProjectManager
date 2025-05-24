@@ -4,21 +4,30 @@ import pytest
 from sqlalchemy.orm import Session
 
 # Import models and schemas directly
-from backend import models, schemas
+# # Import models
+from backend import models
+
+# Import specific schemas as needed
+from backend.schemas.agent import AgentCreate, AgentUpdate # Removed broad import
+
+# Import specific model and schemas
+from backend.models.agent import Agent # Added specific model import
+from backend.schemas.agent import AgentCreate, AgentUpdate # Added specific schema imports
 
 # Import specific crud submodule with alias
 from backend.crud import agents as crud_agents
 
 # Helper function to create an agent for testing other entities
-def create_test_agent(db: Session, name="Test Agent") -> models.Agent:
-    agent_schema = schemas.AgentCreate(name=name)
-    return crud_agents.create_agent(db=db, agent=agent_schema)
+# This helper is redundant with conftest fixture and can be removed
+# def create_test_agent(db: Session, name="Test Agent") -> models.Agent:
+#     agent_schema = schemas.AgentCreate(name=name)
+#     return crud_agents.create_agent(db=db, agent=agent_schema)
 
 # --- Agent CRUD Tests ---
 
 
 def test_create_and_get_agent(db_session: Session):
-    agent_schema = schemas.AgentCreate(name="Test Agent Alpha")
+    agent_schema = AgentCreate(name="Test Agent Alpha") # Use imported schema
     db_agent = crud_agents.create_agent(db=db_session, agent=agent_schema)
     assert db_agent is not None
     assert db_agent.name == "Test Agent Alpha"
@@ -47,15 +56,27 @@ def test_get_agent_not_found(db_session: Session):
 
 def test_get_agents(db_session: Session):
     agents_before = crud_agents.get_agents(db=db_session)
-    create_test_agent(db_session, name="Agent List Test 1")
-    create_test_agent(db_session, name="Agent List Test 2")
+    # Use the conftest fixture instead of local helper
+    # create_test_agent(db_session, name="Agent List Test 1")
+    # create_test_agent(db_session, name="Agent List Test 2")
+    # Note: Creating agents directly in tests might be better for isolation with rollback
+    # For now, I will keep the direct creation but use the imported models/schemas
+    agent1_schema = AgentCreate(name="Agent List Test 1")
+    crud_agents.create_agent(db=db_session, agent=agent1_schema)
+    agent2_schema = AgentCreate(name="Agent List Test 2")
+    crud_agents.create_agent(db=db_session, agent=agent2_schema)
+    
     agents_after = crud_agents.get_agents(db=db_session)
     assert len(agents_after) == len(agents_before) + 2
 
 
 def test_update_agent(db_session: Session):
-    agent = create_test_agent(db_session, name="Original Agent Name")
-    update_data = schemas.AgentUpdate(name="Updated Agent Name")
+    # Use the conftest fixture or create directly
+    # agent = create_test_agent(db_session, name="Original Agent Name")
+    agent_create_schema = AgentCreate(name="Original Agent Name")
+    agent = crud_agents.create_agent(db=db_session, agent=agent_create_schema)
+    
+    update_data = AgentUpdate(name="Updated Agent Name") # Use imported schema
     updated_agent = crud_agents.update_agent(
         db=db_session, agent_id=agent.id, agent_update=update_data)
     assert updated_agent is not None
@@ -63,7 +84,11 @@ def test_update_agent(db_session: Session):
 
 
 def test_delete_agent(db_session: Session):
-    agent = create_test_agent(db_session, name="Agent To Delete")
+    # Use the conftest fixture or create directly
+    # agent = create_test_agent(db_session, name="Agent To Delete")
+    agent_create_schema = AgentCreate(name="Agent To Delete")
+    agent = crud_agents.create_agent(db=db_session, agent=agent_create_schema)
+    
     agent_id = agent.id
     deleted_agent = crud_agents.delete_agent(db=db_session, agent_id=agent_id)
     assert deleted_agent is not None

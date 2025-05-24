@@ -9,6 +9,11 @@ from backend.schemas.agent import AgentCreate, AgentUpdate
 
 def create_agent(db: Session, agent: AgentCreate) -> models.Agent:
     """Create a new agent."""
+    # Check if an agent with the same name already exists
+    existing_agent = get_agent_by_name(db, agent.name)
+    if existing_agent:
+        raise ValueError(f"Agent with name '{agent.name}' already exists")
+
     db_agent = models.Agent(
         id=str(uuid.uuid4()),
         name=agent.name
@@ -38,6 +43,12 @@ def update_agent(db: Session, agent_id: str, agent_update: AgentUpdate) -> Optio
     """Update an agent."""
     db_agent = get_agent(db, agent_id)
     if db_agent:
+        # Check for duplicate name if name is being updated
+        if agent_update.name is not None and agent_update.name != db_agent.name:
+            existing_agent_with_name = get_agent_by_name(db, agent_update.name)
+            if existing_agent_with_name and existing_agent_with_name.id != agent_id:
+                 raise ValueError(f"Agent with name '{agent_update.name}' already exists for another agent")
+
         if agent_update.name is not None:
             db_agent.name = agent_update.name
         db.commit()

@@ -5,7 +5,12 @@ from sqlalchemy.orm import Session
 import uuid
 
 # Import models and schemas directly
-from backend import models, schemas
+# Import models
+from backend import models
+
+# Import specific schemas as needed
+from backend.schemas.project import ProjectCreate, ProjectUpdate
+from backend.schemas.memory import MemoryEntityCreate # Import MemoryEntityCreate
 
 # Import specific crud submodules with aliases
 from backend.crud import projects as crud_projects
@@ -14,7 +19,7 @@ from backend.crud import memory as memory_crud # Import memory_crud
 
 # Helper function to create a project for testing other entities
 def create_test_project(db: Session, name="Test Project") -> models.Project:
-    project_schema = schemas.ProjectCreate(
+    project_schema = ProjectCreate( # Corrected usage
         name=name, description="A test project")
     return crud_projects.create_project(db=db, project=project_schema)
 
@@ -28,13 +33,13 @@ def test_create_and_get_project_file_association(db_session: Session):
     # Create dummy MemoryEntities for the test
     dummy_entity_1_name = "file_for_proj_assoc_1"
     dummy_entity_2_name = "file_for_proj_assoc_2"
-    dummy_entity_1 = memory_crud.create_memory_entity(db_session, schemas.MemoryEntityCreate(type="file", name=dummy_entity_1_name, description="", metadata_={}))
-    dummy_entity_2 = memory_crud.create_memory_entity(db_session, schemas.MemoryEntityCreate(type="file", name=dummy_entity_2_name, description="", metadata_={}))
+    dummy_entity_1 = memory_crud.create_memory_entity(db_session, MemoryEntityCreate(type="file", name=dummy_entity_1_name, description="", metadata_={}, entity_type="file")) # Added entity_type
+    dummy_entity_2 = memory_crud.create_memory_entity(db_session, MemoryEntityCreate(type="file", name=dummy_entity_2_name, description="", metadata_={}, entity_type="file")) # Added entity_type
 
     # Use the generated IDs for associations and assertions
 
     # Associate file 1
-    association_data_1 = schemas.ProjectFileAssociationCreate(project_id=project.id, file_memory_entity_id=dummy_entity_1.id)
+    association_data_1 = crud_project_file_associations.ProjectFileAssociationCreate(project_id=project.id, file_memory_entity_id=dummy_entity_1.id) # Corrected usage
     db_association_1 = crud_project_file_associations.create_project_file_association(
         db_session, project_file=association_data_1)
     assert db_association_1 is not None
@@ -42,7 +47,7 @@ def test_create_and_get_project_file_association(db_session: Session):
     assert db_association_1.file_memory_entity_id == dummy_entity_1.id
 
     # Associate file 2
-    association_data_2 = schemas.ProjectFileAssociationCreate(project_id=project.id, file_memory_entity_id=dummy_entity_2.id)
+    association_data_2 = crud_project_file_associations.ProjectFileAssociationCreate(project_id=project.id, file_memory_entity_id=dummy_entity_2.id) # Corrected usage
     db_association_2 = crud_project_file_associations.create_project_file_association(
         db_session, project_file=association_data_2)
     assert db_association_2 is not None
@@ -73,9 +78,9 @@ def test_get_files_for_project(db_session: Session):
     dummy_entity_2_name = "file_for_proj_list_2"
     dummy_entity_3_name = "file_for_other_proj"
     # Removed explicit ID assignment when creating MemoryEntity
-    dummy_entity_1 = memory_crud.create_memory_entity(db_session, schemas.MemoryEntityCreate(type="file", name=dummy_entity_1_name, description="", metadata_={}))
-    dummy_entity_2 = memory_crud.create_memory_entity(db_session, schemas.MemoryEntityCreate(type="file", name=dummy_entity_2_name, description="", metadata_={}))
-    dummy_entity_3 = memory_crud.create_memory_entity(db_session, schemas.MemoryEntityCreate(type="file", name=dummy_entity_3_name, description="", metadata_={}))
+    dummy_entity_1 = memory_crud.create_memory_entity(db_session, MemoryEntityCreate(type="file", name=dummy_entity_1_name, description="", metadata_={}, entity_type="file")) # Added entity_type
+    dummy_entity_2 = memory_crud.create_memory_entity(db_session, MemoryEntityCreate(type="file", name=dummy_entity_2_name, description="", metadata_={}, entity_type="file")) # Added entity_type
+    dummy_entity_3 = memory_crud.create_memory_entity(db_session, MemoryEntityCreate(type="file", name=dummy_entity_3_name, description="", metadata_={}, entity_type="file")) # Added entity_type
 
     # Associate files with the project using the generated IDs
     crud_project_file_associations.associate_file_with_project(
@@ -115,8 +120,8 @@ def test_disassociate_file_from_project(db_session: Session):
     dummy_entity_to_disassociate_name = "file_for_proj_disassoc_1"
     dummy_entity_to_keep_name = "file_for_proj_disassoc_2"
     # Create dummy MemoryEntity objects and use their generated IDs
-    dummy_entity_to_disassociate = memory_crud.create_memory_entity(db_session, schemas.MemoryEntityCreate(type="file", name=dummy_entity_to_disassociate_name, description="", metadata_={}))
-    dummy_entity_to_keep = memory_crud.create_memory_entity(db_session, schemas.MemoryEntityCreate(type="file", name=dummy_entity_to_keep_name, description="", metadata_={}))
+    dummy_entity_to_disassociate = memory_crud.create_memory_entity(db_session, MemoryEntityCreate(type="file", name=dummy_entity_to_disassociate_name, description="", metadata_={}, entity_type="file")) # Added entity_type
+    dummy_entity_to_keep = memory_crud.create_memory_entity(db_session, MemoryEntityCreate(type="file", name=dummy_entity_to_keep_name, description="", metadata_={}, entity_type="file")) # Added entity_type
 
     # Use the generated IDs for associations and assertions
     file_memory_entity_id_to_disassociate = dummy_entity_to_disassociate.id

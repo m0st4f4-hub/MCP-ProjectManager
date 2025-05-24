@@ -6,7 +6,7 @@ import datetime
 import uuid
 import json
 from backend import models
-from backend.models.audit_log import AuditLog as AuditLogModel
+from backend.models.audit import AuditLog as AuditLogModel
 from backend.schemas.audit_log import AuditLogCreate
 
 # Function to create a new audit log entry
@@ -14,9 +14,9 @@ def create_audit_log(db: Session, audit_log: AuditLogCreate) -> AuditLogModel:
     """Create a new audit log entry."""
     db_audit_log = AuditLogModel(
         user_id=audit_log.user_id,
-        action=audit_log.action,
-        details=audit_log.details
-        # timestamp is handled by the model default
+        action_type=audit_log.action,
+        description=audit_log.details.get("description"), # Assuming details might have a description field
+        details=json.dumps(audit_log.details) if audit_log.details else None # Convert dict to JSON string
     )
     db.add(db_audit_log)
     db.commit()

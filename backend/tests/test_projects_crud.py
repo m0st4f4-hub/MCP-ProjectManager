@@ -5,8 +5,10 @@ from sqlalchemy.orm import Session
 import uuid
 from unittest import mock
 
-# Import models and schemas directly
-from backend import models, schemas
+# Import models and specific schemas directly
+from backend import models
+from backend.schemas.project import ProjectCreate, ProjectUpdate
+from backend.schemas.task import TaskCreate, TaskUpdate
 
 # Import specific crud submodule with alias
 from backend.crud import projects as crud_projects
@@ -14,7 +16,7 @@ from backend.crud import tasks as crud_tasks
 
 # Helper function to create a project for testing other entities
 def create_test_project(db: Session, name="Test Project") -> models.Project:
-    project_schema = schemas.ProjectCreate(
+    project_schema = ProjectCreate(
         name=name, description="A test project")
     db_project = models.Project(
         id=str(uuid.uuid4()),
@@ -28,7 +30,7 @@ def create_test_project(db: Session, name="Test Project") -> models.Project:
 
 # --- Project CRUD Tests ---
 def test_create_and_get_project(db_session: Session):
-    project_schema = schemas.ProjectCreate(
+    project_schema = ProjectCreate(
         name="Test Project Alpha", description="Alpha Test Description")
     db_project = crud_projects.create_project(db=db_session, project=project_schema)
     assert db_project is not None
@@ -85,7 +87,7 @@ def test_update_project(db_session: Session):
     db_session.commit()
     db_session.refresh(project)
 
-    update_data = schemas.ProjectUpdate(
+    update_data = ProjectUpdate(
         name="Updated Project Name", description="Updated Desc")
     updated_project = crud_projects.update_project(
         db=db_session, project_id=project.id, project_update=update_data)
@@ -125,8 +127,8 @@ def test_delete_project_with_tasks_and_mock_print(db_session: Session):
     db_session.refresh(project)
     project_id = project.id
 
-    task1_schema = schemas.TaskCreate(title="Task 1 for Print Mock Test", project_id=project_id)
-    task2_schema = schemas.TaskCreate(title="Task 2 for Print Mock Test", project_id=project_id)
+    task1_schema = TaskCreate(title="Task 1 for Print Mock Test", project_id=project_id)
+    task2_schema = TaskCreate(title="Task 2 for Print Mock Test", project_id=project_id)
     crud_tasks.create_task(db_session, project_id=project_id, task=task1_schema, agent_id=None)
     crud_tasks.create_task(db_session, project_id=project_id, task=task2_schema, agent_id=None)
 
@@ -151,8 +153,8 @@ def test_delete_project_prints_task_count(db_session):
     db_session.commit()
     db_session.refresh(project)
 
-    task1 = crud_tasks.create_task(db_session, project.id, task=schemas.TaskCreate(title="Task 1", project_id=project.id), agent_id=None)
-    task2 = crud_tasks.create_task(db_session, project.id, task=schemas.TaskCreate(title="Task 2", project_id=project.id), agent_id=None)
+    task1 = crud_tasks.create_task(db_session, project.id, task=TaskCreate(title="Task 1", project_id=project.id), agent_id=None)
+    task2 = crud_tasks.create_task(db_session, project.id, task=TaskCreate(title="Task 2", project_id=project.id), agent_id=None)
 
     import sys
     from io import StringIO

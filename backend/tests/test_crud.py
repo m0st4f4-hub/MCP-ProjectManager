@@ -28,7 +28,13 @@ import time
 from fastapi import HTTPException
 
 # Import models and schemas directly, including ProjectMemberRole
-from backend import models, schemas
+# Import models
+from backend import models
+
+# Import specific schemas as needed
+from backend.schemas.agent import AgentCreate, AgentUpdate
+from backend.schemas.task import TaskCreate, TaskUpdate
+from backend.schemas.project import ProjectCreate, ProjectUpdate
 from backend.models import ProjectMemberRole # Explicitly import ProjectMemberRole
 
 # Import memory_crud for file association helpers

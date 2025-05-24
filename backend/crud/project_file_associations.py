@@ -46,14 +46,14 @@ def create_project_file_association(db: Session, project_file: ProjectFileAssoci
     if association_exists(db, project_file.project_id, project_file.file_memory_entity_id):
         return get_project_file_association(db, project_file.project_id, project_file.file_memory_entity_id)
     # Fetch MemoryEntity for the file using the provided ID
-    file_memory_entity = memory_crud.get_memory_entity_by_id(db, entity_id=project_file.file_memory_entity_id)
+    file_memory_entity = memory_crud.get_memory_entity(db, entity_id=project_file.file_memory_entity_id)
     if not file_memory_entity:
         # The associated MemoryEntity must exist.
         raise ValueError(f"MemoryEntity with ID {project_file.file_memory_entity_id} not found.")
 
     # Handle the project MemoryEntity and relation creation as before.
     project_entity_name = f"project_{project_file.project_id}"
-    project_memory_entity = memory_crud.get_memory_entity_by_name(db, name=project_entity_name)
+    project_memory_entity = memory_crud.get_entity_by_name(db, name=project_entity_name)
     if not project_memory_entity:
         # This part can remain as it creates a project entity if it doesn't exist.
         basic_project_entity_data = MemoryEntityCreate(
@@ -62,7 +62,8 @@ def create_project_file_association(db: Session, project_file: ProjectFileAssoci
             description=f"Project with ID {project_file.project_id}",
             metadata_={
                 "project_id": project_file.project_id
-            }
+            },
+            entity_type="project"
         )
         project_memory_entity = memory_crud.create_memory_entity(db=db, entity=basic_project_entity_data)
 
@@ -99,11 +100,11 @@ def create_project_file_association(db: Session, project_file: ProjectFileAssoci
 def delete_project_file_association(db: Session, project_id: str, file_memory_entity_id: int) -> bool:
     """Remove a file association from a project by project ID and file memory entity ID."""
     # Find the file memory entity by ID
-    file_memory_entity = memory_crud.get_memory_entity_by_id(db, entity_id=file_memory_entity_id)
+    file_memory_entity = memory_crud.get_memory_entity(db, entity_id=file_memory_entity_id)
     # Allow deleting the association even if the memory entity is not found (database might be out of sync)
 
     project_entity_name = f"project_{project_id}"
-    project_memory_entity = memory_crud.get_memory_entity_by_name(db, name=project_entity_name)
+    project_memory_entity = memory_crud.get_entity_by_name(db, name=project_entity_name)
     
     # Delete the MemoryRelation between the file and project entities, if both are found
     if file_memory_entity and project_memory_entity:
@@ -131,7 +132,7 @@ def associate_file_with_project(db: Session, project_id: str, file_memory_entity
     """Associate a file with a project using file_memory_entity_id."""
     # Ensure MemoryEntity for the file exists.
     # The creation logic is removed from here, as per previous decision.
-    file_memory_entity = memory_crud.get_memory_entity_by_id(db, entity_id=file_memory_entity_id)
+    file_memory_entity = memory_crud.get_memory_entity(db, entity_id=file_memory_entity_id)
     if not file_memory_entity:
         raise ValueError(f"MemoryEntity with ID {file_memory_entity_id} not found.")
 
@@ -161,13 +162,13 @@ def disassociate_file_from_project(
     # The logic here now correctly uses the provided file_memory_entity_id.
 
     # Find the file memory entity by ID to get its name for memory relation deletion
-    file_memory_entity = memory_crud.get_memory_entity_by_id(db, entity_id=file_memory_entity_id)
+    file_memory_entity = memory_crud.get_memory_entity(db, entity_id=file_memory_entity_id)
     if not file_memory_entity:
         # If the memory entity doesn't exist, the association shouldn't either (or was already removed)
         return False
 
     project_entity_name = f"project_{project_id}"
-    project_memory_entity = memory_crud.get_memory_entity_by_name(db, name=project_entity_name)
+    project_memory_entity = memory_crud.get_entity_by_name(db, name=project_entity_name)
 
     # Delete the MemoryRelation between the file and project entities
     if file_memory_entity and project_memory_entity:

@@ -17,13 +17,15 @@ from fastapi import HTTPException, status
 from typing import List, Optional, Dict, Any
 import logging
 from backend.models.memory import MemoryEntity as MemoryEntityModel # Alias to avoid conflict with schema
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
 
-def get_entity_by_name(db: Session, name: str) -> Optional[models.MemoryEntity]:
-    """Retrieve a memory entity by its name."""
-    return db.query(models.MemoryEntity).filter(models.MemoryEntity.name == name).first()
+def get_entity_by_name(db: Session, name: str) -> Optional[MemoryEntityModel]:
+    """Retrieve a memory entity by its name, searching within entity_metadata."""
+    # Use json_extract for SQLite compatibility
+    return db.query(MemoryEntityModel).filter(text("json_extract(memory_entities.entity_metadata, '$.name') = :name")).params(name=name).first()
 
 def create_memory_entity(db: Session, entity: MemoryEntityCreate) -> MemoryEntityModel:
     """Create a new MemoryEntity."""

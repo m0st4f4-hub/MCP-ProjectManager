@@ -38,9 +38,13 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 def create_user(db: Session, user: UserCreate) -> models.User:
-    # Check if username already exists using the validation helper
-    if username_exists(db, user.username):
-        raise ValueError(f"Username '{user.username}' already exists")
+    # Add checks for existing email and username
+    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if db_user:
+        raise ValueError("Email already registered")
+    db_user = db.query(models.User).filter(models.User.username == user.username).first()
+    if db_user:
+        raise ValueError("Username already exists")
 
     # Hash the password before storing
     hashed_password = get_password_hash(user.password)
@@ -73,6 +77,19 @@ def update_user(db: Session, user_id: str, user_update: UserUpdate) -> Optional[
     db_user = get_user(db, user_id)  # Use the get_user function within CRUD
     if db_user:
         update_data = user_update.model_dump(exclude_unset=True)
+        
+        # Check for duplicate email if email is being updated
+        if "email" in update_data and update_data["email"] != db_user.email:
+            existing_user_with_email = db.query(models.User).filter(models.User.email == update_data["email"]).first()
+            if existing_user_with_email and existing_user_with_email.id != user_id:
+                raise ValueError(f"Email '{update_data["email"]}' already exists for another user")
+                
+        # Check for duplicate username if username is being updated
+        if "username" in update_data and update_data["username"] != db_user.username:
+             existing_user_with_username = db.query(models.User).filter(models.User.username == update_data["username"]).first()
+             if existing_user_with_username and existing_user_with_username.id != user_id:
+                 raise ValueError(f"Username '{update_data["username"]}' already exists for another user")
+
         for key, value in update_data.items():
             setattr(db_user, key, value)
         db.commit()

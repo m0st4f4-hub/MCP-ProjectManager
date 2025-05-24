@@ -16,7 +16,8 @@ from .user import User, UserRole
 from .agent import Agent, AgentRule, AgentRole
 from .comment import Comment
 from .memory import MemoryEntity, MemoryObservation, MemoryRelation
-from .project import Project, ProjectTemplate, ProjectMember, ProjectFileAssociation
+from .project import Project, ProjectMember, ProjectFileAssociation
+from .project_template import ProjectTemplate
 from .task import Task, TaskStatus
 from .task_relations import TaskDependency, TaskFileAssociation
 from .workflow import Workflow, WorkflowStep, AgentPromptTemplate
@@ -43,7 +44,8 @@ __all__ = [
     'Agent', 'AgentRule', 'AgentRole',
     'Comment',
     'MemoryEntity', 'MemoryObservation', 'MemoryRelation',
-    'Project', 'ProjectTemplate', 'ProjectMember', 'ProjectFileAssociation',
+    'Project', 'ProjectMember', 'ProjectFileAssociation',
+    'ProjectTemplate',
     'Task', 'TaskStatus',
     'TaskDependency', 'TaskFileAssociation',
     'Workflow', 'WorkflowStep', 'AgentPromptTemplate',

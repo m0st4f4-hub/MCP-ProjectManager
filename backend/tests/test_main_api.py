@@ -20,7 +20,11 @@ import json # Import json for serializing details
 import pytest_asyncio
 
 # Import models and schemas directly
-from backend import models, schemas
+# Import models
+from backend import models
+
+# Import specific schemas as needed
+from backend.schemas.task import TaskCreate, TaskUpdate
 
 # Import specific crud submodules with aliases
 from backend.crud import projects as crud_projects
@@ -52,11 +56,11 @@ pytestmark = pytest.mark.asyncio
 async def test_get_root(async_client: AsyncClient):
     response = await async_client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to the Project Manager API"}
+    assert response.json() == {"message": "Welcome to the Task Manager API"}
 
 # --- Project API Tests ---
 async def test_create_project_api(async_client: AsyncClient):
-    response = await async_client.post("/projects/", json={"name": "API Test Project", "description": "Desc"})
+    response = await async_client.post("/api/v1/projects/", json={"name": "API Test Project", "description": "Desc"})
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == "API Test Project"
@@ -64,69 +68,67 @@ async def test_create_project_api(async_client: AsyncClient):
     project_id = data["id"]
 
     # Test duplicate project name
-    response_dup = await async_client.post("/projects/", json={"name": "API Test Project", "description": "Desc"})
+    response_dup = await async_client.post("/api/v1/projects/", json={"name": "API Test Project", "description": "Desc"})
     assert response_dup.status_code == 400
     assert "already registered" in response_dup.json()["detail"]
 
 async def test_get_projects_api(async_client: AsyncClient, db_session: Session):
-    # Clear existing projects or ensure a known state if necessary, 
-    # though tests should be isolated by db_session rollback in conftest.
-    response = await async_client.get("/projects/")
+    response = await async_client.get("/api/v1/projects/")
     assert response.status_code == 200
     projects_before_count = len(response.json())
 
-    await async_client.post("/projects/", json={"name": "API Get Proj 1", "description": "..."})
-    await async_client.post("/projects/", json={"name": "API Get Proj 2", "description": "..."})
+    await async_client.post("/api/v1/projects/", json={"name": "API Get Proj 1", "description": "..."})
+    await async_client.post("/api/v1/projects/", json={"name": "API Get Proj 2", "description": "..."})
 
-    response_after = await async_client.get("/projects/")
+    response_after = await async_client.get("/api/v1/projects/")
     assert response_after.status_code == 200
     assert len(response_after.json()) == projects_before_count + 2
 
 async def test_get_project_by_id_api(async_client: httpx.AsyncClient):
-    create_response = await async_client.post("/projects/", json={"name": "API Proj By ID", "description": "Test"})
+    create_response = await async_client.post("/api/v1/projects/", json={"name": "API Proj By ID", "description": "Test"})
     assert create_response.status_code == 200
     project_id = create_response.json()["id"]
 
-    response = await async_client.get(f"/projects/{project_id}")
+    response = await async_client.get(f"/api/v1/projects/{project_id}")
     assert response.status_code == 200
     assert response.json()["name"] == "API Proj By ID"
 
-    response_not_found = await async_client.get(f"/projects/{project_id + "_not_found"}")
+    response_not_found = await async_client.get(f"/api/v1/projects/{project_id + '_not_found'}")
     assert response_not_found.status_code == 404
 
 async def test_update_project_api(async_client: httpx.AsyncClient):
-    create_resp = await async_client.post("/projects/", json={"name": "Update Me Project", "description": "Initial"})
+    create_resp = await async_client.post("/api/v1/projects/", json={"name": "Update Me Project", "description": "Initial"})
     project_id = create_resp.json()["id"]
     
     update_payload = {"name": "Project Updated Name API", "description": "New Description API"}
-    response = await async_client.put(f"/projects/{project_id}", json=update_payload)
+    response = await async_client.put(f"/api/v1/projects/{project_id}", json=update_payload)
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == "Project Updated Name API"
     assert data["description"] == "New Description API"
 
-    response_not_found = await async_client.put(f"/projects/{project_id + "_not_found"}", json=update_payload)
+    response_not_found = await async_client.put(f"/api/v1/projects/{project_id + '_not_found'}", json=update_payload)
     assert response_not_found.status_code == 404
 
 async def test_delete_project_api(async_client: httpx.AsyncClient):
-    create_resp = await async_client.post("/projects/", json={"name": "Delete Me Project", "description": "Delete"})
+    create_resp = await async_client.post("/api/v1/projects/", json={"name": "Delete Me Project", "description": "Delete"})
     project_id = create_resp.json()["id"]
 
-    delete_response = await async_client.delete(f"/projects/{project_id}")
+    delete_response = await async_client.delete(f"/api/v1/projects/{project_id}")
     assert delete_response.status_code == 200 # Or 204 if no content returned
     # assert delete_response.json()["id"] == project_id # This might fail if 204 No Content
 
-    get_response = await async_client.get(f"/projects/{project_id}")
+    get_response = await async_client.get(f"/api/v1/projects/{project_id}")
     assert get_response.status_code == 404
 
-    delete_not_found = await async_client.delete(f"/projects/{project_id + "_not_found"}")
+    delete_not_found = await async_client.delete(f"/api/v1/projects/{project_id + '_not_found'}")
     assert delete_not_found.status_code == 404
 
 async def test_update_project_api_generic_exception(async_client: httpx.AsyncClient, db_session: Session, fastapi_app: FastAPI, test_project): # Added test_project fixture
     # project = create_test_project(db_session, name="ProjectForGenericError") # Removed call
     # Updated mock path to use the specific crud submodule
     with mock.patch("backend.routers.projects.ProjectService.update_project", side_effect=HTTPException(status_code=500, detail="CRUD generic error")):
-        response = await async_client.put(f"/projects/{test_project.id}", json={"name": "Updated Name"})
+        response = await async_client.put(f"/api/v1/projects/{test_project.id}", json={"name": "Updated Name"})
     assert response.status_code == 500
     # For HTTPException, FastAPI returns the detail as-is
     assert response.json()["detail"] == "CRUD generic error"
@@ -140,7 +142,7 @@ async def test_project_update_value_error(async_client: httpx.AsyncClient, db_se
     
     # Try to update the first project with the name of the second project
     update_payload = {"name": "Existing Project Name"}
-    response = await async_client.put(f"/projects/{test_project.id}", json=update_payload)
+    response = await async_client.put(f"/api/v1/projects/{test_project.id}", json=update_payload)
     
     assert response.status_code == 400
     assert "already exists" in response.json()["detail"]
@@ -152,7 +154,7 @@ async def test_update_project_api_http_exception(async_client: httpx.AsyncClient
     # Mock crud.update_project to raise an HTTPException
     # Updated mock path to use the specific crud submodule
     with mock.patch("backend.routers.projects.ProjectService.update_project", side_effect=HTTPException(status_code=418, detail="I'm a teapot")):
-        response = await async_client.put(f"/projects/{test_project.id}", json={"name": "Updated Name"})
+        response = await async_client.put(f"/api/v1/projects/{test_project.id}", json={"name": "Updated Name"})
         assert response.status_code == 418
         assert response.json()["detail"] == "I'm a teapot"
 
@@ -228,7 +230,6 @@ async def test_update_agent_api_generic_exception(async_client: httpx.AsyncClien
     assert response.status_code == 500
     # For HTTPException, FastAPI returns the detail as-is
     assert response.json()["detail"] == "Internal server error: Generic agent error"
-    # For now, focus on covering the raise HTTPException line
 
 async def test_agent_update_value_error(async_client: httpx.AsyncClient, db_session: Session, test_agent): # Added test_agent fixture
     # Create an agent
@@ -277,7 +278,7 @@ async def test_create_task_api(async_client: httpx.AsyncClient, test_project, te
         "status": "To Do",
         "assigned_agent_id": agent_id # Assign the agent
     }
-    response = await async_client.post(f"/projects/{project_id}/tasks/", json=task_payload)
+    response = await async_client.post(f"/api/v1/projects/{project_id}/tasks/", json=task_payload)
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == "API Test Task"
@@ -303,13 +304,13 @@ async def test_get_tasks_api(async_client: httpx.AsyncClient, db_session: Sessio
     project_id = test_project.id
 
     # Create tasks via API
-    await async_client.post(f"/projects/{project_id}/tasks/", json={
+    await async_client.post(f"/api/v1/projects/{project_id}/tasks/", json={
         "project_id": project_id,
         "title": "Get Task 1",
         "description": "...",
         "status": "To Do"
     })
-    await async_client.post(f"/projects/{project_id}/tasks/", json={
+    await async_client.post(f"/api/v1/projects/{project_id}/tasks/", json={
         "project_id": project_id,
         "title": "Get Task 2",
         "description": "...",
@@ -317,7 +318,7 @@ async def test_get_tasks_api(async_client: httpx.AsyncClient, db_session: Sessio
     })
 
     # Get tasks for the project
-    response = await async_client.get(f"/projects/{project_id}/tasks/")
+    response = await async_client.get(f"/api/v1/projects/{project_id}/tasks/")
     assert response.status_code == 200
     tasks = response.json()
     # Assuming the two tasks created above are the only ones for this project in this session
@@ -328,7 +329,7 @@ async def test_get_tasks_api(async_client: httpx.AsyncClient, db_session: Sessio
     assert "Get Task 2" in task_titles
 
     # Test getting tasks for a non-existent project
-    response_not_found = await async_client.get(f"/projects/{uuid.uuid4()}/tasks/")
+    response_not_found = await async_client.get(f"/api/v1/projects/{uuid.uuid4()}/tasks/")
     assert response_not_found.status_code == 404 # Corrected typo and comparison
     # Or 200 with empty list, depends on backend
     # Based on current router logic, it should probably be 404 if project not found
@@ -341,7 +342,7 @@ async def test_get_task_by_id_api(async_client: httpx.AsyncClient, test_project,
     # task_number = test_task.task_number # Use fixture task number
     # This test uses the test_task fixture which already belongs to test_project
     
-    response = await async_client.get(f"/projects/{test_task.project_id}/tasks/{test_task.task_number}")
+    response = await async_client.get(f"/api/v1/projects/{test_task.project_id}/tasks/{test_task.task_number}")
     assert response.status_code == 200
     data = response.json()
     assert data["project_id"] == test_task.project_id
@@ -349,11 +350,11 @@ async def test_get_task_by_id_api(async_client: httpx.AsyncClient, test_project,
     assert data["title"] == "Test Task"
 
     # Test getting a task for a non-existent project
-    response_proj_not_found = await async_client.get(f"/projects/{uuid.uuid4()}/tasks/{test_task.task_number}")
+    response_proj_not_found = await async_client.get(f"/api/v1/projects/{uuid.uuid4()}/tasks/{test_task.task_number}")
     assert response_proj_not_found.status_code == 404
 
     # Test getting a non-existent task for an existing project
-    response_task_not_found = await async_client.get(f"/projects/{test_task.project_id}/tasks/{test_task.task_number + 999}")
+    response_task_not_found = await async_client.get(f"/api/v1/projects/{test_task.project_id}/tasks/{test_task.task_number + 999}")
     assert response_task_not_found.status_code == 404
 
 async def test_update_task_api(async_client: httpx.AsyncClient, test_project, test_task): # Added fixtures
@@ -361,7 +362,7 @@ async def test_update_task_api(async_client: httpx.AsyncClient, test_project, te
     # task_number = test_task.task_number # Use fixture task number
     
     update_payload = {"title": "Task Updated Name API", "description": "New Task Description API", "status": "In Progress"}
-    response = await async_client.put(f"/projects/{test_task.project_id}/tasks/{test_task.task_number}", json=update_payload)
+    response = await async_client.put(f"/api/v1/projects/{test_task.project_id}/tasks/{test_task.task_number}", json=update_payload)
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == "Task Updated Name API"
@@ -369,29 +370,29 @@ async def test_update_task_api(async_client: httpx.AsyncClient, test_project, te
     assert data["status"] == "In Progress"
 
     # Test updating a non-existent task for an existing project
-    response_task_not_found = await async_client.put(f"/projects/{test_task.project_id}/tasks/{test_task.task_number + 999}", json=update_payload)
+    response_task_not_found = await async_client.put(f"/api/v1/projects/{test_task.project_id}/tasks/{test_task.task_number + 999}", json=update_payload)
     assert response_task_not_found.status_code == 404
 
     # Test updating a task for a non-existent project
-    response_proj_not_found = await async_client.put(f"/projects/{uuid.uuid4()}/tasks/{test_task.task_number}", json=update_payload)
+    response_proj_not_found = await async_client.put(f"/api/v1/projects/{uuid.uuid4()}/tasks/{test_task.task_number}", json=update_payload)
     assert response_proj_not_found.status_code == 404
 
 async def test_delete_task_api(async_client: httpx.AsyncClient, test_project, test_task): # Added fixtures
     # project_id = test_project.id # Use fixture ID
     # task_number = test_task.task_number # Use fixture task number
 
-    delete_response = await async_client.delete(f"/projects/{test_task.project_id}/tasks/{test_task.task_number}")
+    delete_response = await async_client.delete(f"/api/v1/projects/{test_task.project_id}/tasks/{test_task.task_number}")
     assert delete_response.status_code == 200 # Or 204
 
-    get_response = await async_client.get(f"/projects/{test_task.project_id}/tasks/{test_task.task_number}")
+    get_response = await async_client.get(f"/api/v1/projects/{test_task.project_id}/tasks/{test_task.task_number}")
     assert get_response.status_code == 404
 
     # Test deleting a non-existent task for an existing project
-    delete_not_found = await async_client.delete(f"/projects/{test_task.project_id}/tasks/{test_task.task_number + 999}")
+    delete_not_found = await async_client.delete(f"/api/v1/projects/{test_task.project_id}/tasks/{test_task.task_number + 999}")
     assert delete_not_found.status_code == 404
 
     # Test deleting a task for a non-existent project
-    delete_proj_not_found = await async_client.delete(f"/projects/{uuid.uuid4()}/tasks/{test_task.task_number}")
+    delete_proj_not_found = await async_client.delete(f"/api/v1/projects/{uuid.uuid4()}/tasks/{test_task.task_number}")
     assert delete_proj_not_found.status_code == 404
 
 async def test_task_update_value_error(async_client: httpx.AsyncClient, db_session: Session, test_project, test_task): # Added fixtures
@@ -403,7 +404,7 @@ async def test_task_update_value_error(async_client: httpx.AsyncClient, db_sessi
     task = test_task
     
     # Create another task with a duplicate title in the same project
-    other_task = crud_tasks.create_task(db_session, schemas.TaskCreate(
+    other_task = crud_tasks.create_task(db_session, TaskCreate(
         project_id=project.id,
         title="Existing Task Title",
         description="...",
@@ -413,7 +414,7 @@ async def test_task_update_value_error(async_client: httpx.AsyncClient, db_sessi
 
     # Try to update the first task with the title of the second task
     update_payload = {"title": "Existing Task Title"}
-    response = await async_client.put(f"/projects/{task.project_id}/tasks/{task.task_number}", json=update_payload)
+    response = await async_client.put(f"/api/v1/projects/{task.project_id}/tasks/{task.task_number}", json=update_payload)
     
     assert response.status_code == 400
     assert "already exists" in response.json()["detail"]
@@ -564,7 +565,7 @@ async def test_planning_generate_prompt_api(async_client: httpx.AsyncClient):
 
 async def test_create_task_api_generic_exception(async_client: httpx.AsyncClient):
     # Create a valid project and agent first for the payload
-    project_resp = await async_client.post("/projects/", json={"name": "Task Project for Exc Test"})
+    project_resp = await async_client.post("/api/v1/projects/", json={"name": "Task Project for Exc Test"})
     assert project_resp.status_code == 200
     project_id = project_resp.json()["id"]
     agent_resp = await async_client.post("/agents/", json={"name": "Task Agent for Exc Test"})
@@ -575,34 +576,34 @@ async def test_create_task_api_generic_exception(async_client: httpx.AsyncClient
     
     # Patch 'backend.crud.create_task' to raise a generic exception
     with mock.patch('backend.routers.projects.TaskService.create_task', side_effect=Exception("DB commit failed unexpectedly")):
-        response = await async_client.post(f"/projects/{project_id}/tasks/", json=task_payload)
+        response = await async_client.post(f"/api/v1/projects/{project_id}/tasks/", json=task_payload)
         assert response.status_code == 500
         assert "Internal server error" in response.json()["detail"]
         assert "DB commit failed unexpectedly" in response.json()["detail"]
 
 async def test_update_task_api_generic_exception(async_client: httpx.AsyncClient):
     # Create a project and task to update
-    project_resp = await async_client.post("/projects/", json={"name": "Project for Task Update Exc"})
+    project_resp = await async_client.post("/api/v1/projects/", json={"name": "Project for Task Update Exc"})
     project_id = project_resp.json()["id"]
-    task_resp = await async_client.post(f"/projects/{project_id}/tasks/", json={"title": "Task for Update Exc", "project_id": project_id})
+    task_resp = await async_client.post(f"/api/v1/projects/{project_id}/tasks/", json={"title": "Task for Update Exc", "project_id": project_id})
     task_number = task_resp.json()["task_number"]
     update_payload = {"title": "Updated Title during Exc Test"}
 
     with mock.patch('backend.routers.projects.TaskService.update_task', side_effect=Exception("Generic task error")):
-        response = await async_client.put(f"/projects/{project_id}/tasks/{task_number}", json=update_payload)
+        response = await async_client.put(f"/api/v1/projects/{project_id}/tasks/{task_number}", json=update_payload)
         assert response.status_code == 500
         assert "Internal server error" in response.json()["detail"]
         assert "Generic task error" in response.json()["detail"]
 
 async def test_delete_task_api_generic_exception(async_client: httpx.AsyncClient, db_session: Session):
     # Create a project and task to delete
-    project_resp = await async_client.post("/projects/", json={"name": "Project for Delete Exc"})
+    project_resp = await async_client.post("/api/v1/projects/", json={"name": "Project for Delete Exc"})
     project_id = project_resp.json()["id"]
-    task_resp = await async_client.post(f"/projects/{project_id}/tasks/", json={"title": "Task for Delete Exc", "project_id": project_id})
+    task_resp = await async_client.post(f"/api/v1/projects/{project_id}/tasks/", json={"title": "Task for Delete Exc", "project_id": project_id})
     task_number = task_resp.json()["task_number"]
 
     with mock.patch('backend.routers.projects.TaskService.delete_task_by_project_and_number', side_effect=Exception("Delete DB failed")):
-        response = await async_client.delete(f"/projects/{project_id}/tasks/{task_number}")
+        response = await async_client.delete(f"/api/v1/projects/{project_id}/tasks/{task_number}")
     
     assert response.status_code == 500
     assert response.json()["detail"] == "Internal server error during task deletion: Something went wrong"
@@ -704,7 +705,7 @@ async def test_project_agent_task_generic_exceptions(async_client: httpx.AsyncCl
 
     # Test generic exception in update_project
     with mock.patch("backend.routers.projects.ProjectService.update_project", side_effect=Exception("Project generic error")):
-        response = await async_client.put(f"/projects/{project.id}", json={"name": "Updated Name"})
+        response = await async_client.put(f"/api/v1/projects/{project.id}", json={"name": "Updated Name"})
     assert response.status_code == 500
     assert "Internal server error" in response.json()["detail"]
 
@@ -716,7 +717,7 @@ async def test_project_agent_task_generic_exceptions(async_client: httpx.AsyncCl
 
     # Test generic exception in update_task
     with mock.patch("backend.routers.tasks.TaskService.update_task", side_effect=Exception("Task generic error")):
-        response = await async_client.put(f"/projects/{task.project_id}/tasks/{task.task_number}", json={"title": "Updated Task Title"})
+        response = await async_client.put(f"/api/v1/projects/{task.project_id}/tasks/{task.task_number}", json={"title": "Updated Task Title"})
     assert response.status_code == 500
     assert "Internal server error" in response.json()["detail"]
 
@@ -729,7 +730,7 @@ async def test_project_member_api(async_client: httpx.AsyncClient, db_session: S
 
     # Test adding a member
     add_member_payload = {"user_id": user.id, "role": "member"}
-    response = await async_client.post(f"/projects/{project.id}/members/", json=add_member_payload)
+    response = await async_client.post(f"/api/v1/projects/{project.id}/members/", json=add_member_payload)
     assert response.status_code == 200
     data = response.json()
     assert data["project_id"] == project.id
@@ -737,26 +738,26 @@ async def test_project_member_api(async_client: httpx.AsyncClient, db_session: S
     assert data["role"] == "member"
 
     # Test adding the same member again
-    response_dup = await async_client.post(f"/projects/{project.id}/members/", json=add_member_payload)
+    response_dup = await async_client.post(f"/api/v1/projects/{project.id}/members/", json=add_member_payload)
     assert response_dup.status_code == 400
 
     # Test getting members for the project
-    get_members_response = await async_client.get(f"/projects/{project.id}/members/")
+    get_members_response = await async_client.get(f"/api/v1/projects/{project.id}/members/")
     assert get_members_response.status_code == 200
     members = get_members_response.json()
     assert len(members) >= 1
     assert any(m["user_id"] == user.id for m in members)
 
     # Test getting members for a non-existent project
-    response_proj_not_found = await async_client.get(f"/projects/{uuid.uuid4()}/members/")
+    response_proj_not_found = await async_client.get(f"/api/v1/projects/{uuid.uuid4()}/members/")
     assert response_proj_not_found.status_code == 404
 
     # Test removing a member
-    remove_member_response = await async_client.delete(f"/projects/{project.id}/members/{user.id}")
+    remove_member_response = await async_client.delete(f"/api/v1/projects/{project.id}/members/{user.id}")
     assert remove_member_response.status_code == 200
 
     # Test removing a non-existent member
-    remove_not_found = await async_client.delete(f"/projects/{project.id}/members/{uuid.uuid4()}")
+    remove_not_found = await async_client.delete(f"/api/v1/projects/{project.id}/members/{uuid.uuid4()}")
     assert remove_not_found.status_code == 404
 
 async def test_project_file_association_api(async_client: httpx.AsyncClient, db_session: Session, test_project): # Added fixture
@@ -766,7 +767,7 @@ async def test_project_file_association_api(async_client: httpx.AsyncClient, db_
 
     # Test creating a file association
     add_file_payload = {"file_path": "/path/to/file1", "description": "File 1"}
-    response = await async_client.post(f"/projects/{project.id}/files/", json=add_file_payload)
+    response = await async_client.post(f"/api/v1/projects/{project.id}/files/", json=add_file_payload)
     assert response.status_code == 200
     data = response.json()
     assert data["project_id"] == project.id
@@ -774,28 +775,28 @@ async def test_project_file_association_api(async_client: httpx.AsyncClient, db_
 
     # Test adding the same file again (assuming file_path is unique per project)
     # This might depend on backend validation, testing for 400 is reasonable
-    response_dup = await async_client.post(f"/projects/{project.id}/files/", json=add_file_payload)
+    response_dup = await async_client.post(f"/api/v1/projects/{project.id}/files/", json=add_file_payload)
     assert response_dup.status_code == 400
 
     # Test getting files for the project
-    get_files_response = await async_client.get(f"/projects/{project.id}/files/")
+    get_files_response = await async_client.get(f"/api/v1/projects/{project.id}/files/")
     assert get_files_response.status_code == 200
     files = get_files_response.json()
     assert len(files) >= 1
     assert any(f["file_path"] == "/path/to/file1" for f in files)
 
     # Test getting files for a non-existent project
-    response_proj_not_found = await async_client.get(f"/projects/{uuid.uuid4()}/files/")
+    response_proj_not_found = await async_client.get(f"/api/v1/projects/{uuid.uuid4()}/files/")
     assert response_proj_not_found.status_code == 404
 
     # Test removing a file association
     # Need the file_id to delete. The create response returns it.
     file_id_to_delete = data["id"]
-    remove_file_response = await async_client.delete(f"/projects/{project.id}/files/{file_id_to_delete}")
+    remove_file_response = await async_client.delete(f"/api/v1/projects/{project.id}/files/{file_id_to_delete}")
     assert remove_file_response.status_code == 200 # Or 204
 
     # Test removing a non-existent file association
-    remove_not_found = await async_client.delete(f"/projects/{project.id}/files/{uuid.uuid4()}")
+    remove_not_found = await async_client.delete(f"/api/v1/projects/{project.id}/files/{uuid.uuid4()}")
     assert remove_not_found.status_code == 404
 
 async def test_task_file_association_api(async_client: httpx.AsyncClient, db_session: Session, test_project, test_task): # Added fixtures
@@ -807,7 +808,7 @@ async def test_task_file_association_api(async_client: httpx.AsyncClient, db_ses
 
     # Test creating a file association for a task
     add_file_payload = {"file_path": "/path/to/task_file1", "description": "Task File 1"}
-    response = await async_client.post(f"/projects/{task.project_id}/tasks/{task.task_number}/files/", json=add_file_payload)
+    response = await async_client.post(f"/api/v1/projects/{task.project_id}/tasks/{task.task_number}/files/", json=add_file_payload)
     assert response.status_code == 200
     data = response.json()
     assert data["project_id"] == task.project_id
@@ -816,32 +817,32 @@ async def test_task_file_association_api(async_client: httpx.AsyncClient, db_ses
 
     # Test adding the same file again (assuming file_path is unique per task)
     # This might depend on backend validation, testing for 400 is reasonable
-    response_dup = await async_client.post(f"/projects/{task.project_id}/tasks/{task.task_number}/files/", json=add_file_payload)
+    response_dup = await async_client.post(f"/api/v1/projects/{task.project_id}/tasks/{task.task_number}/files/", json=add_file_payload)
     assert response_dup.status_code == 400
 
     # Test getting files for the task
-    get_files_response = await async_client.get(f"/projects/{task.project_id}/tasks/{task.task_number}/files/")
+    get_files_response = await async_client.get(f"/api/v1/projects/{task.project_id}/tasks/{task.task_number}/files/")
     assert get_files_response.status_code == 200
     files = get_files_response.json()
     assert len(files) >= 1
     assert any(f["file_path"] == "/path/to/task_file1" for f in files)
 
     # Test getting files for a non-existent task
-    response_task_not_found = await async_client.get(f"/projects/{task.project_id}/tasks/{task.task_number + 999}/files/")
+    response_task_not_found = await async_client.get(f"/api/v1/projects/{task.project_id}/tasks/{task.task_number + 999}/files/")
     assert response_task_not_found.status_code == 404
 
     # Test getting files for a non-existent project
-    response_proj_not_found = await async_client.get(f"/projects/{uuid.uuid4()}/tasks/{task.task_number}/files/")
+    response_proj_not_found = await async_client.get(f"/api/v1/projects/{uuid.uuid4()}/tasks/{task.task_number}/files/")
     assert response_proj_not_found.status_code == 404
 
     # Test removing a file association
     # Need the file_id to delete. The create response returns it.
     file_id_to_delete = data["id"]
-    remove_file_response = await async_client.delete(f"/projects/{task.project_id}/tasks/{task.task_number}/files/{file_id_to_delete}")
+    remove_file_response = await async_client.delete(f"/api/v1/projects/{task.project_id}/tasks/{task.task_number}/files/{file_id_to_delete}")
     assert remove_file_response.status_code == 200 # Or 204
 
     # Test removing a non-existent file association
-    remove_not_found = await async_client.delete(f"/projects/{task.project_id}/tasks/{task.task_number}/files/{uuid.uuid4()}")
+    remove_not_found = await async_client.delete(f"/api/v1/projects/{task.project_id}/tasks/{task.task_number}/files/{uuid.uuid4()}")
     assert remove_not_found.status_code == 404
 
 async def test_task_dependency_api(async_client: httpx.AsyncClient, db_session: Session, test_project, test_task): # Added fixtures
@@ -853,7 +854,7 @@ async def test_task_dependency_api(async_client: httpx.AsyncClient, db_session: 
     task1 = test_task # Use the existing fixture task as task1
 
     # Create a second task specifically for this test
-    task2 = crud_tasks.create_task(db_session, schemas.TaskCreate(
+    task2 = crud_tasks.create_task(db_session, TaskCreate(
         project_id=project.id,
         title="Task 2 for Dependency Test",
         description="...",
@@ -864,7 +865,7 @@ async def test_task_dependency_api(async_client: httpx.AsyncClient, db_session: 
 
     # Test creating a dependency (task1 depends on task2)
     add_dependency_payload = {"dependent_task_number": task1.task_number, "dependency_task_number": task2.task_number}
-    response = await async_client.post(f"/projects/{project.id}/dependencies/", json=add_dependency_payload)
+    response = await async_client.post(f"/api/v1/projects/{project.id}/dependencies/", json=add_dependency_payload)
     assert response.status_code == 200
     data = response.json()
     assert data["project_id"] == project.id
@@ -872,38 +873,38 @@ async def test_task_dependency_api(async_client: httpx.AsyncClient, db_session: 
     assert data["dependency_task_number"] == task2.task_number
 
     # Test adding the same dependency again
-    response_dup = await async_client.post(f"/projects/{project.id}/dependencies/", json=add_dependency_payload)
+    response_dup = await async_client.post(f"/api/v1/projects/{project.id}/dependencies/", json=add_dependency_payload)
     assert response_dup.status_code == 400 # Assuming duplicate dependencies are not allowed
 
     # Test getting dependencies for a project
-    get_dependencies_response = await async_client.get(f"/projects/{project.id}/dependencies/")
+    get_dependencies_response = await async_client.get(f"/api/v1/projects/{project.id}/dependencies/")
     assert get_dependencies_response.status_code == 200
     dependencies = get_dependencies_response.json()
     assert len(dependencies) >= 1 # At least the one we just added
     assert any(d["dependent_task_number"] == task1.task_number and d["dependency_task_number"] == task2.task_number for d in dependencies)
 
     # Test getting dependencies for a non-existent project
-    response_proj_not_found = await async_client.get(f"/projects/{uuid.uuid4()}/dependencies/")
+    response_proj_not_found = await async_client.get(f"/api/v1/projects/{uuid.uuid4()}/dependencies/")
     assert response_proj_not_found.status_code == 404
 
     # Test removing a dependency
     # Need the dependency_id to delete. The create response returns it.
     dependency_id_to_delete = data["id"]
-    remove_dependency_response = await async_client.delete(f"/projects/{project.id}/dependencies/{dependency_id_to_delete}")
+    remove_dependency_response = await async_client.delete(f"/api/v1/projects/{project.id}/dependencies/{dependency_id_to_delete}")
     assert remove_dependency_response.status_code == 200 # Or 204
 
     # Test removing a non-existent dependency
-    remove_not_found = await async_client.delete(f"/projects/{project.id}/dependencies/{uuid.uuid4()}")
+    remove_not_found = await async_client.delete(f"/api/v1/projects/{project.id}/dependencies/{uuid.uuid4()}")
     assert remove_not_found.status_code == 404
 
     # Test circular dependency detection (assuming backend logic prevents this)
     add_circular_dependency_payload = {"dependent_task_number": task2.task_number, "dependency_task_number": task1.task_number}
-    response_circular = await async_client.post(f"/projects/{project.id}/dependencies/", json=add_circular_dependency_payload)
+    response_circular = await async_client.post(f"/api/v1/projects/{project.id}/dependencies/", json=add_circular_dependency_payload)
     assert response_circular.status_code == 400 # Assuming 400 for validation error
 
     # Test self-dependency detection (assuming backend logic prevents this)
     add_self_dependency_payload = {"dependent_task_number": task1.task_number, "dependency_task_number": task1.task_number}
-    response_self = await async_client.post(f"/projects/{project.id}/dependencies/", json=add_self_dependency_payload)
+    response_self = await async_client.post(f"/api/v1/projects/{project.id}/dependencies/", json=add_self_dependency_payload)
     assert response_self.status_code == 400 # Assuming 400 for validation error
 
 async def test_create_audit_log_entry(fastapi_app: FastAPI, db_session: Session, test_user): # Added test_user fixture

@@ -8,6 +8,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
 import sys
+from sqlalchemy.pool import StaticPool
+import pytest_asyncio
+from httpx import AsyncClient
 
 # Add the project root to the path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -19,20 +22,24 @@ from backend.models import User, Project, Task, Agent
 from backend.enums import TaskStatusEnum
 
 # Create a test database
-TEST_SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+TEST_SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(
     TEST_SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,  # Use StaticPool for in-memory testing
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Create a test client
-client = TestClient(app)
+# client = TestClient(app) # Removed module-level client creation
 
 
 @pytest.fixture(scope="module")
 def test_db():
-    """Create a test database for integration tests."""
+    """Set up the test database environment and apply dependency overrides."""
+    # Drop all tables before creating them to ensure a clean slate
+    Base.metadata.drop_all(bind=engine)
+    
     # Create the database tables
     Base.metadata.create_all(bind=engine)
     
@@ -50,8 +57,15 @@ def test_db():
     
     # Clean up
     Base.metadata.drop_all(bind=engine)
-    if os.path.exists("./test.db"):
-        os.remove("./test.db")
+    # Remove file cleanup as using in-memory database
+
+
+@pytest_asyncio.fixture(scope="module")
+async def test_client_with_db(test_db):
+    """Create an asynchronous test client with a test database for integration tests."""
+    # AsyncClient with app will automatically handle the lifespan context
+    async with AsyncClient(app=app, base_url="http://testserver") as client:
+        yield client
 
 
 @pytest.fixture(scope="module")
@@ -84,7 +98,7 @@ def auth_headers(test_user):
     return {"Authorization": f"Bearer test-token-{test_user.id}"}
 
 
-def test_create_and_get_project(test_db, auth_headers):
+async def test_create_and_get_project(test_client_with_db: AsyncClient, auth_headers):
     """Test creating and getting a project."""
     # Create a project
     project_data = {
@@ -93,7 +107,7 @@ def test_create_and_get_project(test_db, auth_headers):
     }
     
     # Create the project
-    response = client.post(
+    response = await test_client_with_db.post(
         "/projects/",
         json=project_data,
         headers=auth_headers
@@ -106,7 +120,7 @@ def test_create_and_get_project(test_db, auth_headers):
     assert project["description"] == project_data["description"]
     
     # Get the project
-    response = client.get(f"/projects/{project['id']}")
+    response = await test_client_with_db.get(f"/projects/{project['id']}")
     
     # Verify the project was retrieved
     assert response.status_code == 200
@@ -116,7 +130,7 @@ def test_create_and_get_project(test_db, auth_headers):
     assert retrieved_project["description"] == project["description"]
 
 
-def test_create_task_and_get_tasks(test_db, auth_headers):
+async def test_create_task_and_get_tasks(test_client_with_db: AsyncClient, auth_headers):
     """Test creating a task and getting tasks for a project."""
     # Create a project first
     project_data = {
@@ -125,7 +139,7 @@ def test_create_task_and_get_tasks(test_db, auth_headers):
     }
     
     # Create the project
-    response = client.post(
+    response = await test_client_with_db.post(
         "/projects/",
         json=project_data,
         headers=auth_headers
@@ -141,7 +155,7 @@ def test_create_task_and_get_tasks(test_db, auth_headers):
     }
     
     # Create the task
-    response = client.post(
+    response = await test_client_with_db.post(
         f"/{project['id']}/tasks/",
         json=task_data,
         headers=auth_headers
@@ -155,7 +169,7 @@ def test_create_task_and_get_tasks(test_db, auth_headers):
     assert task["status"] == task_data["status"]
     
     # Get the tasks for the project
-    response = client.get(f"/{project['id']}/tasks/")
+    response = await test_client_with_db.get(f"/{project['id']}/tasks/")
     
     # Verify the tasks were retrieved
     assert response.status_code == 200
@@ -171,7 +185,7 @@ def test_create_task_and_get_tasks(test_db, auth_headers):
     }
     
     # Update the task
-    response = client.put(
+    response = await test_client_with_db.put(
         f"/{project['id']}/tasks/{task['task_number']}",
         json=update_data,
         headers=auth_headers
@@ -184,7 +198,7 @@ def test_create_task_and_get_tasks(test_db, auth_headers):
     assert updated_task["status"] == update_data["status"]
     
     # Get the updated task
-    response = client.get(f"/{project['id']}/tasks/{task['task_number']}")
+    response = await test_client_with_db.get(f"/{project['id']}/tasks/{task['task_number']}")
     
     # Verify the updated task was retrieved
     assert response.status_code == 200

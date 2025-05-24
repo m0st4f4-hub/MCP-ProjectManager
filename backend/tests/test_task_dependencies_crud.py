@@ -6,7 +6,13 @@ import uuid
 from fastapi import HTTPException
 
 # Import models and schemas directly
-from backend import models, schemas
+# Import models
+from backend import models
+
+# Import specific schemas as needed
+from backend.schemas.task import TaskCreate, TaskUpdate
+from backend.schemas.project import ProjectCreate, ProjectUpdate
+from backend.schemas.task_dependency import TaskDependencyCreate
 
 # Import specific crud submodules with aliases
 from backend.crud import projects as crud_projects
@@ -18,13 +24,13 @@ from backend.services.task_dependency_service import TaskDependencyService
 
 # Helper function to create a project for testing other entities
 def create_test_project(db: Session, name="Test Project") -> models.Project:
-    project_schema = schemas.ProjectCreate(
+    project_schema = ProjectCreate(
         name=name, description="A test project")
     return crud_projects.create_project(db=db, project=project_schema)
 
 # Helper function to create a task for testing dependencies
 def create_test_task(db: Session, project_id: uuid.UUID, title="Test Task") -> models.Task:
-    task_create_schema = schemas.TaskCreate(title=title, project_id=str(project_id))
+    task_create_schema = TaskCreate(title=title, project_id=str(project_id))
     return crud_tasks.create_task(db, project_id, task=task_create_schema)
 
 # --- Task Dependency CRUD Tests ---
@@ -36,14 +42,14 @@ def test_create_and_get_task_dependency(db_session: Session):
     task2 = create_test_task(db_session, project.id, title="Task 2 for Dep")
 
     # Add dependency: Task 1 -> Task 2
-    dependency_data = schemas.TaskDependencyCreate(
-        predecessor_task_project_id=project.id,
+    dependency_data = TaskDependencyCreate(
+        predecessor_task_project_id=str(project.id),
         predecessor_task_number=task1.task_number,
-        successor_task_project_id=project.id,
+        successor_task_project_id=str(project.id),
         successor_task_number=task2.task_number,
-        predecessor_project_id=project.id,
-        successor_project_id=project.id,
-        type="blocks"
+        predecessor_project_id=str(project.id),
+        successor_project_id=str(project.id),
+        dependency_type="blocks"
     )
     # Test CRUD function directly
     db_dependency = crud_task_dependencies.create_task_dependency(
@@ -88,14 +94,14 @@ def test_remove_task_dependency(db_session: Session):
     task2 = create_test_task(db_session, project.id, title="Task 2 for Remove Dep")
 
     # Add dependency using CRUD
-    dependency_data = schemas.TaskDependencyCreate(
-        predecessor_task_project_id=project.id,
+    dependency_data = TaskDependencyCreate(
+        predecessor_task_project_id=str(project.id),
         predecessor_task_number=task1.task_number,
-        successor_task_project_id=project.id,
+        successor_task_project_id=str(project.id),
         successor_task_number=task2.task_number,
-        predecessor_project_id=project.id,
-        successor_project_id=project.id,
-        type="blocks"
+        predecessor_project_id=str(project.id),
+        successor_project_id=str(project.id),
+        dependency_type="blocks"
     )
     crud_task_dependencies.create_task_dependency(
         db_session,
@@ -137,14 +143,14 @@ def test_add_task_dependency_circular(db_session: Session):
     task3 = create_test_task(db_session, project.id, title="Task 3 for Circular")
 
     # Add dependency Task 1 -> Task 2 using the service (this passes validation)
-    dependency_data_1_2 = schemas.TaskDependencyCreate(
-        predecessor_task_project_id=project.id,
+    dependency_data_1_2 = TaskDependencyCreate(
+        predecessor_task_project_id=str(project.id),
         predecessor_task_number=task1.task_number,
-        successor_task_project_id=project.id,
+        successor_task_project_id=str(project.id),
         successor_task_number=task2.task_number,
-        predecessor_project_id=project.id,
-        successor_project_id=project.id,
-        type="blocks"
+        predecessor_project_id=str(project.id),
+        successor_project_id=str(project.id),
+        dependency_type="blocks"
     )
     service = TaskDependencyService(db_session)
     service.create_task_dependency(
@@ -152,14 +158,14 @@ def test_add_task_dependency_circular(db_session: Session):
     )
 
     # Now try adding dependency Task 2 -> Task 1 using the service (this should create a circular dependency and raise HTTPException)
-    dependency_data_2_1 = schemas.TaskDependencyCreate(
-        predecessor_task_project_id=project.id,
+    dependency_data_2_1 = TaskDependencyCreate(
+        predecessor_task_project_id=str(project.id),
         predecessor_task_number=task2.task_number,
-        successor_task_project_id=project.id,
+        successor_task_project_id=str(project.id),
         successor_task_number=task1.task_number,
-        predecessor_project_id=project.id,
-        successor_project_id=project.id,
-        type="blocks"
+        predecessor_project_id=str(project.id),
+        successor_project_id=str(project.id),
+        dependency_type="blocks"
     )
     with pytest.raises(HTTPException) as excinfo:
         service.create_task_dependency(
@@ -170,27 +176,27 @@ def test_add_task_dependency_circular(db_session: Session):
 
     # Add more complex circular dependency tests if needed (e.g., A -> B -> C -> A)
     # Add dependency Task 2 -> Task 3 using the service
-    dependency_data_2_3 = schemas.TaskDependencyCreate(
-        predecessor_task_project_id=project.id,
+    dependency_data_2_3 = TaskDependencyCreate(
+        predecessor_task_project_id=str(project.id),
         predecessor_task_number=task2.task_number,
-        successor_task_project_id=project.id,
+        successor_task_project_id=str(project.id),
         successor_task_number=task3.task_number,
-        predecessor_project_id=project.id,
-        successor_project_id=project.id,
-        type="blocks"
+        predecessor_project_id=str(project.id),
+        successor_project_id=str(project.id),
+        dependency_type="blocks"
     )
     service.create_task_dependency(
         task_dependency=dependency_data_2_3
     )
     # Try adding dependency Task 3 -> Task 1 using the service (should create A->B->C->A circularity)
-    dependency_data_3_1 = schemas.TaskDependencyCreate(
-        predecessor_task_project_id=project.id,
+    dependency_data_3_1 = TaskDependencyCreate(
+        predecessor_task_project_id=str(project.id),
         predecessor_task_number=task3.task_number,
-        successor_task_project_id=project.id,
+        successor_task_project_id=str(project.id),
         successor_task_number=task1.task_number,
-        predecessor_project_id=project.id,
-        successor_project_id=project.id,
-        type="blocks"
+        predecessor_project_id=str(project.id),
+        successor_project_id=str(project.id),
+        dependency_type="blocks"
     )
     with pytest.raises(HTTPException) as excinfo:
         service.create_task_dependency(
@@ -205,14 +211,14 @@ def test_add_task_dependency_self(db_session: Session):
     task = create_test_task(db_session, project.id, title="Task for Self Dep")
 
     # Try adding dependency: Task -> Task using the service (should raise HTTPException)
-    dependency_data = schemas.TaskDependencyCreate(
-        predecessor_task_project_id=project.id,
+    dependency_data = TaskDependencyCreate(
+        predecessor_task_project_id=str(project.id),
         predecessor_task_number=task.task_number,
-        successor_task_project_id=project.id,
+        successor_task_project_id=str(task.project_id),
         successor_task_number=task.task_number,
-        predecessor_project_id=project.id,
-        successor_project_id=project.id,
-        type="blocks"
+        predecessor_project_id=str(project.id),
+        successor_project_id=str(project.id),
+        dependency_type="blocks"
     )
     service = TaskDependencyService(db_session)
     with pytest.raises(HTTPException) as excinfo:

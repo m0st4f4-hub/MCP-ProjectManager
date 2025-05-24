@@ -5,7 +5,12 @@ from sqlalchemy.orm import Session
 import uuid
 
 # Import models and schemas directly
-from backend import models, schemas
+from backend import models
+# Import specific schemas
+from backend.schemas.project import ProjectCreate
+from backend.schemas.task import TaskCreate
+from backend.schemas.agent import AgentCreate
+from backend.schemas.comment import CommentCreate, CommentUpdate
 
 # Import specific crud submodules with aliases
 from backend.crud import projects as crud_projects # Needed for comment tests
@@ -15,18 +20,18 @@ from backend.crud import comments as crud_comments
 
 # Helper function to create a project for testing other entities
 def create_test_project(db: Session, name="Test Project") -> models.Project:
-    project_schema = schemas.ProjectCreate(
+    project_schema = ProjectCreate(
         name=name, description="A test project")
     return crud_projects.create_project(db=db, project=project_schema)
 
 # Helper function to create a task for testing comments
 def create_test_task(db: Session, project_id: uuid.UUID, title="Test Task") -> models.Task:
-    task_create_schema = schemas.TaskCreate(title=title, project_id=str(project_id))
+    task_create_schema = TaskCreate(title=title, project_id=str(project_id))
     return crud_tasks.create_task(db, project_id, task=task_create_schema)
 
 # Helper function to create an agent for testing other entities
 def create_test_agent(db: Session, name="Test Agent") -> models.Agent:
-    agent_schema = schemas.AgentCreate(name=name)
+    agent_schema = AgentCreate(name=name)
     return crud_agents.create_agent(db=db, agent=agent_schema)
 
 # --- Comment CRUD Tests ---
@@ -36,7 +41,7 @@ def test_create_and_get_comment(db_session: Session):
     task = create_test_task(db_session, project.id, title="Task for Comment")
     agent = create_test_agent(db_session, name="Commenting Agent")
 
-    comment_data = schemas.CommentCreate(
+    comment_data = CommentCreate(
         task_project_id=task.project_id,
         task_task_number=task.task_number,
         author_id=agent.id,
@@ -67,8 +72,8 @@ def test_get_comments_by_task(db_session: Session):
     agent = create_test_agent(db_session, name="Task Commenter")
 
     # Add comments to task 1
-    comment_data_1 = schemas.CommentCreate(task_project_id=task1.project_id, task_task_number=task1.task_number, author_id=agent.id, content="Comment 1 for task 1")
-    comment_data_2 = schemas.CommentCreate(task_project_id=task1.project_id, task_task_number=task1.task_number, author_id=agent.id, content="Comment 2 for task 1")
+    comment_data_1 = CommentCreate(task_project_id=task1.project_id, task_task_number=task1.task_number, author_id=agent.id, content="Comment 1 for task 1")
+    comment_data_2 = CommentCreate(task_project_id=task1.project_id, task_task_number=task1.task_number, author_id=agent.id, content="Comment 2 for task 1")
     crud_comments.create_comment(db_session, comment_data_1)
     crud_comments.create_comment(db_session, comment_data_2)
 
@@ -91,11 +96,11 @@ def test_update_comment(db_session: Session):
     task = create_test_task(db_session, project.id, title="Task to Update Comment")
     agent = create_test_agent(db_session, name="Updater Agent")
 
-    comment_data = schemas.CommentCreate(task_project_id=task.project_id, task_task_number=task.task_number, author_id=agent.id, content="Original content.")
+    comment_data = CommentCreate(task_project_id=task.project_id, task_task_number=task.task_number, author_id=agent.id, content="Original content.")
     db_comment = crud_comments.create_comment(db_session, comment_data)
     comment_id = db_comment.id
 
-    update_data = schemas.CommentUpdate(content="Updated content.")
+    update_data = CommentUpdate(content="Updated content.")
     updated_comment = crud_comments.update_comment(db_session, comment_id=comment_id, comment_update=update_data)
     assert updated_comment is not None
     assert updated_comment.id == comment_id
@@ -115,7 +120,7 @@ def test_delete_comment(db_session: Session):
     task = create_test_task(db_session, project.id, title="Task to Delete Comment")
     agent = create_test_agent(db_session, name="Deleter Agent")
 
-    comment_data = schemas.CommentCreate(task_project_id=task.project_id, task_task_number=task.task_number, author_id=agent.id, content="Comment to be deleted.")
+    comment_data = CommentCreate(task_project_id=task.project_id, task_task_number=task.task_number, author_id=agent.id, content="Comment to be deleted.")
     db_comment = crud_comments.create_comment(db_session, comment_data)
     comment_id = db_comment.id
 

@@ -19,7 +19,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String)
     email: Mapped[Optional[str]] = mapped_column(
-        String, unique=True, index=True, nullable=True)
+        String, unique=True, index=True, nullable=False)
     full_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     disabled: Mapped[bool] = mapped_column(Boolean, default=False)
 

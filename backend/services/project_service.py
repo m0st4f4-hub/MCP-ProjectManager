@@ -15,8 +15,8 @@ from backend.schemas.project import ProjectCreate, ProjectUpdate, ProjectMemberC
 # Import schema for ProjectTemplate
 from backend.schemas.project_template import ProjectTemplate
 # Import task and project member schemas for template population
-from backend.schemas import task as task_schemas
-from backend.schemas import project as project_schemas
+from backend.schemas.task import TaskCreate
+from backend.schemas.project import ProjectMemberCreate
 
 # Import CRUD operations
 from backend.crud.projects import (
@@ -129,7 +129,7 @@ class ProjectService:
                     default_tasks = template_data.get("default_tasks", [])
                     for task_data in default_tasks:
                         # Assuming task_data is compatible with TaskCreate schema structure
-                        task_create_schema = task_schemas.TaskCreate(**task_data)
+                        task_create_schema = TaskCreate(**task_data)
                         tasks_crud.create_task(
                             tx_db, project_id=db_project.id, task=task_create_schema
                         )
@@ -137,7 +137,7 @@ class ProjectService:
                     # Example: Add default members from template_data
                     default_members = template_data.get("default_members", [])
                     for member_data in default_members:
-                        member_create_schema = project_schemas.ProjectMemberCreate(
+                        member_create_schema = ProjectMemberCreate(
                             **member_data, project_id=db_project.id
                         )
                         project_members_crud.add_project_member(tx_db, member_create_schema)
@@ -146,7 +146,7 @@ class ProjectService:
                     if created_by_user_id and default_members:
                         user_is_member = any(m.get("user_id") == created_by_user_id for m in default_members)
                         if not user_is_member:
-                            owner_member = project_schemas.ProjectMemberCreate(
+                            owner_member = ProjectMemberCreate(
                                 project_id=db_project.id,
                                 user_id=created_by_user_id,
                                 role="owner"

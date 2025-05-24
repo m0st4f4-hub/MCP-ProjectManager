@@ -136,6 +136,7 @@ def upgrade() -> None:
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_workflows_id'), 'workflows', ['id'], unique=False)
     
     op.create_table(
         'workflow_steps',
@@ -156,6 +157,19 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['workflow_id'], ['workflows.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
+    op.create_table(
+        'projects',
+        sa.Column('id', sa.String(length=32), nullable=False),
+        sa.Column('name', sa.String(), nullable=False),
+        sa.Column('description', sa.Text(), nullable=True),
+        # Add other columns as needed
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_projects_id'), 'projects', ['id'], unique=False)
+    op.create_index(op.f('ix_projects_name'), 'projects', ['name'], unique=True)
+    
     op.create_table(
         'project_members',
         sa.Column('id', sa.String(length=32), nullable=False),

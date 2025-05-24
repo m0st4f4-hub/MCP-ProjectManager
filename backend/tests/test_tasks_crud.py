@@ -6,7 +6,21 @@ import uuid
 from unittest import mock # Ensure mock is imported
 
 # Import models and schemas directly
-from backend import models, schemas
+# # Import models
+from backend import models
+
+# Import specific schemas as needed
+from backend.schemas.agent import AgentCreate, AgentUpdate
+from backend.schemas.project import ProjectCreate, ProjectUpdate # Removed broad import
+
+# Import specific models
+from backend.models import Project, Agent, Task, Comment # Added specific model imports
+
+# Import specific schemas
+from backend.schemas.project import ProjectCreate # Added specific schema import
+from backend.schemas.agent import AgentCreate # Added specific schema import
+from backend.schemas.task import TaskCreate, TaskUpdate # Added specific schema imports
+from backend.enums import TaskStatusEnum # Import enum directly
 
 # Import specific crud submodules with aliases
 from backend.crud import projects as crud_projects # Added
@@ -14,32 +28,34 @@ from backend.crud import tasks as crud_tasks # Added
 from backend.crud import agents as crud_agents # Added
 
 # Helper function to create a project for testing other entities
-def create_test_project(db: Session, name="Test Project") -> models.Project:
-    # Directly create and add model instance for helper
-    project_schema = schemas.ProjectCreate(
-        name=name, description="A test project")
-    db_project = models.Project(
-        id=str(uuid.uuid4()),
-        name=project_schema.name,
-        description=project_schema.description
-    )
-    db.add(db_project)
-    db.commit()
-    db.refresh(db_project)
-    return db_project
+# This helper is redundant with conftest fixture and can be removed
+# def create_test_project(db: Session, name="Test Project") -> models.Project:
+#     # Directly create and add model instance for helper
+#     project_schema = schemas.ProjectCreate(
+#         name=name, description="A test project")
+#     db_project = models.Project(
+#         id=str(uuid.uuid4()),
+#         name=project_schema.name,
+#         description=project_schema.description
+#     )
+#     db.add(db_project)
+#     db.commit()
+#     db.refresh(db_project)
+#     return db_project
 
 # Helper function to create an agent for testing other entities
-def create_test_agent(db: Session, name="Test Agent") -> models.Agent:
-    # Directly create and add model instance for helper
-    agent_schema = schemas.AgentCreate(name=name)
-    db_agent = models.Agent(
-        id=str(uuid.uuid4()),
-        name=agent_schema.name
-    )
-    db.add(db_agent)
-    db.commit()
-    db.refresh(db_agent)
-    return db_agent
+# This helper is redundant with conftest fixture and can be removed
+# def create_test_agent(db: Session, name="Test Agent") -> models.Agent:
+#     # Directly create and add model instance for helper
+#     agent_schema = schemas.AgentCreate(name=name)
+#     db_agent = models.Agent(
+#         id=str(uuid.uuid4()),
+#         name=agent_schema.name
+#     )
+#     db.add(db_agent)
+#     db.commit()
+#     db.refresh(db_agent)
+#     return db_agent
 
 # --- Task CRUD Tests ---
 # Note: These tests focus on the Task CRUD functions, so setup should create
@@ -47,15 +63,15 @@ def create_test_agent(db: Session, name="Test Agent") -> models.Agent:
 
 def test_create_and_get_task(db_session: Session):
     # Setup: Directly create related models for this test
-    project = models.Project(id=str(uuid.uuid4()), name="Test Project", description="...")
-    agent = models.Agent(id=str(uuid.uuid4()), name="Test Agent")
+    project = Project(id=str(uuid.uuid4()), name="Test Project", description="...") # Use imported model
+    agent = Agent(id=str(uuid.uuid4()), name="Test Agent") # Use imported model
     db_session.add(project)
     db_session.add(agent)
     db_session.commit()
     db_session.refresh(project)
     db_session.refresh(agent)
 
-    task_schema = schemas.TaskCreate(
+    task_schema = TaskCreate(
         title="Test Task Alpha",
         description="Task Alpha Description",
         project_id=str(project.id),
@@ -94,8 +110,8 @@ def test_get_task_not_found(db_session: Session):
 
 def test_get_tasks_with_filtering(db_session: Session):
     # Setup: Directly create related models and tasks for this test
-    project1 = models.Project(id=str(uuid.uuid4()), name="Filter Project 1")
-    project2 = models.Project(id=str(uuid.uuid4()), name="Filter Project 2")
+    project1 = Project(id=str(uuid.uuid4()), name="Filter Project 1") # Use imported model
+    project2 = Project(id=str(uuid.uuid4()), name="Filter Project 2") # Use imported model
     db_session.add(project1)
     db_session.add(project2)
     db_session.commit()
@@ -105,12 +121,12 @@ def test_get_tasks_with_filtering(db_session: Session):
     project2_id = project2.id
 
     # Ensure project_id is passed correctly when creating tasks
-    crud_tasks.create_task(db_session, project_id=project1.id, task=schemas.TaskCreate(
-        title="P1 Task 1", project_id=project1_id))
-    crud_tasks.create_task(db_session, project_id=project1.id, task=schemas.TaskCreate(
-        title="P1 Task 2", project_id=project1_id))
-    crud_tasks.create_task(db_session, project_id=project2.id, task=schemas.TaskCreate(
-        title="P2 Task 1", project_id=project2_id))
+    crud_tasks.create_task(db_session, project_id=project1.id, task=TaskCreate(
+        title="P1 Task 1", project_id=project1_id)) # Use imported schema
+    crud_tasks.create_task(db_session, project_id=project1.id, task=TaskCreate(
+        title="P1 Task 2", project_id=project1_id)) # Use imported schema
+    crud_tasks.create_task(db_session, project_id=project2.id, task=TaskCreate(
+        title="P2 Task 1", project_id=project2_id)) # Use imported schema
 
     # Test the get_tasks CRUD function with project filtering
     tasks_project1 = crud_tasks.get_tasks(db_session, project_id=project1_id)
@@ -129,19 +145,19 @@ def test_get_tasks_with_filtering(db_session: Session):
 
 def test_update_task(db_session: Session):
     # Setup: Directly create related models and a task for this test
-    project = models.Project(id=str(uuid.uuid4()), name="Test Project", description="...")
+    project = Project(id=str(uuid.uuid4()), name="Test Project", description="...") # Use imported model
     db_session.add(project)
     db_session.commit()
     db_session.refresh(project)
     project_id = project.id
 
-    task = crud_tasks.create_task(db_session, project_id=project.id, task=schemas.TaskCreate(
-        title="Task to Update", project_id=project_id))
+    task = crud_tasks.create_task(db_session, project_id=project.id, task=TaskCreate(
+        title="Task to Update", project_id=project_id)) # Use imported schema
     task_project_id = task.project_id
     task_number = task.task_number
 
-    update_data = crud_tasks.schemas.TaskUpdate(
-        title="Updated Task Title", status=schemas.TaskStatusEnum.DONE, is_archived=True) # Use enum for status
+    update_data = TaskUpdate(
+        title="Updated Task Title", status="Done", is_archived=True) # Use string value for status
 
     # Test the update_task_by_project_and_number CRUD function
     updated_task = crud_tasks.update_task_by_project_and_number(
@@ -162,8 +178,8 @@ def test_update_task(db_session: Session):
     assert retrieved_task.is_archived is update_data.is_archived
 
     # Test updating non-existent task using composite key
-    update_non_existent_data = crud_tasks.schemas.TaskUpdate(
-        title="Should Not Update")
+    update_non_existent_data = TaskUpdate(
+        title="Should Not Update") # Use imported schema
     non_existent_update = crud_tasks.update_task_by_project_and_number(
         db=db_session, project_id=task_project_id, task_number=task_number + 999, task=update_non_existent_data)
     assert non_existent_update is None
@@ -171,13 +187,13 @@ def test_update_task(db_session: Session):
 
 def test_delete_task(db_session: Session):
     # Setup: Directly create related models and a task for this test
-    project = models.Project(id=str(uuid.uuid4()), name="Test Project", description="...")
+    project = Project(id=str(uuid.uuid4()), name="Test Project", description="...") # Use imported model
     db_session.add(project)
     db_session.commit()
     db_session.refresh(project)
 
-    task = crud_tasks.create_task(db_session, project_id=project.id, task=schemas.TaskCreate(
-        title="Task To Delete", project_id=project.id))
+    task = crud_tasks.create_task(db_session, project_id=project.id, task=TaskCreate(
+        title="Task To Delete", project_id=project.id)) # Use imported schema
 
     # Ensure task exists before deletion
     initial_task = crud_tasks.get_task_by_project_and_number(
