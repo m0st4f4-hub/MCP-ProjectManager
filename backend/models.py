@@ -28,6 +28,38 @@ class JSONText(TypeDecorator):
     python_type = Dict[str, Any]
 
 
+class Comment(Base):
+    __tablename__ = "comments"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ['task_project_id', 'task_task_number'],
+            ['tasks.project_id', 'tasks.task_number']
+        ),
+        {}
+    )
+
+    id: Mapped[str] = mapped_column(
+        String(32), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
+    task_project_id: Mapped[Optional[str]] = mapped_column(String(32), ForeignKey("tasks.project_id"), nullable=True) # Added ForeignKey here
+    task_task_number: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("tasks.task_number"), nullable=True) # Added ForeignKey here
+    project_id: Mapped[Optional[str]] = mapped_column(String(32), ForeignKey(
+        "projects.id"), nullable=True)  # Allow comments on projects too
+    author_id: Mapped[str] = mapped_column(String(32), ForeignKey("users.id"))
+    content: Mapped[Text] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=lambda: datetime.now(
+        timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=True)
+
+    task: Mapped[Optional["Task"]] = relationship(
+        back_populates="comments",
+        foreign_keys=["Comment.task_project_id", "Comment.task_task_number"]
+    )
+    project: Mapped[Optional["Project"]] = relationship(
+        back_populates="comments_on_project")  # Assuming Project needs a back_populates
+    author: Mapped["User"] = relationship(back_populates="comments")
+
+
 class Project(Base):
     """Represents a project in the Project Manager.
 
@@ -164,9 +196,14 @@ class Task(Base):
         String(32), ForeignKey("agents.id"), nullable=True)
     project: Mapped["Project"] = relationship(back_populates="tasks")
     agent: Mapped[Optional["Agent"]] = relationship(back_populates="tasks")
-    status: Mapped[str] = mapped_column(String, default="To Do")
+    status: Mapped[str] = mapped_column(String, ForeignKey("task_statuses.name"), default="To Do")
     is_archived: Mapped[bool] = mapped_column(
         Boolean, default=False, nullable=False)
+    status_object: Mapped[Optional["TaskStatus"]] = relationship(
+        "TaskStatus",
+        primaryjoin="Task.status == foreign(TaskStatus.name)",
+        back_populates="tasks_with_status"
+    )
     dependencies_as_predecessor: Mapped[List["TaskDependency"]] = relationship(
         "TaskDependency",
         primaryjoin="and_(Task.project_id == TaskDependency.predecessor_project_id, Task.task_number == TaskDependency.predecessor_task_number)",
@@ -186,7 +223,7 @@ class Task(Base):
     )
     comments: Mapped[List["Comment"]] = relationship(
         back_populates="task",
-        cascade="all, delete-orphan"
+        foreign_keys=lambda: [Comment.task_project_id, Comment.task_task_number]
     )
 
 
@@ -262,7 +299,10 @@ class TaskStatus(Base):
         Boolean, default=False)  # Indicates a completed status
 
     tasks_with_status: Mapped[List["Task"]] = relationship(
-        back_populates="task_status")
+        "Task",
+        primaryjoin="foreign(TaskStatus.name) == Task.status",
+        back_populates="status_object"
+    )
 
 
 class ProjectFileAssociation(Base):
@@ -295,37 +335,6 @@ class TaskFileAssociation(Base):
         back_populates="task_files",
         primaryjoin="and_(Task.project_id == TaskFileAssociation.task_project_id, Task.task_number == TaskFileAssociation.task_task_number)"
     )
-
-
-class Comment(Base):
-    __tablename__ = "comments"
-    __table_args__ = (
-        ForeignKeyConstraint(
-            ['task_project_id', 'task_task_number'],
-            ['tasks.project_id', 'tasks.task_number']
-        ),
-        {}
-    )
-
-    id: Mapped[str] = mapped_column(
-        String(32), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
-    task_project_id: Mapped[Optional[str]] = mapped_column(String(32), ForeignKey("tasks.project_id"), nullable=True) # Added ForeignKey here
-    task_task_number: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("tasks.task_number"), nullable=True) # Added ForeignKey here
-    project_id: Mapped[Optional[str]] = mapped_column(String(32), ForeignKey(
-        "projects.id"), nullable=True)  # Allow comments on projects too
-    author_id: Mapped[str] = mapped_column(String(32), ForeignKey("users.id"))
-    content: Mapped[Text] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=lambda: datetime.now(
-        timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=True)
-
-    task: Mapped[Optional["Task"]] = relationship(
-        back_populates="comments"
-    )
-    project: Mapped[Optional["Project"]] = relationship(
-        back_populates="comments_on_project")  # Assuming Project needs a back_populates
-    author: Mapped["User"] = relationship(back_populates="comments")
 
 
 class ProjectMember(Base):
@@ -625,6 +634,7 @@ class MemoryRelation(Base):
 # Add back the ProjectFileAssociation and TaskFileAssociation definitions here, after Memory models
 # to ensure relationships can be defined if needed. Though direct ORM relationships might not be needed
 # if we link via MemoryEntity name.
+
 
 
 
