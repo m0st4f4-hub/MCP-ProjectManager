@@ -25,9 +25,10 @@ class Task(Base, BaseModel, ArchivedMixin):
         String(32), ForeignKey("agents.id"), nullable=True)
     status: Mapped[str] = mapped_column(String, default="To Do")
 
-    # Relationships will be added after fixing circular imports
+    # Relationships
     project = relationship("Project", back_populates="tasks")
     agent = relationship("Agent", back_populates="tasks")
+    comments: Mapped[List["Comment"]] = relationship("Comment", back_populates="task")
 
 
 class TaskStatus(Base):

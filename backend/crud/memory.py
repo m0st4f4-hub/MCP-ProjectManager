@@ -1,7 +1,13 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from backend import models
-from backend.schemas import (
+# from backend.schemas import (
+#     MemoryEntityCreate,
+#     MemoryEntityUpdate,
+#     MemoryObservationCreate,
+#     MemoryRelationCreate,
+# )
+from backend.schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
     MemoryObservationCreate,
