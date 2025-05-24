@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
+from datetime import timedelta
 
 # from .. import schemas # Remove the old import
 from ..database import get_db
@@ -16,6 +17,8 @@ from ..services.user_role_service import UserRoleService
 
 # Import specific schema classes from their files
 from backend.schemas.user import User, UserCreate, UserUpdate # Import User, UserCreate, UserUpdate from user.py
+# Define a Token schema for the response model
+from pydantic import BaseModel
 
 # Placeholder for token related logic (e.g., SECRET_KEY, ALGORITHM, Token schemas)
 # Should be moved to a separate auth module later
@@ -113,12 +116,17 @@ def delete_user(
     return deleted_user
 
 
-@router.post("/token")
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+@router.post("/token", response_model=Token)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     user_service: UserService = Depends(get_user_service)
 ):
-    """Authenticate user and return access token (placeholder)."""
+    """Authenticate user and return access token."""
     user = user_service.authenticate_user(
         username=form_data.username,
         password=form_data.password
@@ -129,19 +137,12 @@ async def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    # In a real app, create the access token here
-    # access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    # access_token = create_access_token(
-    #     data={"sub": user.username}, expires_delta=access_token_expires
-    # )
-    # return {"access_token": access_token, "token_type": "bearer"}
-    # Return user info for now
-    return {
-        "message": (
-            "Authentication successful (placeholder for token)"
-        ),
-        "user": User.from_orm(user)
-    }
+    # Create the access token
+    access_token_expires = timedelta(minutes=user_service.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = user_service.create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 # Example of a protected endpoint (requires authentication)
 # @router.get("/me/", response_model=User)

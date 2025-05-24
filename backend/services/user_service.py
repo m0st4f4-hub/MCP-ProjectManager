@@ -1,6 +1,10 @@
 from sqlalchemy.orm import Session
 from .. import models, schemas
 from typing import List, Optional
+from datetime import datetime, timedelta
+
+# Import token generation library
+from jose import JWTError, jwt
 
 # Import CRUD operations
 from backend.crud.users import (
@@ -9,8 +13,14 @@ from backend.crud.users import (
     get_user_by_username,
     get_users,
     update_user,
-    delete_user
+    delete_user,
+    authenticate_user as crud_authenticate_user
 )
+
+# Placeholder for token related logic (Should be moved to config)
+SECRET_KEY = "your-super-secret-key-change-me"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # No longer need to import validation helpers in service
 # from backend.crud.user_validation import some_validation_function
@@ -47,3 +57,18 @@ class UserService:
     def delete_user(self, user_id: str) -> Optional[models.User]:
         # Delegate to CRUD delete function
         return delete_user(self.db, user_id)
+
+    def authenticate_user(self, username: str, password: str) -> Optional[models.User]:
+        # Delegate authentication to CRUD
+        return crud_authenticate_user(self.db, username, password)
+
+    def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None):
+        """Create a JWT access token."""
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.utcnow() + expires_delta
+        else:
+            expire = datetime.utcnow() + timedelta(minutes=15) # Default expiry
+        to_encode.update({"exp": expire})
+        encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+        return encoded_jwt

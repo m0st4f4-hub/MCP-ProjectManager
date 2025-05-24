@@ -1,28 +1,33 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, func
 from .. import models
 # from .. import models, schemas # Removed schema import
 from backend.schemas.task import TaskCreate, TaskUpdate
-from typing import List, Optional
+from typing import List, Optional, Union
+from backend.enums import TaskStatusEnum
 
 # Import validation helpers
 from .task_validation import project_exists, agent_exists
 
 
 def create_task(db: Session, project_id: str, task: TaskCreate, agent_id: Optional[str] = None) -> models.Task:
-    """Create a new task for a given project."""
+    """Create a new task for a given project.
+
+    Includes pessimistic locking to prevent race conditions during task number assignment.
+    """
     # Validate that the project exists
     if not project_exists(db, project_id):
         raise ValueError(f"Project with ID {project_id} not found.")
 
-    # Get the next task number for this project
-    max_task_number = db.query(models.Task).filter(
+    # Get the next task number for this project, with pessimistic lock
+    # Lock the rows for the specific project to prevent other concurrent transactions
+    # from querying the max task number before this transaction commits.
+    max_task_number_result = db.query(func.max(models.Task.task_number)).filter(
         models.Task.project_id == project_id
-    ).with_entities(models.Task.task_number).order_by(
-        models.Task.task_number.desc()
-    ).first()
+    ).with_for_update().first()
     
-    next_task_number = 1 if not max_task_number else max_task_number[0] + 1
+    max_task_number = max_task_number_result[0] if max_task_number_result and max_task_number_result[0] is not None else 0
+    next_task_number = max_task_number + 1
     
     # If agent_name is provided in the task schema, get the agent by name and validate existence
     agent_id_to_assign = agent_id # Start with passed agent_id
@@ -42,7 +47,7 @@ def create_task(db: Session, project_id: str, task: TaskCreate, agent_id: Option
         task_number=next_task_number,
         title=task.title,
         description=task.description,
-        status=task.status,
+        status=task.status.value if isinstance(task.status, TaskStatusEnum) else task.status,
         is_archived=task.is_archived,
         agent_id=agent_id_to_assign # Use the validated agent_id
     )
@@ -96,7 +101,7 @@ def update_task(db: Session, task_id: str, task: TaskUpdate) -> Optional[models.
         if task.description is not None:
             db_task.description = task.description
         if task.status is not None:
-            db_task.status = task.status
+            db_task.status = task.status.value if isinstance(task.status, TaskStatusEnum) else task.status
 
         db.commit()
         db.refresh(db_task)
@@ -149,7 +154,7 @@ def update_task_by_project_and_number(
         if task.description is not None:
             db_task.description = task.description
         if task.status is not None:
-            db_task.status = task.status
+            db_task.status = task.status.value if isinstance(task.status, TaskStatusEnum) else task.status
         if task.is_archived is not None:
             db_task.is_archived = task.is_archived
 
@@ -166,7 +171,7 @@ def get_all_tasks(
     agent_id: Optional[str] = None,
     agent_name: Optional[str] = None,
     search: Optional[str] = None,
-    status: Optional[str] = None,
+    status: Optional[Union[str, TaskStatusEnum]] = None,
     is_archived: Optional[bool] = False,
     sort_by: Optional[str] = None,
     sort_direction: Optional[str] = None
@@ -196,7 +201,8 @@ def get_all_tasks(
         )
 
     if status:
-        query = query.filter(models.Task.status == status)
+        status_value = status.value if isinstance(status, TaskStatusEnum) else status
+        query = query.filter(models.Task.status == status_value)
 
     if is_archived is not None:
         query = query.filter(models.Task.is_archived == is_archived)

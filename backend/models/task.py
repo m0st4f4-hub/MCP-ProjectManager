@@ -2,7 +2,7 @@
 Task Manager Backend - Core models import fix.
 """
 
-from sqlalchemy import String, Integer, Boolean, ForeignKey, Text, PrimaryKeyConstraint, DateTime
+from sqlalchemy import String, Integer, Boolean, ForeignKey, Text, PrimaryKeyConstraint, DateTime, Enum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
 
@@ -11,6 +11,9 @@ from .base import Base, BaseModel, ArchivedMixin, generate_uuid_with_hyphens
 # Forward references for relationships defined in other model files
 # from .task_relations import TaskDependency, TaskFileAssociation # Use string literals instead to avoid circular imports
 # from .comment import Comment # Already using string literal
+
+# Import the TaskStatusEnum
+from backend.enums import TaskStatusEnum
 
 
 class Task(Base, BaseModel, ArchivedMixin):
@@ -27,7 +30,7 @@ class Task(Base, BaseModel, ArchivedMixin):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     agent_id: Mapped[Optional[str]] = mapped_column(
         String(32), ForeignKey("agents.id"), nullable=True)
-    status: Mapped[str] = mapped_column(String, default="To Do")
+    status: Mapped[TaskStatusEnum] = mapped_column(Enum(TaskStatusEnum), default=TaskStatusEnum.TO_DO.value)
 
     # Relationships
     project = relationship("Project", back_populates="tasks")

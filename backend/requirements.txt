@@ -5,6 +5,7 @@ alembic
 psycopg2-binary
 python-dotenv
 fastapi-mcp # From project file analysis, this seems to be the MCP package
+passlib[bcrypt] # Added for secure password hashing
 
 # For CI/Dev
 flake8

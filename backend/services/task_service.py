@@ -13,6 +13,9 @@ from uuid import UUID
 # Import specific schema classes from their files
 from backend.schemas.task import TaskCreate, TaskUpdate
 
+# Import the TaskStatusEnum
+from backend.enums import TaskStatusEnum
+
 # Import CRUD operations for tasks
 from backend.crud.tasks import (
     get_task as crud_get_task,
@@ -57,7 +60,7 @@ class TaskService:
         agent_id: Optional[str] = None,
         agent_name: Optional[str] = None,
         search: Optional[str] = None,
-        status: Optional[str] = None,
+        status: Optional[Union[str, TaskStatusEnum]] = None,
         is_archived: Optional[bool] = False,
         limit: Optional[int] = None,
         sort_by: Optional[str] = None,
@@ -79,7 +82,7 @@ class TaskService:
         agent_id: Optional[str] = None,
         agent_name: Optional[str] = None,
         search: Optional[str] = None,
-        status: Optional[str] = None,
+        status: Optional[Union[str, TaskStatusEnum]] = None,
         is_archived: Optional[bool] = False,
         sort_by: Optional[str] = None,
         sort_direction: Optional[str] = None
@@ -171,10 +174,13 @@ class TaskService:
         )
 
     def update_task_status(
-        self, project_id: UUID, task_number: int, status: str
+        self,
+        project_id: UUID,
+        task_number: int,
+        # Explicitly type status as TaskStatusEnum for clarity in this function
+        status: TaskStatusEnum
     ) -> Optional[models.Task]:
-        # Delegate to CRUD update function (or a specific CRUD status update if exists)
-        # For now, use the generic update_task
+        # Delegate to CRUD update function
         task_update = TaskUpdate(status=status)
         return self.update_task(project_id, task_number, task_update)
 

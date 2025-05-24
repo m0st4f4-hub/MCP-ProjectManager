@@ -15,19 +15,34 @@ from backend.schemas.user import UserCreate, UserUpdate # Direct import
 from typing import List, Optional
 import uuid
 
+# Import password hashing library
+from passlib.context import CryptContext
+
+# Configure password hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 # Import validation helpers
 from .user_validation import username_exists
 
+# Helper function to verify passwords
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a plain password against a hashed password."""
+    return pwd_context.verify(plain_password, hashed_password)
+
+# Helper function to get password hash
+def get_password_hash(password: str) -> str:
+    """Get the hash for a given password."""
+    return pwd_context.hash(password)
 
 def create_user(db: Session, user: UserCreate) -> models.User:
     # Check if username already exists using the validation helper
     if username_exists(db, user.username):
         raise ValueError(f"Username '{user.username}' already exists")
 
-    # In a real app, you'd hash the password here
-    fake_hashed_password = user.password + "notreallyhashed"
+    # Hash the password before storing
+    hashed_password = get_password_hash(user.password)
     db_user = models.User(username=user.username,
-                          hashed_password=fake_hashed_password)
+                          hashed_password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -63,3 +78,12 @@ def delete_user(db: Session, user_id: str) -> Optional[models.User]:
         db.delete(db_user)
         db.commit()
     return db_user
+
+def authenticate_user(db: Session, username: str, password: str) -> Optional[models.User]:
+    """Authenticate a user by username and password."""
+    user = get_user_by_username(db, username)
+    if not user:
+        return None
+    if not verify_password(password, user.hashed_password):
+        return None
+    return user

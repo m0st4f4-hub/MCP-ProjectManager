@@ -23,6 +23,9 @@ from backend.schemas.file_association import TaskFileAssociation, TaskFileAssoci
 from backend.schemas.task_dependency import TaskDependency, TaskDependencyCreate # Import from task_dependency.py
 from backend.schemas.comment import Comment # Import Comment from comment.py
 
+# Import the TaskStatusEnum for router parameters
+from backend.enums import TaskStatusEnum
+
 router = APIRouter(
     tags=["Tasks"],
 )
@@ -86,8 +89,9 @@ async def get_tasks_list(
         None, description="Filter tasks by agent name."),
     search: Optional[str] = Query(
         None, description="Search term for task titles and descriptions."),
-    status: Optional[str] = Query(
-        None, description="Filter tasks by status (e.g., 'completed', 'pending')."),
+    status: Optional[TaskStatusEnum] = Query(
+        None, description="Filter tasks by status."
+    ),
     is_archived: Optional[bool] = Query(
         None,
         description="Filter by archived status. False for non-archived, True for archived, null/None for all."
@@ -614,8 +618,9 @@ async def get_all_tasks(
         None, description="Filter tasks by agent name."),
     search: Optional[str] = Query(
         None, description="Search term for task titles and descriptions."),
-    status: Optional[str] = Query(
-        None, description="Filter tasks by status (e.g., 'completed', 'pending')."),
+    status: Optional[TaskStatusEnum] = Query(
+        None, description="Filter tasks by status."
+    ),
     is_archived: Optional[bool] = Query(
         False,
         description="Filter by archived status. False for non-archived, True for archived, null/None for all."

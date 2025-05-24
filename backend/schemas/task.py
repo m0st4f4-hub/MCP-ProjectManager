@@ -16,6 +16,9 @@ from backend.schemas.task_dependency import TaskDependency
 from backend.schemas.comment import Comment
 from backend.schemas.file_association import TaskFileAssociation
 
+# Import the new TaskStatusEnum
+from backend.enums import TaskStatusEnum
+
 # Forward references for relationships (will be resolved by Pydantic)
 # Project = "backend.schemas.project.Project"  # Adjusted to reflect new location
 # Agent = "backend.schemas.agent.Agent"  # Adjusted to reflect new location
@@ -31,7 +34,8 @@ class TaskBase(BaseModel):
     """Base schema for task attributes."""
     title: str
     description: Optional[str] = None
-    status: Optional[str] = "To Do"
+    # Use the TaskStatusEnum for the status field
+    status: TaskStatusEnum = Field(TaskStatusEnum.TO_DO, description="The current status of the task.")
     is_archived: Optional[bool] = False
 
 
@@ -52,7 +56,8 @@ class TaskUpdate(BaseModel):
         None, description="New description for the task.")
     agent_id: Optional[str] = Field(
         None, description="New agent ID for the task.")
-    status: Optional[str] = Field(None, description="New status for the task.")
+    # Use the TaskStatusEnum for the status field in updates as well
+    status: Optional[TaskStatusEnum] = Field(None, description="New status for the task.")
     is_archived: Optional[bool] = Field(
         None, description="Set the archived status of the task.")
 
