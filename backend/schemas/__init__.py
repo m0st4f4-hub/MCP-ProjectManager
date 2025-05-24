@@ -17,9 +17,10 @@ All schemas imported here for easy access and to avoid circular imports.
 
 # Corrected import for base models
 from backend.models.base import (
-    Base, BaseModel, JSONText, ProjectMemberRole, ArchivedMixin,
+    Base, BaseModel as SQLABaseModel, JSONText, ProjectMemberRole, ArchivedMixin,
     generate_uuid, generate_uuid_with_hyphens
 )
+from pydantic import BaseModel # Ensure Pydantic's BaseModel is also available
 
 # Import and re-export schemas from the memory module
 from .memory import MemoryEntityCreate, MemoryEntityUpdate, MemoryObservationCreate, MemoryRelationCreate, MemoryEntity, MemoryObservation
@@ -49,7 +50,8 @@ from .workflow import (
     WorkflowBase,
     WorkflowCreate,
     WorkflowUpdate,
-    Workflow
+    Workflow,
+    WorkflowStep # Added missing WorkflowStep
 )
 
 # Import and re-export schemas from the agent_prompt_template module
@@ -157,18 +159,20 @@ from .universal_mandate import (
 )
 
 # Import agent capabilities and other related schemas (they exist in individual files)
-from backend.models.agent_capability import AgentCapability
-from backend.models.agent_forbidden_action import AgentForbiddenAction
-from backend.models.agent_verification_requirement import AgentVerificationRequirement
-from backend.models.agent_handoff_criteria import AgentHandoffCriteria
-from backend.models.agent_error_protocol import AgentErrorProtocol
+# These are models, not schemas, so they should not be imported here if we are keeping schemas and models separate.
+# from backend.models.agent_capability import AgentCapability 
+# from backend.models.agent_forbidden_action import AgentForbiddenAction
+# from backend.models.agent_verification_requirement import AgentVerificationRequirement
+# from backend.models.agent_handoff_criteria import AgentHandoffCriteria
+# from backend.models.agent_error_protocol import AgentErrorProtocol
 from .agent_behavior_log import AgentBehaviorLogCreate, AgentBehaviorLog
 
 # Explicitly define __all__ to control what is imported with `from backend.schemas import *`
 __all__ = [
     # Base utilities
-    'Base',
-    'BaseModel',
+    'Base', # From backend.models.base
+    'SQLABaseModel', # Renamed from backend.models.base.BaseModel
+    'BaseModel', # From Pydantic
     'JSONText',
     'ProjectMemberRole',
     'ArchivedMixin',
@@ -177,95 +181,92 @@ __all__ = [
 
     # Core models (these are likely schemas, the naming is a bit inconsistent)
     'User',
+    'UserBase',
+    'UserCreate',
+    'UserUpdate',
     'UserRole',
+    'UserRoleBase',
+    'UserRoleCreate',
     'Comment',
+    'CommentBase',
+    'CommentCreate',
+    'CommentUpdate',
     'Agent',
-    'AgentRule',
-    'AgentRole',
-    'Project',
-    'ProjectTemplate',
-    'ProjectMember',
-    'ProjectFileAssociation',
-    'Task',
-    'TaskStatus',
-    'TaskDependency',
-    'TaskFileAssociation',
-    'Workflow',
-    'WorkflowStep',
-    'AgentPromptTemplate',
-    'AuditLog',
-    'MemoryEntity',
-    'MemoryObservation',
-    'MemoryRelation',
-    'UniversalMandate',
-
-    # Agent Capabilities and related models/schemas
-    'AgentCapability',
-    'AgentForbiddenAction',
-    'AgentVerificationRequirement',
-    'AgentHandoffCriteria',
-    'AgentErrorProtocol',
-    'AgentBehaviorLogCreate',
-    'AgentBehaviorLog',
-
-    # Schemas with specific names
-    'MemoryEntityCreate',
-    'MemoryEntityUpdate',
-    'MemoryObservationCreate',
-    'MemoryRelationCreate',
     'AgentBase',
     'AgentCreate',
     'AgentUpdate',
+    'AgentRule',
     'AgentRuleBase',
     'AgentRuleCreate',
     'AgentRuleUpdate',
+    'AgentRole',
     'AgentRoleBase',
     'AgentRoleCreate',
     'AgentRoleUpdate',
-    'WorkflowBase',
-    'WorkflowCreate',
-    'WorkflowUpdate',
-    'AgentPromptTemplateBase',
-    'AgentPromptTemplateCreate',
-    'AgentPromptTemplateUpdate',
-    'AgentRuleViolationBase',
-    'AgentRuleViolationCreate',
-    'AgentRuleViolation',
+    'Project',
     'ProjectBase',
     'ProjectCreate',
     'ProjectUpdate',
-    'ProjectFileAssociationBase',
-    'ProjectFileAssociationCreate',
-    'ProjectMemberBase',
-    'ProjectMemberCreate',
-    'ProjectMemberUpdate',
+    'ProjectTemplate',
     'ProjectTemplateBase',
     'ProjectTemplateCreate',
     'ProjectTemplateUpdate',
+    'ProjectMember',
+    'ProjectMemberBase',
+    'ProjectMemberCreate',
+    'ProjectMemberUpdate',
+    'ProjectFileAssociation',
+    'ProjectFileAssociationBase',
+    'ProjectFileAssociationCreate',
+    'Task',
     'TaskBase',
     'TaskCreate',
     'TaskUpdate',
     'TaskInDBBase',
     'TaskInDB',
+    'TaskStatus',
     'TaskStatusBase',
     'TaskStatusCreate',
     'TaskStatusUpdate',
-    'AuditLogBase',
-    'AuditLogCreate',
-    'TaskFileAssociationBase',
-    'TaskFileAssociationCreate',
+    'TaskDependency',
     'TaskDependencyBase',
     'TaskDependencyCreate',
-    'CommentBase',
-    'CommentCreate',
-    'CommentUpdate',
-    'UserBase',
-    'UserCreate',
-    'UserUpdate',
-    'UserRoleBase',
-    'UserRoleCreate',
-    'UserRole',
+    'TaskFileAssociation',
+    'TaskFileAssociationBase',
+    'TaskFileAssociationCreate',
+    'Workflow',
+    'WorkflowBase',
+    'WorkflowCreate',
+    'WorkflowUpdate',
+    'WorkflowStep',
+    'AgentPromptTemplate',
+    'AgentPromptTemplateBase',
+    'AgentPromptTemplateCreate',
+    'AgentPromptTemplateUpdate',
+    'AuditLog',
+    'AuditLogBase',
+    'AuditLogCreate',
+    'MemoryEntity',
+    'MemoryEntityCreate',
+    'MemoryEntityUpdate',
+    'MemoryObservation',
+    'MemoryObservationCreate',
+    'MemoryRelationCreate',
+    'UniversalMandate',
     'UniversalMandateBase',
     'UniversalMandateCreate',
     'UniversalMandateUpdate',
+
+    # Agent Capabilities and related models/schemas
+    # 'AgentCapability',
+    # 'AgentForbiddenAction',
+    # 'AgentVerificationRequirement',
+    # 'AgentHandoffCriteria',
+    # 'AgentErrorProtocol',
+    'AgentBehaviorLogCreate',
+    'AgentBehaviorLog',
+    'AgentRuleViolationBase',
+    'AgentRuleViolationCreate',
+    'AgentRuleViolation',
+
 ]

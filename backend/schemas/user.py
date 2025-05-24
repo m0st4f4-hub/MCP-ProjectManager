@@ -63,5 +63,5 @@ class UserRole(UserRoleBase):
 
 
 # Resolve forward references if they are within this file or defined earlier
-# User.model_rebuild() # Explicitly rebuild User model
-# User.model_rebuild() # If UserRole is defined after User and used in List[UserRole] 
+User.model_rebuild() # Explicitly rebuild User model
+UserRole.model_rebuild() # UserRole might be used by User or vice-versa 

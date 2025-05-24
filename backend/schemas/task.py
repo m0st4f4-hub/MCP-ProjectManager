@@ -8,13 +8,21 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List
 from datetime import datetime
 
+# Direct imports for related schemas
+from backend.schemas.project import Project
+from backend.schemas.agent import Agent
+from backend.schemas.task_status import TaskStatus
+from backend.schemas.task_dependency import TaskDependency
+from backend.schemas.comment import Comment
+from backend.schemas.file_association import TaskFileAssociation
+
 # Forward references for relationships (will be resolved by Pydantic)
-Project = "backend.schemas.project.Project"  # Adjusted to reflect new location
-Agent = "backend.schemas.agent.Agent"  # Adjusted to reflect new location
-TaskStatus = "backend.schemas.task_status.TaskStatus"
-TaskDependency = "backend.schemas.task_dependency.TaskDependency"
-Comment = "backend.schemas.comment.Comment"
-TaskFileAssociation = "backend.schemas.file_association.TaskFileAssociation"
+# Project = "backend.schemas.project.Project"  # Adjusted to reflect new location
+# Agent = "backend.schemas.agent.Agent"  # Adjusted to reflect new location
+# TaskStatus = "backend.schemas.task_status.TaskStatus"
+# TaskDependency = "backend.schemas.task_dependency.TaskDependency"
+# Comment = "backend.schemas.comment.Comment"
+# TaskFileAssociation = "backend.schemas.file_association.TaskFileAssociation"
 
 # --- Task Schemas (Updated) ---
 
@@ -83,13 +91,12 @@ class Task(TaskInDBBase):
 class TaskInDB(TaskInDBBase):
     pass
 
-# Add others here if necessary based on Task dependencies
-# Project.model_rebuild() # If Project schema needs it
-# Agent.model_rebuild()   # If Agent schema needs it
-# TaskStatus.model_rebuild()
-# TaskDependency.model_rebuild()
-# Comment.model_rebuild()
-# TaskFileAssociation.model_rebuild()
+# Explicitly trigger forward reference resolution for schemas in this file
+Task.model_rebuild()
+# TaskStatus.model_rebuild() # If defined here and uses forward refs
+# TaskDependency.model_rebuild() # If defined here and uses forward refs
+# Comment.model_rebuild() # If defined here and uses forward refs
+# TaskFileAssociation.model_rebuild() # If defined here and uses forward refs
 
 # Pydantic will handle forward reference resolution for Project and Agent
 # No explicit model_rebuild calls are needed here as they are handled

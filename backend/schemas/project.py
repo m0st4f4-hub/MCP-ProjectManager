@@ -7,9 +7,10 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List, Union, Any, Dict
 from datetime import datetime
+from backend.schemas.user import User # Import User directly
 
 # Forward references for relationships
-User = "backend.schemas.user.User"
+# User = "backend.schemas.user.User" # Remove string forward reference
 # Project is defined within this file
 
 
@@ -113,7 +114,7 @@ class ProjectMember(ProjectMemberBase):
     created_at: datetime = Field(..., description="Timestamp when the membership was created.")
     updated_at: Optional[datetime] = Field(None, description="Timestamp when the membership was last updated.")
     project: Optional[Project] = Field(None, description="The project this membership is for.")
-    user: Optional[User] = Field(None, description="The user this membership is for.")
+    user: Optional[User] = Field(None, description="The user this membership is for.") # Should now use the imported User
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -123,3 +124,7 @@ class ProjectMember(ProjectMemberBase):
 # Add other schemas here if necessary
 # Project.model_rebuild()
 # User.model_rebuild() # User schema is in its own file 
+
+# Explicitly trigger forward reference resolution
+Project.model_rebuild() # For any internal forward refs in Project
+ProjectMember.model_rebuild() # For its use of Project and User 
