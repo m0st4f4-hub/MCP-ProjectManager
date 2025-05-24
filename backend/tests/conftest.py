@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 
 # Import the database components
 from backend.database import Base
-from backend.models import User, Project, Task, Agent, Comment
+from backend.models import *
 
 # Create an in-memory SQLite database for testing
 TEST_SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"

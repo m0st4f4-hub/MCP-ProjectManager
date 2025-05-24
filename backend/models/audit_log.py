@@ -11,6 +11,7 @@ from .base import Base, generate_uuid_with_hyphens # Assuming BaseModel provides
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
+    __table_args__ = {'extend_existing': True}
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=generate_uuid_with_hyphens)
     user_id: Mapped[Optional[str]] = mapped_column(String(32), ForeignKey("users.id"), nullable=True, index=True)

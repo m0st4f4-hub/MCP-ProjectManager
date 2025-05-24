@@ -10,7 +10,12 @@ from typing import List, Optional
 # Assuming BaseModel might be needed for request/response schemas
 from pydantic import BaseModel
 
-from .. import schemas  # Import schemas
+# from .. import schemas  # Removed broad import
+# Import Agent schemas directly
+from backend.schemas.agent import Agent, AgentCreate, AgentUpdate # Added direct imports
+# from backend.schemas.agent_rule import AgentRule # Removed incorrect import for AgentRule
+from backend.schemas.agent_role import AgentRole # Added import for AgentRole
+
 # Import AgentService from the service layer
 from ..services.agent_service import AgentService
 from ..crud import agents as crud_agents
@@ -28,8 +33,8 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=schemas.Agent, summary="Create Agent", operation_id="create_agent")
-def create_agent(agent: schemas.AgentCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=Agent, summary="Create Agent", operation_id="create_agent")
+def create_agent(agent: AgentCreate, db: Session = Depends(get_db)):
     """Registers a new agent.
     - **name**: Unique name for the agent (required).
     """
@@ -43,7 +48,7 @@ def create_agent(agent: schemas.AgentCreate, db: Session = Depends(get_db)):
     return agent_service.create_agent(agent=agent)
 
 
-@router.get("/", response_model=List[schemas.Agent], summary="Get Agents", operation_id="get_agents")
+@router.get("/", response_model=List[Agent], summary="Get Agents", operation_id="get_agents")
 def get_agent_list(
     search: Optional[str] = None,  # Added search parameter
     # Added status parameter (though Agent model doesn't have status yet)
@@ -60,7 +65,7 @@ def get_agent_list(
     return agents
 
 
-@router.get("/{agent_name}", response_model=schemas.Agent, summary="Get Agent by Name", tags=["Agents"], operation_id="get_agent_by_name")
+@router.get("/{agent_name}", response_model=Agent, summary="Get Agent by Name", tags=["Agents"], operation_id="get_agent_by_name")
 def get_agent_by_name(agent_name: str, db: Session = Depends(get_db)):
     """Retrieves a specific agent by its unique name."""
     # Instantiate AgentService
@@ -74,7 +79,7 @@ def get_agent_by_name(agent_name: str, db: Session = Depends(get_db)):
 # Added GET by ID for consistency
 
 
-@router.get("/id/{agent_id}", response_model=schemas.Agent, summary="Get Agent by ID", tags=["Agents"], operation_id="get_agent_by_id")
+@router.get("/id/{agent_id}", response_model=Agent, summary="Get Agent by ID", tags=["Agents"], operation_id="get_agent_by_id")
 def get_agent_by_id_endpoint(agent_id: str, db: Session = Depends(get_db)):
     # Instantiate AgentService
     agent_service = AgentService(db)
@@ -84,8 +89,8 @@ def get_agent_by_id_endpoint(agent_id: str, db: Session = Depends(get_db)):
     return db_agent
 
 
-@router.put("/{agent_id}", response_model=schemas.Agent, summary="Update Agent", tags=["Agents"], operation_id="update_agent_by_id")
-def update_agent(agent_id: str, agent_update: schemas.AgentUpdate, db: Session = Depends(get_db)):
+@router.put("/{agent_id}", response_model=Agent, summary="Update Agent", tags=["Agents"], operation_id="update_agent_by_id")
+def update_agent(agent_id: str, agent_update: AgentUpdate, db: Session = Depends(get_db)):
     # Instantiate AgentService
     agent_service = AgentService(db)
     try:
@@ -109,7 +114,7 @@ def update_agent(agent_id: str, agent_update: schemas.AgentUpdate, db: Session =
             status_code=500, detail=f"Internal server error: {e}")
 
 
-@router.delete("/{agent_id}", response_model=schemas.Agent, summary="Delete Agent", tags=["Agents"], operation_id="delete_agent_by_id")
+@router.delete("/{agent_id}", response_model=Agent, summary="Delete Agent", tags=["Agents"], operation_id="delete_agent_by_id")
 def delete_agent(agent_id: str, db: Session = Depends(get_db)):
     # Instantiate AgentService
     agent_service = AgentService(db)
@@ -119,7 +124,7 @@ def delete_agent(agent_id: str, db: Session = Depends(get_db)):
     return db_agent  # Return the deleted object
 
 
-@router.post("/{agent_id}/archive", response_model=schemas.Agent, summary="Archive Agent", tags=["Agents"], operation_id="archive_agent")
+@router.post("/{agent_id}/archive", response_model=Agent, summary="Archive Agent", tags=["Agents"], operation_id="archive_agent")
 def archive_agent_endpoint(
     agent_id: str,
     # Assuming get_agent_service provides an AgentService instance
@@ -141,7 +146,7 @@ def archive_agent_endpoint(
             status_code=500, detail=f"Failed to archive agent: {str(e)}")
 
 
-@router.post("/{agent_id}/unarchive", response_model=schemas.Agent, summary="Unarchive Agent", tags=["Agents"], operation_id="unarchive_agent")
+@router.post("/{agent_id}/unarchive", response_model=Agent, summary="Unarchive Agent", tags=["Agents"], operation_id="unarchive_agent")
 def unarchive_agent_endpoint(
     agent_id: str,
     # Assuming get_agent_service provides an AgentService instance
@@ -165,7 +170,7 @@ def unarchive_agent_endpoint(
 # --- Agent Rule Endpoints ---
 
 
-@router.post("/{agent_id}/rules/", response_model=schemas.AgentRule, summary="Add Rule to Agent", tags=["Agent Rules"], operation_id="add_rule_to_agent")
+@router.post("/{agent_id}/rules/", response_model=AgentRole, summary="Add Rule to Agent", tags=["Agent Rules"], operation_id="add_rule_to_agent")
 def add_rule_to_agent_endpoint(
     agent_id: str,
     rule_id: str,  # Assuming rule_id is passed in the request body
@@ -204,7 +209,7 @@ def remove_rule_from_agent_endpoint(
     return {"message": "Agent rule association removed successfully"}
 
 
-@router.get("/{agent_id}/rules/", response_model=List[schemas.AgentRule], summary="Get Agent Rules", tags=["Agent Rules"], operation_id="get_agent_rules")
+@router.get("/{agent_id}/rules/", response_model=List[AgentRole], summary="Get Agent Rules", tags=["Agent Rules"], operation_id="get_agent_rules")
 def get_agent_rules_endpoint(
     agent_id: str,
     # Assuming get_agent_service provides an AgentService instance

@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from unittest.mock import MagicMock
 
 # Import the validation functions
-from backend.crud.task_dependency_validation import is_circular, is_self_dependent
+from backend.crud.task_dependency_validation import is_circular_dependency
+from backend.crud.utils.dependency_utils import is_self_dependency
 
 # You would typically need to mock database or memory CRUD calls here if the validation functions
 # directly interact with them. For simplicity in this example, assuming minimal direct DB interaction within validation.
@@ -17,7 +18,7 @@ def test_is_self_dependent():
     successor_project_id = "project1"
     successor_task_number = 1
     
-    assert is_self_dependent(predecessor_project_id, predecessor_task_number, successor_project_id, successor_task_number) is True
+    assert is_self_dependency(predecessor_project_id, predecessor_task_number, successor_project_id, successor_task_number) is True
 
     # Test case where predecessor and successor tasks are different
     predecessor_project_id = "project1"
@@ -25,12 +26,12 @@ def test_is_self_dependent():
     successor_project_id = "project1"
     successor_task_number = 2
     
-    assert is_self_dependent(predecessor_project_id, predecessor_task_number, successor_project_id, successor_task_number) is False
+    assert is_self_dependency(predecessor_project_id, predecessor_task_number, successor_project_id, successor_task_number) is False
 
-def test_is_circular(db_session: Session):
-    # Mock necessary CRUD functions that is_circular might call
-    # For example, if is_circular calls get_task_dependencies_for_task, mock it here.
-    # Since is_circular is complex and likely involves graph traversal,
+def test_is_circular_dependency(db_session: Session):
+    # Mock necessary CRUD functions that is_circular_dependency might call
+    # For example, if is_circular_dependency calls get_task_dependencies_for_task, mock it here.
+    # Since is_circular_dependency is complex and likely involves graph traversal,
     # a simple test here might not fully cover it. This is a basic example.
     
     # Mock crud_task_dependencies.get_task_dependencies_for_task
@@ -55,6 +56,6 @@ def test_is_circular(db_session: Session):
     # mock_get_dependencies.return_value = ["dependency object representing Task 1 -> Task 2"]
     
     # Basic test case where no circular dependency exists
-    assert is_circular(db_session, predecessor_project_id, predecessor_task_number, successor_project_id, successor_task_number) is False
+    assert is_circular_dependency(db_session, predecessor_project_id, predecessor_task_number, successor_project_id, successor_task_number) is False
 
     # Add more complex test cases here to simulate different dependency graphs and circular conditions 

@@ -8,7 +8,9 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from .. import schemas
+# from .. import schemas # Removed broad import
+from backend.schemas.audit_log import AuditLog, AuditLogCreate # Added direct imports
+
 from ..database import get_db
 from ..services.audit_log_service import AuditLogService
 
@@ -25,12 +27,12 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
 
 @router.post(
     "/",
-    response_model=schemas.AuditLog,
+    response_model=AuditLog,
     summary="Create Audit Log Entry",
     operation_id="create_audit_log_entry"
 )
 def create_audit_log_entry_endpoint(
-    log_entry: schemas.AuditLogCreate,
+    log_entry: AuditLogCreate,
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Creates a new audit log entry."""
@@ -54,7 +56,7 @@ def create_audit_log_entry_endpoint(
 
 @router.get(
     "/{log_id}",
-    response_model=schemas.AuditLog,
+    response_model=AuditLog,
     summary="Get Audit Log Entry by ID",
     operation_id="get_audit_log_entry_by_id"
 )
@@ -74,7 +76,7 @@ def get_audit_log_entry_by_id_endpoint(
 
 @router.get(
     "/entity/{entity_type}/{entity_id}",
-    response_model=List[schemas.AuditLog],
+    response_model=List[AuditLog],
     summary="Get Audit Log Entries by Entity",
     operation_id="get_audit_log_entries_by_entity"
 )
@@ -95,7 +97,7 @@ def get_audit_log_entries_by_entity_endpoint(
 
 @router.get(
     "/user/{user_id}",
-    response_model=List[schemas.AuditLog],
+    response_model=List[AuditLog],
     summary="Get Audit Log Entries by User",
     operation_id="get_audit_log_entries_by_user"
 )

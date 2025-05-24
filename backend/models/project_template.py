@@ -2,8 +2,8 @@
 
 from sqlalchemy import String, Text, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import JSONB
-# from sqlalchemy import JSON # For SQLite or other DBs
+# from sqlalchemy.dialects.postgresql import JSONB # Removed JSONB import
+from sqlalchemy import JSON # For SQLite or other DBs # Uncommented JSON import
 from typing import Optional, Dict, Any
 import datetime
 
@@ -11,14 +11,15 @@ from .base import Base, generate_uuid_with_hyphens
 
 class ProjectTemplate(Base):
     __tablename__ = "project_templates"
+    __table_args__ = {'extend_existing': True}
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=generate_uuid_with_hyphens)
     name: Mapped[str] = mapped_column(String, unique=True, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     # template_data stores the structure, e.g., default tasks, task statuses, member roles
-    template_data: Mapped[Dict[str, Any]] = mapped_column(JSONB) 
+    # template_data: Mapped[Dict[str, Any]] = mapped_column(JSONB) # Changed column type to Text
     # For SQLite, use Text and manually handle JSON serialization/deserialization
-    # template_data: Mapped[str] = mapped_column(Text)
+    template_data: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
     updated_at: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 

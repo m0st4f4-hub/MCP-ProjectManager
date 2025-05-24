@@ -6,6 +6,7 @@ psycopg2-binary
 python-dotenv
 fastapi-mcp # From project file analysis, this seems to be the MCP package
 passlib[bcrypt] # Added for secure password hashing
+python-jose # Added to resolve ModuleNotFoundError
 
 # For CI/Dev
 flake8

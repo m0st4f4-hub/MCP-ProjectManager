@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from backend.database import get_db
 from backend.services.memory_service import MemoryService
-from backend.schemas.memory import MemoryEntity, MemoryEntityCreate, MemoryEntityUpdate, MemoryEntityBase # Assuming these schemas exist
+from backend.schemas.memory import MemoryEntity, MemoryEntityCreate, MemoryEntityUpdate, MemoryEntityBase, MemoryObservation, MemoryObservationCreate, MemoryRelation, MemoryRelationCreate # Added direct imports for MemoryRelation and MemoryRelationCreate
 
 # Import auth dependency if needed for protected endpoints
 from backend.auth import get_current_active_user # Assuming this exists
@@ -54,10 +54,30 @@ def list_memory_entities_endpoint(
     return memory_service.get_entities(skip=skip, limit=limit)
 
 # Endpoint for updating a MemoryEntity
+@router.put("/entities/{entity_id}", response_model=MemoryEntity)
+def update_entity(entity_id: int, entity_update: MemoryEntityUpdate, db: Session = Depends(get_db)):
+    """Update an existing memory entity.
+
+    Args:
+        entity_id: The ID of the entity to update.
+        entity_update: The data to update the entity with.
+
+    Returns:
+        The updated memory entity.
+
+    Raises:
+        HTTPException: If the entity is not found.
+    """
+    db_entity = memory_crud.update_memory_entity(db, entity_id=entity_id, entity_update=entity_update)
+    if db_entity is None:
+        raise HTTPException(status_code=404, detail="Entity not found")
+    return db_entity
+
+# Endpoint for updating a MemoryEntity
 @router.put("/{entity_id}", response_model=MemoryEntity)
 def update_memory_entity_endpoint(
-    entity_id: int = Path(..., description="ID of the MemoryEntity"),
-    entity_update: MemoryEntityUpdate,
+    entity_update: MemoryEntityUpdate, # Moved to be first
+    entity_id: int = Path(..., description="ID of the MemoryEntity"), # Moved and kept default
     memory_service: MemoryService = Depends(get_memory_service),
     # current_user: UserModel = Depends(get_current_active_user) # If protected
 ):
@@ -165,25 +185,6 @@ def read_entity(entity_id: int, db: Session = Depends(get_db)):
         HTTPException: If the entity is not found.
     """
     db_entity = memory_crud.get_memory_entity_by_id(db, entity_id=entity_id)
-    if db_entity is None:
-        raise HTTPException(status_code=404, detail="Entity not found")
-    return db_entity
-
-@router.patch("/entities/{entity_id}", response_model=MemoryEntity)
-def update_entity(entity_id: int, entity_update: MemoryEntityUpdate, db: Session = Depends(get_db)):
-    """Update an existing memory entity.
-
-    Args:
-        entity_id: The ID of the entity to update.
-        entity_update: The data to update the entity with.
-
-    Returns:
-        The updated memory entity.
-
-    Raises:
-        HTTPException: If the entity is not found.
-    """
-    db_entity = memory_crud.update_memory_entity(db, entity_id=entity_id, entity_update=entity_update)
     if db_entity is None:
         raise HTTPException(status_code=404, detail="Entity not found")
     return db_entity

@@ -13,14 +13,20 @@ from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from ..database import get_db
 from ..crud import rules as crud_rules
-from ..schemas import (
-    UniversalMandate, UniversalMandateCreate, UniversalMandateUpdate,
-    AgentRole, AgentRoleCreate, AgentRoleUpdate,
-    AgentPromptTemplate, AgentPromptTemplateCreate, AgentPromptTemplateUpdate,
-    AgentRuleViolation, AgentRuleViolationCreate,
-    AgentBehaviorLog, AgentBehaviorLogCreate,
-    Workflow, WorkflowCreate, WorkflowUpdate
-)
+# from ..schemas import (
+#     AgentPromptTemplate, AgentPromptTemplateCreate, AgentPromptTemplateUpdate,
+#     AgentRuleViolation, AgentRuleViolationCreate,
+#     AgentBehaviorLog, AgentBehaviorLogCreate,
+#     Workflow, WorkflowCreate, WorkflowUpdate
+# ) # Removed broad import
+
+# Import schemas directly
+from backend.schemas.agent_prompt_template import AgentPromptTemplate, AgentPromptTemplateCreate, AgentPromptTemplateUpdate
+from backend.schemas.agent_rule_violation import AgentRuleViolation, AgentRuleViolationCreate
+from backend.schemas.agent_behavior_log import AgentBehaviorLog, AgentBehaviorLogCreate
+from backend.schemas.workflow import Workflow, WorkflowCreate, WorkflowUpdate
+from backend.schemas.universal_mandate import UniversalMandate, UniversalMandateCreate, UniversalMandateUpdate
+from backend.schemas.agent_role import AgentRole, AgentRoleCreate, AgentRoleUpdate
 
 router = APIRouter(prefix="/rules", tags=["rules"])
 

@@ -3,6 +3,12 @@ Configuration package initialization.
 """
 
 from .logging_config import configure_logging
-# from .router_config import configure_routers # Removed for Alembic compatibility
+from .app_config import Settings
 
-__all__ = ['configure_logging'] # Removed 'configure_routers'
+settings = Settings()
+
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+
+__all__ = ['configure_logging', 'SECRET_KEY', 'ALGORITHM', 'ACCESS_TOKEN_EXPIRE_MINUTES']

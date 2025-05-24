@@ -144,14 +144,14 @@ async def mcp_docs(request: Request):
     }
 
 # Include routers
-app.include_router(agents.router)
-app.include_router(audit_logs.router)
-app.include_router(memory.router)
-app.include_router(mcp.router, prefix="/mcp-tools")
-app.include_router(projects.router)
-app.include_router(rules.router)
-app.include_router(tasks.router)
-app.include_router(users.router)
+app.include_router(agents.router, prefix="/api/v1", tags=["Agents"])
+app.include_router(audit_logs.router, prefix="/api/v1", tags=["Audit"])
+app.include_router(memory.router, prefix="/api/v1", tags=["Memory"])
+app.include_router(mcp.router, prefix="/api/v1/mcp-tools", tags=["Mcp Tools"])
+app.include_router(projects.router, prefix="/api/v1", tags=["Projects"])
+app.include_router(rules.router, prefix="/api/v1", tags=["Rules"])
+app.include_router(tasks.router, prefix="/api/v1", tags=["Tasks"])
+app.include_router(users.router, prefix="/api/v1", tags=["Users"])
 
 # CORS middleware
 app.add_middleware(

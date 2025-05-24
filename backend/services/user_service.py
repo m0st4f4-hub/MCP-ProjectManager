@@ -1,7 +1,11 @@
 from sqlalchemy.orm import Session
-from .. import models, schemas
+from .. import models
+# from .. import schemas # Removed broad import
 from typing import List, Optional
 from datetime import datetime, timedelta
+
+# Import schema models directly
+from backend.schemas.user import UserCreate, UserUpdate # Added direct imports
 
 # Import token generation library
 from jose import JWTError, jwt
@@ -57,7 +61,7 @@ class UserService:
         """
         return get_users(self.db, skip=skip, limit=limit)
 
-    def create_user(self, user_create: schemas.UserCreate) -> models.User:
+    def create_user(self, user_create: UserCreate) -> models.User:
         """
         Create a new user.
         
@@ -87,7 +91,7 @@ class UserService:
                     raise
                 raise ValidationError(f"Error creating user: {str(e)}")
 
-    def update_user(self, user_id: str, user_update: schemas.UserUpdate) -> Optional[models.User]:
+    def update_user(self, user_id: str, user_update: UserUpdate) -> Optional[models.User]:
         # Delegate to CRUD update function
         return update_user(self.db, user_id, user_update)
 
