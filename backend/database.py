@@ -10,7 +10,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
-from backend.config.app_config import settings # Import settings
 
 # --- SQLite Configuration (Default) ---
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///../sql_app.db") # Use os.getenv or default
@@ -37,12 +36,10 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Dependency to get DB session
-
-
 def get_db():
-    print("[get_db] Creating database session...")
-    db = SessionLocal()
     try:
+        print("[get_db] Creating database session...")
+        db = SessionLocal()
         print("[get_db] Yielding database session...")
         yield db
     finally:

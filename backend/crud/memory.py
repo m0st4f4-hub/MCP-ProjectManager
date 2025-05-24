@@ -30,7 +30,7 @@ def create_memory_entity(db: Session, entity: MemoryEntityCreate) -> MemoryEntit
     db_entity = MemoryEntityModel(
         entity_type=entity.entity_type,
         content=entity.content,
-        metadata=entity.metadata,
+        entity_metadata=entity.entity_metadata,
         source=entity.source,
         source_metadata=entity.source_metadata,
         created_by_user_id=entity.created_by_user_id

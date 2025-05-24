@@ -47,7 +47,7 @@ def create_task(db: Session, project_id: str, task: TaskCreate, agent_id: Option
         task_number=next_task_number,
         title=task.title,
         description=task.description,
-        status=task.status.value if isinstance(task.status, TaskStatusEnum) else task.status,
+        status=task.status if isinstance(task.status, models.TaskStatusEnum) else task.status,
         is_archived=task.is_archived,
         agent_id=agent_id_to_assign # Use the validated agent_id
     )
@@ -101,7 +101,7 @@ def update_task(db: Session, task_id: str, task: TaskUpdate) -> Optional[models.
         if task.description is not None:
             db_task.description = task.description
         if task.status is not None:
-            db_task.status = task.status.value if isinstance(task.status, TaskStatusEnum) else task.status
+            db_task.status = task.status if isinstance(task.status, models.TaskStatusEnum) else task.status
 
         db.commit()
         db.refresh(db_task)
@@ -154,7 +154,7 @@ def update_task_by_project_and_number(
         if task.description is not None:
             db_task.description = task.description
         if task.status is not None:
-            db_task.status = task.status.value if isinstance(task.status, TaskStatusEnum) else task.status
+            db_task.status = task.status if isinstance(task.status, models.TaskStatusEnum) else task.status
         if task.is_archived is not None:
             db_task.is_archived = task.is_archived
 

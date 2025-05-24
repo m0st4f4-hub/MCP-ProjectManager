@@ -65,7 +65,7 @@ class MemoryService:
         entity_create = MemoryEntityCreate(
             entity_type="file",
             content=file_content,
-            metadata=file_info,
+            entity_metadata=file_info,
             source="file_ingestion",
             source_metadata={"path": file_path},
             created_by_user_id=user_id

@@ -1,18 +1,18 @@
-"""initial full sync
+"""initial_schema
 
-Revision ID: c7ee47a6526d
+Revision ID: 3c6e0c2ab00c
 Revises: 
-Create Date: 2025-05-24 20:12:43.623518
+Create Date: 2025-05-24 22:06:48.743318
 
 """
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'c7ee47a6526d'
+revision: str = '3c6e0c2ab00c'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -42,17 +42,6 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_agents_id'), 'agents', ['id'], unique=False)
     op.create_index(op.f('ix_agents_name'), 'agents', ['name'], unique=True)
-    op.create_table('memory_entities',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('type', sa.String(), nullable=False),
-    sa.Column('name', sa.String(), nullable=False),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('metadata_', sa.JSON(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_memory_entities_id'), 'memory_entities', ['id'], unique=False)
-    op.create_index(op.f('ix_memory_entities_name'), 'memory_entities', ['name'], unique=True)
-    op.create_index(op.f('ix_memory_entities_type'), 'memory_entities', ['type'], unique=False)
     op.create_table('project_templates',
     sa.Column('id', sa.String(length=32), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
@@ -205,43 +194,21 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_audit_logs_id'), 'audit_logs', ['id'], unique=False)
-    op.create_table('memory_observations',
+    op.create_table('memory_entities',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('entity_id', sa.Integer(), nullable=False),
-    sa.Column('content', sa.Text(), nullable=False),
+    sa.Column('entity_type', sa.String(), nullable=False),
+    sa.Column('content', sa.Text(), nullable=True),
+    sa.Column('entity_metadata', postgresql.JSONB(astext_type=Text()), nullable=True),
     sa.Column('source', sa.String(), nullable=True),
-    sa.Column('metadata_', sa.Text(), nullable=True),
-    sa.Column('timestamp', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['entity_id'], ['memory_entities.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_memory_observations_id'), 'memory_observations', ['id'], unique=False)
-    op.create_table('memory_relations',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('from_entity_id', sa.Integer(), nullable=False),
-    sa.Column('to_entity_id', sa.Integer(), nullable=False),
-    sa.Column('relation_type', sa.String(), nullable=False),
-    sa.Column('metadata_', sa.JSON(), nullable=True),
+    sa.Column('source_metadata', postgresql.JSONB(astext_type=Text()), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.ForeignKeyConstraint(['from_entity_id'], ['memory_entities.id'], ),
-    sa.ForeignKeyConstraint(['to_entity_id'], ['memory_entities.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('from_entity_id', 'to_entity_id', 'relation_type', name='uq_from_to_relation')
-    )
-    op.create_index(op.f('ix_memory_relations_id'), 'memory_relations', ['id'], unique=False)
-    op.create_index(op.f('ix_memory_relations_relation_type'), 'memory_relations', ['relation_type'], unique=False)
-    op.create_table('project_file_associations',
-    sa.Column('id', sa.String(length=32), nullable=False),
-    sa.Column('project_id', sa.String(length=32), nullable=False),
-    sa.Column('file_memory_entity_id', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.ForeignKeyConstraint(['file_memory_entity_id'], ['memory_entities.id'], ),
-    sa.ForeignKeyConstraint(['project_id'], ['projects.id'], ),
+    sa.Column('created_by_user_id', sa.String(length=32), nullable=True),
+    sa.ForeignKeyConstraint(['created_by_user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_project_file_associations_file_memory_entity_id'), 'project_file_associations', ['file_memory_entity_id'], unique=False)
+    op.create_index(op.f('ix_memory_entities_entity_type'), 'memory_entities', ['entity_type'], unique=False)
+    op.create_index(op.f('ix_memory_entities_id'), 'memory_entities', ['id'], unique=False)
     op.create_table('project_members',
     sa.Column('id', sa.String(length=32), nullable=False),
     sa.Column('project_id', sa.String(length=32), nullable=False),
@@ -260,7 +227,7 @@ def upgrade() -> None:
     sa.Column('title', sa.String(), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('agent_id', sa.String(length=32), nullable=True),
-    sa.Column('status', sa.String(), nullable=False),
+    sa.Column('status', sa.Enum('TO_DO', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED', 'CANCELLED', name='taskstatusenum'), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('is_archived', sa.Boolean(), nullable=False),
@@ -272,7 +239,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_tasks_title'), 'tasks', ['title'], unique=False)
     op.create_table('user_roles',
     sa.Column('user_id', sa.String(length=32), nullable=False),
-    sa.Column('role_name', sa.String(), nullable=False),
+    sa.Column('role_name', sa.Enum('ADMIN', 'USER', 'AGENT', name='userroleenum'), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('user_id', 'role_name')
     )
@@ -353,6 +320,43 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_comments_id'), 'comments', ['id'], unique=False)
+    op.create_table('memory_observations',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('entity_id', sa.Integer(), nullable=False),
+    sa.Column('content', sa.Text(), nullable=False),
+    sa.Column('source', sa.String(), nullable=True),
+    sa.Column('metadata_', sa.Text(), nullable=True),
+    sa.Column('timestamp', sa.DateTime(), nullable=False),
+    sa.ForeignKeyConstraint(['entity_id'], ['memory_entities.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_memory_observations_id'), 'memory_observations', ['id'], unique=False)
+    op.create_table('memory_relations',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('from_entity_id', sa.Integer(), nullable=False),
+    sa.Column('to_entity_id', sa.Integer(), nullable=False),
+    sa.Column('relation_type', sa.String(), nullable=False),
+    sa.Column('metadata_', sa.JSON(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['from_entity_id'], ['memory_entities.id'], ),
+    sa.ForeignKeyConstraint(['to_entity_id'], ['memory_entities.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('from_entity_id', 'to_entity_id', 'relation_type', name='uq_from_to_relation')
+    )
+    op.create_index(op.f('ix_memory_relations_id'), 'memory_relations', ['id'], unique=False)
+    op.create_index(op.f('ix_memory_relations_relation_type'), 'memory_relations', ['relation_type'], unique=False)
+    op.create_table('project_file_associations',
+    sa.Column('id', sa.String(length=32), nullable=False),
+    sa.Column('project_id', sa.String(length=32), nullable=False),
+    sa.Column('file_memory_entity_id', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['file_memory_entity_id'], ['memory_entities.id'], ),
+    sa.ForeignKeyConstraint(['project_id'], ['projects.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_project_file_associations_file_memory_entity_id'), 'project_file_associations', ['file_memory_entity_id'], unique=False)
     op.create_table('task_dependencies',
     sa.Column('id', sa.String(length=32), nullable=False),
     sa.Column('predecessor_project_id', sa.String(length=32), nullable=False),
@@ -387,6 +391,13 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_task_file_associations_file_memory_entity_id'), table_name='task_file_associations')
     op.drop_table('task_file_associations')
     op.drop_table('task_dependencies')
+    op.drop_index(op.f('ix_project_file_associations_file_memory_entity_id'), table_name='project_file_associations')
+    op.drop_table('project_file_associations')
+    op.drop_index(op.f('ix_memory_relations_relation_type'), table_name='memory_relations')
+    op.drop_index(op.f('ix_memory_relations_id'), table_name='memory_relations')
+    op.drop_table('memory_relations')
+    op.drop_index(op.f('ix_memory_observations_id'), table_name='memory_observations')
+    op.drop_table('memory_observations')
     op.drop_index(op.f('ix_comments_id'), table_name='comments')
     op.drop_table('comments')
     op.drop_index(op.f('ix_agent_rule_violations_agent_name'), table_name='agent_rule_violations')
@@ -399,13 +410,9 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_tasks_title'), table_name='tasks')
     op.drop_table('tasks')
     op.drop_table('project_members')
-    op.drop_index(op.f('ix_project_file_associations_file_memory_entity_id'), table_name='project_file_associations')
-    op.drop_table('project_file_associations')
-    op.drop_index(op.f('ix_memory_relations_relation_type'), table_name='memory_relations')
-    op.drop_index(op.f('ix_memory_relations_id'), table_name='memory_relations')
-    op.drop_table('memory_relations')
-    op.drop_index(op.f('ix_memory_observations_id'), table_name='memory_observations')
-    op.drop_table('memory_observations')
+    op.drop_index(op.f('ix_memory_entities_id'), table_name='memory_entities')
+    op.drop_index(op.f('ix_memory_entities_entity_type'), table_name='memory_entities')
+    op.drop_table('memory_entities')
     op.drop_index(op.f('ix_audit_logs_id'), table_name='audit_logs')
     op.drop_table('audit_logs')
     op.drop_table('agent_verification_requirements')
@@ -431,10 +438,6 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_project_templates_name'), table_name='project_templates')
     op.drop_index(op.f('ix_project_templates_id'), table_name='project_templates')
     op.drop_table('project_templates')
-    op.drop_index(op.f('ix_memory_entities_type'), table_name='memory_entities')
-    op.drop_index(op.f('ix_memory_entities_name'), table_name='memory_entities')
-    op.drop_index(op.f('ix_memory_entities_id'), table_name='memory_entities')
-    op.drop_table('memory_entities')
     op.drop_index(op.f('ix_agents_name'), table_name='agents')
     op.drop_index(op.f('ix_agents_id'), table_name='agents')
     op.drop_table('agents')

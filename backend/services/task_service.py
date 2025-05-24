@@ -212,7 +212,7 @@ class TaskService:
         # Delegate to TaskFileAssociationService
         # Assuming the service takes project_id, task_number and file_memory_entity_id
         return self.file_association_service.associate_file_with_task(
-             task_project_id=project_id, task_task_number=task_number, file_memory_entity_id=file_memory_entity_id
+             task_project_id=str(project_id), task_task_number=task_number, file_memory_entity_id=file_memory_entity_id
         )
 
     def disassociate_file_from_task(
@@ -263,27 +263,27 @@ class TaskService:
     def get_files_for_task(self, task_project_id: UUID, task_task_number: int, sort_by: Optional[str] = None, sort_direction: Optional[str] = None, filename: Optional[str] = None) -> List[models.TaskFileAssociation]:
         # Delegate to TaskFileAssociationService
         return self.file_association_service.get_files_for_task(
-            task_project_id=task_project_id, task_task_number=task_task_number,
+            task_project_id=str(task_project_id), task_task_number=task_task_number,
             sort_by=sort_by, sort_direction=sort_direction, filename=filename
         )
 
     def get_dependencies_for_task(self, task_project_id: UUID, task_task_number: int, sort_by: Optional[str] = None, sort_direction: Optional[str] = None, dependency_type: Optional[str] = None) -> List[models.TaskDependency]:
         # Delegate to TaskDependencyService
         return self.dependency_service.get_task_dependencies(
-            task_project_id=task_project_id, task_task_number=task_task_number,
+            task_project_id=str(task_project_id), task_task_number=task_task_number,
             sort_by=sort_by, sort_direction=sort_direction, dependency_type=dependency_type
         )
 
     def get_predecessor_tasks(self, task_project_id: UUID, task_task_number: int, sort_by: Optional[str] = None, sort_direction: Optional[str] = None, dependency_type: Optional[str] = None) -> List[models.TaskDependency]:
         # Delegate to TaskDependencyService
         return self.dependency_service.get_predecessor_tasks(
-            task_project_id=task_project_id, task_task_number=task_task_number,
+            task_project_id=str(task_project_id), task_task_number=task_task_number,
             sort_by=sort_by, sort_direction=sort_direction, dependency_type=dependency_type
         )
 
     def get_successor_tasks(self, task_project_id: UUID, task_task_number: int, sort_by: Optional[str] = None, sort_direction: Optional[str] = None, dependency_type: Optional[str] = None) -> List[models.TaskDependency]:
         # Delegate to TaskDependencyService
         return self.dependency_service.get_successor_tasks(
-            task_project_id=task_project_id, task_task_number=task_task_number,
+            task_project_id=str(task_project_id), task_task_number=task_task_number,
             sort_by=sort_by, sort_direction=sort_direction, dependency_type=dependency_type
         )

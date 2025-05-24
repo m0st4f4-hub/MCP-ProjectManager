@@ -22,8 +22,9 @@ from sqlalchemy import text
 from typing import Dict, Any
 
 # Local imports
-from backend.database import get_db, Base, engine #, SessionLocal # SessionLocal not used here
-# from backend.models import User as UserModel # Example, if you needed User model directly
+from backend.database import get_db, Base, engine
+# Import middleware initialization
+from backend.middleware import init_middleware
 
 # Import routers
 from backend.routers import mcp, projects, agents, audit_logs, memory, rules, tasks, users

@@ -30,7 +30,7 @@ class Task(Base, BaseModel, ArchivedMixin):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     agent_id: Mapped[Optional[str]] = mapped_column(
         String(32), ForeignKey("agents.id"), nullable=True)
-    status: Mapped[TaskStatusEnum] = mapped_column(Enum(TaskStatusEnum), default=TaskStatusEnum.TO_DO.value)
+    status: Mapped[TaskStatusEnum] = mapped_column(Enum(TaskStatusEnum), default=TaskStatusEnum.TO_DO)
 
     # Relationships
     project = relationship("Project", back_populates="tasks")

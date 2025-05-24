@@ -85,10 +85,10 @@ class Task(TaskInDBBase):
         [], description="Tasks that depend on this task (populated from ORM).")
     dependencies_as_successor: List[TaskDependency] = Field(
         [], description="Tasks this task depends on (populated from ORM).")
-    # task_files: List[TaskFileAssociation] = Field(
-    #    [], description="Files associated with this task (populated from ORM).") # Uncomment when model relationship is active
-    # comments: List[Comment] = Field(
-    #    [], description="Comments on this task (populated from ORM).") # Uncomment when model relationship is active
+    task_files: List[TaskFileAssociation] = Field(
+        [], description="Files associated with this task (populated from ORM).")
+    comments: List[Comment] = Field(
+        [], description="Comments on this task (populated from ORM).")
 
     model_config = ConfigDict(from_attributes=True)
 
