@@ -79,7 +79,9 @@ def db_session(engine):
 
 @pytest.fixture
 def test_user(db_session):
-    """Create a test user."""
+    """Create a test user with ADMIN role."""
+    from backend.models.user import UserRole
+    from backend.enums import UserRoleEnum
     user = User(
         username="testuser",
         hashed_password="hashed_password_for_test",
@@ -88,6 +90,11 @@ def test_user(db_session):
         disabled=False
     )
     db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    # Assign ADMIN role
+    admin_role = UserRole(user_id=user.id, role_name=UserRoleEnum.ADMIN)
+    db_session.add(admin_role)
     db_session.commit()
     db_session.refresh(user)
     return user
