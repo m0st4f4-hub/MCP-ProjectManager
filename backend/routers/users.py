@@ -9,11 +9,13 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
 
-from .. import schemas
+# from .. import schemas # Remove the old import
 from ..database import get_db
 from ..services.user_service import UserService
 from ..services.user_role_service import UserRoleService
 
+# Import specific schema classes from their files
+from backend.schemas.user import User, UserCreate, UserUpdate # Import User, UserCreate, UserUpdate from user.py
 
 # Placeholder for token related logic (e.g., SECRET_KEY, ALGORITHM, Token schemas)
 # Should be moved to a separate auth module later
@@ -39,9 +41,9 @@ def get_user_role_service(db: Session = Depends(get_db)) -> UserRoleService:
     return UserRoleService(db)
 
 
-@router.post("/", response_model=schemas.User)
+@router.post("/", response_model=User)
 def create_user(
-    user: schemas.UserCreate,
+    user: UserCreate,
     user_service: UserService = Depends(get_user_service)
 ):
     """Create a new user."""
@@ -54,7 +56,7 @@ def create_user(
     return user_service.create_user(user=user)
 
 
-@router.get("/{user_id}", response_model=schemas.User)
+@router.get("/{user_id}", response_model=User)
 def read_user(
     user_id: str,
     user_service: UserService = Depends(get_user_service)
@@ -66,7 +68,7 @@ def read_user(
     return db_user
 
 
-@router.get("/", response_model=List[schemas.User])
+@router.get("/", response_model=List[User])
 def read_users(
     skip: int = 0,
     limit: int = 100,
@@ -77,10 +79,10 @@ def read_users(
     return users
 
 
-@router.put("/{user_id}", response_model=schemas.User)
+@router.put("/{user_id}", response_model=User)
 def update_user(
     user_id: str,
-    user_update: schemas.UserUpdate,
+    user_update: UserUpdate,
     user_service: UserService = Depends(get_user_service)
 ):
     """Update a user by ID."""
@@ -96,7 +98,7 @@ def update_user(
     return updated_user
 
 
-@router.delete("/{user_id}", response_model=schemas.User)
+@router.delete("/{user_id}", response_model=User)
 def delete_user(
     user_id: str,
     user_service: UserService = Depends(get_user_service)
@@ -138,12 +140,12 @@ async def login_for_access_token(
         "message": (
             "Authentication successful (placeholder for token)"
         ),
-        "user": schemas.User.from_orm(user)
+        "user": User.from_orm(user)
     }
 
 # Example of a protected endpoint (requires authentication)
-# @router.get("/me/", response_model=schemas.User)
-# async def read_users_me(current_user: schemas.User = Depends(get_current_active_user)):
+# @router.get("/me/", response_model=User)
+# async def read_users_me(current_user: User = Depends(get_current_active_user)):
 #     return current_user
 
 # Placeholder for get_current_active_user (requires token verification logic)
@@ -151,7 +153,7 @@ async def login_for_access_token(
 #     # Verify token and return user
 #     pass
 
-# async def get_current_active_user(current_user: schemas.User = Depends(get_current_user)):
+# async def get_current_active_user(current_user: User = Depends(get_current_user)):
 #     if current_user.disabled:
 #         raise HTTPException(status_code=400, detail="Inactive user")
 #     return current_user

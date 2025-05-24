@@ -1,9 +1,12 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
-from backend import models, schemas
+from backend import models
 from typing import List, Optional, Dict, Any
 import logging
 import json # Needed for json.dumps
+
+# Import specific schema classes from their files
+from backend.schemas.memory import MemoryEntityCreate, MemoryEntityUpdate, MemoryObservationCreate, MemoryRelationCreate # Import from the specific file
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +16,7 @@ class MemoryService:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_memory_entity(self, entity: schemas.MemoryEntityCreate) -> models.MemoryEntity:
+    def create_memory_entity(self, entity: MemoryEntityCreate) -> models.MemoryEntity:
         """Creates a new memory entity."""
         try:
             db_entity = models.MemoryEntity(
@@ -56,7 +59,7 @@ class MemoryService:
         """Gets a list of memory entities filtered by type."""
         return self.db.query(models.MemoryEntity).filter(models.MemoryEntity.type == entity_type).offset(skip).limit(limit).all()
 
-    def update_memory_entity(self, entity_id: int, entity_update: schemas.MemoryEntityUpdate) -> Optional[models.MemoryEntity]:
+    def update_memory_entity(self, entity_id: int, entity_update: MemoryEntityUpdate) -> Optional[models.MemoryEntity]:
         """Updates an existing memory entity."""
         db_entity = self.get_memory_entity_by_id(entity_id)
         if db_entity:
@@ -77,7 +80,7 @@ class MemoryService:
             logger.info(f"Deleted memory entity: {entity_id}")
         return db_entity
 
-    def add_observation_to_entity(self, entity_id: int, observation: schemas.MemoryObservationCreate) -> models.MemoryObservation:
+    def add_observation_to_entity(self, entity_id: int, observation: MemoryObservationCreate) -> models.MemoryObservation:
         """Adds an observation to a memory entity."""
         db_entity = self.get_memory_entity_by_id(entity_id)
         if db_entity is None:
@@ -105,7 +108,7 @@ class MemoryService:
             query = query.filter(models.MemoryObservation.content.like(f"%{search_query}%"))
         return query.offset(skip).limit(limit).all()
 
-    def create_memory_relation(self, relation: schemas.MemoryRelationCreate) -> models.MemoryRelation:
+    def create_memory_relation(self, relation: MemoryRelationCreate) -> models.MemoryRelation:
         """Creates a new relationship between two entities."""
         from_entity = self.get_memory_entity_by_id(entity_id=relation.from_entity_id)
         to_entity = self.get_memory_entity_by_id(entity_id=relation.to_entity_id)

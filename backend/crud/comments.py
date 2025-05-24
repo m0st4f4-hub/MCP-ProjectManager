@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session, joinedload
-from .. import models, schemas
+from .. import models
+from backend.schemas.comment import CommentCreate, CommentUpdate
 from typing import List, Optional
 import uuid
 
@@ -31,7 +32,7 @@ def get_comments_by_task(
     )
 
 # Function to create a new comment
-def create_comment(db: Session, comment_create: schemas.CommentCreate) -> models.Comment:
+def create_comment(db: Session, comment_create: CommentCreate) -> models.Comment:
     # Validate existence of associated entities
     if comment_create.task_project_id and comment_create.task_task_number is not None:
         if not task_exists(db, comment_create.task_project_id, comment_create.task_task_number):
@@ -62,7 +63,7 @@ def create_comment(db: Session, comment_create: schemas.CommentCreate) -> models
     return db_comment_entry
 
 # Function to update a comment by ID
-def update_comment(db: Session, comment_id: str, comment_update: schemas.CommentUpdate) -> Optional[models.Comment]:
+def update_comment(db: Session, comment_id: str, comment_update: CommentUpdate) -> Optional[models.Comment]:
     db_comment = get_comment(db, comment_id)
     if db_comment:
         update_data = comment_update.model_dump(exclude_unset=True)

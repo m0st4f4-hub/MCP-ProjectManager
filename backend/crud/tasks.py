@@ -1,13 +1,15 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
-from .. import models, schemas
+from .. import models
+# from .. import models, schemas # Removed schema import
+from backend.schemas.task import TaskCreate, TaskUpdate
 from typing import List, Optional
 
 # Import validation helpers
 from .task_validation import project_exists, agent_exists
 
 
-def create_task(db: Session, project_id: str, task: schemas.TaskCreate, agent_id: Optional[str] = None) -> models.Task:
+def create_task(db: Session, project_id: str, task: TaskCreate, agent_id: Optional[str] = None) -> models.Task:
     """Create a new task for a given project."""
     # Validate that the project exists
     if not project_exists(db, project_id):
@@ -72,7 +74,7 @@ def get_task_by_project_and_number(db: Session, project_id: str, task_number: in
     ).first()
 
 
-def update_task(db: Session, task_id: str, task: schemas.TaskUpdate) -> Optional[models.Task]:
+def update_task(db: Session, task_id: str, task: TaskUpdate) -> Optional[models.Task]:
     """Update a task by ID."""
     db_task = get_task(db, task_id)
     if db_task:
@@ -124,7 +126,7 @@ def update_task_by_project_and_number(
     db: Session,
     project_id: str,
     task_number: int,
-    task: schemas.TaskUpdate
+    task: TaskUpdate
 ) -> Optional[models.Task]:
     """Update a task by project ID and task number."""
     db_task = get_task_by_project_and_number(db, project_id, task_number)

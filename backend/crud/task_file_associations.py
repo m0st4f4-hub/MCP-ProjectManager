@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import List, Optional, Union
 from ..models import TaskFileAssociation
-from ..schemas import TaskFileAssociationCreate, MemoryEntityCreate, MemoryRelationCreate
+# from ..schemas import TaskFileAssociationCreate, MemoryEntityCreate, MemoryRelationCreate # Removed package import
+from backend.schemas.file_association import TaskFileAssociationCreate
+from backend.schemas.memory import MemoryEntityCreate, MemoryRelationCreate
 import uuid
 
 # Import the memory crud operations

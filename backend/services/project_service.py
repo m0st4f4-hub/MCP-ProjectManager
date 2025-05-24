@@ -6,9 +6,12 @@
 
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, func
-from .. import models, schemas
+from .. import models
 from typing import List, Optional
 import uuid
+
+# Import specific schema classes from their files
+from backend.schemas.project import ProjectCreate, ProjectUpdate, ProjectMemberCreate, ProjectFileAssociationCreate
 
 # Import CRUD operations
 from backend.crud.projects import (
@@ -21,10 +24,14 @@ from backend.crud.projects import (
     add_project_member,
     remove_project_member,
     get_project_members,
-    associate_project_file,
-    disassociate_project_file,
-    get_project_files,
     get_tasks_by_project
+)
+# Import file association CRUD from the correct module
+from backend.crud.project_file_associations import (
+    associate_file_with_project,
+    disassociate_file_from_project,
+    get_files_for_project,
+    get_project_file_association
 )
 
 # No need to import validation helpers in service, they are used in CRUD
@@ -58,12 +65,12 @@ class ProjectService:
         # Delegate to CRUD
         return get_projects(self.db, skip, search, status, is_archived)
 
-    def create_project(self, project: schemas.ProjectCreate) -> models.Project:
+    def create_project(self, project: ProjectCreate) -> models.Project:
         # Delegate to CRUD
         return create_project(self.db, project)
 
     def update_project(
-        self, project_id: str, project_update: schemas.ProjectUpdate
+        self, project_id: str, project_update: ProjectUpdate
     ) -> Optional[models.Project]:
         # Delegate to CRUD
         return update_project(self.db, project_id, project_update)
@@ -77,7 +84,7 @@ class ProjectService:
     ) -> Optional[models.ProjectMember]:
         # Delegate to CRUD
         # Create the schema object here or expect it as input if service is higher level
-        project_member_schema = schemas.ProjectMemberCreate(project_id=project_id, user_id=user_id, role=role)
+        project_member_schema = ProjectMemberCreate(project_id=project_id, user_id=user_id, role=role)
         return add_project_member(self.db, project_member_schema)
 
     def remove_member_from_project(
@@ -91,22 +98,24 @@ class ProjectService:
         return get_project_members(self.db, project_id)
 
     def associate_file_with_project(
-        self, project_id: str, file_id: str
+        self, project_id: str, file_memory_entity_id: int
     ) -> Optional[models.ProjectFileAssociation]:
-        # Delegate to CRUD
-        # Create schema if necessary, or expect it as input
-        project_file_association_schema = schemas.ProjectFileAssociationCreate(project_id=project_id, file_id=file_id)
-        return associate_project_file(self.db, project_file_association_schema)
+        # Delegate to CRUD in project_file_associations
+        return associate_file_with_project(self.db, project_id, file_memory_entity_id)
 
     def disassociate_file_from_project(
-        self, project_id: str, file_id: str
+        self, project_id: str, file_memory_entity_id: int
     ) -> bool:
-        # Delegate to CRUD
-        return disassociate_project_file(self.db, project_id, file_id)
+        # Delegate to CRUD in project_file_associations
+        return disassociate_file_from_project(self.db, project_id, file_memory_entity_id)
 
     def get_project_files(self, project_id: str) -> List[models.ProjectFileAssociation]:
-        # Delegate to CRUD
-        return get_project_files(self.db, project_id)
+        # Delegate to CRUD in project_file_associations
+        return get_files_for_project(self.db, project_id)
+
+    def get_project_file_association(self, project_id: str, file_memory_entity_id: int) -> Optional[models.ProjectFileAssociation]:
+        # Delegate to CRUD in project_file_associations
+        return get_project_file_association(self.db, project_id, file_memory_entity_id)
 
     def get_tasks_by_project(self, project_id: str, search: Optional[str] = None, status: Optional[str] = None, is_archived: Optional[bool] = False) -> List[models.Task]:
         # Delegate to CRUD

@@ -1,10 +1,14 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
-from .. import models, schemas
+from .. import models
+# from .. import models, schemas # Remove the old import
 import uuid
 from typing import List, Optional
 # Keep HTTPException for raising exceptions within the service if appropriate
 from fastapi import HTTPException
+
+# Import specific schema classes from their files
+from backend.schemas.agent import AgentCreate, AgentUpdate # Import from the specific file
 
 # Import CRUD operations
 from backend.crud.agents import (
@@ -37,7 +41,7 @@ class AgentService:
         """
         return get_agents(self.db)
 
-    def create_agent(self, agent: schemas.AgentCreate) -> models.Agent:
+    def create_agent(self, agent: AgentCreate) -> models.Agent:
         # Use validation helper
         if agent_name_exists(self.db, agent.name):
             raise ValueError(f"Agent name '{agent.name}' already exists")
@@ -46,7 +50,7 @@ class AgentService:
         # The CRUD function handles ID generation
         return create_agent(self.db, agent)
 
-    def update_agent(self, agent_id: str, agent_update: schemas.AgentUpdate) -> Optional[models.Agent]:
+    def update_agent(self, agent_id: str, agent_update: AgentUpdate) -> Optional[models.Agent]:
         # Get the existing agent using CRUD. Allow updating archived agents.
         db_agent = get_agent(self.db, agent_id, is_archived=None) # Assuming CRUD get_agent supports is_archived
         if not db_agent:
@@ -64,11 +68,12 @@ class AgentService:
         # Given CRUD already has update_agent, let's use it
         return update_agent(self.db, agent_id, agent_update)
 
-    def delete_agent(self, agent_id: str) -> bool:
+    def delete_agent(self, agent_id: str) -> Optional[models.Agent]:
         # Delegate to CRUD delete function. Allow deleting archived agents.
-        # Assuming CRUD delete_agent returns bool or None based on success
+        # Assuming CRUD delete_agent returns Optional[Agent] or None
         result = delete_agent(self.db, agent_id) # Assuming CRUD delete returns Optional[Agent] or None
-        return result is not None # Convert CRUD return to boolean service expectation
+        # The router expects the Agent object or None, not a boolean.
+        return result # Return CRUD result directly
 
     # Placeholder for Agent archival logic if needed in the future
     def archive_agent(self, agent_id: str) -> Optional[models.Agent]:

@@ -28,6 +28,12 @@ from backend.database import get_db, Base, engine #, SessionLocal # SessionLocal
 # Import routers
 from backend.routers import mcp, projects, agents, audit_logs, memory, rules, tasks, users
 
+# Add import for MCP (mock if not available)
+try:
+    from fastapi_mcp import MCPClient
+except ImportError:
+    MCPClient = None
+
 logger = logging.getLogger(__name__)
 
 # Create all tables in the database
@@ -61,6 +67,17 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# --- MCP Instance Initialization ---
+if MCPClient is not None:
+    mcp = MCPClient(app, rules_dir=".cursor/rules")
+    app.state.mcp_instance = mcp
+else:
+    # Mock MCP instance for /mcp-docs
+    class MockMCP:
+        def __init__(self):
+            self.tools = {}
+    app.state.mcp_instance = MockMCP()
+
 # --- Health Check and Basic Routes ---
 @app.get("/")
 async def read_root():
@@ -83,6 +100,43 @@ async def test_mcp(request: Request) -> Dict[str, Any]:
         "message": "MCP Test Endpoint",
         "headers": dict(request.headers),
         "client_host": request.client.host if request.client else "unknown"
+    }
+
+@app.get("/mcp-docs", tags=["MCP"], summary="MCP Tools and Route Documentation")
+async def mcp_docs(request: Request):
+    mcp_instance = getattr(request.app.state, "mcp_instance", None)
+    tools = getattr(mcp_instance, "tools", {}) if mcp_instance else {}
+    # Gather route info
+    routes = []
+    for route in request.app.routes:
+        if route.path in ["/openapi.json", "/docs", "/redoc"]:
+            continue
+        if hasattr(route, "methods"):
+            methods = list(route.methods)
+        else:
+            methods = []
+        routes.append({
+            "path": route.path,
+            "name": getattr(route, "name", ""),
+            "description": getattr(route, "description", ""),
+            "methods": methods
+        })
+    # Generate Markdown documentation
+    md = ["# MCP Project Manager Tools Documentation\n"]
+    md.append("## Tools\n")
+    if tools:
+        for tool_name, tool_info in tools.items():
+            md.append(f"- **{tool_name}**: {tool_info.get('description', '')}")
+    else:
+        md.append("No tools registered.\n")
+    md.append("\n## Routes\n")
+    for r in routes:
+        md.append(f"- `{r['path']}` ({', '.join(r['methods'])}): {r['name']} - {r['description']}")
+    md_doc = "\n".join(md)
+    return {
+        "tools": tools,
+        "routes": routes,
+        "mcp_project_manager_tools_documentation": md_doc
     }
 
 # Include routers
@@ -124,6 +178,46 @@ app.add_middleware(
 
 if __name__ == "__main__":
     import uvicorn
+    import logging
+
+    # Configure logging format with timestamp
+    log_config = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "standard": {
+                "fmt": "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+            },
+            "uvicorn_standard": {
+                "fmt": "%(asctime)s %(levelname)s %(name)s:%(lineno)d %(message)s"
+            }
+        },
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "formatter": "uvicorn_standard", # Use the new uvicorn_standard formatter
+                "stream": "ext://sys.stderr"
+            }
+        },
+        "loggers": {
+            "uvicorn": {
+                "handlers": ["console"],
+                "level": "INFO",
+                "propagate": False
+            },
+            "uvicorn.error": {
+                "level": "INFO",
+                "handlers": ["console"],
+                "propagate": False
+            },
+            "uvicorn.access": {
+                "handlers": ["console"],
+                "level": "INFO",
+                "propagate": False
+            }
+        }
+    }
+
     # Note: For production, consider using Gunicorn or another ASGI server
     # Also, remove reload=True for production
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, log_config=log_config) # Add log_config

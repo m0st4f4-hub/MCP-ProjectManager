@@ -29,6 +29,13 @@ class MemoryEntity(Base):
         "MemoryRelation", foreign_keys="[MemoryRelation.to_entity_id]", 
         back_populates="to_entity")
 
+    # Add relationships back to file association models
+    # This matches ProjectFileAssociation.file_entity (back_populates)
+    project_file_associations: Mapped[List["ProjectFileAssociation"]] = relationship(
+        "ProjectFileAssociation", back_populates="file_entity", cascade="all, delete-orphan")
+    task_file_associations: Mapped[List["TaskFileAssociation"]] = relationship(
+        "TaskFileAssociation", back_populates="file_entity", cascade="all, delete-orphan")
+
 
 class MemoryObservation(Base):
     """Represents an observation associated with a memory entity."""

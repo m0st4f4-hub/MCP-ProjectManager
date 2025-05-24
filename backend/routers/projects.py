@@ -11,7 +11,6 @@ from pydantic import BaseModel
 from starlette.responses import JSONResponse
 import uuid
 
-from .. import schemas
 from ..database import get_db
 from ..services.project_service import ProjectService
 from ..services.task_service import TaskService
@@ -22,6 +21,9 @@ from ..services.task_file_association_service import TaskFileAssociationService
 from ..services.task_dependency_service import TaskDependencyService
 from .. import models
 from . import tasks # Import tasks router
+
+# Import specific schema classes from their files
+from backend.schemas.project import Project, ProjectCreate, ProjectUpdate, ProjectFileAssociation, ProjectFileAssociationCreate # Correct import location
 
 router = APIRouter(
     prefix="/projects",
@@ -71,9 +73,9 @@ def get_project_file_association_service(db: Session = Depends(get_db)) -> Proje
     return ProjectFileAssociationService(db)
 
 
-@router.post("/", response_model=schemas.Project, summary="Create Project", operation_id="create_project")
+@router.post("/", response_model=Project, summary="Create Project", operation_id="create_project")
 def create_project(
-    project: schemas.ProjectCreate,
+    project: ProjectCreate,
     project_service: ProjectService = Depends(get_project_service)
 ):
     """Creates a new project.
@@ -86,10 +88,10 @@ def create_project(
         raise HTTPException(
             status_code=400, detail="Project name already registered")
     db_project = project_service.create_project(project=project)
-    return schemas.Project.model_validate(db_project)
+    return Project.model_validate(db_project)
 
 
-@router.get("/", response_model=List[schemas.Project], summary="List Projects", operation_id="list_projects")
+@router.get("/", response_model=List[Project], summary="List Projects", operation_id="list_projects")
 def get_project_list(
     skip: int = 0,
     search: Optional[str] = None,
@@ -103,13 +105,13 @@ def get_project_list(
         skip=skip, search=search, status=status, is_archived=is_archived)
 
     # Convert SQLAlchemy models to Pydantic models
-    pydantic_projects = [schemas.Project.model_validate(
+    pydantic_projects = [Project.model_validate(
         project) for project in projects]
 
     return pydantic_projects
 
 
-@router.get("/{project_id}", response_model=schemas.Project, summary="Get Project by ID", operation_id="get_project_by_id")
+@router.get("/{project_id}", response_model=Project, summary="Get Project by ID", operation_id="get_project_by_id")
 def get_project_by_id_endpoint(
     project_id: str,
     is_archived: Optional[bool] = Query(
@@ -130,7 +132,7 @@ def get_project_by_id_endpoint(
     return db_project
 
 
-@router.post("/{project_id}/archive", response_model=schemas.Project, summary="Archive Project", operation_id="archive_project")
+@router.post("/{project_id}/archive", response_model=Project, summary="Archive Project", operation_id="archive_project")
 def archive_project_endpoint(
     project_id: str,
     project_service: ProjectService = Depends(get_project_service)
@@ -149,7 +151,7 @@ def archive_project_endpoint(
             status_code=500, detail=f"Failed to archive project: {str(e)}")
 
 
-@router.post("/{project_id}/unarchive", response_model=schemas.Project, summary="Unarchive Project", operation_id="unarchive_project")
+@router.post("/{project_id}/unarchive", response_model=Project, summary="Unarchive Project", operation_id="unarchive_project")
 def unarchive_project_endpoint(
     project_id: str,
     project_service: ProjectService = Depends(get_project_service)
@@ -168,10 +170,10 @@ def unarchive_project_endpoint(
             status_code=500, detail=f"Failed to unarchive project: {str(e)}")
 
 
-@router.put("/{project_id}", response_model=schemas.Project, summary="Update Project", operation_id="update_project_by_id")
+@router.put("/{project_id}", response_model=Project, summary="Update Project", operation_id="update_project_by_id")
 def update_project(
     project_id: str,
-    project_update: schemas.ProjectUpdate,
+    project_update: ProjectUpdate,
     project_service: ProjectService = Depends(get_project_service)
 ):
     try:
@@ -194,7 +196,7 @@ def update_project(
             status_code=500, detail=f"Internal server error: {e}")
 
 
-@router.delete("/{project_id}", response_model=schemas.Project, summary="Delete Project", operation_id="delete_project_by_id")
+@router.delete("/{project_id}", response_model=Project, summary="Delete Project", operation_id="delete_project_by_id")
 def delete_project(
     project_id: str,
     project_service: ProjectService = Depends(get_project_service)
@@ -254,14 +256,14 @@ async def planning_generate_prompt_alias(request: PlanningRequest, agent_service
 
 @router.post(
     "/{project_id}/files/",
-    response_model=schemas.ProjectFileAssociation,
+    response_model=ProjectFileAssociation,
     summary="Associate File with Project",
     tags=["Project Files"],
     operation_id="associate_file_with_project"
 )
 def associate_file_with_project_endpoint(
     project_id: str,
-    file_association: schemas.ProjectFileAssociationCreate,
+    file_association: ProjectFileAssociationCreate,
     project_file_association_service: ProjectFileAssociationService = Depends(
         get_project_file_association_service)
 ):
@@ -274,7 +276,7 @@ def associate_file_with_project_endpoint(
 
 @router.get(
     "/{project_id}/files/",
-    response_model=List[schemas.ProjectFileAssociation],
+    response_model=List[ProjectFileAssociation],
     summary="Get Files Associated with Project",
     tags=["Project Files"],
     operation_id="get_files_associated_with_project"
@@ -299,7 +301,7 @@ def get_files_associated_with_project_endpoint(
 
 @router.get(
     "/{project_id}/files/{file_memory_entity_id}", # Path parameter name matches the ID
-    response_model=schemas.ProjectFileAssociation,
+    response_model=ProjectFileAssociation,
     summary="Get Project File Association by File Memory Entity ID", # Summary reflects using ID
     tags=["Project Files"],
     operation_id="get_project_file_association_by_file_memory_entity_id" # Operation ID reflects using ID
@@ -307,11 +309,10 @@ def get_files_associated_with_project_endpoint(
 def get_project_file_association_by_file_memory_entity_id_endpoint( # Function name reflects using ID
     project_id: str = Path(..., description="ID of the project."),
     file_memory_entity_id: int = Path(..., description="ID of the associated file MemoryEntity."), # Parameter name and type match path and usage
-    project_file_association_service: ProjectFileAssociationService = Depends(
-        get_project_file_association_service)
+    project_service: ProjectService = Depends(get_project_service)
 ):
     """Retrieves a specific project file association by project ID and file memory entity ID."""
-    db_association = project_file_association_service.get_project_file_association(
+    db_association = project_service.get_project_file_association(
         project_id=project_id,
         file_memory_entity_id=file_memory_entity_id # Pass the ID from the path parameter
     )

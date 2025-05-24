@@ -8,6 +8,10 @@ from typing import List, Optional
 
 from .base import Base, BaseModel, ArchivedMixin, generate_uuid_with_hyphens
 
+# Forward references for relationships defined in other model files
+# from .task_relations import TaskDependency, TaskFileAssociation # Use string literals instead to avoid circular imports
+# from .comment import Comment # Already using string literal
+
 
 class Task(Base, BaseModel, ArchivedMixin):
     """Represents a single task in the Project Manager."""
@@ -29,6 +33,22 @@ class Task(Base, BaseModel, ArchivedMixin):
     project = relationship("Project", back_populates="tasks")
     agent = relationship("Agent", back_populates="tasks")
     comments: Mapped[List["Comment"]] = relationship("Comment", back_populates="task")
+
+    # Add task dependency relationships
+    dependencies_as_predecessor: Mapped[List["TaskDependency"]] = relationship(
+        "TaskDependency", back_populates="predecessor", foreign_keys="[TaskDependency.predecessor_project_id, TaskDependency.predecessor_task_number]",
+        cascade="all, delete-orphan"
+    )
+    dependencies_as_successor: Mapped[List["TaskDependency"]] = relationship(
+        "TaskDependency", back_populates="successor", foreign_keys="[TaskDependency.successor_project_id, TaskDependency.successor_task_number]",
+        cascade="all, delete-orphan"
+    )
+
+    # Add task file association relationship
+    task_files: Mapped[List["TaskFileAssociation"]] = relationship(
+        "TaskFileAssociation", back_populates="task", foreign_keys="[TaskFileAssociation.task_project_id, TaskFileAssociation.task_task_number]",
+        cascade="all, delete-orphan"
+    )
 
 
 class TaskStatus(Base):

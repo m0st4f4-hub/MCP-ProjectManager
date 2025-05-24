@@ -9,13 +9,19 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import uuid
 
-from .. import schemas
+# from .. import schemas # Remove the old import
 from ..database import get_db
 from ..services.task_service import TaskService
 from ..services.agent_service import AgentService
 from ..services.project_file_association_service import ProjectFileAssociationService
 from ..services.task_file_association_service import TaskFileAssociationService
 from ..services.task_dependency_service import TaskDependencyService
+
+# Import specific schema classes from their files
+from backend.schemas.task import Task, TaskCreate, TaskUpdate # Import Task, TaskCreate, TaskUpdate from task.py
+from backend.schemas.file_association import TaskFileAssociation, TaskFileAssociationCreate # Import from file_association.py
+from backend.schemas.task_dependency import TaskDependency, TaskDependencyCreate # Import from task_dependency.py
+from backend.schemas.comment import Comment # Import Comment from comment.py
 
 router = APIRouter(
     tags=["Tasks"],
@@ -40,14 +46,14 @@ def get_task_dependency_service(db: Session = Depends(get_db)) -> TaskDependency
 
 @router.post(
     "/{project_id}/tasks/",
-    response_model=schemas.Task,
+    response_model=Task, # Use the directly imported class
     summary="Create Task in Project",
     tags=["Tasks"],
     operation_id="projects_tasks_create_task"
 )
 def create_task_for_project(
     project_id: str,
-    task: schemas.TaskCreate,
+    task: TaskCreate, # Use the directly imported class
     task_service: TaskService = Depends(get_task_service)
 ):
     """Create a new task in a project."""
@@ -67,7 +73,7 @@ def create_task_for_project(
 
 @router.get(
     "/{project_id}/tasks/",
-    response_model=List[schemas.Task],
+    response_model=List[Task], # Use the directly imported class
     summary="Get Tasks in Project",
     tags=["Tasks"],
     operation_id="projects_tasks_get_tasks"
@@ -120,7 +126,7 @@ async def get_tasks_list(
 
 @router.get(
     "/{project_id}/tasks/{task_number}",
-    response_model=schemas.Task,
+    response_model=Task, # Use the directly imported class
     summary="Get Task by Project and Number",
     tags=["Tasks"],
     operation_id="projects_tasks_get_task_by_project_and_number"
@@ -143,7 +149,7 @@ def read_task(
 
 @router.post(
     "/{project_id}/tasks/{task_number}/archive",
-    response_model=schemas.Task,
+    response_model=Task, # Use the directly imported class
     summary="Archive Task",
     tags=["Tasks"],
     operation_id="projects_tasks_archive_task"
@@ -173,7 +179,7 @@ def archive_task_endpoint(
 
 @router.post(
     "/{project_id}/tasks/{task_number}/unarchive",
-    response_model=schemas.Task,
+    response_model=Task, # Use the directly imported class
     summary="Unarchive Task",
     tags=["Tasks"],
     operation_id="projects_tasks_unarchive_task"
@@ -203,7 +209,7 @@ def unarchive_task_endpoint(
 
 @router.put(
     "/{project_id}/tasks/{task_number}",
-    response_model=schemas.Task,
+    response_model=Task, # Use the directly imported class
     summary="Update Task (incl. Project/Agent)",
     tags=["Tasks"],
     operation_id="projects_tasks_update_task_by_project_and_number"
@@ -211,7 +217,7 @@ def unarchive_task_endpoint(
 def update_task(
     project_id: str,
     task_number: int,
-    task_update: schemas.TaskUpdate,
+    task_update: TaskUpdate, # Use the directly imported class
     task_service: TaskService = Depends(get_task_service)
 ):
     """Update a task, including project or agent assignment."""
@@ -270,7 +276,7 @@ def delete_task(
 
 @router.post(
     "/{project_id}/tasks/{task_number}/files/",
-    response_model=schemas.TaskFileAssociation,
+    response_model=TaskFileAssociation, # Use the directly imported class
     summary="Associate File with Task",
     tags=["Task Files"],
     operation_id="projects_tasks_associate_file_with_task"
@@ -278,7 +284,7 @@ def delete_task(
 def associate_file_with_task_endpoint(
     project_id: str,
     task_number: int,
-    file_association: schemas.TaskFileAssociationCreate,
+    file_association: TaskFileAssociationCreate, # Use the directly imported class
     task_file_association_service: TaskFileAssociationService = Depends(
         get_task_file_association_service)
 ):
@@ -304,7 +310,7 @@ def associate_file_with_task_endpoint(
 
 @router.get(
     "/{project_id}/tasks/{task_number}/files/",
-    response_model=List[schemas.TaskFileAssociation],
+    response_model=List[TaskFileAssociation], # Use the directly imported class
     summary="Get Files for Task",
     tags=["Task Files"],
     operation_id="projects_tasks_get_files_for_task"
@@ -329,7 +335,7 @@ def get_files_for_task_endpoint(
 
 @router.get(
     "/{project_id}/tasks/{task_number}/files/{file_memory_entity_id}",
-    response_model=schemas.TaskFileAssociation,
+    response_model=TaskFileAssociation, # Use the directly imported class
     summary="Get Task File Association by File Memory Entity ID",
     tags=["Task Files"],
     operation_id="projects_tasks_get_task_file_association_by_file_memory_entity_id"
@@ -402,7 +408,7 @@ def disassociate_file_from_task_by_file_memory_entity_id_endpoint(
 
 @router.post(
     "/{project_id}/tasks/{task_number}/dependencies/",
-    response_model=schemas.TaskDependency,
+    response_model=TaskDependency, # Use the directly imported class
     summary="Add Task Dependency",
     tags=["Task Dependencies"],
     operation_id="projects_tasks_add_task_dependency"
@@ -410,7 +416,7 @@ def disassociate_file_from_task_by_file_memory_entity_id_endpoint(
 def add_task_dependency_endpoint(
     project_id: str,
     task_number: int,
-    dependency: schemas.TaskDependencyCreate,
+    dependency: TaskDependencyCreate, # Use the directly imported class
     task_dependency_service: TaskDependencyService = Depends(
         get_task_dependency_service)
 ):
@@ -442,7 +448,7 @@ def add_task_dependency_endpoint(
 
 @router.get(
     "/{project_id}/tasks/{task_number}/dependencies/",
-    response_model=List[schemas.TaskDependency],
+    response_model=List[TaskDependency], # Use the directly imported class
     summary="Get All Task Dependencies",
     tags=["Task Dependencies"],
     operation_id="projects_tasks_get_all_task_dependencies"
@@ -479,7 +485,7 @@ def get_all_task_dependencies_endpoint(
 
 @router.get(
     "/{project_id}/tasks/{task_number}/dependencies/predecessors/",
-    response_model=List[schemas.TaskDependency],
+    response_model=List[TaskDependency], # Use the directly imported class
     summary="Get Task Predecessors",
     tags=["Task Dependencies"],
     operation_id="projects_tasks_get_task_predecessors"
@@ -516,7 +522,7 @@ def get_task_predecessors_endpoint(
 
 @router.get(
     "/{project_id}/tasks/{task_number}/dependencies/successors/",
-    response_model=List[schemas.TaskDependency],
+    response_model=List[TaskDependency], # Use the directly imported class
     summary="Get Task Successors",
     tags=["Task Dependencies"],
     operation_id="projects_tasks_get_task_successors"
@@ -553,7 +559,7 @@ def get_task_successors_endpoint(
 
 @router.delete(
     "/{project_id}/tasks/{task_number}/dependencies/{predecessor_project_id}/{predecessor_task_number}",
-    response_model=dict,
+    response_model=TaskDependency, # Assuming the delete returns the deleted dependency
     summary="Remove Task Dependency",
     tags=["Task Dependencies"],
     operation_id="projects_tasks_remove_task_dependency"
@@ -594,7 +600,7 @@ def remove_task_dependency_endpoint(
 
 @router.get(
     "/",
-    response_model=List[schemas.Task],
+    response_model=List[Task], # Use the directly imported class
     summary="Get All Tasks",
     tags=["Tasks"],
     operation_id="tasks_get_all_tasks_root"
@@ -661,7 +667,7 @@ async def get_all_tasks(
 
 @router.get(
     "/{project_id}/tasks/{task_number}/comments/",
-    response_model=List[schemas.Comment],
+    response_model=List[Comment], # Use the directly imported class
     summary="Get Comments for Task",
     tags=["Task Comments"],
     operation_id="projects_tasks_get_task_comments"

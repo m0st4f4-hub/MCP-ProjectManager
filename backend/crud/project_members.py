@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import List, Optional
 from ..models import ProjectMember
-from backend.schemas import ProjectMemberCreate, ProjectMemberUpdate
+# from backend.schemas import ProjectMemberCreate, ProjectMemberUpdate # Removed package import
+from backend.schemas.project import ProjectMemberCreate, ProjectMemberUpdate
 from .project_member_validation import member_exists
 
 

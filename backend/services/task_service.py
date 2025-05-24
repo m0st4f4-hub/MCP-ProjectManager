@@ -5,10 +5,13 @@
 # Timestamp: <timestamp>
 
 from sqlalchemy.orm import Session
-from .. import models, schemas
+from .. import models
 import datetime
 from typing import List, Optional, Union
 from uuid import UUID
+
+# Import specific schema classes from their files
+from backend.schemas.task import TaskCreate, TaskUpdate
 
 # Import CRUD operations for tasks
 from backend.crud.tasks import (
@@ -16,8 +19,8 @@ from backend.crud.tasks import (
     get_tasks as crud_get_tasks,
     get_all_tasks as crud_get_all_tasks,
     create_task as crud_create_task,
-    update_task as crud_update_task,
-    delete_task as crud_delete_task,
+    update_task_by_project_and_number as crud_update_task,
+    delete_task_by_project_and_number as crud_delete_task,
     archive_task as crud_archive_task,
     unarchive_task as crud_unarchive_task,
     # get_next_task_number_for_project # This logic is now handled within crud_create_task
@@ -96,7 +99,7 @@ class TaskService:
     def create_task(
         self,
         project_id: UUID,
-        task: schemas.TaskCreate,
+        task: TaskCreate,
         agent_id: Optional[str] = None
     ) -> models.Task:
         # Delegate to CRUD create function. CRUD handles task numbering and validation.
@@ -106,20 +109,15 @@ class TaskService:
         self,
         project_id: UUID,
         task_number: int,
-        task_update: schemas.TaskUpdate,
+        task_update: TaskUpdate,
     ) -> Optional[models.Task]:
-        # Delegate to CRUD update function
-        # Assuming CRUD update_task can find by project_id and task_number now
-        # OR we get the task here and pass task_id to CRUD update
-        # Let's update CRUD to take project_id and task_number for update
-        # For now, delegate and assume CRUD handles finding the task
+        # Use the correct CRUD function for composite key
         return crud_update_task(
-            self.db, project_id=str(project_id), task_number=task_number, task_update=task_update
+            self.db, project_id=str(project_id), task_number=task_number, task=task_update
         )
 
     def delete_task(self, project_id: UUID, task_number: int) -> bool:
-        # Delegate to CRUD delete function
-        # Assuming CRUD delete_task can find by project_id and task_number now
+        # Use the correct CRUD function for composite key
         return crud_delete_task(self.db, project_id=str(project_id), task_number=task_number)
 
     def archive_task(
@@ -177,7 +175,7 @@ class TaskService:
     ) -> Optional[models.Task]:
         # Delegate to CRUD update function (or a specific CRUD status update if exists)
         # For now, use the generic update_task
-        task_update = schemas.TaskUpdate(status=status)
+        task_update = TaskUpdate(status=status)
         return self.update_task(project_id, task_number, task_update)
 
     def assign_task_to_agent(
@@ -187,7 +185,7 @@ class TaskService:
         agent_id: str
     ) -> Optional[models.Task]:
         # Delegate to CRUD update function
-        task_update = schemas.TaskUpdate(agent_id=agent_id)
+        task_update = TaskUpdate(agent_id=agent_id)
         return self.update_task(project_id, task_number, task_update)
 
     def unassign_task(
@@ -196,33 +194,30 @@ class TaskService:
         task_number: int
     ) -> Optional[models.Task]:
         # Delegate to CRUD update function
-        task_update = schemas.TaskUpdate(agent_id=None) # Assuming setting agent_id to None unassigns
+        task_update = TaskUpdate(agent_id=None) # Assuming setting agent_id to None unassigns
         return self.update_task(project_id, task_number, task_update)
 
     def associate_file_with_task(
         self,
         project_id: UUID,
         task_number: int,
-        file_id: str
+        file_memory_entity_id: int
     ) -> Optional[models.TaskFileAssociation]:
         # Delegate to TaskFileAssociationService
-        # Assuming the service takes project_id, task_number and file_id/file_memory_entity_id
-        # Need to clarify if file_id here is the MemoryEntity ID or something else.
-        # Assuming file_id is file_memory_entity_id based on prior refactoring
+        # Assuming the service takes project_id, task_number and file_memory_entity_id
         return self.file_association_service.associate_file_with_task(
-             task_project_id=project_id, task_task_number=task_number, file_memory_entity_id=int(file_id) # Assuming file_id is int compatible
+             task_project_id=project_id, task_task_number=task_number, file_memory_entity_id=file_memory_entity_id
         )
 
     def disassociate_file_from_task(
         self,
         project_id: UUID,
         task_number: int,
-        file_id: str
+        file_memory_entity_id: int
     ) -> bool:
         # Delegate to TaskFileAssociationService
-        # Assuming file_id is file_memory_entity_id based on prior refactoring
         return self.file_association_service.disassociate_file_from_task(
-             task_project_id=project_id, task_task_number=task_number, file_memory_entity_id=int(file_id) # Assuming file_id is int compatible
+             task_project_id=project_id, task_task_number=task_number, file_memory_entity_id=file_memory_entity_id
         )
 
     def get_task_files(

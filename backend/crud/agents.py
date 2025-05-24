@@ -1,10 +1,13 @@
 from sqlalchemy.orm import Session
-from .. import models, schemas
+from .. import models
 from typing import List, Optional
 import uuid
 
+# from .. import schemas # Removed package import
+from backend.schemas.agent import AgentCreate, AgentUpdate
 
-def create_agent(db: Session, agent: schemas.AgentCreate) -> models.Agent:
+
+def create_agent(db: Session, agent: AgentCreate) -> models.Agent:
     """Create a new agent."""
     db_agent = models.Agent(
         id=str(uuid.uuid4()),
@@ -31,7 +34,7 @@ def get_agents(db: Session, skip: int = 0, limit: int = 100) -> List[models.Agen
     return db.query(models.Agent).offset(skip).limit(limit).all()
 
 
-def update_agent(db: Session, agent_id: str, agent_update: schemas.AgentUpdate) -> Optional[models.Agent]:
+def update_agent(db: Session, agent_id: str, agent_update: AgentUpdate) -> Optional[models.Agent]:
     """Update an agent."""
     db_agent = get_agent(db, agent_id)
     if db_agent:

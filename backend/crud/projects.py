@@ -1,10 +1,16 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
-from backend import models
+from backend import models, schemas
+from backend.schemas.project import ProjectCreate, ProjectUpdate, Project, ProjectMemberCreate, ProjectFileAssociationCreate
+from backend.schemas.memory import MemoryEntityCreate, MemoryEntityUpdate
+from backend.models.project import Project as ProjectModel
+from fastapi import HTTPException
 import uuid
 from typing import Optional, List
 
-from backend import schemas
+# from backend import schemas
+# from backend.schemas.project_member import ProjectMemberCreate
+# from backend.schemas.project_file_association import ProjectFileAssociationCreate
 
 # Import the memory crud operations
 from . import memory as memory_crud
@@ -67,15 +73,15 @@ def get_projects(db: Session, skip: int = 0, search: Optional[str] = None, statu
     return projects
 
 
-def create_project(db: Session, project: schemas.ProjectCreate):
-    project_id = str(uuid.uuid4())
-    db_project = models.Project(id=project_id, **project.model_dump())
+def create_project(db: Session, project: ProjectCreate):
+    # Use the imported ProjectCreate directly
+    db_project = ProjectModel(name=project.name, description=project.description)
     db.add(db_project)
     db.commit()
     db.refresh(db_project)
 
     # Create a corresponding MemoryEntity for the project
-    from backend.schemas import MemoryEntityCreate
+    # from backend.schemas import MemoryEntityCreate # Removed import from __init__
     memory_entity_data = MemoryEntityCreate(
         type="project",
         name=db_project.name,
@@ -90,7 +96,7 @@ def create_project(db: Session, project: schemas.ProjectCreate):
     return db_project
 
 
-def update_project(db: Session, project_id: str, project_update: schemas.ProjectUpdate):
+def update_project(db: Session, project_id: str, project_update: ProjectUpdate):
     db_project = get_project(db, project_id, is_archived=None)
     if db_project:
         update_data = project_update.model_dump(exclude_unset=True)
@@ -110,7 +116,7 @@ def update_project(db: Session, project_id: str, project_update: schemas.Project
         memory_entity = memory_crud.get_memory_entity_by_name(db, name=db_project.name)
         if memory_entity:
             # Only update description for now, can expand later
-            memory_update_data = schemas.MemoryEntityUpdate(description=db_project.description)
+            memory_update_data = MemoryEntityUpdate(description=db_project.description)
             memory_crud.update_memory_entity(db, entity_id=memory_entity.id, entity_update=memory_update_data)
 
     return db_project
@@ -124,7 +130,7 @@ def delete_project(db: Session, project_id: str):
             models.Task.project_id == project_id).count()
         print(
             f"[CRUD delete_project] Deleted {task_count} tasks associated with project_id: {project_id}")
-        project_data_to_return = schemas.Project.model_validate(db_project)
+        project_data_to_return = Project.model_validate(db_project)
 
         # Get the corresponding MemoryEntity by name before deleting the project
         memory_entity = memory_crud.get_memory_entity_by_name(db, name=db_project.name)
@@ -141,7 +147,7 @@ def delete_project(db: Session, project_id: str):
     return None
 
 
-def add_project_member(db: Session, project_member: schemas.ProjectMemberCreate):
+def add_project_member(db: Session, project_member: ProjectMemberCreate):
     """Add a member to a project."""
     db_project_member = models.ProjectMember(**project_member.model_dump())
     db.add(db_project_member)
@@ -172,42 +178,6 @@ def get_project_members(db: Session, project_id: str):
     return (
         db.query(models.ProjectMember)
         .filter(models.ProjectMember.project_id == project_id)
-        .all()
-    )
-
-
-def associate_project_file(
-    db: Session, project_file_association: schemas.ProjectFileAssociationCreate
-):
-    db_project_file_association = models.ProjectFileAssociation(
-        **project_file_association.model_dump()
-    )
-    db.add(db_project_file_association)
-    db.commit()
-    db.refresh(db_project_file_association)
-    return db_project_file_association
-
-
-def disassociate_project_file(db: Session, project_id: str, file_id: str):
-    db_project_file_association = (
-        db.query(models.ProjectFileAssociation)
-        .filter(
-            models.ProjectFileAssociation.project_id == project_id,
-            models.ProjectFileAssociation.file_id == file_id,
-        )
-        .first()
-    )
-    if db_project_file_association:
-        db.delete(db_project_file_association)
-        db.commit()
-        return True
-    return False
-
-
-def get_project_files(db: Session, project_id: str):
-    return (
-        db.query(models.ProjectFileAssociation)
-        .filter(models.ProjectFileAssociation.project_id == project_id)
         .all()
     )
 

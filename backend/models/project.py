@@ -8,6 +8,8 @@ from typing import List, Optional
 
 from .base import Base, BaseModel, ArchivedMixin, ProjectMemberRole, generate_uuid_with_hyphens
 
+# Import the Comment model here to define the relationship
+from .comment import Comment
 
 class Project(Base, BaseModel, ArchivedMixin):
     """Represents a project in the Project Manager."""
@@ -21,6 +23,10 @@ class Project(Base, BaseModel, ArchivedMixin):
     # Relationships
     tasks = relationship("Task", back_populates="project", cascade="all, delete-orphan")
     project_members = relationship("ProjectMember", back_populates="project", cascade="all, delete-orphan")
+    # Add the missing comments_on_project relationship
+    comments_on_project: Mapped[List["Comment"]] = relationship("Comment", back_populates="project", cascade="all, delete-orphan")
+    # Add the project_files relationship defined in the ProjectFileAssociation model
+    project_files = relationship("ProjectFileAssociation", back_populates="project", cascade="all, delete-orphan")
 
 
 class ProjectTemplate(Base):
@@ -53,8 +59,15 @@ class ProjectFileAssociation(Base, BaseModel):
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=generate_uuid_with_hyphens)
     project_id: Mapped[str] = mapped_column(String(32), ForeignKey("projects.id"))
-    file_path: Mapped[str] = mapped_column(String(500), nullable=False)
-    file_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    file_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    # Remove redundant file path, name, and type columns
+    # file_path: Mapped[str] = mapped_column(String(500), nullable=False)
+    # file_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    # file_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
-    project = relationship("Project")
+    # Retain and rely on file_memory_entity_id and the relationship
+    file_memory_entity_id: Mapped[int] = mapped_column(Integer, ForeignKey("memory_entities.id"), index=True)
+
+    # Correct the relationship to point to Project and use back_populates
+    project: Mapped["Project"] = relationship("Project", back_populates="project_files")
+    # Use back_populates to match MemoryEntity.project_file_associations
+    file_entity: Mapped["MemoryEntity"] = relationship("MemoryEntity", back_populates="project_file_associations")

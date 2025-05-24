@@ -2,7 +2,7 @@
 # Agent Role: Agent 1
 # Request ID: (Inherited from Overmind)
 # Project: task-manager
-# Timestamp: 2025-05-24T12:00:00Z
+# Timestamp: 2025-05-09T21:00:00Z
 
 """
 CRUD operations for project file associations.
@@ -13,7 +13,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import List, Optional
 from ..models import ProjectFileAssociation
-from ..schemas import ProjectFileAssociationCreate, MemoryEntityCreate, MemoryRelationCreate
+# from ..schemas import ProjectFileAssociationCreate, MemoryEntityCreate, MemoryRelationCreate # Removed package import
+# from backend.schemas.project_file_association import ProjectFileAssociationCreate # Incorrect import
+from backend.schemas.project import ProjectFileAssociationCreate # Correct import location
+from backend.schemas.memory import MemoryEntityCreate, MemoryRelationCreate
 
 # Import the memory crud operations
 from . import memory as memory_crud
@@ -114,6 +117,7 @@ def delete_project_file_association(db: Session, project_id: str, file_memory_en
             memory_crud.delete_memory_relation(db, relation_id=relation.id)
 
     # Get and delete the project file association in the main database
+    # Use the updated get_project_file_association that takes ID
     db_project_file = get_project_file_association(
         db, project_id=project_id, file_memory_entity_id=file_memory_entity_id)
     if db_project_file:

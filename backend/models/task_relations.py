@@ -55,12 +55,18 @@ class TaskFileAssociation(Base, BaseModel):
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=generate_uuid_with_hyphens)
     task_project_id: Mapped[str] = mapped_column(String(32))
     task_task_number: Mapped[int] = mapped_column(Integer)
-    file_path: Mapped[str] = mapped_column(String(500), nullable=False)
-    file_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    file_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    # Remove redundant file path, name, and type columns
+    # file_path: Mapped[str] = mapped_column(String(500), nullable=False)
+    # file_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    # file_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+
+    # Retain and rely on file_memory_entity_id and the relationship
+    file_memory_entity_id: Mapped[int] = mapped_column(Integer, ForeignKey("memory_entities.id"), index=True)
 
     task: Mapped["Task"] = relationship(
         "Task",
         foreign_keys=[task_project_id, task_task_number],
         back_populates="task_files"
     )
+    # Add relationship to MemoryEntity
+    file_entity: Mapped["MemoryEntity"] = relationship("MemoryEntity")

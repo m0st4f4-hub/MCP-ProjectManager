@@ -9,7 +9,9 @@ CRUD operations for users.
 """
 
 from sqlalchemy.orm import Session
-from .. import models, schemas
+from .. import models
+# from .. import models, schemas # Removed schemas import
+from backend.schemas.user import UserCreate, UserUpdate # Direct import
 from typing import List, Optional
 import uuid
 
@@ -17,7 +19,7 @@ import uuid
 from .user_validation import username_exists
 
 
-def create_user(db: Session, user: schemas.UserCreate) -> models.User:
+def create_user(db: Session, user: UserCreate) -> models.User:
     # Check if username already exists using the validation helper
     if username_exists(db, user.username):
         raise ValueError(f"Username '{user.username}' already exists")
@@ -44,7 +46,7 @@ def get_users(db: Session, skip: int = 0, limit: int = 100) -> List[models.User]
     return db.query(models.User).offset(skip).limit(limit).all()
 
 
-def update_user(db: Session, user_id: str, user_update: schemas.UserUpdate) -> Optional[models.User]:
+def update_user(db: Session, user_id: str, user_update: UserUpdate) -> Optional[models.User]:
     db_user = get_user(db, user_id)  # Use the get_user function within CRUD
     if db_user:
         update_data = user_update.model_dump(exclude_unset=True)

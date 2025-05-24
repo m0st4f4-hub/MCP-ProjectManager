@@ -1,7 +1,11 @@
 from sqlalchemy.orm import Session, joinedload
-from .. import models, schemas
+# from .. import models, schemas
+from .. import models
 from typing import List, Optional, Union
 import uuid
+
+# Import specific schema classes from their files
+from backend.schemas.comment import CommentCreate, CommentUpdate
 
 # Import CRUD operations
 from backend.crud.comments import (
@@ -30,7 +34,7 @@ class CommentService:
         """
         return get_comments_by_task(self.db, task_project_id, task_number)
 
-    def create_comment(self, comment_create: schemas.CommentCreate) -> models.Comment:
+    def create_comment(self, comment_create: CommentCreate) -> models.Comment:
         # Service layer orchestrates data preparation and calls CRUD.
         # Validation is now handled in the CRUD layer.
 
@@ -40,7 +44,7 @@ class CommentService:
         # Delegate to CRUD create function
         return create_comment(self.db, comment_create)
 
-    def update_comment(self, comment_id: str, comment_update: schemas.CommentUpdate) -> Optional[models.Comment]:
+    def update_comment(self, comment_id: str, comment_update: CommentUpdate) -> Optional[models.Comment]:
         # Delegate to CRUD update function
         return update_comment(self.db, comment_id, comment_update)
 

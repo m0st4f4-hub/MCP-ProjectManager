@@ -7,6 +7,7 @@ from backend.crud.project_file_associations import (
     create_project_file_association,
     delete_project_file_association
 )
+from backend.schemas.project import ProjectFileAssociationCreate
 
 
 class ProjectFileAssociationService:
@@ -20,7 +21,6 @@ class ProjectFileAssociationService:
         return get_project_files(self.db, project_id, skip=skip, limit=limit)
 
     def associate_file_with_project(self, project_id: str, file_memory_entity_id: int):
-        from backend.schemas import ProjectFileAssociationCreate
         project_file = ProjectFileAssociationCreate(
             project_id=project_id,
             file_memory_entity_id=file_memory_entity_id

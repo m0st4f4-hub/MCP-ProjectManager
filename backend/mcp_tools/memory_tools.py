@@ -14,7 +14,7 @@ from backend.crud.memory import (
     search_entities, 
     get_memory_entity_by_name
 )
-from backend.schemas import MemoryEntityCreate, MemoryObservationCreate
+from backend.schemas.memory import MemoryEntityCreate, MemoryObservationCreate
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ async def add_memory_relation_tool(
         
         relation = create_memory_relation(
             db=db,
-            relation=schemas.MemoryRelationCreate(
+            relation=MemoryRelationCreate(
                 from_entity_id=from_entity.id,
                 to_entity_id=to_entity.id,
                 relation_type=relation_data["relation_type"],

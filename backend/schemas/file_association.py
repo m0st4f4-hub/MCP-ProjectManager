@@ -26,26 +26,32 @@ class TaskFileAssociationCreate(TaskFileAssociationBase):
 
 class TaskFileAssociation(TaskFileAssociationBase):
     """Schema for representing a task-file association in API responses."""
-    task: Optional[Task] = Field(None, description="The associated task (populated from ORM).")
+    # The response schema should include the related file entity
     file_entity: Optional[MemoryEntity] = Field(None, description="The memory entity representing the file (populated from ORM).")
+    # task: Optional[Task] = Field(None, description="The associated task (populated from ORM).") # Removed to simplify schema, can be fetched separately if needed
 
     model_config = ConfigDict(from_attributes=True)
 
 
 # --- Project File Association Schemas ---
-class ProjectFileAssociationBase(BaseModel):
-    """Base schema for project-file association attributes."""
-    project_id: str = Field(..., description="The ID of the associated project.")
-    file_memory_entity_id: int = Field(..., description="The ID of the associated file MemoryEntity.")
+# ProjectFileAssociation schemas are defined in backend/schemas/project.py. This file only contains TaskFileAssociation schemas.
 
 
-class ProjectFileAssociationCreate(ProjectFileAssociationBase):
-    pass
+# --- Project File Association Schemas ---
+# Removed duplicate schemas, they are defined in backend/schemas/project.py
+# class ProjectFileAssociationBase(BaseModel):
+#     """Base schema for project-file association attributes."""
+#     project_id: str = Field(..., description="The ID of the associated project.")
+#     file_memory_entity_id: int = Field(..., description="The ID of the associated file MemoryEntity.")
 
 
-class ProjectFileAssociation(ProjectFileAssociationBase):
-    """Schema for representing a project-file association in API responses."""
-    project: Optional[Project] = Field(None, description="The project this file is associated with (populated from ORM).")
-    file_entity: Optional[MemoryEntity] = Field(None, description="The memory entity representing the file (populated from ORM).")
+# class ProjectFileAssociationCreate(ProjectFileAssociationBase):
+#     pass
 
-    model_config = ConfigDict(from_attributes=True) 
+
+# class ProjectFileAssociation(ProjectFileAssociationBase):
+#     """Schema for representing a project-file association in API responses."""
+#     project: Optional[Project] = Field(None, description="The project this file is associated with (populated from ORM).")
+#     file_entity: Optional[MemoryEntity] = Field(None, description="The memory entity representing the file (populated from ORM).")
+
+#     model_config = ConfigDict(from_attributes=True) 

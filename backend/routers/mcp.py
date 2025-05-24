@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
 import time
 import logging
+import json # Needed for json.dumps
 
 from backend.database import get_db
 from backend.services.rules_service import RulesService
@@ -16,7 +17,12 @@ from backend.services.task_service import TaskService
 from backend.services.agent_service import AgentService
 from backend.services.audit_log_service import AuditLogService
 from backend.services.memory_service import MemoryService
-from backend import schemas
+# from backend import schemas # Remove the old import
+
+# Import specific schema classes from their files
+from backend.schemas.project import ProjectCreate
+from backend.schemas.task import TaskCreate
+from backend.schemas.memory import MemoryEntityCreate, MemoryEntityUpdate, MemoryObservationCreate, MemoryRelationCreate
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -37,7 +43,7 @@ def get_memory_service(db: Session = Depends(get_db_session)) -> MemoryService:
 
 @router.post("/mcp-tools/project/create")
 async def mcp_create_project(
-    project_data: schemas.ProjectCreate,
+    project_data: ProjectCreate,
     db: Session = Depends(get_db_session)
 ):
     """MCP Tool: Create a new project."""
@@ -76,7 +82,7 @@ async def mcp_create_project(
 
 @router.post("/mcp-tools/task/create")
 async def mcp_create_task(
-    task_data: schemas.TaskCreate,
+    task_data: TaskCreate,
     db: Session = Depends(get_db_session)
 ):
     """MCP Tool: Create a new task."""
@@ -193,13 +199,13 @@ async def mcp_list_tasks(
 
 @router.post("/mcp-tools/memory/add-entity")
 async def mcp_add_memory_entity(
-    entity_data: Dict[str, Any],
+    entity_data: MemoryEntityCreate, # Use the directly imported class
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """MCP Tool: Add entity to knowledge graph."""
     try:
         entity = memory_service.create_memory_entity(
-            entity=schemas.MemoryEntityCreate(**entity_data)
+            entity=entity_data
         )
         
         # Add observations if provided
@@ -207,7 +213,7 @@ async def mcp_add_memory_entity(
             for obs_content in entity_data["observations"]:
                 memory_service.add_observation_to_entity(
                     entity_id=entity.id,
-                    observation=schemas.MemoryObservationCreate(content=obs_content, source="mcp_tool")
+                    observation=MemoryObservationCreate(content=obs_content, source="mcp_tool")
                 )
         
         return {
@@ -227,27 +233,83 @@ async def mcp_add_memory_entity(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/mcp-tools/memory/update-entity")
+async def mcp_update_memory_entity(
+    entity_id: int,
+    entity_update: MemoryEntityUpdate, # Use the directly imported class
+    memory_service: MemoryService = Depends(get_memory_service)
+):
+    """MCP Tool: Update an existing memory entity."""
+    try:
+        entity = memory_service.get_memory_entity_by_id(entity_id)
+        if not entity:
+            raise HTTPException(status_code=404, detail="Entity not found")
+        
+        updated_entity = memory_service.update_memory_entity(
+            entity_id=entity_id,
+            update=entity_update
+        )
+        
+        return {
+            "success": True,
+            "entity": {
+                "id": updated_entity.id,
+                "name": updated_entity.name,
+                "type": updated_entity.type,
+                "description": updated_entity.description
+            }
+        }
+    except Exception as e:
+        logger.error(f"MCP update memory entity failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/mcp-tools/memory/add-observation")
+async def mcp_add_memory_observation(
+    entity_id: int,
+    observation_data: MemoryObservationCreate, # Use the directly imported class
+    memory_service: MemoryService = Depends(get_memory_service)
+):
+    """MCP Tool: Add observation to entity."""
+    try:
+        entity = memory_service.get_memory_entity_by_id(entity_id)
+        if not entity:
+            raise HTTPException(status_code=404, detail="Entity not found")
+        
+        observation = memory_service.add_observation_to_entity(
+            entity_id=entity_id,
+            observation=observation_data
+        )
+        
+        return {
+            "success": True,
+            "observation": {
+                "id": observation.id,
+                "content": observation.content,
+                "source": observation.source
+            }
+        }
+    except Exception as e:
+        logger.error(f"MCP add memory observation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/mcp-tools/memory/add-relation")
 async def mcp_add_memory_relation(
-    relation_data: Dict[str, Any],
+    relation_data: MemoryRelationCreate, # Use the directly imported class
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """MCP Tool: Add relation to knowledge graph."""
     try:
         # Get entities
-        from_entity = memory_service.get_memory_entity_by_name(relation_data["from_entity"])
-        to_entity = memory_service.get_memory_entity_by_name(relation_data["to_entity"])
+        from_entity = memory_service.get_memory_entity_by_id(relation_data.from_entity_id) # Use get by ID after getting schema data
+        to_entity = memory_service.get_memory_entity_by_id(relation_data.to_entity_id) # Use get by ID after getting schema data
         
         if not from_entity or not to_entity:
             raise HTTPException(status_code=404, detail="One or both entities not found")
         
         relation = memory_service.create_memory_relation(
-            relation=schemas.MemoryRelationCreate(
-                from_entity_id=from_entity.id,
-                to_entity_id=to_entity.id,
-                relation_type=relation_data["relation_type"],
-                metadata_=relation_data.get("metadata", {})
-            )
+            relation=relation_data # Pass the schema object directly
         )
         
         return {
@@ -279,7 +341,14 @@ async def mcp_search_memory(
         
         return {
             "success": True,
-            "results": results
+            "results": [
+                {
+                    "id": r.id,
+                    "type": r.type,
+                    "name": r.name,
+                    "description": r.description
+                } for r in results
+            ]
         }
     except Exception as e:
         logger.error(f"MCP search memory failed: {e}")

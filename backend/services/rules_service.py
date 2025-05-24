@@ -9,11 +9,12 @@ Rules Service for integrating agent behavior with rules framework
 """
 
 from sqlalchemy.orm import Session
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Union
 from ..crud import rules as crud_rules
-from ..models import AgentBehaviorLog, AgentRuleViolation
+from ..models import AgentBehaviorLog, AgentRuleViolation, AgentRole
 from datetime import datetime, timezone
 import json
+import uuid
 
 class RulesService:
     """Service for managing agent rules and behavior"""
@@ -21,23 +22,40 @@ class RulesService:
     def __init__(self, db: Session):
         self.db = db
     
-    def get_agent_prompt(self, agent_name: str, task_context: Dict[str, Any] = None) -> str:
+    def get_agent_prompt(self, agent_name: str, task_context: Dict[str, Any] = None, available_tools: List[Dict[str, Any]] = None) -> str:
         """Get the rules-based prompt for an agent"""
-        return crud_rules.generate_agent_prompt_from_rules(self.db, agent_name, task_context)
+        return crud_rules.generate_agent_prompt_from_rules(self.db, agent_name, task_context, available_tools)
     
     def validate_agent_task(self, agent_name: str, task_data: Dict[str, Any]) -> Dict[str, Any]:
         """Validate if an agent can perform a task according to rules"""
-        violations = crud_rules.validate_task_against_agent_rules(self.db, agent_name, task_data)
+        violations_data = crud_rules.validate_task_against_agent_rules(self.db, agent_name, task_data)
         
+        logged_violations = []
+        for violation_data in violations_data:
+            task_project_id = task_data.get('task_project_id')
+            task_number = task_data.get('task_number')
+            
+            logged_violation = self.log_rule_violation(
+                agent_name=agent_name,
+                violation_type=violation_data.get('violation_type', 'unknown'),
+                description=violation_data.get('description', 'No description provided.'),
+                violated_rule_category=violation_data.get('violated_rule_category', 'unknown'),
+                violated_rule_identifier=violation_data.get('violated_rule_identifier', 'unknown'),
+                task_project_id=task_project_id,
+                task_number=task_number,
+                severity=violation_data.get('severity', 'medium')
+            )
+            logged_violations.append(logged_violation)
+            
         return {
-            "is_valid": len(violations) == 0,
-            "violations": violations,
+            "is_valid": len(violations_data) == 0,
+            "violations": [violation.__dict__ for violation in logged_violations],
             "agent_name": agent_name
         }
     
     def log_agent_action(self, agent_name: str, action_type: str, action_description: str = None, 
-                        task_project_id: str = None, task_number: int = None, success: bool = True, error_message: str = None,
-                        action_data: Dict[str, Any] = None, duration_seconds: int = None) -> AgentBehaviorLog:
+                        task_project_id: Union[str, uuid.UUID] = None, task_number: Optional[int] = None, success: bool = True, error_message: str = None,
+                        action_data: Dict[str, Any] = None, duration_seconds: Optional[int] = None) -> AgentBehaviorLog:
         """Log an agent action for behavior tracking"""
         
         # Get agent role ID
@@ -52,14 +70,14 @@ class RulesService:
                 is_active=True
             ))
         
-        from ..schemas import AgentBehaviorLogCreate
+        from ..schemas.agent_behavior_log import AgentBehaviorLogCreate
         behavior_log = AgentBehaviorLogCreate(
             agent_name=agent_name,
-            agent_role_id=agent_role.id,
+            agent_role_id=agent_role.id if agent_role else None,
             action_type=action_type,
             action_description=action_description,
-            task_project_id=task_project_id,
-            task_number=task_number,
+            task_project_id=str(task_project_id) if task_project_id else None,
+            task_task_number=task_number,
             success=success,
             error_message=error_message,
             action_data=json.dumps(action_data) if action_data else None,
@@ -69,8 +87,23 @@ class RulesService:
         return crud_rules.log_agent_behavior(self.db, behavior_log)
     
     def log_rule_violation(self, agent_name: str, violation_type: str, description: str,
-                          task_project_id: str = None, task_number: int = None, severity: str = "medium") -> AgentRuleViolation:
-        """Log a rule violation by an agent"""
+                          violated_rule_category: str, violated_rule_identifier: str,
+                          task_project_id: Union[str, uuid.UUID] = None, task_number: Optional[int] = None, severity: str = "medium") -> AgentRuleViolation:
+        """Log a rule violation by an agent, including details about the violated rule.
+
+        Args:
+            agent_name: The name of the agent.
+            violation_type: The type of violation (e.g., 'forbidden_action', 'missing_capability').
+            description: A general description of the violation.
+            violated_rule_category: The category of the violated rule (e.g., 'forbidden_action', 'capability').
+            violated_rule_identifier: The identifier of the specific rule violated (e.g., the forbidden action string).
+            task_project_id: Optional project ID related to the violation.
+            task_number: Optional task number related to the violation.
+            severity: The severity of the violation (default: 'medium').
+
+        Returns:
+            The created AgentRuleViolation object.
+        """
         
         # Get agent role ID
         agent_role = crud_rules.get_agent_role_by_name(self.db, agent_name)
@@ -84,14 +117,16 @@ class RulesService:
                 is_active=True
             ))
         
-        from ..schemas import AgentRuleViolationCreate
+        from ..schemas.agent_rule_violation import AgentRuleViolationCreate
         violation = AgentRuleViolationCreate(
             agent_name=agent_name,
-            agent_role_id=agent_role.id,
+            agent_role_id=agent_role.id if agent_role else None,
             violation_type=violation_type,
             violation_description=description,
-            task_project_id=task_project_id,
-            task_number=task_number,
+            violated_rule_category=violated_rule_category,
+            violated_rule_identifier=violated_rule_identifier,
+            task_project_id=str(task_project_id) if task_project_id else None,
+            task_task_number=task_number,
             severity=severity
         )
         
@@ -189,7 +224,7 @@ class RulesService:
     
     def _create_universal_mandates(self):
         """Create default universal mandates"""
-        from ..schemas import UniversalMandateCreate
+        from ..schemas.universal_mandate import UniversalMandateCreate
         
         default_mandates = [
             {
@@ -230,7 +265,7 @@ class RulesService:
     
     def _create_default_agent_roles(self):
         """Create default agent roles"""
-        from ..schemas import AgentRoleCreate
+        from ..schemas.agent_role import AgentRoleCreate
         
         default_roles = [
             {

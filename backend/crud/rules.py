@@ -17,13 +17,12 @@ from ..models import (
     Workflow, WorkflowStep, AgentPromptTemplate, AgentRuleViolation,
     AgentBehaviorLog
 )
-from ..schemas import (
-    UniversalMandateCreate, UniversalMandateUpdate,
-    AgentRoleCreate, AgentRoleUpdate,
-    WorkflowCreate, WorkflowUpdate,
-    AgentPromptTemplateCreate, AgentPromptTemplateUpdate,
-    AgentRuleViolationCreate, AgentBehaviorLogCreate
-)
+from backend.schemas.universal_mandate import UniversalMandateCreate, UniversalMandateUpdate
+from backend.schemas.agent_role import AgentRoleCreate, AgentRoleUpdate
+from backend.schemas.workflow import WorkflowCreate, WorkflowUpdate
+from backend.schemas.agent_prompt_template import AgentPromptTemplateCreate, AgentPromptTemplateUpdate
+from backend.schemas.agent_rule_violation import AgentRuleViolationCreate
+from backend.schemas.agent_behavior_log import AgentBehaviorLogCreate
 
 # Universal Mandates CRUD
 def get_universal_mandates(db: Session, active_only: bool = True) -> List[UniversalMandate]:
@@ -279,13 +278,18 @@ def create_workflow(db: Session, workflow: WorkflowCreate) -> Workflow:
     return db_workflow
 
 # Rules Validation Functions
-def validate_task_against_agent_rules(db: Session, agent_name: str, task_data: Dict[str, Any]) -> List[str]:
-    """Validate a task against agent rules and return list of violations"""
+def validate_task_against_agent_rules(db: Session, agent_name: str, task_data: Dict[str, Any]) -> List[Dict[str, str]]:
+    """Validate a task against agent rules and return list of violations as dictionaries."""
     violations = []
     
     agent_role = get_agent_role_with_details(db, agent_name)
     if not agent_role:
-        violations.append(f"No rules defined for agent: {agent_name}")
+        violations.append({
+            "violation_type": "no_rules_defined",
+            "violated_rule_category": "N/A",
+            "violated_rule_identifier": "N/A",
+            "description": f"No rules defined for agent: {agent_name}"
+        })
         return violations
     
     # Check forbidden actions
@@ -294,7 +298,12 @@ def validate_task_against_agent_rules(db: Session, agent_name: str, task_data: D
         if forbidden.is_active:
             for action in requested_actions:
                 if forbidden.action.lower() in action.lower():
-                    violations.append(f"Forbidden action '{forbidden.action}': {forbidden.reason or 'No reason provided'}")
+                    violations.append({
+                        "violation_type": "forbidden_action",
+                        "violated_rule_category": "forbidden_action",
+                        "violated_rule_identifier": forbidden.action,
+                        "description": f"Forbidden action '{forbidden.action}': {forbidden.reason or 'No reason provided'}"
+                    })
     
     # Check required capabilities
     required_capabilities = task_data.get('required_capabilities', [])
@@ -302,11 +311,18 @@ def validate_task_against_agent_rules(db: Session, agent_name: str, task_data: D
     
     for capability in required_capabilities:
         if capability not in available_capabilities:
-            violations.append(f"Required capability '{capability}' not available for agent {agent_name}")
-    
+            violations.append({
+                "violation_type": "missing_capability",
+                "violated_rule_category": "capability",
+                "violated_rule_identifier": capability,
+                "description": f"Required capability '{capability}' not available for agent {agent_name}"
+            })
+            
+    # TODO: Add checks for other rule types (verification_requirements, handoff_criteria, error_protocols) if needed
+
     return violations
 
-def generate_agent_prompt_from_rules(db: Session, agent_name: str, task_context: Dict[str, Any] = None) -> str:
+def generate_agent_prompt_from_rules(db: Session, agent_name: str, task_context: Dict[str, Any] = None, available_tools: List[Dict[str, Any]] = None) -> str:
     """Generate a rules-based prompt for an agent"""
     agent_role = get_agent_role_with_details(db, agent_name)
     if not agent_role:
@@ -315,8 +331,20 @@ def generate_agent_prompt_from_rules(db: Session, agent_name: str, task_context:
     # Try to get custom prompt template first
     template = get_agent_prompt_template(db, agent_name)
     if template:
-        # TODO: Implement template variable substitution
-        return template.template_content
+        # Implement variable substitution
+        prompt_content = template.template_content
+        if task_context:
+            for key, value in task_context.items():
+                placeholder = f"{{{{{key}}}}}"
+                prompt_content = prompt_content.replace(placeholder, str(value))
+        
+        # Include available tools if provided
+        if available_tools:
+            prompt_content += f"\n\n## Available Tools\nYou have access to the following tools:\n"
+            for tool in available_tools:
+                prompt_content += f"- **{tool.get('name', 'Unknown Tool')}**: {tool.get('description', 'No description provided.')}\n"
+
+        return prompt_content
     
     # Generate default prompt from rules
     mandates = get_universal_mandates(db)

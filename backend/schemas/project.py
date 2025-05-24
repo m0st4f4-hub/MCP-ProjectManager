@@ -9,6 +9,9 @@ from typing import Optional, List, Union, Any, Dict
 from datetime import datetime
 from backend.schemas.user import User # Import User directly
 
+# Import related schemas
+import uuid
+
 # Forward references for relationships
 # User = "backend.schemas.user.User" # Remove string forward reference
 # Project is defined within this file
