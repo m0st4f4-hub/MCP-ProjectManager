@@ -19,7 +19,7 @@ from backend.models import *
 TEST_SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def engine():
     """Create a SQLAlchemy engine for testing."""
     engine = create_engine(

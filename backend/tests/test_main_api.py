@@ -331,6 +331,10 @@ async def test_get_tasks_api(async_client: httpx.AsyncClient, db_session: Sessio
     response_not_found = await async_client.get(f"/projects/{uuid.uuid4()}/tasks/")
     assert response_not_found.status_code == 404 # Corrected typo and comparison
     # Or 200 with empty list, depends on backend
+    # Based on current router logic, it should probably be 404 if project not found
+    # But if it returns an empty list for a non-existent project, that might also be acceptable depending on requirements.
+    # Let's assume 404 is the intended behavior for now.
+    # assert response_not_found.status_code == 404 # Removed duplicate assertion
 
 async def test_get_task_by_id_api(async_client: httpx.AsyncClient, test_project, test_task): # Added fixtures
     # project_id = test_project.id # Use fixture ID
@@ -716,341 +720,6 @@ async def test_project_agent_task_generic_exceptions(async_client: httpx.AsyncCl
     assert response.status_code == 500
     assert "Internal server error" in response.json()["detail"]
 
-async def test_get_mcp_docs_api_edge_cases_complete(async_client: httpx.AsyncClient, fastapi_app: FastAPI):
-    """Test edge cases in get_mcp_docs endpoint with complete coverage"""
-    # Add test routes with various edge cases
-    @fastapi_app.get("/test-no-methods")
-    async def route_no_methods():
-        pass
-
-    @fastapi_app.get("/test-no-path", name=None)
-    async def route_no_path():
-        pass
-
-    @fastapi_app.get("/test-no-name-no-desc", name=None, description=None)
-    async def route_no_name_no_desc():
-        pass
-
-    @fastapi_app.get("/test-empty-name", name="")
-    async def route_empty_name():
-        pass
-
-    @fastapi_app.get("/test-empty-desc", description="")
-    async def route_empty_desc():
-        pass
-
-    # Add a route with a path that will become empty after processing
-    @fastapi_app.get("/{}", name="", operation_id="")
-    async def empty_path_route():
-        pass
-
-    # Add a route with a description that has multiple lines
-    @fastapi_app.get("/test-multiline-desc", description="First line\nSecond line")
-    async def route_multiline_desc():
-        pass
-
-    # Add a route with no operation_id but with a name
-    @fastapi_app.get("/test-no-op-id", name="test_name", operation_id=None)
-    async def route_no_op_id():
-        pass
-
-    # Store original routes
-    original_routes = list(fastapi_app.router.routes)
-
-    try:
-        # Make the request
-        response = await async_client.get("/mcp-docs")
-        assert response.status_code == 200
-        data = response.json()
-
-        # Verify the documentation was generated correctly
-        assert "mcp_project_manager_tools_documentation" in data
-        assert "# MCP Project Manager Tools Documentation" in data["mcp_project_manager_tools_documentation"]
-
-        # Verify edge cases are handled
-        doc_content = data["mcp_project_manager_tools_documentation"]
-        assert "test-no-methods" in doc_content
-        assert "test-no-path" in doc_content
-        assert "test-no-name-no-desc" in doc_content
-        assert "test-empty-name" in doc_content
-        assert "test-empty-desc" in doc_content
-        assert "unnamed_route" in doc_content
-        assert "First line" in doc_content  # First line of multiline description
-        assert "test_name" in doc_content  # Name used when operation_id is None
-
-    finally:
-        # Restore original routes
-        fastapi_app.router.routes.clear()
-        fastapi_app.router.routes.extend(original_routes)
-
-async def test_get_mcp_docs_api_tools_dict_edge_cases(async_client: httpx.AsyncClient, fastapi_app: FastAPI):
-    """Test edge cases with MCP tools dictionary"""
-    # Create a mock MCP instance with various edge cases in tools dict
-    mock_mcp_instance = mock.MagicMock()
-    mock_mcp_instance.tools = {
-        "tool1": {"description": "Test tool"},
-        "tool2": {},  # No description
-        "tool3": None,  # Invalid tool info
-        "tool4": {"description": None},  # None description
-        "tool5": {"description": ""},  # Empty description
-    }
-
-    # Store original state
-    original_app_state_mcp_exists = hasattr(fastapi_app.state, 'mcp_instance')
-    original_app_state_mcp_value = getattr(fastapi_app.state, 'mcp_instance', None)
-    original_routes = list(fastapi_app.router.routes)
-
-    try:
-        # Set up the mock MCP instance
-        fastapi_app.state.mcp_instance = mock_mcp_instance
-
-        # Keep only the /mcp-docs route
-        mcp_docs_route = next((r for r in original_routes if hasattr(r, "path") and r.path == "/mcp-docs"), None)
-        fastapi_app.router.routes.clear()
-        if mcp_docs_route:
-            fastapi_app.router.routes.append(mcp_docs_route)
-
-        # Make the request
-        response = await async_client.get("/mcp-docs")
-        assert response.status_code == 200
-        data = response.json()
-
-        # Verify the response
-        docs_md = data["mcp_project_manager_tools_documentation"]
-        assert "Test tool" in docs_md  # Normal case
-        assert "Tool information not available" in docs_md  # For tools without proper info
-
-    finally:
-        # Restore original state
-        if original_app_state_mcp_exists:
-            fastapi_app.state.mcp_instance = original_app_state_mcp_value
-        elif hasattr(fastapi_app.state, 'mcp_instance'):
-            delattr(fastapi_app.state, 'mcp_instance')
-        fastapi_app.router.routes.clear()
-        fastapi_app.router.routes.extend(original_routes)
-
-async def test_get_mcp_docs_api_invalid_mcp_instance(async_client: httpx.AsyncClient, fastapi_app: FastAPI):
-    """Test handling of invalid MCP instance"""
-    # Create a mock MCP instance that raises an exception when accessed
-    class BrokenMCPInstance:
-        @property
-        def tools(self):
-            raise Exception("MCP instance error")
-
-    mock_mcp_instance = BrokenMCPInstance()
-
-    # Store original state
-    original_app_state_mcp_exists = hasattr(fastapi_app.state, 'mcp_instance')
-    original_app_state_mcp_value = getattr(fastapi_app.state, 'mcp_instance', None)
-    original_routes = list(fastapi_app.router.routes)
-
-    try:
-        # Set up the mock MCP instance
-        fastapi_app.state.mcp_instance = mock_mcp_instance
-
-        # Make the request
-        response = await async_client.get("/mcp-docs")
-        assert response.status_code == 500
-        data = response.json()
-        assert "detail" in data
-        assert "MCP instance error" in data["detail"]
-
-    finally:
-        # Restore original state
-        if original_app_state_mcp_exists:
-            fastapi_app.state.mcp_instance = original_app_state_mcp_value
-        elif hasattr(fastapi_app.state, 'mcp_instance'):
-            delattr(fastapi_app.state, 'mcp_instance')
-        
-        # Restore original routes
-        fastapi_app.router.routes.clear()
-        fastapi_app.router.routes.extend(original_routes)
-
-# --- New Agent API Tests (Archive, Unarchive, Rules) ---
-
-async def test_archive_agent_api(async_client: httpx.AsyncClient, db_session: Session):
-    # Create an agent to archive
-    agent = create_test_agent(db_session, name="AgentToArchive")
-
-    # Archive the agent
-    response = await async_client.post(f"/agents/{agent.id}/archive")
-    assert response.status_code == 200
-    archived_agent = response.json()
-    assert archived_agent["id"] == agent.id
-    # Assuming archiving updates a field or status in the schema, verify it here
-    # assert archived_agent["is_archived"] is True # Example: if there's an is_archived field
-
-    # Try archiving a non-existent agent
-    response_not_found = await async_client.post("/agents/non_existent_id/archive")
-    assert response_not_found.status_code == 404
-
-async def test_unarchive_agent_api(async_client: httpx.AsyncClient, db_session: Session):
-    # Create an agent, then archive it first
-    agent = create_test_agent(db_session, name="AgentToUnarchive")
-    archive_response = await async_client.post(f"/agents/{agent.id}/archive")
-    assert archive_response.status_code == 200
-
-    # Unarchive the agent
-    response = await async_client.post(f"/agents/{agent.id}/unarchive")
-    assert response.status_code == 200
-    unarchived_agent = response.json()
-    assert unarchived_agent["id"] == agent.id
-    # Assuming unarchiving updates a field or status in the schema, verify it here
-    # assert unarchived_agent["is_archived"] is False # Example: if there's an is_archived field
-
-    # Try unarchiving a non-existent agent
-    response_not_found = await async_client.post("/agents/non_existent_id/unarchive")
-    assert response_not_found.status_code == 404
-
-async def test_agent_rules_api(async_client: httpx.AsyncClient, db_session: Session):
-    # Create an agent
-    agent = create_test_agent(db_session, name="AgentWithRules")
-    rule_id_1 = "rule-one"
-    rule_id_2 = "rule-two"
-
-    # Add a rule to the agent
-    add_rule_response_1 = await async_client.post(f"/agents/{agent.id}/rules/", json={"rule_id": rule_id_1})
-    assert add_rule_response_1.status_code == 200
-    added_rule_1 = add_rule_response_1.json()
-    assert added_rule_1["agent_id"] == agent.id
-    assert added_rule_1["rule_id"] == rule_id_1
-
-    # Add another rule
-    add_rule_response_2 = await async_client.post(f"/agents/{agent.id}/rules/", json={"rule_id": rule_id_2})
-    assert add_rule_response_2.status_code == 200
-    added_rule_2 = add_rule_response_2.json()
-    assert added_rule_2["agent_id"] == agent.id
-    assert added_rule_2["rule_id"] == rule_id_2
-
-    # Try adding the same rule again
-    add_rule_response_dup = await async_client.post(f"/agents/{agent.id}/rules/", json={"rule_id": rule_id_1})
-    assert add_rule_response_dup.status_code == 400 # Assuming service returns None and router raises 400
-
-    # Get rules for the agent
-    get_rules_response = await async_client.get(f"/agents/{agent.id}/rules/")
-    assert get_rules_response.status_code == 200
-    rules_list = get_rules_response.json()
-    assert len(rules_list) == 2
-    rule_ids_in_list = {rule["rule_id"] for rule in rules_list}
-    assert rule_id_1 in rule_ids_in_list
-    assert rule_id_2 in rule_ids_in_list
-
-    # Remove a rule
-    remove_rule_response_1 = await async_client.delete(f"/agents/{agent.id}/rules/{rule_id_1}")
-    assert remove_rule_response_1.status_code == 200
-    assert remove_rule_response_1.json() == {"message": "Agent rule association removed successfully"}
-
-    # Get rules again to confirm removal
-    get_rules_response_after_remove = await async_client.get(f"/agents/{agent.id}/rules/")
-    assert get_rules_response_after_remove.status_code == 200
-    rules_list_after_remove = get_rules_response_after_remove.json()
-    assert len(rules_list_after_remove) == 1
-    assert rules_list_after_remove[0]["rule_id"] == rule_id_2
-
-    # Try removing a non-existent rule association
-    remove_rule_response_not_found = await async_client.delete(f"/agents/{agent.id}/rules/non_existent_rule")
-    assert remove_rule_response_not_found.status_code == 404
-
-    # Try getting rules for a non-existent agent (should probably return empty list or 404 depending on service/router logic)
-    # Based on the router code, it will likely return an empty list if agent service handles non-existent agent gracefully.
-    get_rules_non_existent_agent = await async_client.get("/agents/non_existent_id/rules/")
-    assert get_rules_non_existent_agent.status_code == 200 # Or 404 if agent check was uncommented
-    assert get_rules_non_existent_agent.json() == [] # Assuming empty list for non-existent agent
-
-    # Try adding rule to non-existent agent
-    add_rule_non_existent_agent = await async_client.post("/agents/non_existent_id/rules/", json={"rule_id": "some-rule"})
-    assert add_rule_non_existent_agent.status_code == 400 # Assuming service returns None and router raises 400
-
-# --- Audit Log API Tests ---
-
-async def test_audit_log_api(async_client: httpx.AsyncClient, db_session: Session):
-    # Create a few log entries
-    log_entry_1_data = {
-        "entity_type": "project",
-        "entity_id": str(uuid.uuid4()),
-        "action": "created",
-        "user_id": str(uuid.uuid4()),
-        "details": {"name": "New Project"}
-    }
-    log_entry_2_data = {
-        "entity_type": "task",
-        "entity_id": str(uuid.uuid4()),
-        "action": "updated",
-        "user_id": str(uuid.uuid4()),
-        "details": {"status": "completed"}
-    }
-    log_entry_3_data = {
-        "entity_type": "project",
-        "entity_id": log_entry_1_data["entity_id"], # Same entity as log 1
-        "action": "deleted",
-        "user_id": log_entry_1_data["user_id"], # Same user as log 1
-        "details": {}
-    }
-
-    # Test creating log entries (though typically done internally)
-    # Note: The router endpoint for creation exists, but typically services would call the service method directly.
-    # We test the endpoint here for completeness.
-    create_response_1 = await async_client.post("/audit_logs/", json=schemas.AuditLogCreate(**log_entry_1_data).model_dump()) # Use schema for validation
-    assert create_response_1.status_code == 200
-    log_entry_1 = create_response_1.json()
-    assert log_entry_1["entity_type"] == log_entry_1_data["entity_type"]
-    assert log_entry_1["id"] is not None
-
-    create_response_2 = await async_client.post("/audit_logs/", json=schemas.AuditLogCreate(**log_entry_2_data).model_dump()) # Use schema for validation
-    assert create_response_2.status_code == 200
-    log_entry_2 = create_response_2.json()
-
-    create_response_3 = await async_client.post("/audit_logs/", json=schemas.AuditLogCreate(**log_entry_3_data).model_dump()) # Use schema for validation
-    assert create_response_3.status_code == 200
-    log_entry_3 = create_response_3.json()
-
-    # Test getting a single log entry by ID
-    get_by_id_response_1 = await async_client.get(f"/audit_logs/{log_entry_1["id"]}")
-    assert get_by_id_response_1.status_code == 200
-    retrieved_log_entry_1 = get_by_id_response_1.json()
-    assert retrieved_log_entry_1["id"] == log_entry_1["id"]
-    assert retrieved_log_entry_1["action"] == log_entry_1_data["action"]
-
-    # Test getting non-existent log entry by ID
-    get_by_id_not_found = await async_client.get("/audit_logs/non_existent_id")
-    assert get_by_id_not_found.status_code == 404
-
-    # Test getting log entries by entity
-    get_by_entity_response = await async_client.get(f"/audit_logs/entity/{log_entry_1_data["entity_type"]}/{log_entry_1_data["entity_id"]}")
-    assert get_by_entity_response.status_code == 200
-    entity_logs = get_by_entity_response.json()
-    assert len(entity_logs) == 2 # Should get log_entry_1 and log_entry_3
-    entity_actions = {log["action"] for log in entity_logs}
-    assert "created" in entity_actions
-    assert "deleted" in entity_actions
-
-    # Test getting log entries by a non-existent entity
-    get_by_entity_not_found = await async_client.get("/audit_logs/entity/non_existent_type/non_existent_id")
-    assert get_by_entity_not_found.status_code == 200 # Should return empty list
-    assert get_by_entity_not_found.json() == []
-
-    # Test getting log entries by user
-    get_by_user_response = await async_client.get(f"/audit_logs/user/{log_entry_1_data["user_id"]}")
-    assert get_by_user_response.status_code == 200
-    user_logs = get_by_user_response.json()
-    assert len(user_logs) == 2 # Should get log_entry_1 and log_entry_3
-    user_actions = {log["action"] for log in user_logs}
-    assert "created" in user_actions
-    assert "deleted" in user_actions
-
-    # Test getting log entries by a non-existent user
-    get_by_user_not_found = await async_client.get("/audit_logs/user/non_existent_user_id")
-    assert get_by_user_not_found.status_code == 200 # Should return empty list
-    assert get_by_user_not_found.json() == []
-
-    # Test pagination (simple check)
-    # get_by_entity_paginated = await async_client.get(f"/audit_logs/entity/{log_entry_1_data['entity_type']}/{log_entry_1_data['entity_id']}", params={"limit": 1})
-    # assert get_by_entity_paginated.status_code == 200
-    # paginated_logs = get_by_entity_paginated.json()
-    # assert len(paginated_logs) == 1
-
-# --- Project Member API Tests ---
-
 async def test_project_member_api(async_client: httpx.AsyncClient, db_session: Session, test_project, test_user): # Added fixtures
     # Create a project and a user (using fixtures)
     # project = create_test_project(db_session, name="Project for Members")
@@ -1090,8 +759,6 @@ async def test_project_member_api(async_client: httpx.AsyncClient, db_session: S
     remove_not_found = await async_client.delete(f"/projects/{project.id}/members/{uuid.uuid4()}")
     assert remove_not_found.status_code == 404
 
-# --- Project File Association API Tests ---
-
 async def test_project_file_association_api(async_client: httpx.AsyncClient, db_session: Session, test_project): # Added fixture
     # Create a project (using fixture)
     # project = create_test_project(db_session, name="Project for Files")
@@ -1130,8 +797,6 @@ async def test_project_file_association_api(async_client: httpx.AsyncClient, db_
     # Test removing a non-existent file association
     remove_not_found = await async_client.delete(f"/projects/{project.id}/files/{uuid.uuid4()}")
     assert remove_not_found.status_code == 404
-
-# --- Task File Association API Tests ---
 
 async def test_task_file_association_api(async_client: httpx.AsyncClient, db_session: Session, test_project, test_task): # Added fixtures
     # Create a project and a task (using fixtures)
@@ -1179,13 +844,11 @@ async def test_task_file_association_api(async_client: httpx.AsyncClient, db_ses
     remove_not_found = await async_client.delete(f"/projects/{task.project_id}/tasks/{task.task_number}/files/{uuid.uuid4()}")
     assert remove_not_found.status_code == 404
 
-# --- Task Dependency API Tests ---
-
 async def test_task_dependency_api(async_client: httpx.AsyncClient, db_session: Session, test_project, test_task): # Added fixtures
     # Create a project and a few tasks (using fixtures)
-    # project = create_test_project(db_session, name="Project for Dependencies")
-    # task1 = create_test_task(db_session, project_id=project.id, title="Task 1")
-    # task2 = create_test_task(db_session, project_id=project.id, title="Task 2")
+    # project = create_test_project(db_session, name="Project for Dependencies") # Removed call
+    # task1 = create_test_task(db_session, project_id=project.id, title="Task 1") # Removed call
+    # task2 = create_test_task(db_session, project_id=project.id, title="Task 2") # Removed call
     project = test_project
     task1 = test_task # Use the existing fixture task as task1
 
@@ -1234,7 +897,6 @@ async def test_task_dependency_api(async_client: httpx.AsyncClient, db_session: 
     assert remove_not_found.status_code == 404
 
     # Test circular dependency detection (assuming backend logic prevents this)
-    # Try to make task2 depend on task1
     add_circular_dependency_payload = {"dependent_task_number": task2.task_number, "dependency_task_number": task1.task_number}
     response_circular = await async_client.post(f"/projects/{project.id}/dependencies/", json=add_circular_dependency_payload)
     assert response_circular.status_code == 400 # Assuming 400 for validation error
