@@ -66,7 +66,7 @@ def TestingSessionLocal(test_engine):
     return sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def setup_database(test_engine):
     from .. import models  # Ensure all models are imported
     Base.metadata.create_all(bind=test_engine)

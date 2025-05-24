@@ -1,11 +1,31 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, UniqueConstraint, PrimaryKeyConstraint, and_, ForeignKeyConstraint
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, UniqueConstraint, PrimaryKeyConstraint, and_, ForeignKeyConstraint, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import uuid
 from sqlalchemy.sql import func
+import json
+from sqlalchemy.types import TypeDecorator
 
 from .database import Base  # Import Base from database.py
+
+
+class JSONText(TypeDecorator):
+    """Stores JSON data as TEXT in SQLite, serializing/deserializing automatically."""
+    impl = Text
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            return json.dumps(value)
+        return None
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return json.loads(value)
+        return None
+
+    # Add `Dict[str, Any]` type hint to support Mapped[]
+    python_type = Dict[str, Any]
 
 
 class Project(Base):
@@ -96,12 +116,14 @@ class TaskDependency(Base):
     predecessor: Mapped["Task"] = relationship(
         "Task",
         primaryjoin="and_(Task.project_id == TaskDependency.predecessor_project_id, Task.task_number == TaskDependency.predecessor_task_number)",
-        back_populates="dependencies_as_predecessor"
+        back_populates="dependencies_as_predecessor",
+        foreign_keys=[predecessor_project_id, predecessor_task_number]
     )
     successor: Mapped["Task"] = relationship(
         "Task",
         primaryjoin="and_(Task.project_id == TaskDependency.successor_project_id, Task.task_number == TaskDependency.successor_task_number)",
-        back_populates="dependencies_as_successor"
+        back_populates="dependencies_as_successor",
+        foreign_keys=[successor_project_id, successor_task_number]
     )
 
 
@@ -143,12 +165,8 @@ class Task(Base):
     project: Mapped["Project"] = relationship(back_populates="tasks")
     agent: Mapped[Optional["Agent"]] = relationship(back_populates="tasks")
     status: Mapped[str] = mapped_column(String, default="To Do")
-    status_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey(
-        "task_statuses.id"), nullable=True)  # Foreign key to TaskStatus
     is_archived: Mapped[bool] = mapped_column(
         Boolean, default=False, nullable=False)
-    task_status: Mapped[Optional["TaskStatus"]] = relationship(
-        back_populates="tasks_with_status", foreign_keys="[Task.status_id]")
     dependencies_as_predecessor: Mapped[List["TaskDependency"]] = relationship(
         "TaskDependency",
         primaryjoin="and_(Task.project_id == TaskDependency.predecessor_project_id, Task.task_number == TaskDependency.predecessor_task_number)",
@@ -168,7 +186,6 @@ class Task(Base):
     )
     comments: Mapped[List["Comment"]] = relationship(
         back_populates="task",
-        foreign_keys="[Comment.task_project_id, Comment.task_task_number]",
         cascade="all, delete-orphan"
     )
 
@@ -245,7 +262,7 @@ class TaskStatus(Base):
         Boolean, default=False)  # Indicates a completed status
 
     tasks_with_status: Mapped[List["Task"]] = relationship(
-        back_populates="task_status")  # Assuming Task has task_status_id foreign key
+        back_populates="task_status")
 
 
 class ProjectFileAssociation(Base):
@@ -275,7 +292,7 @@ class TaskFileAssociation(Base):
 
     # Removed file_id column and relationship
     task: Mapped["Task"] = relationship(
-        back_populates="task",
+        back_populates="task_files",
         primaryjoin="and_(Task.project_id == TaskFileAssociation.task_project_id, Task.task_number == TaskFileAssociation.task_task_number)"
     )
 
@@ -292,8 +309,8 @@ class Comment(Base):
 
     id: Mapped[str] = mapped_column(
         String(32), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
-    task_project_id: Mapped[Optional[str]] = mapped_column(String(32), nullable=True) # Removed ForeignKey here
-    task_task_number: Mapped[Optional[int]] = mapped_column(Integer, nullable=True) # Removed ForeignKey here
+    task_project_id: Mapped[Optional[str]] = mapped_column(String(32), ForeignKey("tasks.project_id"), nullable=True) # Added ForeignKey here
+    task_task_number: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("tasks.task_number"), nullable=True) # Added ForeignKey here
     project_id: Mapped[Optional[str]] = mapped_column(String(32), ForeignKey(
         "projects.id"), nullable=True)  # Allow comments on projects too
     author_id: Mapped[str] = mapped_column(String(32), ForeignKey("users.id"))
@@ -341,8 +358,7 @@ class AuditLog(Base):
         String)  # e.g., "task", "project", "user"
     # ID of the affected entity (can be composite, store as string or JSON)
     entity_id: Mapped[str] = mapped_column(String)
-    details: Mapped[Optional[Text]] = mapped_column(
-        Text, nullable=True)  # JSON or text details of the change
+    details: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONText, nullable=True) # Use custom JSONText type
 
     user: Mapped[Optional["User"]] = relationship(back_populates="audit_logs")
 
@@ -562,14 +578,14 @@ class MemoryEntity(Base):
     type: Mapped[str] = mapped_column(String, index=True) # e.g., "concept", "person", "project", "task", "agent", "file", "finding"
     name: Mapped[str] = mapped_column(String, unique=True, index=True) # Unique name for the entity
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    metadata_: Mapped[Optional[dict]] = mapped_column(Text, nullable=True) # Assuming metadata can be stored as text/JSON
+    metadata_: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True) # Store metadata as JSON
 
     observations: Mapped[List["MemoryObservation"]] = relationship(
         back_populates="entity", cascade="all, delete-orphan")
     relations_as_from: Mapped[List["MemoryRelation"]] = relationship(
         "MemoryRelation", foreign_keys="[MemoryRelation.from_entity_id]", back_populates="from_entity", cascade="all, delete-orphan")
     relations_as_to: Mapped[List["MemoryRelation"]] = relationship(
-        "MemoryEntity", foreign_keys="[MemoryRelation.to_entity_id]", back_populates="relations_as_to")
+        "MemoryRelation", foreign_keys="[MemoryRelation.to_entity_id]", back_populates="to_entity", cascade="all, delete-orphan")
 
 
 class MemoryObservation(Base):
@@ -596,7 +612,7 @@ class MemoryRelation(Base):
     from_entity_id: Mapped[int] = mapped_column(Integer, ForeignKey("memory_entities.id"))
     to_entity_id: Mapped[int] = mapped_column(Integer, ForeignKey("memory_entities.id"))
     relation_type: Mapped[str] = mapped_column(String, index=True) # e.g., "related_to", "depends_on"
-    metadata_: Mapped[Optional[dict]] = mapped_column(Text, nullable=True) # Assuming metadata can be stored as text/JSON
+    metadata_: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True) # Store metadata as JSON
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc))
 

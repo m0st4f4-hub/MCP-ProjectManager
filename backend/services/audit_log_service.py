@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import datetime
 import uuid
+import json
 from backend import models
 
 
@@ -17,13 +18,16 @@ class AuditLogService:
         user_id: Optional[str] = None,
         details: Optional[dict] = None
     ) -> models.AuditLog:
+        # Explicitly serialize details to JSON string for SQLite
+        details_json = json.dumps(details) if details is not None else None
+
         db_log_entry = models.AuditLog(
             id=str(uuid.uuid4()),
             entity_type=entity_type,
             entity_id=entity_id,
             action=action,
             user_id=user_id,
-            details=details,
+            details=details_json,
             timestamp=datetime.datetime.now(datetime.timezone.utc)
         )
         self.db.add(db_log_entry)

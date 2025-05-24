@@ -6,9 +6,10 @@
 
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-from typing import List, Optional
+from typing import List, Optional, Union
 from ..models import TaskFileAssociation
 from ..schemas import TaskFileAssociationCreate, MemoryEntityCreate, MemoryRelationCreate
+import uuid
 
 # Import the memory crud operations
 from . import memory as memory_crud
@@ -16,13 +17,28 @@ from . import memory as memory_crud
 # from . import files as files_crud # Need to verify file crud location or implement here
 
 
-def get_task_file_association(db: Session, task_project_id: str, task_task_number: int, file_memory_entity_name: str) -> Optional[TaskFileAssociation]:
-    """Get a specific task file association."""
+def get_files_for_task(db: Session, task_project_id: Union[str, uuid.UUID], task_number: int) -> List[TaskFileAssociation]:
+    """Get all file associations for a task."""
     return db.query(TaskFileAssociation).filter(
         and_(
-            TaskFileAssociation.task_project_id == task_project_id,
-            TaskFileAssociation.task_task_number == task_task_number,
-            TaskFileAssociation.file_memory_entity_name == file_memory_entity_name
+            TaskFileAssociation.task_project_id == str(task_project_id),
+            TaskFileAssociation.task_task_number == task_number
+        )
+    ).all()
+
+
+def get_task_file_association(
+    db: Session,
+    task_project_id: Union[str, uuid.UUID],
+    task_number: int,
+    file_id: str
+) -> Optional[TaskFileAssociation]:
+    """Get a specific task-file association."""
+    return db.query(TaskFileAssociation).filter(
+        and_(
+            TaskFileAssociation.task_project_id == str(task_project_id),
+            TaskFileAssociation.task_task_number == task_number,
+            TaskFileAssociation.file_memory_entity_name == file_id
         )
     ).first()
 
@@ -110,6 +126,32 @@ def delete_task_file_association(db: Session, task_project_id: str, task_task_nu
     db_task_file = get_task_file_association(db, task_project_id, task_task_number, file_memory_entity_name)
     if db_task_file:
         db.delete(db_task_file)
+        db.commit()
+        return True
+    return False
+
+
+def associate_file_with_task(db: Session, task_project_id: Union[str, uuid.UUID], task_number: int, file_id: str) -> TaskFileAssociation:
+    """Associate a file with a task using file_id as the memory entity name."""
+    task_file = TaskFileAssociationCreate(
+        task_project_id=str(task_project_id),
+        task_task_number=task_number,
+        file_memory_entity_name=file_id  # Using file_id as the memory entity name
+    )
+    return create_task_file_association(db, task_file)
+
+
+def disassociate_file_from_task(
+    db: Session,
+    task_project_id: Union[str, uuid.UUID],
+    task_number: int,
+    file_id: str
+) -> bool:
+    """Remove a file association from a task."""
+    association = get_task_file_association(
+        db, task_project_id=task_project_id, task_number=task_number, file_id=file_id)
+    if association:
+        db.delete(association)
         db.commit()
         return True
     return False

@@ -215,10 +215,13 @@ export const useTaskStore = create<TaskState>((set, get) => ({
           is_archived:
             projectArchiveFilter === null ? undefined : projectArchiveFilter,
         }),
-        api.getAgents({
-          is_archived:
-            agentArchiveFilter === null ? undefined : agentArchiveFilter,
-        }),
+        api.getAgents(
+          0, // Default skip
+          100, // Default limit
+          undefined, // No search query here
+          undefined, // No status filter here
+          agentArchiveFilter === null ? undefined : agentArchiveFilter // Pass is_archived filter
+        ),
       ]);
       set({ projects, agents });
     } catch (error) {

@@ -303,6 +303,27 @@ export const deleteTask = async (
   } as Task;
 };
 
+// --- Task Comments API ---
+export const getTaskComments = async (
+  project_id: string,
+  task_number: number
+): Promise<any[]> => {
+  return request<any[]>(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/comments/`
+  );
+};
+
+export const addTaskComment = async (
+  project_id: string,
+  task_number: number,
+  commentData: { content: string; user_id?: string }
+): Promise<any> => {
+  return request<any>(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/comments/`,
+    { method: "POST", body: JSON.stringify(commentData) }
+  );
+};
+
 // --- Task Archive/Unarchive ---
 export const archiveTask = async (
   project_id: string,

@@ -319,100 +319,69 @@ def get_files_associated_with_task_endpoint(
     limit: int = Query(
         100, description="Limit the number of associations returned."),
     sort_by: Optional[str] = Query(
-        None, description="Field to sort by (e.g., 'filename', 'created_at')."),
+        "file_memory_entity_name", description="Field to sort by (e.g., 'file_memory_entity_name', 'created_at')."),
     sort_direction: Optional[str] = Query(
-        None, description="Sort direction: 'asc' or 'desc'."),
-    filename: Optional[str] = Query(
-        None, description="Filter by filename (partial match)."),
+        "asc", description="Sort direction: 'asc' or 'desc'."),
     task_file_association_service: TaskFileAssociationService = Depends(
         get_task_file_association_service)
 ):
-    """Retrieve all file associations for a specific task, with optional filtering and sorting."""
-    try:
-        return task_file_association_service.get_files_for_task(
-            task_project_id=uuid.UUID(project_id),
-            task_number=task_number,
-            skip=skip,
-            limit=limit,
-            sort_by=sort_by,
-            sort_direction=sort_direction,
-            filename=filename
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {e}"
-        )
+    """Retrieve a list of files associated with a task."""
+    return task_file_association_service.get_files_for_task(
+        task_project_id=project_id,
+        task_task_number=task_number,
+        skip=skip,
+        limit=limit
+    )
 
 
 @router.get(
-    "/{project_id}/tasks/{task_number}/files/{file_id}",
+    "/{project_id}/tasks/{task_number}/files/{file_memory_entity_name:path}",
     response_model=schemas.TaskFileAssociation,
-    summary="Get Task File Association by File ID",
+    summary="Get Task File Association by File Memory Entity Name",
     tags=["Task Files"],
-    operation_id="get_task_file_association_by_file_id"
+    operation_id="get_task_file_association_by_file_memory_entity_name"
 )
-def get_task_file_association_by_file_id_endpoint(
+def get_task_file_association_by_file_memory_entity_name_endpoint(
     project_id: str,
     task_number: int,
-    file_id: str = Path(..., description="ID of the file."),
+    file_memory_entity_name: str = Path(..., description="Name/path of the associated file MemoryEntity."),
     task_file_association_service: TaskFileAssociationService = Depends(
         get_task_file_association_service)
 ):
-    """Retrieve a specific task file association by project ID, task number, and file ID."""
-    try:
-        db_association = task_file_association_service.get_association(
-            task_project_id=uuid.UUID(project_id),
-            task_number=task_number,
-            file_id=file_id
-        )
-        if db_association is None:
-            raise HTTPException(
-                status_code=404, detail="Task file association not found")
-        return db_association
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {e}"
-        )
+    """Retrieve a specific task file association by task and file memory entity name."""
+    db_association = task_file_association_service.get_association(
+        task_project_id=project_id,
+        task_task_number=task_number,
+        file_memory_entity_name=file_memory_entity_name
+    )
+    if db_association is None:
+        raise HTTPException(status_code=404, detail="Task file association not found")
+    return db_association
 
 
 @router.delete(
-    "/{project_id}/tasks/{task_number}/files/{file_id}",
+    "/{project_id}/tasks/{task_number}/files/{file_memory_entity_name:path}",
     response_model=dict,
-    summary="Disassociate File from Task",
+    summary="Disassociate File from Task by File Memory Entity Name",
     tags=["Task Files"],
-    operation_id="disassociate_file_from_task"
+    operation_id="disassociate_file_from_task_by_file_memory_entity_name"
 )
-def disassociate_file_from_task_endpoint(
+def disassociate_file_from_task_by_file_memory_entity_name_endpoint(
     project_id: str,
     task_number: int,
-    file_id: str = Path(..., description="ID of the file."),
+    file_memory_entity_name: str = Path(..., description="Name/path of the associated file MemoryEntity."),
     task_file_association_service: TaskFileAssociationService = Depends(
         get_task_file_association_service)
 ):
-    """Remove a file association from a task."""
-    try:
-        success = task_file_association_service.disassociate_file_from_task(
-            task_project_id=uuid.UUID(project_id),
-            task_number=task_number,
-            file_id=file_id
-        )
-        if not success:
-            raise HTTPException(
-                status_code=404, detail="Task file association not found")
-        return {"message": "File disassociated from task successfully"}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {e}"
-        )
+    """Remove a file association from a task by task and file memory entity name."""
+    success = task_file_association_service.disassociate_file_from_task(
+        task_project_id=project_id,
+        task_task_number=task_number,
+        file_memory_entity_name=file_memory_entity_name
+    )
+    if not success:
+        raise HTTPException(status_code=404, detail="Task file association not found")
+    return {"message": "Task file association deleted successfully"}
 
 
 # --- Task Dependency Endpoints ---
@@ -605,6 +574,73 @@ def remove_task_dependency_endpoint(
             status_code=500,
             detail=f"Internal server error: {e}"
         )
+
+
+# --- General Tasks Endpoints ---
+
+
+@router.get(
+    "/",
+    response_model=List[schemas.Task],
+    summary="Get All Tasks",
+    tags=["Tasks"],
+    operation_id="get_all_tasks"
+)
+async def get_all_tasks(
+    project_id: Optional[str] = Query(
+        None, description="Filter tasks by project ID."),
+    agent_id: Optional[str] = Query(
+        None, description="Filter tasks by agent ID."),
+    agent_name: Optional[str] = Query(
+        None, description="Filter tasks by agent name."),
+    search: Optional[str] = Query(
+        None, description="Search term for task titles and descriptions."),
+    status: Optional[str] = Query(
+        None, description="Filter tasks by status (e.g., 'completed', 'pending')."),
+    is_archived: Optional[bool] = Query(
+        False,
+        description="Filter by archived status. False for non-archived, True for archived, null/None for all."
+    ),
+    skip: int = 0,
+    limit: int = 100,
+    sort_by: Optional[str] = Query(
+        "created_at", description="Field to sort by. Supported: 'created_at', 'updated_at', 'title', 'status', 'task_number', 'agent_id'"),
+    sort_direction: Optional[str] = Query(
+        "desc", description="Sort direction: 'asc' or 'desc'"),
+    task_service: TaskService = Depends(get_task_service),
+    agent_service: AgentService = Depends(get_agent_service)
+):
+    """Retrieve a list of all tasks across all projects, with optional filtering and sorting.
+    Supported sort fields: created_at, updated_at, title, status, task_number, agent_id
+    """
+    agent_id_val: Optional[str] = None
+    if agent_name:
+        agent = agent_service.get_agent_by_name(name=agent_name)
+        if agent:
+            agent_id_val = agent.id
+        else:
+            if agent_name is not None:
+                return []
+
+    project_uuid = None
+    if project_id:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid project_id format")
+
+    tasks = task_service.get_all_tasks(
+        project_id=project_uuid,
+        skip=skip,
+        limit=limit,
+        agent_id=agent_id_val or agent_id,
+        search=search,
+        status=status,
+        is_archived=is_archived,
+        sort_by=sort_by,
+        sort_direction=sort_direction
+    )
+    return tasks
 
 
 # --- Task Comments Endpoints ---

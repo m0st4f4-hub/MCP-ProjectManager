@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from .. import schemas  # Import schemas
 # Import AgentService from the service layer
 from ..services.agent_service import AgentService
-# from ..crud import agents as crud_agents # Import agent crud # REMOVED
+from ..crud import agents as crud_agents
 from ..database import get_db  # Import database dependency
 
 

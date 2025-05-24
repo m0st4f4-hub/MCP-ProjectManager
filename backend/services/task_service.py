@@ -95,6 +95,82 @@ class TaskService:
         tasks_list = query.all()
         return tasks_list
 
+    def get_all_tasks(
+        self,
+        project_id: Optional[UUID] = None,
+        skip: int = 0,
+        limit: int = 100,
+        agent_id: Optional[str] = None,
+        agent_name: Optional[str] = None,
+        search: Optional[str] = None,
+        status: Optional[str] = None,
+        is_archived: Optional[bool] = False,
+        sort_by: Optional[str] = None,
+        sort_direction: Optional[str] = None
+    ) -> List[models.Task]:
+        """
+        Retrieve all tasks across all projects with optional filtering and sorting.
+        sort_by: one of 'created_at', 'updated_at', 'title', 'status',
+        'task_number', 'agent_id'
+        sort_direction: 'asc' or 'desc'
+        """
+        query = self.db.query(models.Task).options(
+            selectinload(models.Task.project),
+            selectinload(models.Task.agent)
+        )
+        
+        # Filter by project if specified
+        if project_id:
+            query = query.filter(models.Task.project_id == str(project_id))
+            
+        # Filter by agent
+        if agent_id:
+            query = query.filter(models.Task.agent_id == agent_id)
+        elif agent_name:
+            query = query.join(models.Agent).filter(
+                models.Agent.name == agent_name)
+                
+        # Search functionality
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    models.Task.title.ilike(search_term),
+                    models.Task.description.ilike(search_term)
+                )
+            )
+            
+        # Filter by status
+        if status is not None:
+            query = query.filter(models.Task.status == status)
+            
+        # Filter by archived status
+        if is_archived is not None:
+            query = query.filter(models.Task.is_archived == is_archived)
+            
+        # Sorting
+        allowed_sort_fields = {
+            'created_at': models.Task.created_at,
+            'updated_at': models.Task.updated_at,
+            'title': models.Task.title,
+            'status': models.Task.status,
+            'task_number': models.Task.task_number,
+            'agent_id': models.Task.agent_id
+        }
+        sort_field = allowed_sort_fields.get(sort_by, models.Task.created_at)
+        if sort_direction and sort_direction.lower() == 'asc':
+            query = query.order_by(sort_field.asc())
+        else:
+            query = query.order_by(sort_field.desc())
+            
+        # Pagination
+        query = query.offset(skip)
+        if limit is not None:
+            query = query.limit(limit)
+            
+        tasks_list = query.all()
+        return tasks_list
+
     def get_next_task_number_for_project(self, project_id: UUID) -> int:
         max_number = self.db.query(func.max(models.Task.task_number)).filter(
             models.Task.project_id == str(project_id)
@@ -263,14 +339,14 @@ class TaskService:
         return query.all()
 
     def update_task_status(
-        self, project_id: UUID, task_number: int, status_id: str
+        self, project_id: UUID, task_number: int, status: str
     ) -> Optional[models.Task]:
         db_task = self.get_task(
             project_id=project_id, task_number=task_number, is_archived=None
         )
         if not db_task:
             return None
-        db_task.status = status_id
+        db_task.status = status
         db_task.updated_at = datetime.datetime.now(datetime.timezone.utc)
         self.db.commit()
         self.db.refresh(db_task)

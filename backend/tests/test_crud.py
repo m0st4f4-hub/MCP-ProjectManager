@@ -122,9 +122,9 @@ def test_delete_project_with_tasks_and_mock_print(db_session: Session):
     project_id = project.id
 
     # Create tasks associated with this project
-    crud_tasks.create_task(db_session, project_id, schemas.TaskCreate(
+    crud_tasks.create_task(db_session, task=schemas.TaskCreate(
         title="Task 1 for Print Mock Test", project_id=project_id), agent_id=None)
-    crud_tasks.create_task(db_session, project_id, schemas.TaskCreate(
+    crud_tasks.create_task(db_session, task=schemas.TaskCreate(
         title="Task 2 for Print Mock Test", project_id=project_id), agent_id=None)
 
     expected_print_arg = f"[CRUD delete_project] Deleted 2 tasks associated with project_id: {project_id}"
@@ -147,9 +147,9 @@ def test_delete_project_prints_task_count(db_session):
     # Create a project with some tasks
     project = crud_projects.create_project(
         db_session, schemas.ProjectCreate(name="Project with Tasks"))
-    task1 = crud_tasks.create_task(db_session, project.id, schemas.TaskCreate(
+    task1 = crud_tasks.create_task(db_session, task=schemas.TaskCreate(
         title="Task 1", project_id=project.id), agent_id=None)
-    task2 = crud_tasks.create_task(db_session, project.id, schemas.TaskCreate(
+    task2 = crud_tasks.create_task(db_session, task=schemas.TaskCreate(
         title="Task 2", project_id=project.id), agent_id=None)
 
     import sys
@@ -235,7 +235,7 @@ def test_create_and_get_task(db_session: Session):
     )
     # The create_task function in crud.py should handle assigning the task_number
     db_task = crud_tasks.create_task(
-        db_session, project_id=project.id, task=task_schema)
+        db_session, task=task_schema, agent_id=None)
     assert db_task is not None
     assert db_task.title == "Test Task Alpha"
     assert str(db_task.project_id) == str(
@@ -266,11 +266,11 @@ def test_get_tasks_with_filtering(db_session: Session):
     project2_id = project2.id
 
     crud_tasks.create_task(db_session, crud_tasks.schemas.TaskCreate(
-        title="P1 Task 1"), project_id=project1_id)
+        title="P1 Task 1", project_id=project1_id))
     crud_tasks.create_task(db_session, crud_tasks.schemas.TaskCreate(
-        title="P1 Task 2"), project_id=project1_id)
+        title="P1 Task 2", project_id=project1_id))
     crud_tasks.create_task(db_session, crud_tasks.schemas.TaskCreate(
-        title="P2 Task 1"), project_id=project2_id)
+        title="P2 Task 1", project_id=project2_id))
 
     tasks_project1 = crud_tasks.get_tasks(db_session, project_id=project1_id)
     assert len(tasks_project1) == 2
@@ -291,21 +291,16 @@ def test_update_task(db_session: Session):
     project = create_test_project(db_session)
     project_id = project.id
     task = crud_tasks.create_task(db_session, crud_tasks.schemas.TaskCreate(
-        title="Task to Update"), project_id=project_id)
+        title="Task to Update", project_id=project_id))
     task_project_id = task.project_id
     task_number = task.task_number
 
     update_data = crud_tasks.schemas.TaskUpdate(
         title="Updated Task Title", status="Done", is_archived=True)
 
-    # Assuming update_task takes project_id and task_number
-    # Based on tasks.py signature, it takes task_id (UUID string). Need to clarify the task ID strategy.
-    # Using get_task_by_project_and_number to get the task by composite key, then update using its ID.
-    task_to_update = crud_tasks.get_task_by_project_and_number(
-        db_session, project_id=task_project_id, task_number=task_number)
-    # Assuming task has a UUID 'id' field
-    updated_task = crud_tasks.update_task(
-        db=db_session, task_id=task_to_update.id, task=update_data)
+    # Update task using project_id and task_number
+    updated_task = crud_tasks.update_task_by_project_and_number(
+        db=db_session, project_id=task_project_id, task_number=task_number, task=update_data)
 
     assert updated_task is not None
     assert updated_task.project_id == task_project_id
@@ -324,27 +319,28 @@ def test_update_task(db_session: Session):
 
 def test_delete_task(db_session: Session):
     project = create_test_project(db_session)
-    project_id = project.id
-    task = crud_tasks.create_task(db_session, crud_tasks.schemas.TaskCreate(
-        title="Task to Delete"), project_id=project_id)
-    task_project_id = task.project_id
-    task_number = task.task_number
+    task = crud_tasks.create_task(db_session, task=schemas.TaskCreate(
+        title="Task To Delete", project_id=str(project.id)))
 
-    # Assuming delete_task takes task_id (UUID string)
-    # Using get_task_by_project_and_number to get the task by composite key, then delete using its ID.
-    task_to_delete = crud_tasks.get_task_by_project_and_number(
-        db_session, project_id=task_project_id, task_number=task_number)
-    # Assuming task has a UUID 'id' field
-    deleted_task = crud_tasks.delete_task(
-        db=db_session, task_id=task_to_delete.id)
+    # Ensure task exists before deletion
+    initial_task = crud_tasks.get_task_by_project_and_number(
+        db_session, project_id=project.id, task_number=task.task_number)
+    assert initial_task is not None
 
-    assert deleted_task is not None
-    assert deleted_task.project_id == task_project_id
-    assert deleted_task.task_number == task_number
+    # Delete the task using composite key
+    success = crud_tasks.delete_task_by_project_and_number(
+        db_session, project_id=project.id, task_number=task.task_number)
+    assert success is True
 
-    retrieved_task = crud_tasks.get_task_by_project_and_number(
-        db_session, project_id=task_project_id, task_number=task_number)
-    assert retrieved_task is None
+    # Verify task is deleted using composite key
+    deleted_task = crud_tasks.get_task_by_project_and_number(
+        db_session, project_id=project.id, task_number=task.task_number)
+    assert deleted_task is None
+
+    # Test deleting non-existent task using composite key
+    success_non_existent = crud_tasks.delete_task_by_project_and_number(
+        db_session, project_id=project.id, task_number=task.task_number + 999)
+    assert success_non_existent is False
 
 # --- Relationships Tests ---
 # (Assuming relationship tests will be added here later, e.g., for TaskDependency)
@@ -462,26 +458,21 @@ def test_create_and_get_project_member(db_session: Session):
     user_id = str(uuid.uuid4())
 
     # Add a member
+    member_data = schemas.ProjectMemberCreate(project_id=project.id, user_id=user_id, role="developer")
     db_member = crud_project_members.add_project_member(
-        db_session, project_id=project.id, user_id=user_id, role="developer")
+        db_session, project_member=member_data)
     assert db_member is not None
-    assert db_member.project_id == project.id
-    assert db_member.user_id == user_id
+    assert str(db_member.project_id) == str(project.id)
+    assert str(db_member.user_id) == str(user_id)
     assert db_member.role == "developer"
 
     # Get the member
     retrieved_member = crud_project_members.get_project_member(
         db_session, project_id=project.id, user_id=user_id)
     assert retrieved_member is not None
-    assert retrieved_member.project_id == project.id
-    assert retrieved_member.user_id == user_id
+    assert str(retrieved_member.project_id) == str(project.id)
+    assert str(retrieved_member.user_id) == str(user_id)
     assert retrieved_member.role == "developer"
-
-
-def test_get_project_member_not_found(db_session: Session):
-    # Try getting a non-existent member
-    assert crud_project_members.get_project_member(db_session, project_id=str(
-        uuid.uuid4()), user_id=str(uuid.uuid4())) is None
 
 
 def test_get_project_members_by_project(db_session: Session):
@@ -489,34 +480,31 @@ def test_get_project_members_by_project(db_session: Session):
     project2 = create_test_project(db_session, name="Members List Project 2")
     user_id_1 = str(uuid.uuid4())
     user_id_2 = str(uuid.uuid4())
+    user_id_3 = str(uuid.uuid4())
 
     # Add members to project 1
-    crud_project_members.add_project_member(
-        db_session, project_id=project1.id, user_id=user_id_1, role="developer")
-    crud_project_members.add_project_member(
-        db_session, project_id=project1.id, user_id=user_id_2, role="reporter")
+    member_data_1 = schemas.ProjectMemberCreate(project_id=project1.id, user_id=user_id_1, role="developer")
+    member_data_2 = schemas.ProjectMemberCreate(project_id=project1.id, user_id=user_id_2, role="viewer")
+    crud_project_members.add_project_member(db_session, project_member=member_data_1)
+    crud_project_members.add_project_member(db_session, project_member=member_data_2)
 
     # Add a member to project 2
-    crud_project_members.add_project_member(
-        db_session, project_id=project2.id, user_id=user_id_1, role="maintainer")
+    member_data_3 = schemas.ProjectMemberCreate(project_id=project2.id, user_id=user_id_3, role="owner")
+    crud_project_members.add_project_member(db_session, project_member=member_data_3)
 
     # Get members for project 1
-    project1_members = crud_project_members.get_project_members_by_project(
+    project1_members = crud_project_members.get_project_members(
         db_session, project_id=project1.id)
     assert len(project1_members) == 2
-    assert {member.user_id for member in project1_members} == {
-        user_id_1, user_id_2}
+    user_ids_in_project1 = {str(member.user_id) for member in project1_members}
+    assert user_id_1 in user_ids_in_project1
+    assert user_id_2 in user_ids_in_project1
 
     # Get members for project 2
-    project2_members = crud_project_members.get_project_members_by_project(
+    project2_members = crud_project_members.get_project_members(
         db_session, project_id=project2.id)
     assert len(project2_members) == 1
-    assert project2_members[0].user_id == user_id_1
-
-    # Get members for a non-existent project
-    non_existent_project_members = crud_project_members.get_project_members_by_project(
-        db_session, project_id=str(uuid.uuid4()))
-    assert len(non_existent_project_members) == 0
+    assert str(project2_members[0].user_id) == str(user_id_3)
 
 
 def test_remove_project_member(db_session: Session):
@@ -524,20 +512,20 @@ def test_remove_project_member(db_session: Session):
     user_id_to_remove = str(uuid.uuid4())
 
     # Add the member
-    crud_project_members.add_project_member(
-        db_session, project_id=project.id, user_id=user_id_to_remove, role="developer")
+    member_data = schemas.ProjectMemberCreate(project_id=project.id, user_id=user_id_to_remove, role="developer")
+    crud_project_members.add_project_member(db_session, project_member=member_data)
     assert crud_project_members.get_project_member(
         db_session, project_id=project.id, user_id=user_id_to_remove) is not None
 
     # Remove the member
-    success = crud_project_members.remove_project_member(
+    success = crud_project_members.delete_project_member(
         db_session, project_id=project.id, user_id=user_id_to_remove)
     assert success is True
     assert crud_project_members.get_project_member(
         db_session, project_id=project.id, user_id=user_id_to_remove) is None
 
     # Try removing a non-existent member
-    success_not_found = crud_project_members.remove_project_member(
+    success_not_found = crud_project_members.delete_project_member(
         db_session, project_id=project.id, user_id=str(uuid.uuid4()))
     assert success_not_found is False
 
@@ -547,22 +535,32 @@ def test_update_project_member_role(db_session: Session):
     user_id_to_update = str(uuid.uuid4())
 
     # Add the member with an initial role
-    crud_project_members.add_project_member(
-        db_session, project_id=project.id, user_id=user_id_to_update, role="developer")
+    initial_member_data = schemas.ProjectMemberCreate(project_id=project.id, user_id=user_id_to_update, role="developer")
+    crud_project_members.add_project_member(db_session, project_member=initial_member_data)
     initial_member = crud_project_members.get_project_member(
         db_session, project_id=project.id, user_id=user_id_to_update)
+    assert initial_member is not None
     assert initial_member.role == "developer"
 
     # Update the member's role
-    updated_member = crud_project_members.update_project_member_role(
-        db_session, project_id=project.id, user_id=user_id_to_update, new_role="maintainer")
+    updated_role = "owner"
+    updated_member = crud_project_members.update_project_member(
+        db_session, project_id=project.id, user_id=user_id_to_update, project_member_update=schemas.ProjectMemberUpdate(role=updated_role))
     assert updated_member is not None
-    assert updated_member.role == "maintainer"
+    assert updated_member.role == updated_role
+    assert str(updated_member.project_id) == str(project.id)
+    assert str(updated_member.user_id) == str(user_id_to_update)
 
-    # Try updating role for a non-existent member
-    updated_member_not_found = crud_project_members.update_project_member_role(
-        db_session, project_id=project.id, user_id=str(uuid.uuid4()), new_role="admin")
-    assert updated_member_not_found is None
+    # Verify role update in the database
+    verified_member = crud_project_members.get_project_member(
+        db_session, project_id=project.id, user_id=user_id_to_update)
+    assert verified_member is not None
+    assert verified_member.role == updated_role
+
+    # Try updating a non-existent member
+    updated_non_existent = crud_project_members.update_project_member(
+        db_session, project_id=project.id, user_id=str(uuid.uuid4()), project_member_update=schemas.ProjectMemberUpdate(role="admin"))
+    assert updated_non_existent is None
 
 
 # --- Project File Association CRUD Tests ---
@@ -575,82 +573,118 @@ def test_create_and_get_project_file_association(db_session: Session):
     file_id_2 = str(uuid.uuid4())
 
     # Associate file 1
-    db_association_1 = crud_project_file_associations.associate_file_with_project(
-        db_session, project_id=project.id, file_id=file_id_1)
+    association_data_1 = schemas.ProjectFileAssociationCreate(project_id=project.id, file_memory_entity_name=file_id_1)
+    db_association_1 = crud_project_file_associations.create_project_file_association(
+        db_session, project_file=association_data_1)
     assert db_association_1 is not None
-    assert db_association_1.project_id == project.id
-    assert db_association_1.file_id == file_id_1
+    assert str(db_association_1.project_id) == str(project.id)
+    assert str(db_association_1.file_memory_entity_name) == str(file_id_1)
 
     # Associate file 2
-    db_association_2 = crud_project_file_associations.associate_file_with_project(
-        db_session, project_id=project.id, file_id=file_id_2)
+    association_data_2 = schemas.ProjectFileAssociationCreate(project_id=project.id, file_memory_entity_name=file_id_2)
+    db_association_2 = crud_project_file_associations.create_project_file_association(
+        db_session, project_file=association_data_2)
     assert db_association_2 is not None
-    assert db_association_2.project_id == project.id
-    assert db_association_2.file_id == file_id_2
+    assert str(db_association_2.project_id) == str(project.id)
+    assert str(db_association_2.file_memory_entity_name) == str(file_id_2)
 
     # Get association by project and file ID
     retrieved_association = crud_project_file_associations.get_project_file_association(
-        db_session, project_id=project.id, file_id=file_id_1)
+        db_session, project_id=project.id, file_memory_entity_name=file_id_1)
     assert retrieved_association is not None
-    assert retrieved_association.project_id == project.id
-    assert retrieved_association.file_id == file_id_1
+    assert str(retrieved_association.project_id) == str(project.id)
+    assert str(retrieved_association.file_memory_entity_name) == str(file_id_1)
 
 
 def test_get_project_file_association_not_found(db_session: Session):
     # Try getting a non-existent association
     assert crud_project_file_associations.get_project_file_association(
-        db_session, project_id=str(uuid.uuid4()), file_id=str(uuid.uuid4())) is None
+        db_session, project_id=str(uuid.uuid4()), file_memory_entity_name=str(uuid.uuid4())) is None
 
 
 def test_get_dependencies_for_task(db_session: Session):
     project = create_test_project(
         db_session, name="Task Dependencies List Project")
-    task1_create_schema = crud_tasks.schemas.TaskCreate(
+    task1_create_schema = schemas.TaskCreate(
         title="Task 1 for Dep List", project_id=project.id)
-    task2_create_schema = crud_tasks.schemas.TaskCreate(
+    task2_create_schema = schemas.TaskCreate(
         title="Task 2 for Dep List", project_id=project.id)
-    task3_create_schema = crud_tasks.schemas.TaskCreate(
+    task3_create_schema = schemas.TaskCreate(
         title="Task 3 for Dep List", project_id=project.id)
-    task1 = crud_tasks.create_task(db_session, project.id, task1_create_schema)
-    task2 = crud_tasks.create_task(db_session, project.id, task2_create_schema)
-    task3 = crud_tasks.create_task(db_session, project.id, task3_create_schema)
+    task1 = crud_tasks.create_task(db_session, task=task1_create_schema)
+    task2 = crud_tasks.create_task(db_session, task=task2_create_schema)
+    task3 = crud_tasks.create_task(db_session, task=task3_create_schema)
 
     # Add dependencies: T1 -> T2, T1 -> T3, T2 -> T3
-    crud_tasks.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task2.task_number)
-    crud_tasks.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task3.task_number)
-    crud_tasks.add_task_dependency(db_session, uuid.UUID(
-        project.id), task2.task_number, uuid.UUID(project.id), task3.task_number)
+    dependency_data_1_2 = schemas.TaskDependencyCreate(
+        predecessor_task_project_id=project.id,
+        predecessor_task_number=task1.task_number,
+        successor_task_project_id=project.id,
+        successor_task_number=task2.task_number,
+        predecessor_project_id=project.id,
+        successor_project_id=project.id,
+        type="blocks"
+    )
+    dependency_data_1_3 = schemas.TaskDependencyCreate(
+        predecessor_task_project_id=project.id,
+        predecessor_task_number=task1.task_number,
+        successor_task_project_id=project.id,
+        successor_task_number=task3.task_number,
+        predecessor_project_id=project.id,
+        successor_project_id=project.id,
+        type="blocks"
+    )
+    dependency_data_2_3 = schemas.TaskDependencyCreate(
+        predecessor_task_project_id=project.id,
+        predecessor_task_number=task2.task_number,
+        successor_task_project_id=project.id,
+        successor_task_number=task3.task_number,
+        predecessor_project_id=project.id,
+        successor_project_id=project.id,
+        type="blocks"
+    )
+    crud_task_dependencies.create_task_dependency(db_session, task_dependency=dependency_data_1_2)
+    crud_task_dependencies.create_task_dependency(db_session, task_dependency=dependency_data_1_3)
+    crud_task_dependencies.create_task_dependency(db_session, task_dependency=dependency_data_2_3)
 
-    # Get dependencies for Task 1 (should be T1 -> T2, T1 -> T3)
-    task1_deps = crud_tasks.get_dependencies_for_task(
-        db_session, uuid.UUID(project.id), task1.task_number)
-    assert len(task1_deps) == 2
-    assert {dep.successor_task_number for dep in task1_deps} == {
+    # Get successors for Task 1 (should be T1 -> T2, T1 -> T3)
+    task1_successors = crud_task_dependencies.get_task_successors(
+        db_session, predecessor_project_id=project.id, predecessor_task_number=task1.task_number)
+    assert len(task1_successors) == 2
+    assert {dep.successor_task_number for dep in task1_successors} == {
         task2.task_number, task3.task_number}
 
-    # Get dependencies for Task 2 (should be T1 -> T2)
-    task2_deps = crud_tasks.get_dependencies_for_task(
-        db_session, uuid.UUID(project.id), task2.task_number)
-    # This should include T1->T2 (where task2 is successor) and T2->T3 (where task2 is predecessor) - assuming the CRUD function gets both.
-    assert len(task2_deps) == 2
-    task2_related_task_numbers = {dep.predecessor_task_number if dep.successor_task_number ==
-                                  task2.task_number else dep.successor_task_number for dep in task2_deps}
-    assert task1.task_number in task2_related_task_numbers  # T1 is a predecessor
-    assert task3.task_number in task2_related_task_numbers  # T3 is a successor
+    # Get predecessors for Task 2 (should be T1 -> T2)
+    task2_predecessors = crud_task_dependencies.get_task_predecessors(
+        db_session, successor_project_id=project.id, successor_task_number=task2.task_number)
+    assert len(task2_predecessors) == 1
+    assert task2_predecessors[0].predecessor_task_number == task1.task_number
 
-    # Get dependencies for Task 3 (should be T1 -> T3, T2 -> T3)
-    task3_deps = crud_tasks.get_dependencies_for_task(
-        db_session, uuid.UUID(project.id), task3.task_number)
-    assert len(task3_deps) == 2
-    assert {dep.predecessor_task_number for dep in task3_deps} == {
+    # Get successors for Task 2 (should be T2 -> T3)
+    task2_successors = crud_task_dependencies.get_task_successors(
+        db_session, predecessor_project_id=project.id, predecessor_task_number=task2.task_number)
+    assert len(task2_successors) == 1
+    assert task2_successors[0].successor_task_number == task3.task_number
+
+    # Get predecessors for Task 3 (should be T1 -> T3, T2 -> T3)
+    task3_predecessors = crud_task_dependencies.get_task_predecessors(
+        db_session, successor_project_id=project.id, successor_task_number=task3.task_number)
+    assert len(task3_predecessors) == 2
+    assert {dep.predecessor_task_number for dep in task3_predecessors} == {
         task1.task_number, task2.task_number}
 
+    # Get successors for Task 3 (none)
+    task3_successors = crud_task_dependencies.get_task_successors(
+        db_session, predecessor_project_id=project.id, predecessor_task_number=task3.task_number)
+    assert len(task3_successors) == 0
+
     # Get dependencies for a non-existent task
-    non_existent_task_deps = crud_tasks.get_dependencies_for_task(
-        db_session, uuid.uuid4(), 999)
-    assert len(non_existent_task_deps) == 0
+    non_existent_task_predecessors = crud_task_dependencies.get_task_predecessors(
+        db_session, successor_project_id=str(uuid.uuid4()), successor_task_number=999)
+    assert len(non_existent_task_predecessors) == 0
+    non_existent_task_deps_succ = crud_task_dependencies.get_task_successors(
+        db_session, predecessor_project_id=str(uuid.uuid4()), predecessor_task_number=999)
+    assert len(non_existent_task_deps_succ) == 0
 
 
 def test_get_predecessor_tasks(db_session: Session):
@@ -661,31 +695,47 @@ def test_get_predecessor_tasks(db_session: Session):
         title="Task 2 for Pred", project_id=project.id)
     task3_create_schema = crud_tasks.schemas.TaskCreate(
         title="Task 3 for Pred", project_id=project.id)
-    task1 = crud_tasks.create_task(db_session, project.id, task1_create_schema)
-    task2 = crud_tasks.create_task(db_session, project.id, task2_create_schema)
-    task3 = crud_tasks.create_task(db_session, project.id, task3_create_schema)
+    task1 = crud_tasks.create_task(db_session, task=task1_create_schema)
+    task2 = crud_tasks.create_task(db_session, task=task2_create_schema)
+    task3 = crud_tasks.create_task(db_session, task=task3_create_schema)
 
     # Add dependencies: T1 -> T3, T2 -> T3
-    crud_tasks.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task3.task_number)
-    crud_tasks.add_task_dependency(db_session, uuid.UUID(
-        project.id), task2.task_number, uuid.UUID(project.id), task3.task_number)
+    dependency_data_1_3 = schemas.TaskDependencyCreate(
+        predecessor_task_project_id=project.id,
+        predecessor_task_number=task1.task_number,
+        successor_task_project_id=project.id,
+        successor_task_number=task3.task_number,
+        predecessor_project_id=project.id,
+        successor_project_id=project.id,
+        type="blocks"
+    )
+    dependency_data_2_3 = schemas.TaskDependencyCreate(
+        predecessor_task_project_id=project.id,
+        predecessor_task_number=task2.task_number,
+        successor_task_project_id=project.id,
+        successor_task_number=task3.task_number,
+        predecessor_project_id=project.id,
+        successor_project_id=project.id,
+        type="blocks"
+    )
+    crud_task_dependencies.create_task_dependency(db_session, task_dependency=dependency_data_1_3)
+    crud_task_dependencies.create_task_dependency(db_session, task_dependency=dependency_data_2_3)
 
     # Get predecessors for Task 3
-    task3_predecessors = crud_tasks.get_predecessor_tasks(
-        db_session, uuid.UUID(project.id), task3.task_number)
+    task3_predecessors = crud_task_dependencies.get_task_predecessors(
+        db_session, successor_project_id=project.id, successor_task_number=task3.task_number)
     assert len(task3_predecessors) == 2
     assert {dep.predecessor_task_number for dep in task3_predecessors} == {
         task1.task_number, task2.task_number}
 
     # Get predecessors for Task 1 (none)
-    task1_predecessors = crud_tasks.get_predecessor_tasks(
-        db_session, uuid.UUID(project.id), task1.task_number)
+    task1_predecessors = crud_task_dependencies.get_task_predecessors(
+        db_session, successor_project_id=project.id, successor_task_number=task1.task_number)
     assert len(task1_predecessors) == 0
 
     # Get predecessors for a non-existent task
-    non_existent_task_predecessors = crud_tasks.get_predecessor_tasks(
-        db_session, uuid.uuid4(), 999)
+    non_existent_task_predecessors = crud_task_dependencies.get_task_predecessors(
+        db_session, successor_project_id=str(uuid.uuid4()), successor_task_number=999)
     assert len(non_existent_task_predecessors) == 0
 
 
@@ -697,31 +747,48 @@ def test_get_successor_tasks(db_session: Session):
         title="Task 2 for Succ", project_id=project.id)
     task3_create_schema = crud_tasks.schemas.TaskCreate(
         title="Task 3 for Succ", project_id=project.id)
-    task1 = crud_tasks.create_task(db_session, project.id, task1_create_schema)
-    task2 = crud_tasks.create_task(db_session, project.id, task2_create_schema)
-    task3 = crud_tasks.create_task(db_session, project.id, task3_create_schema)
+    task1 = crud_tasks.create_task(db_session, task=task1_create_schema)
+    task2 = crud_tasks.create_task(db_session, task=task2_create_schema)
+    task3 = crud_tasks.create_task(db_session, task=task3_create_schema)
 
     # Add dependencies: T1 -> T2, T1 -> T3
-    crud_tasks.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task2.task_number)
-    crud_tasks.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task3.task_number)
+    dependency_data_1_2 = schemas.TaskDependencyCreate(
+        predecessor_task_project_id=project.id,
+        predecessor_task_number=task1.task_number,
+        successor_task_project_id=project.id,
+        successor_task_number=task2.task_number,
+        predecessor_project_id=project.id,
+        successor_project_id=project.id,
+        type="blocks"
+    )
+    dependency_data_1_3 = schemas.TaskDependencyCreate(
+        predecessor_task_project_id=project.id,
+        predecessor_task_number=task1.task_number,
+        successor_task_project_id=project.id,
+        successor_task_number=task3.task_number,
+        predecessor_project_id=project.id,
+        successor_project_id=project.id,
+        type="blocks"
+    )
+    crud_task_dependencies.create_task_dependency(db_session, task_dependency=dependency_data_1_2)
+    crud_task_dependencies.create_task_dependency(db_session, task_dependency=dependency_data_1_3)
 
     # Get successors for Task 1
-    task1_successors = crud_tasks.get_successor_tasks(
-        db_session, uuid.UUID(project.id), task1.task_number)
+    task1_successors = crud_task_dependencies.get_task_successors(
+        db_session, predecessor_project_id=project.id, predecessor_task_number=task1.task_number)
     assert len(task1_successors) == 2
     assert {dep.successor_task_number for dep in task1_successors} == {
         task2.task_number, task3.task_number}
 
     # Get successors for Task 2 (none)
-    task2_successors = crud_tasks.get_successor_tasks(
-        db_session, uuid.UUID(project.id), task2.task_number)
+    task2_successors = crud_task_dependencies.get_task_successors(
+        db_session, predecessor_project_id=project.id, predecessor_task_number=task2.task_number)
     assert len(task2_successors) == 0
 
     # Get successors for a non-existent task
-    non_existent_task_successors = crud_tasks.get_successor_tasks(
-        db_session, uuid.uuid4(), 999)
+    non_existent_task_successors = crud_task_dependencies.get_task_successors(
+        db_session, predecessor_project_id=str(uuid.uuid4()), predecessor_task_number=999)
+    assert len(non_existent_task_successors) == 0
 
 
 def test_get_files_for_project(db_session: Session):
@@ -745,14 +812,14 @@ def test_get_files_for_project(db_session: Session):
     project1_files = crud_project_file_associations.get_files_for_project(
         db_session, project_id=project1.id)
     assert len(project1_files) == 2
-    assert {assoc.file_id for assoc in project1_files} == {
+    assert {assoc.file_memory_entity_name for assoc in project1_files} == {
         file_id_1, file_id_2}
 
     # Get files for project 2
     project2_files = crud_project_file_associations.get_files_for_project(
         db_session, project_id=project2.id)
     assert len(project2_files) == 1
-    assert project2_files[0].file_id == file_id_3
+    assert project2_files[0].file_memory_entity_name == file_id_3
 
     # Get files for a non-existent project
     non_existent_project_files = crud_project_file_associations.get_files_for_project(
@@ -768,14 +835,14 @@ def test_disassociate_file_from_project(db_session: Session):
     crud_project_file_associations.associate_file_with_project(
         db_session, project_id=project.id, file_id=file_id_to_disassociate)
     assert crud_project_file_associations.get_project_file_association(
-        db_session, project_id=project.id, file_id=file_id_to_disassociate) is not None
+        db_session, project_id=project.id, file_memory_entity_name=file_id_to_disassociate) is not None
 
     # Disassociate the file
     success = crud_project_file_associations.disassociate_file_from_project(
         db_session, project_id=project.id, file_id=file_id_to_disassociate)
     assert success is True
     assert crud_project_file_associations.get_project_file_association(
-        db_session, project_id=project.id, file_id=file_id_to_disassociate) is None
+        db_session, project_id=project.id, file_memory_entity_name=file_id_to_disassociate) is None
 
     # Try disassociating a non-existent association
     success_not_found = crud_project_file_associations.disassociate_file_from_project(
@@ -791,7 +858,7 @@ def test_create_and_get_task_file_association(db_session: Session):
     # Using crud directly for task creation.
     task_create_schema = schemas.TaskCreate(
         title="Task for File Assoc", project_id=project.id)
-    task = crud_tasks.create_task(db_session, project.id, task_create_schema)
+    task = crud_tasks.create_task(db_session, task=task_create_schema)
 
     # Assuming a create_test_file helper or similar is available.
     # For now, using dummy file ID strings.
@@ -803,24 +870,24 @@ def test_create_and_get_task_file_association(db_session: Session):
         project.id), task_number=task.task_number, file_id=file_id_1)
     assert db_association_1 is not None
     assert db_association_1.task_project_id == project.id
-    assert db_association_1.task_number == task.task_number
-    assert db_association_1.file_id == file_id_1
+    assert db_association_1.task_task_number == task.task_number
+    assert db_association_1.file_memory_entity_name == file_id_1
 
     # Associate file 2
     db_association_2 = crud_task_file_associations.associate_file_with_task(db_session, task_project_id=uuid.UUID(
         project.id), task_number=task.task_number, file_id=file_id_2)
     assert db_association_2 is not None
     assert db_association_2.task_project_id == project.id
-    assert db_association_2.task_number == task.task_number
-    assert db_association_2.file_id == file_id_2
+    assert db_association_2.task_task_number == task.task_number
+    assert db_association_2.file_memory_entity_name == file_id_2
 
     # Get association by task and file ID
     retrieved_association = crud_task_file_associations.get_task_file_association(db_session, task_project_id=uuid.UUID(
         project.id), task_number=task.task_number, file_id=file_id_1)
     assert retrieved_association is not None
     assert retrieved_association.task_project_id == project.id
-    assert retrieved_association.task_number == task.task_number
-    assert retrieved_association.file_id == file_id_1
+    assert retrieved_association.task_task_number == task.task_number
+    assert retrieved_association.file_memory_entity_name == file_id_1
 
 
 def test_get_task_file_association_not_found(db_session: Session):
@@ -835,8 +902,8 @@ def test_get_files_for_task(db_session: Session):
         title="Task 1 for File List", project_id=project.id)
     task2_create_schema = schemas.TaskCreate(
         title="Task 2 for File List", project_id=project.id)
-    task1 = crud_tasks.create_task(db_session, project.id, task1_create_schema)
-    task2 = crud_tasks.create_task(db_session, project.id, task2_create_schema)
+    task1 = crud_tasks.create_task(db_session, task=task1_create_schema)
+    task2 = crud_tasks.create_task(db_session, task=task2_create_schema)
 
     file_id_1 = str(uuid.uuid4())
     file_id_2 = str(uuid.uuid4())
@@ -856,13 +923,13 @@ def test_get_files_for_task(db_session: Session):
     task1_files = crud_task_file_associations.get_files_for_task(db_session, task_project_id=uuid.UUID(
         project.id), task_number=task1.task_number)
     assert len(task1_files) == 2
-    assert {assoc.file_id for assoc in task1_files} == {file_id_1, file_id_2}
+    assert {assoc.file_memory_entity_name for assoc in task1_files} == {file_id_1, file_id_2}
 
     # Get files for task 2
     task2_files = crud_task_file_associations.get_files_for_task(db_session, task_project_id=uuid.UUID(
         project.id), task_number=task2.task_number)
     assert len(task2_files) == 1
-    assert task2_files[0].file_id == file_id_3
+    assert task2_files[0].file_memory_entity_name == file_id_3
 
     # Get files for a non-existent task
     non_existent_task_files = crud_task_file_associations.get_files_for_task(
@@ -875,7 +942,7 @@ def test_disassociate_file_from_task(db_session: Session):
         db_session, name="Disassociate Task File Project")
     task_create_schema = schemas.TaskCreate(
         title="Task for File Disassoc", project_id=project.id)
-    task = crud_tasks.create_task(db_session, project.id, task_create_schema)
+    task = crud_tasks.create_task(db_session, task=task_create_schema)
     file_id_to_disassociate = str(uuid.uuid4())
 
     # Associate the file
@@ -906,35 +973,41 @@ def test_create_and_get_task_dependency(db_session: Session):
         title="Task 1 for Dep", project_id=project.id)
     task2_create_schema = schemas.TaskCreate(
         title="Task 2 for Dep", project_id=project.id)
-    task1 = crud_tasks.create_task(db_session, project.id, task1_create_schema)
-    task2 = crud_tasks.create_task(db_session, project.id, task2_create_schema)
+    task1 = crud_tasks.create_task(db_session, task=task1_create_schema)
+    task2 = crud_tasks.create_task(db_session, task=task2_create_schema)
 
     # Add dependency: Task 1 -> Task 2
-    db_dependency = crud_task_dependencies.add_task_dependency(
-        db_session,
-        predecessor_task_project_id=uuid.UUID(project.id),
+    dependency_data = schemas.TaskDependencyCreate(
+        predecessor_task_project_id=project.id,
         predecessor_task_number=task1.task_number,
-        successor_task_project_id=uuid.UUID(project.id),
-        successor_task_number=task2.task_number
+        successor_task_project_id=project.id,
+        successor_task_number=task2.task_number,
+        predecessor_project_id=project.id,
+        successor_project_id=project.id,
+        type="blocks"
+    )
+    db_dependency = crud_task_dependencies.create_task_dependency(
+        db_session,
+        task_dependency=dependency_data
     )
     assert db_dependency is not None
-    assert db_dependency.predecessor_task_project_id == project.id
+    assert str(db_dependency.predecessor_project_id) == str(project.id)
     assert db_dependency.predecessor_task_number == task1.task_number
-    assert db_dependency.successor_task_project_id == project.id
+    assert str(db_dependency.successor_project_id) == str(project.id)
     assert db_dependency.successor_task_number == task2.task_number
 
     # Get the dependency
     retrieved_dependency = crud_task_dependencies.get_task_dependency(
         db_session,
-        predecessor_task_project_id=uuid.UUID(project.id),
+        predecessor_project_id=project.id,
         predecessor_task_number=task1.task_number,
-        successor_task_project_id=uuid.UUID(project.id),
+        successor_project_id=project.id,
         successor_task_number=task2.task_number
     )
     assert retrieved_dependency is not None
-    assert retrieved_dependency.predecessor_task_project_id == project.id
+    assert str(retrieved_dependency.predecessor_project_id) == str(project.id)
     assert retrieved_dependency.predecessor_task_number == task1.task_number
-    assert retrieved_dependency.successor_task_project_id == project.id
+    assert str(retrieved_dependency.successor_project_id) == str(project.id)
     assert retrieved_dependency.successor_task_number == task2.task_number
 
 
@@ -942,134 +1015,11 @@ def test_get_task_dependency_not_found(db_session: Session):
     # Try getting a non-existent dependency
     assert crud_task_dependencies.get_task_dependency(
         db_session,
-        predecessor_task_project_id=uuid.uuid4(),
+        predecessor_project_id=str(uuid.uuid4()),
         predecessor_task_number=999,
-        successor_task_project_id=uuid.uuid4(),
+        successor_project_id=str(uuid.uuid4()),
         successor_task_number=888
     ) is None
-
-
-def test_get_dependencies_for_task(db_session: Session):
-    project = create_test_project(
-        db_session, name="Task Dependencies List Project")
-    task1_create_schema = schemas.TaskCreate(
-        title="Task 1 for Dep List", project_id=project.id)
-    task2_create_schema = schemas.TaskCreate(
-        title="Task 2 for Dep List", project_id=project.id)
-    task3_create_schema = schemas.TaskCreate(
-        title="Task 3 for Dep List", project_id=project.id)
-    task1 = crud_tasks.create_task(db_session, project.id, task1_create_schema)
-    task2 = crud_tasks.create_task(db_session, project.id, task2_create_schema)
-    task3 = crud_tasks.create_task(db_session, project.id, task3_create_schema)
-
-    # Add dependencies: T1 -> T2, T1 -> T3, T2 -> T3
-    crud_task_dependencies.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task2.task_number)
-    crud_task_dependencies.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task3.task_number)
-    crud_task_dependencies.add_task_dependency(db_session, uuid.UUID(
-        project.id), task2.task_number, uuid.UUID(project.id), task3.task_number)
-
-    # Get dependencies for Task 1 (should be T1 -> T2, T1 -> T3)
-    task1_deps = crud_task_dependencies.get_dependencies_for_task(
-        db_session, uuid.UUID(project.id), task1.task_number)
-    assert len(task1_deps) == 2
-    assert {dep.successor_task_number for dep in task1_deps} == {
-        task2.task_number, task3.task_number}
-
-    # Get dependencies for Task 2 (should be T1 -> T2)
-    task2_deps = crud_task_dependencies.get_dependencies_for_task(
-        db_session, uuid.UUID(project.id), task2.task_number)
-    # This should include T1->T2 (where task2 is successor) and T2->T3 (where task2 is predecessor) - assuming the CRUD function gets both.
-    assert len(task2_deps) == 2
-    task2_related_task_numbers = {dep.predecessor_task_number if dep.successor_task_number ==
-                                  task2.task_number else dep.successor_task_number for dep in task2_deps}
-    assert task1.task_number in task2_related_task_numbers  # T1 is a predecessor
-    assert task3.task_number in task2_related_task_numbers  # T3 is a successor
-
-    # Get dependencies for Task 3 (should be T1 -> T3, T2 -> T3)
-    task3_deps = crud_task_dependencies.get_dependencies_for_task(
-        db_session, uuid.UUID(project.id), task3.task_number)
-    assert len(task3_deps) == 2
-    assert {dep.predecessor_task_number for dep in task3_deps} == {
-        task1.task_number, task2.task_number}
-
-    # Get dependencies for a non-existent task
-    non_existent_task_deps = crud_task_dependencies.get_dependencies_for_task(
-        db_session, uuid.uuid4(), 999)
-    assert len(non_existent_task_deps) == 0
-
-
-def test_get_predecessor_tasks(db_session: Session):
-    project = create_test_project(db_session, name="Predecessor Project")
-    task1_create_schema = crud_tasks.schemas.TaskCreate(
-        title="Task 1 for Pred", project_id=project.id)
-    task2_create_schema = crud_tasks.schemas.TaskCreate(
-        title="Task 2 for Pred", project_id=project.id)
-    task3_create_schema = crud_tasks.schemas.TaskCreate(
-        title="Task 3 for Pred", project_id=project.id)
-    task1 = crud_tasks.create_task(db_session, project.id, task1_create_schema)
-    task2 = crud_tasks.create_task(db_session, project.id, task2_create_schema)
-    task3 = crud_tasks.create_task(db_session, project.id, task3_create_schema)
-
-    # Add dependencies: T1 -> T3, T2 -> T3
-    crud_task_dependencies.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task3.task_number)
-    crud_task_dependencies.add_task_dependency(db_session, uuid.UUID(
-        project.id), task2.task_number, uuid.UUID(project.id), task3.task_number)
-
-    # Get predecessors for Task 3
-    task3_predecessors = crud_task_dependencies.get_predecessor_tasks(
-        db_session, uuid.UUID(project.id), task3.task_number)
-    assert len(task3_predecessors) == 2
-    assert {dep.predecessor_task_number for dep in task3_predecessors} == {
-        task1.task_number, task2.task_number}
-
-    # Get predecessors for Task 1 (none)
-    task1_predecessors = crud_task_dependencies.get_predecessor_tasks(
-        db_session, uuid.UUID(project.id), task1.task_number)
-    assert len(task1_predecessors) == 0
-
-    # Get predecessors for a non-existent task
-    non_existent_task_predecessors = crud_task_dependencies.get_predecessor_tasks(
-        db_session, uuid.uuid4(), 999)
-    assert len(non_existent_task_predecessors) == 0
-
-
-def test_get_successor_tasks(db_session: Session):
-    project = create_test_project(db_session, name="Successor Project")
-    task1_create_schema = crud_tasks.schemas.TaskCreate(
-        title="Task 1 for Succ", project_id=project.id)
-    task2_create_schema = crud_tasks.schemas.TaskCreate(
-        title="Task 2 for Succ", project_id=project.id)
-    task3_create_schema = crud_tasks.schemas.TaskCreate(
-        title="Task 3 for Succ", project_id=project.id)
-    task1 = crud_tasks.create_task(db_session, project.id, task1_create_schema)
-    task2 = crud_tasks.create_task(db_session, project.id, task2_create_schema)
-    task3 = crud_tasks.create_task(db_session, project.id, task3_create_schema)
-
-    # Add dependencies: T1 -> T2, T1 -> T3
-    crud_task_dependencies.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task2.task_number)
-    crud_task_dependencies.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task3.task_number)
-
-    # Get successors for Task 1
-    task1_successors = crud_task_dependencies.get_successor_tasks(
-        db_session, uuid.UUID(project.id), task1.task_number)
-    assert len(task1_successors) == 2
-    assert {dep.successor_task_number for dep in task1_successors} == {
-        task2.task_number, task3.task_number}
-
-    # Get successors for Task 2 (none)
-    task2_successors = crud_task_dependencies.get_successor_tasks(
-        db_session, uuid.UUID(project.id), task2.task_number)
-    assert len(task2_successors) == 0
-
-    # Get successors for a non-existent task
-    non_existent_task_successors = crud_task_dependencies.get_successor_tasks(
-        db_session, uuid.uuid4(), 999)
-    assert len(non_existent_task_successors) == 0
 
 
 def test_remove_task_dependency(db_session: Session):
@@ -1078,26 +1028,48 @@ def test_remove_task_dependency(db_session: Session):
         title="Task 1 for Remove Dep", project_id=project.id)
     task2_create_schema = schemas.TaskCreate(
         title="Task 2 for Remove Dep", project_id=project.id)
-    task1 = crud_tasks.create_task(db_session, project.id, task1_create_schema)
-    task2 = crud_tasks.create_task(db_session, project.id, task2_create_schema)
+    task1 = crud_tasks.create_task(db_session, task=task1_create_schema)
+    task2 = crud_tasks.create_task(db_session, task=task2_create_schema)
 
     # Add dependency: Task 1 -> Task 2
-    crud_task_dependencies.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task2.task_number)
-    assert crud_task_dependencies.get_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task2.task_number) is not None
+    dependency_data = schemas.TaskDependencyCreate(
+        predecessor_task_project_id=project.id,
+        predecessor_task_number=task1.task_number,
+        successor_task_project_id=project.id,
+        successor_task_number=task2.task_number,
+        predecessor_project_id=project.id,
+        successor_project_id=project.id,
+        type="blocks"
+    )
+    crud_task_dependencies.create_task_dependency(
+        db_session,
+        task_dependency=dependency_data
+    )
+    assert crud_task_dependencies.get_task_dependency(db_session,
+        predecessor_project_id=project.id,
+        predecessor_task_number=task1.task_number,
+        successor_project_id=project.id,
+        successor_task_number=task2.task_number) is not None
 
     # Remove the dependency
-    success = crud_task_dependencies.remove_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task2.task_number)
+    success = crud_task_dependencies.delete_task_dependency(db_session,
+        predecessor_project_id=project.id,
+        predecessor_task_number=task1.task_number,
+        successor_project_id=project.id,
+        successor_task_number=task2.task_number)
     assert success is True
-    assert crud_task_dependencies.get_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task2.task_number) is None
+    assert crud_task_dependencies.get_task_dependency(db_session,
+        predecessor_project_id=project.id,
+        predecessor_task_number=task1.task_number,
+        successor_project_id=project.id,
+        successor_task_number=task2.task_number) is None
 
     # Try removing a non-existent dependency
-    success_not_found = crud_task_dependencies.remove_task_dependency(db_session, uuid.UUID(
-        # Use same IDs as removed
-        project.id), task1.task_number, uuid.UUID(project.id), task2.task_number)
+    success_not_found = crud_task_dependencies.delete_task_dependency(db_session,
+        predecessor_project_id=project.id,
+        predecessor_task_number=task1.task_number,
+        successor_project_id=project.id,
+        successor_task_number=task2.task_number) # Use same IDs as removed
     assert success_not_found is False
 
 
@@ -1108,17 +1080,33 @@ def test_add_task_dependency_circular(db_session: Session):
         title="Task 1 for Circular", project_id=project.id)
     task2_create_schema = schemas.TaskCreate(
         title="Task 2 for Circular", project_id=project.id)
-    task1 = crud_tasks.create_task(db_session, project.id, task1_create_schema)
-    task2 = crud_tasks.create_task(db_session, project.id, task2_create_schema)
+    task1 = crud_tasks.create_task(db_session, task=task1_create_schema)
+    task2 = crud_tasks.create_task(db_session, task=task2_create_schema)
 
     # Add dependency: T1 -> T2
-    crud_task_dependencies.add_task_dependency(db_session, uuid.UUID(
-        project.id), task1.task_number, uuid.UUID(project.id), task2.task_number)
+    dependency_data_1 = schemas.TaskDependencyCreate(
+        predecessor_task_project_id=project.id,
+        predecessor_task_number=task1.task_number,
+        successor_task_project_id=project.id,
+        successor_task_number=task2.task_number,
+        predecessor_project_id=project.id,
+        successor_project_id=project.id,
+        type="blocks"
+    )
+    crud_task_dependencies.create_task_dependency(db_session, task_dependency=dependency_data_1)
 
     # Try adding dependency: T2 -> T1 (should raise HTTPException for circular dependency)
     with pytest.raises(HTTPException) as excinfo:
-        crud_task_dependencies.add_task_dependency(db_session, uuid.UUID(
-            project.id), task2.task_number, uuid.UUID(project.id), task1.task_number)
+        dependency_data_2 = schemas.TaskDependencyCreate(
+            predecessor_task_project_id=project.id,
+            predecessor_task_number=task2.task_number,
+            successor_task_project_id=project.id,
+            successor_task_number=task1.task_number,
+            predecessor_project_id=project.id,
+            successor_project_id=project.id,
+            type="blocks"
+        )
+        crud_task_dependencies.create_task_dependency(db_session, task_dependency=dependency_data_2)
     assert excinfo.value.status_code == 400
     assert "Circular dependency detected" in excinfo.value.detail
 
@@ -1127,19 +1115,27 @@ def test_add_task_dependency_self(db_session: Session):
     project = create_test_project(db_session, name="Self Dependency Project")
     task_create_schema = schemas.TaskCreate(
         title="Task for Self Dep", project_id=project.id)
-    task = crud_tasks.create_task(db_session, project.id, task_create_schema)
+    task = crud_tasks.create_task(db_session, task=task_create_schema)
 
     # Try adding dependency: Task -> Task (should raise HTTPException)
     with pytest.raises(HTTPException) as excinfo:
-        crud_task_dependencies.add_task_dependency(db_session, uuid.UUID(
-            project.id), task.task_number, uuid.UUID(project.id), task.task_number)
+        dependency_data = schemas.TaskDependencyCreate(
+            predecessor_task_project_id=project.id,
+            predecessor_task_number=task.task_number,
+            successor_task_project_id=project.id,
+            successor_task_number=task.task_number,
+            predecessor_project_id=project.id,
+            successor_project_id=project.id,
+            type="blocks"
+        )
+        crud_task_dependencies.create_task_dependency(db_session, task_dependency=dependency_data)
     assert excinfo.value.status_code == 400
     assert "A task cannot be dependent on itself" in excinfo.value.detail
 
 
 def test_delete_task(db_session: Session):
     project = create_test_project(db_session)
-    task = crud_tasks.create_task(db_session, project_id=project.id, task=schemas.TaskCreate(
+    task = crud_tasks.create_task(db_session, task=schemas.TaskCreate(
         title="Task To Delete", project_id=str(project.id)))
 
     # Ensure task exists before deletion

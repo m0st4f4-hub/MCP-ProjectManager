@@ -98,3 +98,34 @@ def delete_project_file_association(db: Session, project_id: str, file_memory_en
         db.commit()
         return True
     return False
+
+
+def associate_file_with_project(db: Session, project_id: str, file_id: str) -> ProjectFileAssociation:
+    """Associate a file with a project using file_id as the memory entity name."""
+    project_file = ProjectFileAssociationCreate(
+        project_id=project_id,
+        file_memory_entity_name=file_id  # Using file_id as the memory entity name
+    )
+    return create_project_file_association(db, project_file)
+
+
+def get_files_for_project(db: Session, project_id: str) -> List[ProjectFileAssociation]:
+    """Get all file associations for a project."""
+    return db.query(ProjectFileAssociation).filter(
+        ProjectFileAssociation.project_id == project_id
+    ).all()
+
+
+def disassociate_file_from_project(
+    db: Session,
+    project_id: str,
+    file_id: str
+) -> bool:
+    """Remove a file association from a project."""
+    association = get_project_file_association(
+        db, project_id=project_id, file_memory_entity_name=file_id)
+    if association:
+        db.delete(association)
+        db.commit()
+        return True
+    return False

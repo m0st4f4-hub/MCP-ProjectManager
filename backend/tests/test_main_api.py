@@ -16,6 +16,8 @@ from httpx import AsyncClient
 from io import StringIO
 import logging
 import sys
+import json # Import json for serializing details
+import pytest_asyncio
 
 # Import models and schemas directly
 from backend import models, schemas
@@ -35,6 +37,8 @@ from backend.main import lifespan
 # Import necessary services for helper functions
 from backend.services import project_service
 from backend.services import agent_service
+from backend.services.agent_service import AgentService  # Import AgentService
+from backend.services.audit_log_service import AuditLogService # Import AuditLogService
 
 from .conftest import create_test_project, create_test_agent
 
@@ -121,7 +125,7 @@ async def test_delete_project_api(async_client: httpx.AsyncClient):
 async def test_update_project_api_generic_exception(async_client: httpx.AsyncClient, db_session: Session, fastapi_app: FastAPI):
     project = create_test_project(db_session, name="ProjectForGenericError")
     # Updated mock path to use the specific crud submodule
-    with mock.patch("backend.routers.projects.crud_projects.update_project", side_effect=HTTPException(status_code=500, detail="CRUD generic error")):
+    with mock.patch("backend.routers.projects.ProjectService.update_project", side_effect=HTTPException(status_code=500, detail="CRUD generic error")):
         response = await async_client.put(f"/projects/{project.id}", json={"name": "Updated Name"})
     assert response.status_code == 500
     # For HTTPException, FastAPI returns the detail as-is
@@ -147,7 +151,7 @@ async def test_update_project_api_http_exception(async_client: httpx.AsyncClient
     
     # Mock crud.update_project to raise an HTTPException
     # Updated mock path to use the specific crud submodule
-    with mock.patch("backend.routers.projects.crud_projects.update_project", side_effect=HTTPException(status_code=418, detail="I'm a teapot")):
+    with mock.patch("backend.routers.projects.ProjectService.update_project", side_effect=HTTPException(status_code=418, detail="I'm a teapot")):
         response = await async_client.put(f"/projects/{project.id}", json={"name": "Updated Name"})
         assert response.status_code == 418
         assert response.json()["detail"] == "I'm a teapot"
@@ -219,11 +223,11 @@ async def test_delete_agent_api(async_client: httpx.AsyncClient):
 async def test_update_agent_api_generic_exception(async_client: httpx.AsyncClient, db_session: Session, fastapi_app: FastAPI):
     agent = create_test_agent(db_session, name="AgentForGenericError")
     # Updated mock path to use the specific crud submodule
-    with mock.patch("backend.routers.agents.crud_agents.update_agent", side_effect=HTTPException(status_code=500, detail="CRUD generic error")):
+    with mock.patch("backend.routers.agents.AgentService.update_agent", side_effect=Exception("Generic agent error")):
         response = await async_client.put(f"/agents/{agent.id}", json={"name": "Updated Agent Name"}) # Assuming agent_id is used in path
     assert response.status_code == 500
     # For HTTPException, FastAPI returns the detail as-is
-    assert response.json()["detail"] == "CRUD generic error"
+    assert response.json()["detail"] == "Internal server error: Generic agent error"
     # For now, focus on covering the raise HTTPException line
 
 async def test_agent_update_value_error(async_client: httpx.AsyncClient, db_session: Session):
@@ -246,7 +250,7 @@ async def test_update_agent_api_http_exception(async_client: httpx.AsyncClient, 
     
     # Mock crud.update_agent to raise an HTTPException
     # Updated mock path to use the specific crud submodule
-    with mock.patch("backend.routers.agents.crud_agents.update_agent", side_effect=HTTPException(status_code=418, detail="I'm a teapot")):
+    with mock.patch("backend.routers.agents.AgentService.update_agent", side_effect=HTTPException(status_code=418, detail="I'm a teapot")):
         response = await async_client.put(f"/agents/{agent.id}", json={"name": "Updated Name"})
         assert response.status_code == 418
         assert response.json()["detail"] == "I'm a teapot"
@@ -594,7 +598,7 @@ async def test_create_task_api_generic_exception(async_client: httpx.AsyncClient
     task_payload = {"title": "Task Causing Exception", "project_id": project_id, "agent_name": agent_name}
     
     # Patch 'backend.crud.create_task' to raise a generic exception
-    with mock.patch('backend.crud.create_task', side_effect=Exception("DB commit failed unexpectedly")):
+    with mock.patch('backend.routers.projects.TaskService.create_task', side_effect=Exception("DB commit failed unexpectedly")):
         response = await async_client.post(f"/projects/{project_id}/tasks/", json=task_payload)
         assert response.status_code == 500
         assert "Internal server error" in response.json()["detail"]
@@ -608,11 +612,11 @@ async def test_update_task_api_generic_exception(async_client: httpx.AsyncClient
     task_number = task_resp.json()["task_number"]
     update_payload = {"title": "Updated Title during Exc Test"}
 
-    with mock.patch('backend.crud.update_task', side_effect=Exception("Update DB failed")):
+    with mock.patch('backend.routers.projects.TaskService.update_task', side_effect=Exception("Generic task error")):
         response = await async_client.put(f"/projects/{project_id}/tasks/{task_number}", json=update_payload)
         assert response.status_code == 500
         assert "Internal server error" in response.json()["detail"]
-        assert "Update DB failed" in response.json()["detail"]
+        assert "Generic task error" in response.json()["detail"]
 
 async def test_delete_task_api_generic_exception(async_client: httpx.AsyncClient, db_session: Session):
     # Create a project and task to delete
@@ -621,7 +625,7 @@ async def test_delete_task_api_generic_exception(async_client: httpx.AsyncClient
     task_resp = await async_client.post(f"/projects/{project_id}/tasks/", json={"title": "Task for Delete Exc", "project_id": project_id})
     task_number = task_resp.json()["task_number"]
 
-    with mock.patch('backend.crud.delete_task', side_effect=Exception("Delete DB failed")):
+    with mock.patch('backend.routers.projects.TaskService.delete_task_by_project_and_number', side_effect=Exception("Delete DB failed")):
         response = await async_client.delete(f"/projects/{project_id}/tasks/{task_number}")
     
     assert response.status_code == 500
@@ -720,19 +724,19 @@ async def test_project_agent_task_generic_exceptions(async_client: httpx.AsyncCl
     task = crud_tasks.create_task(db_session, schemas.TaskCreate(title="GenericErrorTask", project_id=project.id))
 
     # Test project update generic exception
-    with mock.patch("backend.main.crud.update_project", side_effect=Exception("Generic project error")):
+    with mock.patch("backend.routers.projects.ProjectService.update_project", side_effect=Exception("Generic project error")):
         response = await async_client.put(f"/projects/{project.id}", json={"name": "Updated Name"})
         assert response.status_code == 500
         assert response.json()["detail"] == "Internal server error: Generic project error"
 
     # Test agent update generic exception
-    with mock.patch("backend.main.crud.update_agent", side_effect=Exception("Generic agent error")):
+    with mock.patch("backend.routers.agents.AgentService.update_agent", side_effect=Exception("Generic agent error")):
         response = await async_client.put(f"/agents/{agent.id}", json={"name": "Updated Name"})
         assert response.status_code == 500
         assert response.json()["detail"] == "Internal server error: Generic agent error"
 
     # Test task update generic exception
-    with mock.patch("backend.main.crud.update_task", side_effect=Exception("Generic task error")):
+    with mock.patch("backend.routers.tasks.crud_tasks.update_task_by_project_and_number", side_effect=Exception("Generic task error")):
         response = await async_client.put(f"/projects/{project.id}/tasks/{task.task_number}", json={"title": "Updated Title"})
         assert response.status_code == 500
         assert response.json()["detail"] == "Internal server error: Generic task error"
@@ -1243,7 +1247,7 @@ async def test_task_file_association_api(async_client: httpx.AsyncClient, db_ses
     # For now, we'll create a task using crud
     from .. import crud, schemas
     task_create_schema = schemas.TaskCreate(title="Task with Files", project_id=project.id)
-    task = crud_tasks.create_task(db_session, project.id, task_create_schema)
+    task = crud_tasks.create_task(db_session, task_create_schema)
 
     # Assuming a create_test_file helper function or similar is available
     # For now, we'll just create dummy file ID strings.
@@ -1327,9 +1331,9 @@ async def test_task_dependency_api(async_client: httpx.AsyncClient, db_session: 
     task1_create_schema = schemas.TaskCreate(title="Task 1", project_id=project.id)
     task2_create_schema = schemas.TaskCreate(title="Task 2", project_id=project.id)
     task3_create_schema = schemas.TaskCreate(title="Task 3", project_id=project.id)
-    task1 = crud_tasks.create_task(db_session, project.id, task1_create_schema)
-    task2 = crud_tasks.create_task(db_session, project.id, task2_create_schema)
-    task3 = crud_tasks.create_task(db_session, project.id, task3_create_schema)
+    task1 = crud_tasks.create_task(db_session, task1_create_schema)
+    task2 = crud_tasks.create_task(db_session, task2_create_schema)
+    task3 = crud_tasks.create_task(db_session, task3_create_schema)
 
     # Add dependency: Task 1 -> Task 2
     add_dependency_response_1 = await async_client.post(f"/projects/{project.id}/tasks/{task2.task_number}/dependencies/", 
@@ -1441,7 +1445,7 @@ async def test_task_dependency_api(async_client: httpx.AsyncClient, db_session: 
     )
     assert add_dependency_non_existent_task_successor.status_code == 400 # Assuming router/service handles invalid successor task number (from path)
 
-async def test_create_audit_log_entry(test_app: FastAPI, mock_db_session: Session):
+async def test_create_audit_log_entry(fastapi_app: FastAPI, db_session: Session):
     # ... existing code ...
     audit_log_data = {
         "action": "user.login",
@@ -1451,17 +1455,20 @@ async def test_create_audit_log_entry(test_app: FastAPI, mock_db_session: Sessio
         "entity_id": "1",
     }
     # ... existing code ...
-    # Replace crud_audit_logs.create_audit_log_entry with AuditLogService.create_log_entry
-    # audit_log_entry = crud_audit_logs.create_audit_log_entry(
-    # ... existing code ...
-    audit_log_entry = AuditLogService.create_log_entry(
-        db=mock_db_session,
+    audit_log_service = AuditLogService(db_session)
+    audit_log_entry = audit_log_service.create_log_entry(
         action=audit_log_data["action"],
         user_id=audit_log_data["user_id"],
-        details=audit_log_data["details"],
+        details=audit_log_data["details"], # Pass details as a dictionary
         entity_type=audit_log_data["entity_type"], # Pass required fields
         entity_id=audit_log_data["entity_id"], # Pass required fields
     )
     # ... existing code ...
     assert audit_log_entry.entity_type == "user" # Added assertion
     assert audit_log_entry.entity_id == "1" # Added assertion
+
+import pytest
+
+
+def test_simple_can_be_collected():
+    assert True

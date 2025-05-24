@@ -63,6 +63,12 @@ def get_task_file_association_service(db: Session = Depends(get_db)) -> TaskFile
 def get_task_dependency_service(db: Session = Depends(get_db)) -> TaskDependencyService:
     return TaskDependencyService(db)
 
+# Dependency to get ProjectFileAssociationService instance
+
+
+def get_project_file_association_service(db: Session = Depends(get_db)) -> ProjectFileAssociationService:
+    return ProjectFileAssociationService(db)
+
 
 @router.post("/", response_model=schemas.Project, summary="Create Project", operation_id="create_project")
 def create_project(
@@ -243,3 +249,94 @@ Plan:\n"""
 @router.post("/planning/generate-prompt", response_model=PlanningResponse, summary="Generate Project Manager Planning Prompt (Alias)", tags=["Projects", "Planning"])
 async def planning_generate_prompt_alias(request: PlanningRequest, agent_service: AgentService = Depends(get_agent_service)):
     return await generate_project_manager_planning_prompt(request, agent_service)
+
+
+@router.post(
+    "/{project_id}/files/",
+    response_model=schemas.ProjectFileAssociation,
+    summary="Associate File with Project",
+    tags=["Project Files"],
+    operation_id="associate_file_with_project"
+)
+def associate_file_with_project_endpoint(
+    project_id: str,
+    file_association: schemas.ProjectFileAssociationCreate,
+    project_file_association_service: ProjectFileAssociationService = Depends(
+        get_project_file_association_service)
+):
+    """Associate a file with a project using its memory entity name/path."""
+    # The file_memory_entity_name is provided in the request body via ProjectFileAssociationCreate schema.
+    # The service layer handles the creation/linking of the MemoryEntity if it doesn't exist.
+    return project_file_association_service.associate_file_with_project(
+        project_id=project_id,
+        file_memory_entity_name=file_association.file_memory_entity_name
+    )
+
+@router.get(
+    "/{project_id}/files/",
+    response_model=List[schemas.ProjectFileAssociation],
+    summary="Get Files Associated with Project",
+    tags=["Project Files"],
+    operation_id="get_files_associated_with_project"
+)
+def get_files_associated_with_project_endpoint(
+    project_id: str,
+    skip: int = Query(0, description="Skip the first N associations."),
+    limit: int = Query(
+        100, description="Limit the number of associations returned."),
+    # Removed sort_by, sort_direction, and filename filters as they were based on the old File model
+    project_file_association_service: ProjectFileAssociationService = Depends(
+        get_project_file_association_service)
+):
+    """Retrieve a list of files associated with a project."""
+    # The actual filtering/sorting logic based on sort_by would need to be handled in the service layer if needed.
+    # For now, we only retrieve the associations based on project_id.
+    return project_file_association_service.get_files_for_project(
+        project_id=project_id,
+        skip=skip,
+        limit=limit
+    )
+
+@router.get(
+    "/{project_id}/files/{file_memory_entity_name:path}", # Changed file_id to file_memory_entity_name and added :path
+    response_model=schemas.ProjectFileAssociation,
+    summary="Get Project File Association by File Memory Entity Name", # Updated summary
+    tags=["Project Files"],
+    operation_id="get_project_file_association_by_file_memory_entity_name" # Updated operation_id
+)
+def get_project_file_association_by_file_memory_entity_name_endpoint( # Updated function name
+    project_id: str,
+    file_memory_entity_name: str = Path(..., description="Name/path of the associated file MemoryEntity."), # Updated parameter name and description
+    project_file_association_service: ProjectFileAssociationService = Depends(
+        get_project_file_association_service)
+):
+    """Retrieve a specific project file association by project and file memory entity name."""
+    db_association = project_file_association_service.get_association(
+        project_id=project_id,
+        file_memory_entity_name=file_memory_entity_name # Updated parameter name
+    )
+    if db_association is None:
+        raise HTTPException(status_code=404, detail="Project file association not found")
+    return db_association
+
+@router.delete(
+    "/{project_id}/files/{file_memory_entity_name:path}", # Changed file_id to file_memory_entity_name and added :path
+    response_model=dict,
+    summary="Disassociate File from Project by File Memory Entity Name", # Updated summary
+    tags=["Project Files"],
+    operation_id="disassociate_file_from_project_by_file_memory_entity_name" # Updated operation_id
+)
+def disassociate_file_from_project_by_file_memory_entity_name_endpoint( # Updated function name
+    project_id: str,
+    file_memory_entity_name: str = Path(..., description="Name/path of the associated file MemoryEntity."), # Updated parameter name and description
+    project_file_association_service: ProjectFileAssociationService = Depends(
+        get_project_file_association_service)
+):
+    """Remove a file association from a project by project and file memory entity name."""
+    success = project_file_association_service.disassociate_file_from_project(
+        project_id=project_id,
+        file_memory_entity_name=file_memory_entity_name # Updated parameter name
+    )
+    if not success:
+        raise HTTPException(status_code=404, detail="Project file association not found")
+    return {"message": "Project file association deleted successfully"}

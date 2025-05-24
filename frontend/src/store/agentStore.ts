@@ -10,7 +10,7 @@ import { createBaseStore, BaseState, withLoading } from "./baseStore";
 import * as api from "@/services/api";
 
 type AgentActions = {
-  fetchAgents: (filters?: AgentFilters) => Promise<void>;
+  fetchAgents: (skip: number, limit: number, filters?: AgentFilters) => Promise<void>;
   addAgent: (agentData: AgentCreateData) => Promise<void>;
   removeAgent: (id: string) => Promise<void>;
   editAgent: (id: string, agentData: AgentUpdateData) => Promise<void>;
@@ -88,11 +88,18 @@ const agentActionsCreator = (
   set: StoreApi<AgentState>["setState"],
   get: StoreApi<AgentState>["getState"],
 ): AgentActions => ({
-  fetchAgents: async (filters?: AgentFilters) => {
+  fetchAgents: async (skip: number = 0, limit: number = 100, filters?: AgentFilters) => {
     set({ loading: true, error: null });
     try {
       const effectiveFilters = filters || get().filters;
-      const fetchedAgents = await api.getAgents(effectiveFilters);
+      console.log("[AgentStore] Fetching agents with effective filters:", effectiveFilters);
+      const fetchedAgents = await api.getAgents(
+        skip,
+        limit,
+        effectiveFilters.search,
+        effectiveFilters.status,
+        effectiveFilters.is_archived
+      );
       set((state) => {
         const updatedAgents = upsertAgents(fetchedAgents, state.agents);
         if (areAgentsEqual(updatedAgents, state.agents)) {
@@ -182,7 +189,7 @@ const agentActionsCreator = (
   },
   setFilters: (filters: AgentFilters) => {
     set({ filters } as Partial<AgentState>);
-    get().fetchAgents(filters);
+    get().fetchAgents(0, 100, filters);
   },
 });
 

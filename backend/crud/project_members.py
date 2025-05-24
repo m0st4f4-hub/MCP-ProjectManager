@@ -32,7 +32,7 @@ def get_user_projects(db: Session, user_id: str, skip: int = 0, limit: int = 100
     ).offset(skip).limit(limit).all()
 
 
-def create_project_member(db: Session, project_member: ProjectMemberCreate) -> ProjectMember:
+def add_project_member(db: Session, project_member: ProjectMemberCreate) -> ProjectMember:
     """Add a user to a project with a specific role."""
     db_project_member = ProjectMember(
         project_id=project_member.project_id,
