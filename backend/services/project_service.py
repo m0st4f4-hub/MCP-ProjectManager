@@ -39,15 +39,20 @@ from backend.crud.project_file_associations import (
     get_project_file_association
 )
 
-# Import CRUD for Project Templates
+# Import Project Templates
 from backend.crud import project_templates as project_template_crud
 # Import Task CRUD to create tasks from template
 from backend.crud import tasks as tasks_crud
 # Import Project Member CRUD to add members from template
 from backend.crud import project_members as project_members_crud
 
-# No need to import validation helpers in service, they are used in CRUD
-# from backend.crud.project_validation import project_name_exists
+# Import service utilities
+from backend.services.utils import service_transaction
+from backend.services.exceptions import EntityNotFoundError, DuplicateEntityError, ValidationError
+
+# Import service utilities
+from backend.services.utils import service_transaction
+from backend.services.exceptions import EntityNotFoundError, DuplicateEntityError, ValidationError
 
 
 class ProjectService:
@@ -56,9 +61,24 @@ class ProjectService:
 
     def get_project(
         self, project_id: str, is_archived: Optional[bool] = False
-    ) -> Optional[models.Project]:
-        # Delegate to CRUD
-        return get_project(self.db, project_id, is_archived)
+    ) -> models.Project:
+        """
+        Retrieve a project by ID.
+        
+        Args:
+            project_id: The project ID
+            is_archived: Filter by archived status
+            
+        Returns:
+            The project object
+            
+        Raises:
+            EntityNotFoundError: If the project is not found
+        """
+        project = get_project(self.db, project_id, is_archived)
+        if not project:
+            raise EntityNotFoundError("Project", project_id)
+        return project
 
     def get_project_by_name(
         self, name: str, is_archived: Optional[bool] = False
@@ -81,6 +101,12 @@ class ProjectService:
         self, project: ProjectCreate, created_by_user_id: Optional[str] = None
     ) -> models.Project:
         """Create a new project, optionally using a template."""
+        
+        # Check if project name already exists
+        existing_project = self.get_project_by_name(project.name, is_archived=None)
+        if existing_project:
+            raise DuplicateEntityError("Project", project.name)
+        
         template_data = None
         if project.template_id:
             # Fetch the template data
@@ -88,51 +114,99 @@ class ProjectService:
                 self.db, project.template_id
             )
             if not template:
-                raise ValueError(f"Project template with ID {project.template_id} not found.")
+                raise EntityNotFoundError("ProjectTemplate", project.template_id)
             template_data = template.template_data
 
-        # Create the basic project first
-        db_project = create_project(self.db, project)
+        # Use transaction context manager
+        with service_transaction(self.db, "create_project") as tx_db:
+            # Create the basic project first
+            db_project = create_project(tx_db, project)
 
-        # If template data exists, use it to populate the project
-        if template_data:
-            # Example: Create default tasks from template_data
-            default_tasks = template_data.get("default_tasks", [])
-            for task_data in default_tasks:
-                # Assuming task_data is compatible with TaskCreate schema structure (title, description, status, etc.)
-                task_create_schema = task_schemas.TaskCreate(**task_data)
-                # Need to import TaskCreate and the tasks crud/service
-                tasks_crud.create_task(
-                    self.db, project_id=db_project.id, task=task_create_schema
-                )
+            # If template data exists, use it to populate the project
+            if template_data:
+                try:
+                    # Example: Create default tasks from template_data
+                    default_tasks = template_data.get("default_tasks", [])
+                    for task_data in default_tasks:
+                        # Assuming task_data is compatible with TaskCreate schema structure
+                        task_create_schema = task_schemas.TaskCreate(**task_data)
+                        tasks_crud.create_task(
+                            tx_db, project_id=db_project.id, task=task_create_schema
+                        )
+                    
+                    # Example: Add default members from template_data
+                    default_members = template_data.get("default_members", [])
+                    for member_data in default_members:
+                        member_create_schema = project_schemas.ProjectMemberCreate(
+                            **member_data, project_id=db_project.id
+                        )
+                        project_members_crud.add_project_member(tx_db, member_create_schema)
+                    
+                    # Add created_by_user to members if not already included
+                    if created_by_user_id and default_members:
+                        user_is_member = any(m.get("user_id") == created_by_user_id for m in default_members)
+                        if not user_is_member:
+                            owner_member = project_schemas.ProjectMemberCreate(
+                                project_id=db_project.id,
+                                user_id=created_by_user_id,
+                                role="owner"
+                            )
+                            project_members_crud.add_project_member(tx_db, owner_member)
+                except Exception as e:
+                    # Convert any internal exceptions to service exceptions
+                    if isinstance(e, (EntityNotFoundError, DuplicateEntityError, ValidationError)):
+                        raise
+                    raise ValidationError(f"Error creating project from template: {str(e)}")
+
+            # Refresh the project to load the new tasks and members
+            tx_db.refresh(db_project)
             
-            # Example: Add default members from template_data
-            default_members = template_data.get("default_members", [])
-            for member_data in default_members:
-                # Assuming member_data has 'user_id' and 'role'
-                # Need to import ProjectMemberCreate and project_members crud/service
-                member_create_schema = project_schemas.ProjectMemberCreate(**member_data, project_id=db_project.id)
-                project_members_crud.add_project_member(self.db, member_create_schema)
-            
-            # Add created_by_user to members if not already included and template specifies default members
-            if created_by_user_id and default_members:
-                 user_is_member = any(m.get("user_id") == created_by_user_id for m in default_members)
-                 if not user_is_member:
-                     # Add the user who created the project as a default member (e.g., with 'owner' role)
-                     # You might need a specific schema/logic for adding the owner
-                     # For now, just a placeholder or assume owner is added by default project creation
-                     pass # TODO: Implement adding creator as default member if needed
-
-        # Refresh the project to load the new tasks and members
-        self.db.refresh(db_project)
-
-        return db_project
+            return db_project
 
     def update_project(
         self, project_id: str, project_update: ProjectUpdate
-    ) -> Optional[models.Project]:
-        # Delegate to CRUD
-        return update_project(self.db, project_id, project_update)
+    ) -> models.Project:
+        """
+        Update a project by ID.
+        
+        Args:
+            project_id: The project ID
+            project_update: The update data
+            
+        Returns:
+            The updated project
+            
+        Raises:
+            EntityNotFoundError: If the project is not found
+            DuplicateEntityError: If the new name already exists
+            ValidationError: If the update data is invalid
+        """
+        # Check if project exists
+        existing_project = get_project(self.db, project_id, is_archived=None)
+        if not existing_project:
+            raise EntityNotFoundError("Project", project_id)
+            
+        # Check for name conflict if name is being changed
+        if project_update.name and project_update.name != existing_project.name:
+            name_conflict = get_project_by_name(self.db, project_update.name, is_archived=None)
+            if name_conflict:
+                raise DuplicateEntityError("Project", project_update.name)
+        
+        # Use transaction context manager
+        with service_transaction(self.db, "update_project") as tx_db:
+            try:
+                updated_project = update_project(tx_db, project_id, project_update)
+                if not updated_project:
+                    raise EntityNotFoundError("Project", project_id)
+                return updated_project
+            except ValueError as e:
+                # Convert ValueError to ValidationError
+                raise ValidationError(str(e))
+            except Exception as e:
+                # Convert any other exceptions to service exceptions
+                if isinstance(e, (EntityNotFoundError, DuplicateEntityError, ValidationError)):
+                    raise
+                raise ValidationError(f"Error updating project: {str(e)}")
 
     def delete_project(self, project_id: str) -> bool:
         # Delegate to CRUD

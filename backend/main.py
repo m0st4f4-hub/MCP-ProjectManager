@@ -68,6 +68,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Initialize middleware
+init_middleware(app)
+
 # --- MCP Instance Initialization ---
 if MCPClient is not None:
     mcp = MCPClient(app, rules_dir=".cursor/rules")
@@ -158,6 +161,9 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
+# Initialize middleware
+init_middleware(app)
 
 # Optional: Add a custom exception handler for HTTPExceptions if needed
 # @app.exception_handler(HTTPException)
