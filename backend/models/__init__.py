@@ -11,22 +11,22 @@ from .base import (
 
 # Import core models
 from .user import User, UserRole
-from .comment import Comment
-from .agent import Agent, AgentRule, AgentRole
-from .project import Project, ProjectTemplate, ProjectMember, ProjectFileAssociation
-from .task import Task, TaskStatus
-from .task_relations import TaskDependency, TaskFileAssociation
-from .workflow import Workflow, WorkflowStep, AgentPromptTemplate
-from .audit import AuditLog, AgentRuleViolation, AgentBehaviorLog
-from .memory import MemoryEntity, MemoryObservation, MemoryRelation
-from .universal_mandate import UniversalMandate
+# from .comment import Comment
+# from .agent import Agent, AgentRule, AgentRole
+from .project import Project, ProjectMember #, ProjectTemplate, ProjectFileAssociation # Keep project for now as it was working in isolation
+# from .task import Task, TaskStatus
+# from .task_relations import TaskDependency, TaskFileAssociation
+# from .workflow import Workflow, WorkflowStep, AgentPromptTemplate
+# from .audit import AuditLog, AgentRuleViolation, AgentBehaviorLog
+# from .memory import MemoryEntity, MemoryObservation, MemoryRelation
+# from .universal_mandate import UniversalMandate
 
 # Import agent capabilities and other related models (they exist in individual files)
-from .agent_capability import AgentCapability
-from .agent_forbidden_action import AgentForbiddenAction
-from .agent_verification_requirement import AgentVerificationRequirement
-from .agent_handoff_criteria import AgentHandoffCriteria
-from .agent_error_protocol import AgentErrorProtocol
+# from .agent_capability import AgentCapability
+# from .agent_forbidden_action import AgentForbiddenAction
+# from .agent_verification_requirement import AgentVerificationRequirement
+# from .agent_handoff_criteria import AgentHandoffCriteria
+# from .agent_error_protocol import AgentErrorProtocol
 
 # Export all models
 __all__ = [
@@ -35,33 +35,34 @@ __all__ = [
     'generate_uuid', 'generate_uuid_with_hyphens',
     
     # Core models
-    'User', 'UserRole', 'Comment',
+    'User', 'UserRole',
+    # 'Comment',
     
     # Agent models
-    'Agent', 'AgentRule', 'AgentRole',
+    # 'Agent', 'AgentRule', 'AgentRole',
     
     # Project models
-    'Project', 'ProjectTemplate', 'ProjectMember', 'ProjectFileAssociation',
+    'Project', 'ProjectMember', # 'ProjectTemplate', 'ProjectFileAssociation',
     
     # Task models
-    'Task', 'TaskStatus', 'TaskDependency', 'TaskFileAssociation',
+    # 'Task', 'TaskStatus', 'TaskDependency', 'TaskFileAssociation',
     
     # Workflow models
-    'Workflow', 'WorkflowStep', 'AgentPromptTemplate',
+    # 'Workflow', 'WorkflowStep', 'AgentPromptTemplate',
     
     # Audit models
-    'AuditLog', 'AgentRuleViolation', 'AgentBehaviorLog',
+    # 'AuditLog', 'AgentRuleViolation', 'AgentBehaviorLog',
     
     # Memory models
-    'MemoryEntity', 'MemoryObservation', 'MemoryRelation',
+    # 'MemoryEntity', 'MemoryObservation', 'MemoryRelation',
     
     # Universal Mandate
-    'UniversalMandate',
+    # 'UniversalMandate',
     
     # Agent Capabilities and related models
-    'AgentCapability',
-    'AgentForbiddenAction',
-    'AgentVerificationRequirement',
-    'AgentHandoffCriteria',
-    'AgentErrorProtocol',
+    # 'AgentCapability',
+    # 'AgentForbiddenAction',
+    # 'AgentVerificationRequirement',
+    # 'AgentHandoffCriteria',
+    # 'AgentErrorProtocol',
 ]
