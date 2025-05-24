@@ -26,7 +26,7 @@ from backend.database import get_db, Base, engine #, SessionLocal # SessionLocal
 # from backend.models import User as UserModel # Example, if you needed User model directly
 
 # Import routers
-from backend.routers import mcp, projects, agents, audit_logs, memory, rules, tasks, users
+from backend.routers import projects #, mcp, agents, audit_logs, memory, rules, tasks, users
 
 logger = logging.getLogger(__name__)
 
@@ -86,14 +86,14 @@ async def test_mcp(request: Request) -> Dict[str, Any]:
     }
 
 # Include routers
-app.include_router(agents.router)
-app.include_router(audit_logs.router)
-app.include_router(memory.router)
-app.include_router(mcp.router, prefix="/mcp-tools")
+# app.include_router(agents.router)
+# app.include_router(audit_logs.router)
+# app.include_router(memory.router)
+# app.include_router(mcp.router, prefix="/mcp-tools")
 app.include_router(projects.router)
-app.include_router(rules.router)
-app.include_router(tasks.router)
-app.include_router(users.router)
+# app.include_router(rules.router)
+# app.include_router(tasks.router)
+# app.include_router(users.router)
 
 # CORS middleware
 app.add_middleware(
