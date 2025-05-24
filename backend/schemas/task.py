@@ -92,7 +92,7 @@ class TaskInDB(TaskInDBBase):
     pass
 
 # Explicitly trigger forward reference resolution for schemas in this file
-Task.model_rebuild()
+# Task.model_rebuild()
 # TaskStatus.model_rebuild() # If defined here and uses forward refs
 # TaskDependency.model_rebuild() # If defined here and uses forward refs
 # Comment.model_rebuild() # If defined here and uses forward refs

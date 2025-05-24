@@ -50,8 +50,15 @@ from .workflow import (
     WorkflowBase,
     WorkflowCreate,
     WorkflowUpdate,
-    Workflow,
-    WorkflowStep # Added missing WorkflowStep
+    Workflow
+)
+
+# Import and re-export schemas from the workflow_step module
+from .workflow_step import (
+    WorkflowStepBase,
+    WorkflowStepCreate,
+    WorkflowStepUpdate,
+    WorkflowStep
 )
 
 # Import and re-export schemas from the agent_prompt_template module

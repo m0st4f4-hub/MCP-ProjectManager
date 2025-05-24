@@ -35,10 +35,10 @@ def initialize_rules():
     print("You can manually create rules via the API endpoints.")
     
     # TODO: Fix model relationships and uncomment this
-    # with SessionLocal() as db:
-    #     rules_service = RulesService(db)
-    #     rules_service.initialize_default_rules()
-    #     print("Default rules and agent roles created.")
+    with SessionLocal() as db:
+        rules_service = RulesService(db)
+        rules_service.initialize_default_rules()
+        print("Default rules and agent roles created.")
     
     print("Rules framework tables initialization complete!")
     print("Use the /rules API endpoints to create agent roles and rules.")

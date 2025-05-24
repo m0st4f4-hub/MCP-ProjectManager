@@ -12,3 +12,8 @@ from typing import List, Optional, Dict, Any
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def get_entity_by_name(db: Session, name: str) -> Optional[models.MemoryEntity]:
+    """Retrieve a memory entity by its name."""
+    return db.query(models.MemoryEntity).filter(models.MemoryEntity.name == name).first()
