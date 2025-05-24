@@ -1,13 +1,19 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from .. import models, schemas
+from backend import models
+from backend.schemas import (
+    MemoryEntityCreate,
+    MemoryEntityUpdate,
+    MemoryObservationCreate,
+    MemoryRelationCreate,
+)
 from fastapi import HTTPException, status
 from typing import List, Optional, Dict, Any
 import logging
 
 logger = logging.getLogger(__name__)
 
-def create_memory_entity(db: Session, entity: schemas.MemoryEntityCreate) -> models.MemoryEntity:
+def create_memory_entity(db: Session, entity: MemoryEntityCreate) -> models.MemoryEntity:
     """Creates a new memory entity."""
     try:
         db_entity = models.MemoryEntity(
@@ -55,7 +61,7 @@ def get_memory_entities_by_type(db: Session, entity_type: str, skip: int = 0, li
     return db.query(models.MemoryEntity).filter(models.MemoryEntity.type == entity_type).offset(skip).limit(limit).all()
 
 
-def update_memory_entity(db: Session, entity_id: int, entity_update: schemas.MemoryEntityUpdate) -> Optional[models.MemoryEntity]:
+def update_memory_entity(db: Session, entity_id: int, entity_update: MemoryEntityUpdate) -> Optional[models.MemoryEntity]:
     """Updates an existing memory entity."""
     db_entity = get_memory_entity_by_id(db, entity_id)
     if db_entity:
@@ -76,7 +82,7 @@ def delete_memory_entity(db: Session, entity_id: int) -> Optional[models.MemoryE
         logger.info(f"Deleted memory entity: {entity_id}")
     return db_entity
 
-def add_observation_to_entity(db: Session, entity_id: int, observation: schemas.MemoryObservationCreate) -> models.MemoryObservation:
+def add_observation_to_entity(db: Session, entity_id: int, observation: MemoryObservationCreate) -> models.MemoryObservation:
     """Adds an observation to a memory entity."""
     db_entity = get_memory_entity_by_id(db, entity_id)
     if db_entity is None:
@@ -104,7 +110,7 @@ def get_observations(db: Session, entity_id: Optional[int] = None, search_query:
         query = query.filter(models.MemoryObservation.content.like(f"%{search_query}%"))
     return query.offset(skip).limit(limit).all()
 
-def create_memory_relation(db: Session, relation: schemas.MemoryRelationCreate) -> models.MemoryRelation:
+def create_memory_relation(db: Session, relation: MemoryRelationCreate) -> models.MemoryRelation:
     """Creates a new relationship between two entities."""
     from_entity = get_memory_entity_by_id(db, entity_id=relation.from_entity_id)
     to_entity = get_memory_entity_by_id(db, entity_id=relation.to_entity_id)

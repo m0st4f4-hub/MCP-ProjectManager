@@ -1,51 +1,36 @@
-# Task ID: 211
-# Agent Role: Agent 1
+# Task ID: (Inherited from ProjectManager)
+# Agent Role: BuilderAgent
 # Request ID: (Inherited from Overmind)
 # Project: task-manager
-# Timestamp: 2025-05-09T21:00:00Z
+# Timestamp: 2025-05-09T21:15:00Z
 
-# Attempting to break circular import by explicitly importing necessary components
-# from . import tasks # Removed
-# from . import agents # Removed
-# from . import projects # Removed
-# from . import audit_logs # Removed
-# from . import project_members # Removed
-# from . import project_file_associations # Removed
-# from . import task_file_associations # Removed
-# from . import task_dependencies # Removed
-# from . import rules # Added rules framework
+# Import all CRUD modules to make them available when importing the crud package
+# This file primarily serves to make the crud submodules importable.
 
-# Explicitly importing only the functions actually present in projects.py
-from .projects import (
-    get_project,
-    get_project_by_name,
-    get_projects,
-    create_project,
-    update_project,
-    delete_project
-)
-
-# Import rules framework functions
-from .rules import (
-    get_agent_role_by_name,
-    get_agent_role_with_details,
-    validate_task_against_agent_rules,
-    generate_agent_prompt_from_rules,
-    log_agent_behavior,
-    log_rule_violation,
-    get_universal_mandates
-)
-
-# Optionally expose models and schemas if they are part of the intended public interface
-# from .. import models
-# from .. import schemas
-
-from . import tasks
 from . import projects
-from . import users
+from . import tasks
+from . import agents
 from . import project_members
+from . import task_dependencies
 from . import project_file_associations
 from . import task_file_associations
-from . import task_dependencies
-# from . import audit_logs # Removing this import again
-# from . import comments # Removing this import again due to circular dependency
+from . import memory
+from . import audit_logs
+from . import comments
+from . import rules # Import rules framework module
+from . import users # Import users module
+
+__all__ = [
+    "projects",
+    "tasks",
+    "agents",
+    "project_members",
+    "task_dependencies",
+    "project_file_associations",
+    "task_file_associations",
+    "memory",
+    "audit_logs",
+    "comments",
+    "rules", # Expose rules
+    "users" # Expose users
+]

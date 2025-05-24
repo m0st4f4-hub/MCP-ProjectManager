@@ -45,7 +45,6 @@ def create_agent(agent: schemas.AgentCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=List[schemas.Agent], summary="Get Agents", operation_id="get_agents")
 def get_agent_list(
-    skip: int = 0,
     search: Optional[str] = None,  # Added search parameter
     # Added status parameter (though Agent model doesn't have status yet)
     status: Optional[str] = None,
@@ -53,11 +52,11 @@ def get_agent_list(
         False, description="Filter by archived status. False for non-archived, True for archived, null/None for all."),  # ADDED
     db: Session = Depends(get_db)  # ADDED db session dependency
 ):
-    """Retrieves a list of registered agents."""
+    """Retrieves a list of registered agents with optional filtering."""
     # Instantiate AgentService
     agent_service = AgentService(db)
     agents = agent_service.get_agents(
-        skip=skip, search=search, status=status, is_archived=is_archived)  # Pass new params
+        search=search, status=status, is_archived=is_archived)  # Pass new params
     return agents
 
 

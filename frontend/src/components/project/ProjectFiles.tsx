@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from 'react';
 import { getProjectFiles, disassociateFileFromProject, ProjectFileAssociation } from '@/services/api/projects';
 
@@ -65,4 +67,4 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
   );
 };
 
-export default ProjectFiles; 
+export default ProjectFiles;

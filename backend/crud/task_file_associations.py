@@ -16,6 +16,9 @@ from . import memory as memory_crud
 # Import file crud (assuming a files crud exists or we'll handle file entity creation here)
 # from . import files as files_crud # Need to verify file crud location or implement here
 
+# Import validation helpers
+from .task_file_association_validation import task_entity_exists, association_exists, delete_associated_memory_relation
+
 
 def get_files_for_task(db: Session, task_project_id: Union[str, uuid.UUID], task_number: int) -> List[TaskFileAssociation]:
     """Get all file associations for a task."""
@@ -31,14 +34,14 @@ def get_task_file_association(
     db: Session,
     task_project_id: Union[str, uuid.UUID],
     task_number: int,
-    file_id: str
+    file_memory_entity_id: int
 ) -> Optional[TaskFileAssociation]:
-    """Get a specific task-file association."""
+    """Get a specific task-file association by task composite ID and file memory entity ID."""
     return db.query(TaskFileAssociation).filter(
         and_(
             TaskFileAssociation.task_project_id == str(task_project_id),
             TaskFileAssociation.task_task_number == task_number,
-            TaskFileAssociation.file_memory_entity_name == file_id
+            TaskFileAssociation.file_memory_entity_id == file_memory_entity_id
         )
     ).first()
 
@@ -54,54 +57,20 @@ def get_task_files(db: Session, task_project_id: str, task_task_number: int, ski
 
 
 def create_task_file_association(db: Session, task_file: TaskFileAssociationCreate) -> TaskFileAssociation:
-    """Associate a file with a task using file_memory_entity_name."""
-    # Ensure MemoryEntity for the file exists
-    file_memory_entity = memory_crud.get_memory_entity_by_name(db, name=task_file.file_memory_entity_name)
-    if not file_memory_entity:
-        basic_file_entity_data = MemoryEntityCreate(
-            type="file",
-            name=task_file.file_memory_entity_name,
-            description=f"File reference {task_file.file_memory_entity_name}",
-            metadata_={}
-        )
-        file_memory_entity = memory_crud.create_memory_entity(db=db, entity=basic_file_entity_data)
-    # Ensure MemoryEntity for the task exists
-    task_entity_name = f"task_{task_file.task_project_id}_{task_file.task_task_number}"
-    task_memory_entity = memory_crud.get_memory_entity_by_name(db, name=task_entity_name)
-    if not task_memory_entity:
-        basic_task_entity_data = MemoryEntityCreate(
-            type="task",
-            name=task_entity_name,
-            description=f"Task {task_file.task_task_number} in project {task_file.task_project_id}",
-            metadata_={
-                "project_id": task_file.task_project_id,
-                "task_number": task_file.task_task_number
-            }
-        )
-        task_memory_entity = memory_crud.create_memory_entity(db=db, entity=basic_task_entity_data)
-    # Create a MemoryRelation between the file and task entities
-    if file_memory_entity and task_memory_entity:
-        relation_data = MemoryRelationCreate(
-            from_entity_id=file_memory_entity.id,
-            to_entity_id=task_memory_entity.id,
-            relation_type="associated_with",
-            metadata_={
-                "association_type": "task_file"
-            }
-        )
-        existing_relations = memory_crud.get_memory_relations_between_entities(
-            db,
-            from_entity_id=file_memory_entity.id,
-            to_entity_id=task_memory_entity.id,
-            relation_type="associated_with"
-        )
-        if not existing_relations:
-            memory_crud.create_memory_relation(db=db, relation=relation_data)
-    # Create the task file association in the main database
+    """Associate a file with a task using the file_memory_entity_id from the schema."""
+
+    # Use validation helpers
+    if association_exists(db, task_file.task_project_id, task_file.task_task_number, task_file.file_memory_entity_id):
+        # If association exists, return the existing one
+        return get_task_file_association(db, task_file.task_project_id, task_file.task_task_number, task_file.file_memory_entity_id)
+
+    # Task entity validation (assuming task entity creation happens elsewhere or is not strictly required here)
+    # file entity existence check should ideally happen before calling this CRUD function
+
     db_task_file = TaskFileAssociation(
         task_project_id=task_file.task_project_id,
         task_task_number=task_file.task_task_number,
-        file_memory_entity_name=task_file.file_memory_entity_name
+        file_memory_entity_id=task_file.file_memory_entity_id
     )
     db.add(db_task_file)
     db.commit()
@@ -109,21 +78,16 @@ def create_task_file_association(db: Session, task_file: TaskFileAssociationCrea
     return db_task_file
 
 
-def delete_task_file_association(db: Session, task_project_id: str, task_task_number: int, file_memory_entity_name: str) -> bool:
-    """Remove a file association from a task."""
-    file_memory_entity = memory_crud.get_memory_entity_by_name(db, name=file_memory_entity_name)
-    task_entity_name = f"task_{task_project_id}_{task_task_number}"
-    task_memory_entity = memory_crud.get_memory_entity_by_name(db, name=task_entity_name)
-    if file_memory_entity and task_memory_entity:
-        relations_to_delete = memory_crud.get_memory_relations_between_entities(
-            db,
-            from_entity_id=file_memory_entity.id,
-            to_entity_id=task_memory_entity.id,
-            relation_type="associated_with"
-        )
-        for relation in relations_to_delete:
-            memory_crud.delete_memory_relation(db, relation_id=relation.id)
-    db_task_file = get_task_file_association(db, task_project_id, task_task_number, file_memory_entity_name)
+def delete_task_file_association(db: Session, task_project_id: str, task_task_number: int, file_memory_entity_id: int) -> bool:
+    """Remove a task file association by task composite ID and file memory entity ID."""
+
+    # Use validation helper to delete associated memory relation
+    delete_associated_memory_relation(db, task_project_id, task_task_number, file_memory_entity_id)
+
+    # Get and delete the task file association in the main database
+    db_task_file = get_task_file_association(
+        db, task_project_id=task_project_id, task_number=task_task_number, file_memory_entity_id=file_memory_entity_id)
+
     if db_task_file:
         db.delete(db_task_file)
         db.commit()
@@ -131,12 +95,20 @@ def delete_task_file_association(db: Session, task_project_id: str, task_task_nu
     return False
 
 
-def associate_file_with_task(db: Session, task_project_id: Union[str, uuid.UUID], task_number: int, file_id: str) -> TaskFileAssociation:
-    """Associate a file with a task using file_id as the memory entity name."""
+def associate_file_with_task(
+    db: Session,
+    task_project_id: Union[str, uuid.UUID],
+    task_number: int,
+    file_memory_entity_id: int
+) -> TaskFileAssociation:
+    """Associate a file with a task using file_memory_entity_id."""
+    # This function should now primarily prepare the schema and call the CRUD create function.
+    # Validation for file and task entity existence should ideally happen before this service call.
+
     task_file = TaskFileAssociationCreate(
         task_project_id=str(task_project_id),
         task_task_number=task_number,
-        file_memory_entity_name=file_id  # Using file_id as the memory entity name
+        file_memory_entity_id=file_memory_entity_id
     )
     return create_task_file_association(db, task_file)
 
@@ -145,13 +117,9 @@ def disassociate_file_from_task(
     db: Session,
     task_project_id: Union[str, uuid.UUID],
     task_number: int,
-    file_id: str
+    file_memory_entity_id: int
 ) -> bool:
-    """Remove a file association from a task."""
-    association = get_task_file_association(
-        db, task_project_id=task_project_id, task_number=task_number, file_id=file_id)
-    if association:
-        db.delete(association)
-        db.commit()
-        return True
-    return False
+    """Remove a file association from a task by task details and file memory entity ID."""
+    # Use the updated delete_task_file_association in CRUD
+    return delete_task_file_association(
+        db, task_project_id=task_project_id, task_task_number=task_number, file_memory_entity_id=file_memory_entity_id)

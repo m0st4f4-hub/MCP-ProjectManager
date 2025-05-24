@@ -3,9 +3,19 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from .. import crud
-from .. import schemas
 from backend.database import get_db # Corrected import
 from ..crud import memory as memory_crud
+
+# Import schemas directly from the memory schema module
+from backend.schemas.memory import (\
+    MemoryEntity,\
+    MemoryEntityCreate,\
+    MemoryEntityUpdate,\
+    MemoryObservation,\
+    MemoryObservationCreate,\
+    MemoryRelation,\
+    MemoryRelationCreate\
+)
 
 router = APIRouter(
     prefix="/memory",
@@ -13,8 +23,8 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.post("/entities/", response_model=schemas.MemoryEntity)
-def create_entity(entity: schemas.MemoryEntityCreate, db: Session = Depends(get_db)):
+@router.post("/entities/", response_model=MemoryEntity)
+def create_entity(entity: MemoryEntityCreate, db: Session = Depends(get_db)):
     """Create a new memory entity.
 
     Args:
@@ -28,7 +38,7 @@ def create_entity(entity: schemas.MemoryEntityCreate, db: Session = Depends(get_
     """
     return memory_crud.create_memory_entity(db=db, entity=entity)
 
-@router.get("/entities/by-type/{entity_type}", response_model=List[schemas.MemoryEntity])
+@router.get("/entities/by-type/{entity_type}", response_model=List[MemoryEntity])
 def read_entities_by_type(entity_type: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Retrieve a list of memory entities filtered by type.
 
@@ -42,7 +52,7 @@ def read_entities_by_type(entity_type: str, skip: int = 0, limit: int = 100, db:
     """
     return memory_crud.get_memory_entities_by_type(db, entity_type=entity_type, skip=skip, limit=limit)
 
-@router.get("/entities/", response_model=List[schemas.MemoryEntity])
+@router.get("/entities/", response_model=List[MemoryEntity])
 def read_entities(type: Optional[str] = None, name: Optional[str] = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Retrieve a list of memory entities.
 
@@ -57,7 +67,7 @@ def read_entities(type: Optional[str] = None, name: Optional[str] = None, skip: 
     """
     return memory_crud.get_memory_entities(db, type=type, name=name, skip=skip, limit=limit)
 
-@router.get("/entities/{entity_id}", response_model=schemas.MemoryEntity)
+@router.get("/entities/{entity_id}", response_model=MemoryEntity)
 def read_entity(entity_id: int, db: Session = Depends(get_db)):
     """Retrieve a specific memory entity by its ID.
 
@@ -75,8 +85,8 @@ def read_entity(entity_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Entity not found")
     return db_entity
 
-@router.patch("/entities/{entity_id}", response_model=schemas.MemoryEntity)
-def update_entity(entity_id: int, entity_update: schemas.MemoryEntityUpdate, db: Session = Depends(get_db)):
+@router.patch("/entities/{entity_id}", response_model=MemoryEntity)
+def update_entity(entity_id: int, entity_update: MemoryEntityUpdate, db: Session = Depends(get_db)):
     """Update an existing memory entity.
 
     Args:
@@ -109,8 +119,8 @@ def delete_entity(entity_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Entity not found")
     # Return 204 No Content on successful deletion
 
-@router.post("/entities/{entity_id}/observations/", response_model=schemas.MemoryObservation)
-def add_observation(entity_id: int, observation: schemas.MemoryObservationCreate, db: Session = Depends(get_db)):
+@router.post("/entities/{entity_id}/observations/", response_model=MemoryObservation)
+def add_observation(entity_id: int, observation: MemoryObservationCreate, db: Session = Depends(get_db)):
     """Add an observation to a memory entity.
 
     Args:
@@ -125,7 +135,7 @@ def add_observation(entity_id: int, observation: schemas.MemoryObservationCreate
     """
     return memory_crud.add_observation_to_entity(db=db, entity_id=entity_id, observation=observation)
 
-@router.get("/observations/", response_model=List[schemas.MemoryObservation])
+@router.get("/observations/", response_model=List[MemoryObservation])
 def read_observations(entity_id: Optional[int] = None, search_query: Optional[str] = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Get observations, optionally filtered by entity or content search.
 
@@ -140,8 +150,8 @@ def read_observations(entity_id: Optional[int] = None, search_query: Optional[st
     """
     return memory_crud.get_observations(db, entity_id=entity_id, search_query=search_query, skip=skip, limit=limit)
 
-@router.post("/relations/", response_model=schemas.MemoryRelation)
-def create_relation(relation: schemas.MemoryRelationCreate, db: Session = Depends(get_db)):
+@router.post("/relations/", response_model=MemoryRelation)
+def create_relation(relation: MemoryRelationCreate, db: Session = Depends(get_db)):
     """Create a relationship between two memory entities.
 
     Args:
@@ -155,7 +165,7 @@ def create_relation(relation: schemas.MemoryRelationCreate, db: Session = Depend
     """
     return memory_crud.create_memory_relation(db=db, relation=relation)
 
-@router.get("/relations/by-type/{relation_type}", response_model=List[schemas.MemoryRelation])
+@router.get("/relations/by-type/{relation_type}", response_model=List[MemoryRelation])
 def read_relations_by_type(relation_type: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Retrieve a list of memory relations filtered by type.
 
@@ -169,7 +179,7 @@ def read_relations_by_type(relation_type: str, skip: int = 0, limit: int = 100, 
     """
     return memory_crud.get_memory_relations_by_type(db, relation_type=relation_type, skip=skip, limit=limit)
 
-@router.get("/entities/{from_entity_id}/relations/{to_entity_id}", response_model=List[schemas.MemoryRelation])
+@router.get("/entities/{from_entity_id}/relations/{to_entity_id}", response_model=List[MemoryRelation])
 def read_relations_between_entities(from_entity_id: int, to_entity_id: int, relation_type: Optional[str] = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Get relationships between two specific memory entities, optionally filtered by type.
 
@@ -185,7 +195,7 @@ def read_relations_between_entities(from_entity_id: int, to_entity_id: int, rela
     """
     return memory_crud.get_memory_relations_between_entities(db, from_entity_id=from_entity_id, to_entity_id=to_entity_id, relation_type=relation_type, skip=skip, limit=limit)
 
-@router.get("/entities/{entity_id}/relations/", response_model=List[schemas.MemoryRelation])
+@router.get("/entities/{entity_id}/relations/", response_model=List[MemoryRelation])
 def get_entity_relations(entity_id: int, relation_type: str | None = None, db: Session = Depends(get_db)):
     """Get relationships for a specific memory entity.
 

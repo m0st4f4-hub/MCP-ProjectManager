@@ -22,7 +22,6 @@ class AuditLogService:
         details_json = json.dumps(details) if details is not None else None
 
         db_log_entry = models.AuditLog(
-            id=str(uuid.uuid4()),
             entity_type=entity_type,
             entity_id=entity_id,
             action=action,
@@ -87,6 +86,18 @@ class AuditLogService:
             .limit(limit)
             .all()
         )
+
+    def get_audit_logs(self) -> List[models.AuditLog]:
+        """
+        Retrieve all audit logs.
+        """
+        return self.db.query(models.AuditLog).all()
+
+    def get_audit_logs_by_entity(self, entity_id: str) -> List[models.AuditLog]:
+        """
+        Retrieve audit logs for a specific entity.
+        """
+        return self.db.query(models.AuditLog).filter(models.AuditLog.entity_id == entity_id).all()
 
     # Add methods for getting log entries by date range, action type, etc.
     # as needed.

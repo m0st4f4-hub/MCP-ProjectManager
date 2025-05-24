@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from 'react';
 import { getProjectMembers, addMemberToProject, removeMemberFromProject, ProjectMember } from '@/services/api/projects';
 
@@ -105,4 +107,4 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
   );
 };
 
-export default ProjectMembers; 
+export default ProjectMembers;

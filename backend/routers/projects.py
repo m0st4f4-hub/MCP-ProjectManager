@@ -21,6 +21,7 @@ from ..services.project_file_association_service import ProjectFileAssociationSe
 from ..services.task_file_association_service import TaskFileAssociationService
 from ..services.task_dependency_service import TaskDependencyService
 from .. import models
+from . import tasks # Import tasks router
 
 router = APIRouter(
     prefix="/projects",
@@ -264,12 +265,11 @@ def associate_file_with_project_endpoint(
     project_file_association_service: ProjectFileAssociationService = Depends(
         get_project_file_association_service)
 ):
-    """Associate a file with a project using its memory entity name/path."""
-    # The file_memory_entity_name is provided in the request body via ProjectFileAssociationCreate schema.
-    # The service layer handles the creation/linking of the MemoryEntity if it doesn't exist.
+    """Associate a file with a project using its memory entity ID provided in the request body."""
+    # Ensure we pass the file_memory_entity_id from the schema
     return project_file_association_service.associate_file_with_project(
         project_id=project_id,
-        file_memory_entity_name=file_association.file_memory_entity_name
+        file_memory_entity_id=file_association.file_memory_entity_id # Pass the ID from the schema
     )
 
 @router.get(
@@ -298,44 +298,44 @@ def get_files_associated_with_project_endpoint(
     )
 
 @router.get(
-    "/{project_id}/files/{file_memory_entity_name:path}", # Changed file_id to file_memory_entity_name and added :path
+    "/{project_id}/files/{file_memory_entity_id}", # Path parameter name matches the ID
     response_model=schemas.ProjectFileAssociation,
-    summary="Get Project File Association by File Memory Entity Name", # Updated summary
+    summary="Get Project File Association by File Memory Entity ID", # Summary reflects using ID
     tags=["Project Files"],
-    operation_id="get_project_file_association_by_file_memory_entity_name" # Updated operation_id
+    operation_id="get_project_file_association_by_file_memory_entity_id" # Operation ID reflects using ID
 )
-def get_project_file_association_by_file_memory_entity_name_endpoint( # Updated function name
-    project_id: str,
-    file_memory_entity_name: str = Path(..., description="Name/path of the associated file MemoryEntity."), # Updated parameter name and description
+def get_project_file_association_by_file_memory_entity_id_endpoint( # Function name reflects using ID
+    project_id: str = Path(..., description="ID of the project."),
+    file_memory_entity_id: int = Path(..., description="ID of the associated file MemoryEntity."), # Parameter name and type match path and usage
     project_file_association_service: ProjectFileAssociationService = Depends(
         get_project_file_association_service)
 ):
-    """Retrieve a specific project file association by project and file memory entity name."""
-    db_association = project_file_association_service.get_association(
+    """Retrieves a specific project file association by project ID and file memory entity ID."""
+    db_association = project_file_association_service.get_project_file_association(
         project_id=project_id,
-        file_memory_entity_name=file_memory_entity_name # Updated parameter name
+        file_memory_entity_id=file_memory_entity_id # Pass the ID from the path parameter
     )
     if db_association is None:
         raise HTTPException(status_code=404, detail="Project file association not found")
     return db_association
 
 @router.delete(
-    "/{project_id}/files/{file_memory_entity_name:path}", # Changed file_id to file_memory_entity_name and added :path
+    "/{project_id}/files/{file_memory_entity_id}", # Path parameter name matches the ID
     response_model=dict,
-    summary="Disassociate File from Project by File Memory Entity Name", # Updated summary
+    summary="Disassociate File from Project by File Memory Entity ID", # Summary reflects using ID
     tags=["Project Files"],
-    operation_id="disassociate_file_from_project_by_file_memory_entity_name" # Updated operation_id
+    operation_id="disassociate_file_from_project_by_file_memory_entity_id" # Operation ID reflects using ID
 )
-def disassociate_file_from_project_by_file_memory_entity_name_endpoint( # Updated function name
-    project_id: str,
-    file_memory_entity_name: str = Path(..., description="Name/path of the associated file MemoryEntity."), # Updated parameter name and description
+def disassociate_file_from_project_by_file_memory_entity_id_endpoint( # Function name reflects using ID
+    project_id: str = Path(..., description="ID of the project."),
+    file_memory_entity_id: int = Path(..., description="ID of the associated file MemoryEntity."), # Parameter name and type match path and usage
     project_file_association_service: ProjectFileAssociationService = Depends(
         get_project_file_association_service)
 ):
-    """Remove a file association from a project by project and file memory entity name."""
+    """Removes a specific project file association by project ID and file memory entity ID."""
     success = project_file_association_service.disassociate_file_from_project(
         project_id=project_id,
-        file_memory_entity_name=file_memory_entity_name # Updated parameter name
+        file_memory_entity_id=file_memory_entity_id # Pass the ID from the path parameter
     )
     if not success:
         raise HTTPException(status_code=404, detail="Project file association not found")

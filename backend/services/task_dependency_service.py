@@ -3,6 +3,8 @@ from sqlalchemy import or_, func
 from .. import models, schemas
 from typing import List, Optional
 from uuid import UUID
+from backend.crud.task_dependencies import create_task_dependency
+from backend.crud.task_dependency_validation import is_self_dependency, is_circular_dependency
 
 
 class TaskDependencyService:
@@ -56,42 +58,16 @@ class TaskDependencyService:
         )
 
     def add_dependency(self, predecessor_task_project_id: UUID, predecessor_task_number: int, successor_task_project_id: UUID, successor_task_number: int) -> Optional[models.TaskDependency]:
-        # Prevent a task from being dependent on itself
-        if (predecessor_task_project_id == successor_task_project_id and
-                predecessor_task_number == successor_task_number):
-            # Depending on service design, raise HTTPException or return None and let router handle it
-            return None  # Indicate failure to add self-referential dependency
-
-        # Prevent circular dependencies - This is a complex check and might require graph traversal logic
-        # For simplicity in initial implementation, we might skip this or add a basic check.
-        # A full check would involve traversing the dependency graph starting from the successor task.
-        # If we encounter the predecessor task during traversal, it's a circular dependency.
-        # This can be added later.
-
-        # Check if the dependency already exists
-        existing_dependency = self.get_dependency(
-            predecessor_task_project_id, predecessor_task_number,
-            successor_task_project_id, successor_task_number
-        )
-        if existing_dependency:
-            return existing_dependency  # Dependency already exists
-
-        # Optional: Check if both tasks exist before creating dependency
-        # predecessor_task = self.db.query(models.Task).filter(models.Task.project_id == str(predecessor_task_project_id), models.Task.task_number == predecessor_task_number).first()
-        # successor_task = self.db.query(models.Task).filter(models.Task.project_id == str(successor_task_project_id), models.Task.task_number == successor_task_number).first()
-        # if not predecessor_task or not successor_task:
-        #    return None # Or raise HTTPException
-
-        db_dependency = models.TaskDependency(
-            predecessor_task_project_id=str(predecessor_task_project_id),
+        # Use the CRUD function for creation and validation
+        from backend.schemas import TaskDependencyCreate
+        task_dependency = TaskDependencyCreate(
+            predecessor_project_id=str(predecessor_task_project_id),
             predecessor_task_number=predecessor_task_number,
-            successor_task_project_id=str(successor_task_project_id),
-            successor_task_number=successor_task_number
+            successor_project_id=str(successor_task_project_id),
+            successor_task_number=successor_task_number,
+            type=None  # or set appropriately if type is required
         )
-        self.db.add(db_dependency)
-        self.db.commit()
-        self.db.refresh(db_dependency)
-        return db_dependency
+        return create_task_dependency(self.db, task_dependency)
 
     def remove_dependency(self, predecessor_task_project_id: UUID, predecessor_task_number: int, successor_task_project_id: UUID, successor_task_number: int) -> bool:
         db_dependency = self.get_dependency(

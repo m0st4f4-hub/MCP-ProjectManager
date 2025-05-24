@@ -9,6 +9,7 @@ from sqlalchemy import and_
 from typing import List, Optional
 from ..models import ProjectMember
 from backend.schemas import ProjectMemberCreate, ProjectMemberUpdate
+from .project_member_validation import member_exists
 
 
 def get_project_member(db: Session, project_id: str, user_id: str) -> Optional[ProjectMember]:
@@ -33,7 +34,10 @@ def get_user_projects(db: Session, user_id: str, skip: int = 0, limit: int = 100
 
 
 def add_project_member(db: Session, project_member: ProjectMemberCreate) -> ProjectMember:
-    """Add a user to a project with a specific role."""
+    """Add a user to a project with a specific role. Checks if member already exists."""
+    if member_exists(db, project_member.project_id, project_member.user_id):
+        return get_project_member(db, project_member.project_id, project_member.user_id)
+
     db_project_member = ProjectMember(
         project_id=project_member.project_id,
         user_id=project_member.user_id,

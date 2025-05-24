@@ -1,11 +1,16 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
-from .. import models, schemas
+from backend import models
 import uuid
 from typing import Optional, List
 
+from backend import schemas
+
 # Import the memory crud operations
 from . import memory as memory_crud
+
+# Import validation helpers
+from .project_validation import project_name_exists
 
 
 def get_project(db: Session, project_id: str, is_archived: Optional[bool] = False):
@@ -70,7 +75,8 @@ def create_project(db: Session, project: schemas.ProjectCreate):
     db.refresh(db_project)
 
     # Create a corresponding MemoryEntity for the project
-    memory_entity_data = schemas.MemoryEntityCreate(
+    from backend.schemas import MemoryEntityCreate
+    memory_entity_data = MemoryEntityCreate(
         type="project",
         name=db_project.name,
         description=db_project.description,
@@ -88,9 +94,9 @@ def update_project(db: Session, project_id: str, project_update: schemas.Project
     db_project = get_project(db, project_id, is_archived=None)
     if db_project:
         update_data = project_update.model_dump(exclude_unset=True)
+        # Use the validation helper to check for duplicate project name
         if "name" in update_data and update_data["name"] != db_project.name:
-            existing = get_project_by_name(db, name=update_data["name"])
-            if existing:
+            if project_name_exists(db, name=update_data["name"], exclude_project_id=project_id):
                 raise ValueError(
                     f"Project name '{update_data["name"]}' already exists")
 
@@ -133,3 +139,96 @@ def delete_project(db: Session, project_id: str):
 
         return project_data_to_return
     return None
+
+
+def add_project_member(db: Session, project_member: schemas.ProjectMemberCreate):
+    """Add a member to a project."""
+    db_project_member = models.ProjectMember(**project_member.model_dump())
+    db.add(db_project_member)
+    db.commit()
+    db.refresh(db_project_member)
+    return db_project_member
+
+
+def remove_project_member(
+    db: Session, project_id: str, user_id: str
+):
+    db_project_member = (
+        db.query(models.ProjectMember)
+        .filter(
+            models.ProjectMember.project_id == project_id,
+            models.ProjectMember.user_id == user_id,
+        )
+        .first()
+    )
+    if db_project_member:
+        db.delete(db_project_member)
+        db.commit()
+        return True
+    return False
+
+
+def get_project_members(db: Session, project_id: str):
+    return (
+        db.query(models.ProjectMember)
+        .filter(models.ProjectMember.project_id == project_id)
+        .all()
+    )
+
+
+def associate_project_file(
+    db: Session, project_file_association: schemas.ProjectFileAssociationCreate
+):
+    db_project_file_association = models.ProjectFileAssociation(
+        **project_file_association.model_dump()
+    )
+    db.add(db_project_file_association)
+    db.commit()
+    db.refresh(db_project_file_association)
+    return db_project_file_association
+
+
+def disassociate_project_file(db: Session, project_id: str, file_id: str):
+    db_project_file_association = (
+        db.query(models.ProjectFileAssociation)
+        .filter(
+            models.ProjectFileAssociation.project_id == project_id,
+            models.ProjectFileAssociation.file_id == file_id,
+        )
+        .first()
+    )
+    if db_project_file_association:
+        db.delete(db_project_file_association)
+        db.commit()
+        return True
+    return False
+
+
+def get_project_files(db: Session, project_id: str):
+    return (
+        db.query(models.ProjectFileAssociation)
+        .filter(models.ProjectFileAssociation.project_id == project_id)
+        .all()
+    )
+
+
+def get_tasks_by_project(
+    db: Session, project_id: str, search: Optional[str] = None, status: Optional[str] = None, is_archived: Optional[bool] = False
+):
+    query = db.query(models.Task).filter(models.Task.project_id == project_id)
+
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            or_(
+                models.Task.title.ilike(search_term),
+                models.Task.description.ilike(search_term),
+            )
+        )
+    if status:
+        query = query.filter(models.Task.status == status) # Assuming Task model has a status field
+
+    if is_archived is not None:
+         query = query.filter(models.Task.is_archived == is_archived)
+
+    return query.all()

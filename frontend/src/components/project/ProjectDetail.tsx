@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getProjectById, deleteProject, archiveProject, unarchiveProject, Project } from '@/services/api/projects';
@@ -137,4 +139,4 @@ const ProjectDetail: React.FC = () => {
   );
 };
 
-export default ProjectDetail; 
+export default ProjectDetail;

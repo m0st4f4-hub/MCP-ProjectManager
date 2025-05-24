@@ -1,6 +1,15 @@
 from sqlalchemy.orm import Session, joinedload
 from .. import models, schemas
 from typing import List, Optional
+from backend.crud.project_members import (
+    get_project_member,
+    get_project_members,
+    get_user_projects,
+    add_project_member,
+    update_project_member,
+    delete_project_member
+)
+# No need to import validation helpers in service, they are used in CRUD
 
 
 class ProjectMemberService:
@@ -8,54 +17,33 @@ class ProjectMemberService:
         self.db = db
 
     def get_member(self, project_id: str, user_id: str) -> Optional[models.ProjectMember]:
-        return self.db.query(models.ProjectMember).filter(
-            models.ProjectMember.project_id == project_id,
-            models.ProjectMember.user_id == user_id
-        ).first()
+        # Use the CRUD function
+        return get_project_member(self.db, project_id, user_id)
 
     def get_members_by_project(self, project_id: str, skip: int = 0, limit: int = 100) -> List[models.ProjectMember]:
-        # Eagerly load the associated User object if needed
-        return (
-            self.db.query(models.ProjectMember)
-            # .options(joinedload(models.ProjectMember.user)) # Uncomment if user relationship needs eager loading
-            .filter(models.ProjectMember.project_id == project_id)
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
+        """
+        Retrieve members for a project.
+        """
+        # Use the CRUD function
+        return get_project_members(self.db, project_id, skip=skip, limit=limit)
 
-    def add_member_to_project(self, project_id: str, user_id: str, role: str) -> Optional[models.ProjectMember]:
-        # Check if member already exists
-        existing_member = self.get_member(project_id, user_id)
-        if existing_member:
-            return existing_member  # Member already exists
+    def get_projects_for_user(self, user_id: str, skip: int = 0, limit: int = 100) -> List[models.ProjectMember]:
+        """
+        Retrieve projects a user is a member of.
+        """
+        return get_user_projects(self.db, user_id, skip=skip, limit=limit)
 
-        # Optional: Check if project and user exist before creating membership
-        # project = self.db.query(models.Project).filter(models.Project.id == project_id).first()
-        # user = self.db.query(models.User).filter(models.User.id == user_id).first()
-        # if not project or not user:
-        #     return None # Or raise HTTPException/ValueError depending on service design
-
-        db_project_member = models.ProjectMember(
+    def add_member_to_project(self, project_id: str, user_id: str, role: str) -> models.ProjectMember:
+        # Use the CRUD function for creation and validation
+        project_member_schema = schemas.ProjectMemberCreate(
             project_id=project_id, user_id=user_id, role=role)
-        self.db.add(db_project_member)
-        self.db.commit()
-        self.db.refresh(db_project_member)
-        return db_project_member
+        return add_project_member(self.db, project_member_schema)
 
     def remove_member_from_project(self, project_id: str, user_id: str) -> bool:
-        db_project_member = self.get_member(project_id, user_id)
-        if db_project_member:
-            self.db.delete(db_project_member)
-            self.db.commit()
-            return True
-        return False
+        # Use the CRUD function
+        return delete_project_member(self.db, project_id, user_id)
 
     def update_member_role(self, project_id: str, user_id: str, new_role: str) -> Optional[models.ProjectMember]:
-        db_project_member = self.get_member(project_id, user_id)
-        if db_project_member:
-            db_project_member.role = new_role
-            self.db.commit()
-            self.db.refresh(db_project_member)
-            return db_project_member
-        return None
+        # Use the CRUD function
+        project_member_update_schema = schemas.ProjectMemberUpdate(role=new_role)
+        return update_project_member(self.db, project_id, user_id, project_member_update_schema)

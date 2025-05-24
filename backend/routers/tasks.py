@@ -18,7 +18,6 @@ from ..services.task_file_association_service import TaskFileAssociationService
 from ..services.task_dependency_service import TaskDependencyService
 
 router = APIRouter(
-    prefix="/tasks",
     tags=["Tasks"],
 )
 
@@ -44,7 +43,7 @@ def get_task_dependency_service(db: Session = Depends(get_db)) -> TaskDependency
     response_model=schemas.Task,
     summary="Create Task in Project",
     tags=["Tasks"],
-    operation_id="create_task"
+    operation_id="projects_tasks_create_task"
 )
 def create_task_for_project(
     project_id: str,
@@ -71,7 +70,7 @@ def create_task_for_project(
     response_model=List[schemas.Task],
     summary="Get Tasks in Project",
     tags=["Tasks"],
-    operation_id="get_tasks"
+    operation_id="projects_tasks_get_tasks"
 )
 async def get_tasks_list(
     project_id: str,
@@ -124,7 +123,7 @@ async def get_tasks_list(
     response_model=schemas.Task,
     summary="Get Task by Project and Number",
     tags=["Tasks"],
-    operation_id="get_task_by_project_and_number"
+    operation_id="projects_tasks_get_task_by_project_and_number"
 )
 def read_task(
     project_id: str,
@@ -147,7 +146,7 @@ def read_task(
     response_model=schemas.Task,
     summary="Archive Task",
     tags=["Tasks"],
-    operation_id="archive_task"
+    operation_id="projects_tasks_archive_task"
 )
 def archive_task_endpoint(
     project_id: str,
@@ -177,7 +176,7 @@ def archive_task_endpoint(
     response_model=schemas.Task,
     summary="Unarchive Task",
     tags=["Tasks"],
-    operation_id="unarchive_task"
+    operation_id="projects_tasks_unarchive_task"
 )
 def unarchive_task_endpoint(
     project_id: str,
@@ -207,7 +206,7 @@ def unarchive_task_endpoint(
     response_model=schemas.Task,
     summary="Update Task (incl. Project/Agent)",
     tags=["Tasks"],
-    operation_id="update_task_by_project_and_number"
+    operation_id="projects_tasks_update_task_by_project_and_number"
 )
 def update_task(
     project_id: str,
@@ -241,7 +240,7 @@ def update_task(
     response_model=dict,
     summary="Delete Task",
     tags=["Tasks"],
-    operation_id="delete_task_by_project_and_number"
+    operation_id="projects_tasks_delete_task_by_project_and_number"
 )
 def delete_task(
     project_id: str,
@@ -274,7 +273,7 @@ def delete_task(
     response_model=schemas.TaskFileAssociation,
     summary="Associate File with Task",
     tags=["Task Files"],
-    operation_id="associate_file_with_task"
+    operation_id="projects_tasks_associate_file_with_task"
 )
 def associate_file_with_task_endpoint(
     project_id: str,
@@ -283,22 +282,20 @@ def associate_file_with_task_endpoint(
     task_file_association_service: TaskFileAssociationService = Depends(
         get_task_file_association_service)
 ):
-    """Associate a file with a specific task."""
+    """Associate a file with a task using its memory entity ID provided in the request body."""
     try:
-        db_association = task_file_association_service.associate_file_with_task(
-            task_project_id=uuid.UUID(project_id),
+        return task_file_association_service.associate_file_with_task(
+            project_id=project_id,
             task_number=task_number,
-            file_id=file_association.file_id
+            file_memory_entity_id=file_association.file_memory_entity_id
         )
-        if db_association is None:
-            raise HTTPException(
-                status_code=400,
-                detail="Could not associate file with task or association already exists"
-            )
-        return db_association
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
+        import logging
+        logging.error(f"Unexpected error in POST /projects/{project_id}/tasks/{task_number}/files/: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"Internal server error: {e}"
@@ -308,80 +305,96 @@ def associate_file_with_task_endpoint(
 @router.get(
     "/{project_id}/tasks/{task_number}/files/",
     response_model=List[schemas.TaskFileAssociation],
-    summary="Get Files Associated with Task",
+    summary="Get Files for Task",
     tags=["Task Files"],
-    operation_id="get_files_associated_with_task"
+    operation_id="projects_tasks_get_files_for_task"
 )
-def get_files_associated_with_task_endpoint(
+def get_files_for_task_endpoint(
     project_id: str,
     task_number: int,
-    skip: int = Query(0, description="Skip the first N associations."),
-    limit: int = Query(
-        100, description="Limit the number of associations returned."),
-    sort_by: Optional[str] = Query(
-        "file_memory_entity_name", description="Field to sort by (e.g., 'file_memory_entity_name', 'created_at')."),
-    sort_direction: Optional[str] = Query(
-        "asc", description="Sort direction: 'asc' or 'desc'."),
-    task_file_association_service: TaskFileAssociationService = Depends(
-        get_task_file_association_service)
+    sort_by: Optional[str] = Query(None, description="Field to sort by (e.g., 'filename')."),
+    sort_direction: Optional[str] = Query(None, description="Sort direction: 'asc' or 'desc'."),
+    filename: Optional[str] = Query(None, description="Filter by filename."),
+    task_file_association_service: TaskFileAssociationService = Depends(get_task_file_association_service)
 ):
-    """Retrieve a list of files associated with a task."""
+    """Retrieve files associated with a specific task, with optional sorting and filtering by filename."""
     return task_file_association_service.get_files_for_task(
         task_project_id=project_id,
-        task_task_number=task_number,
-        skip=skip,
-        limit=limit
+        task_number=task_number,
+        sort_by=sort_by,
+        sort_direction=sort_direction,
+        filename=filename
     )
 
 
 @router.get(
-    "/{project_id}/tasks/{task_number}/files/{file_memory_entity_name:path}",
+    "/{project_id}/tasks/{task_number}/files/{file_memory_entity_id}",
     response_model=schemas.TaskFileAssociation,
-    summary="Get Task File Association by File Memory Entity Name",
+    summary="Get Task File Association by File Memory Entity ID",
     tags=["Task Files"],
-    operation_id="get_task_file_association_by_file_memory_entity_name"
+    operation_id="projects_tasks_get_task_file_association_by_file_memory_entity_id"
 )
-def get_task_file_association_by_file_memory_entity_name_endpoint(
-    project_id: str,
-    task_number: int,
-    file_memory_entity_name: str = Path(..., description="Name/path of the associated file MemoryEntity."),
+def get_task_file_association_by_file_memory_entity_id_endpoint(
+    project_id: str = Path(..., description="ID of the project."),
+    task_number: int = Path(..., description="Task number unique within the project."),
+    file_memory_entity_id: int = Path(..., description="ID of the associated file MemoryEntity."),
     task_file_association_service: TaskFileAssociationService = Depends(
         get_task_file_association_service)
 ):
-    """Retrieve a specific task file association by task and file memory entity name."""
-    db_association = task_file_association_service.get_association(
-        task_project_id=project_id,
-        task_task_number=task_number,
-        file_memory_entity_name=file_memory_entity_name
-    )
-    if db_association is None:
-        raise HTTPException(status_code=404, detail="Task file association not found")
-    return db_association
+    """Retrieves a specific task file association by task composite ID and file memory entity ID."""
+    try:
+        db_association = task_file_association_service.get_task_file_association(
+            project_id=project_id,
+            task_number=task_number,
+            file_memory_entity_id=file_memory_entity_id
+        )
+        if db_association is None:
+            raise HTTPException(status_code=404, detail="Task file association not found")
+        return db_association
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import logging
+        logging.error(f"Unexpected error in GET /projects/{project_id}/tasks/{task_number}/files/{file_memory_entity_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}"
+        )
 
 
 @router.delete(
-    "/{project_id}/tasks/{task_number}/files/{file_memory_entity_name:path}",
+    "/{project_id}/tasks/{task_number}/files/{file_memory_entity_id}",
     response_model=dict,
-    summary="Disassociate File from Task by File Memory Entity Name",
+    summary="Disassociate File from Task by File Memory Entity ID",
     tags=["Task Files"],
-    operation_id="disassociate_file_from_task_by_file_memory_entity_name"
+    operation_id="projects_tasks_disassociate_file_from_task_by_file_memory_entity_id"
 )
-def disassociate_file_from_task_by_file_memory_entity_name_endpoint(
-    project_id: str,
-    task_number: int,
-    file_memory_entity_name: str = Path(..., description="Name/path of the associated file MemoryEntity."),
+def disassociate_file_from_task_by_file_memory_entity_id_endpoint(
+    project_id: str = Path(..., description="ID of the project."),
+    task_number: int = Path(..., description="Task number unique within the project."),
+    file_memory_entity_id: int = Path(..., description="ID of the associated file MemoryEntity."),
     task_file_association_service: TaskFileAssociationService = Depends(
         get_task_file_association_service)
 ):
-    """Remove a file association from a task by task and file memory entity name."""
-    success = task_file_association_service.disassociate_file_from_task(
-        task_project_id=project_id,
-        task_task_number=task_number,
-        file_memory_entity_name=file_memory_entity_name
-    )
-    if not success:
-        raise HTTPException(status_code=404, detail="Task file association not found")
-    return {"message": "Task file association deleted successfully"}
+    """Removes a specific task file association by task composite ID and file memory entity ID."""
+    try:
+        success = task_file_association_service.disassociate_file_from_task(
+            project_id=project_id,
+            task_number=task_number,
+            file_memory_entity_id=file_memory_entity_id
+        )
+        if not success:
+            raise HTTPException(status_code=404, detail="Task file association not found")
+        return {"message": "Task file association deleted successfully"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import logging
+        logging.error(f"Unexpected error in DELETE /projects/{project_id}/tasks/{task_number}/files/{file_memory_entity_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}"
+        )
 
 
 # --- Task Dependency Endpoints ---
@@ -392,7 +405,7 @@ def disassociate_file_from_task_by_file_memory_entity_name_endpoint(
     response_model=schemas.TaskDependency,
     summary="Add Task Dependency",
     tags=["Task Dependencies"],
-    operation_id="add_task_dependency"
+    operation_id="projects_tasks_add_task_dependency"
 )
 def add_task_dependency_endpoint(
     project_id: str,
@@ -432,7 +445,7 @@ def add_task_dependency_endpoint(
     response_model=List[schemas.TaskDependency],
     summary="Get All Task Dependencies",
     tags=["Task Dependencies"],
-    operation_id="get_all_task_dependencies"
+    operation_id="projects_tasks_get_all_task_dependencies"
 )
 def get_all_task_dependencies_endpoint(
     project_id: str,
@@ -469,7 +482,7 @@ def get_all_task_dependencies_endpoint(
     response_model=List[schemas.TaskDependency],
     summary="Get Task Predecessors",
     tags=["Task Dependencies"],
-    operation_id="get_task_predecessors"
+    operation_id="projects_tasks_get_task_predecessors"
 )
 def get_task_predecessors_endpoint(
     project_id: str,
@@ -506,7 +519,7 @@ def get_task_predecessors_endpoint(
     response_model=List[schemas.TaskDependency],
     summary="Get Task Successors",
     tags=["Task Dependencies"],
-    operation_id="get_task_successors"
+    operation_id="projects_tasks_get_task_successors"
 )
 def get_task_successors_endpoint(
     project_id: str,
@@ -543,7 +556,7 @@ def get_task_successors_endpoint(
     response_model=dict,
     summary="Remove Task Dependency",
     tags=["Task Dependencies"],
-    operation_id="remove_task_dependency"
+    operation_id="projects_tasks_remove_task_dependency"
 )
 def remove_task_dependency_endpoint(
     project_id: str,
@@ -584,7 +597,7 @@ def remove_task_dependency_endpoint(
     response_model=List[schemas.Task],
     summary="Get All Tasks",
     tags=["Tasks"],
-    operation_id="get_all_tasks"
+    operation_id="tasks_get_all_tasks_root"
 )
 async def get_all_tasks(
     project_id: Optional[str] = Query(
@@ -651,34 +664,21 @@ async def get_all_tasks(
     response_model=List[schemas.Comment],
     summary="Get Comments for Task",
     tags=["Task Comments"],
-    operation_id="get_task_comments"
+    operation_id="projects_tasks_get_task_comments"
 )
 def get_task_comments_endpoint(
     project_id: str,
     task_number: int,
-    skip: int = Query(0, description="Skip the first N comments."),
-    limit: int = Query(
-        100, description="Limit the number of comments returned."),
     sort_by: Optional[str] = Query(
         "created_at", description="Field to sort by (e.g., 'created_at')."),
     sort_direction: Optional[str] = Query(
         "asc", description="Sort direction: 'asc' or 'desc'."),
     task_service: TaskService = Depends(get_task_service)
 ):
-    """Retrieve comments for a specific task, with optional pagination and sorting."""
-    try:
-        return task_service.get_task_comments(
-            project_id=uuid.UUID(project_id),
-            task_number=task_number,
-            skip=skip,
-            limit=limit,
-            sort_by=sort_by,
-            sort_direction=sort_direction
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {e}"
-        )
+    """Retrieve comments for a specific task, with optional sorting."""
+    return task_service.get_task_comments(
+        project_id=project_id,
+        task_number=task_number,
+        sort_by=sort_by,
+        sort_direction=sort_direction
+    )
