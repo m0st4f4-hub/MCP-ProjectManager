@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from unittest.mock import MagicMock
 
 # Import the validation functions
@@ -28,7 +29,7 @@ def test_is_self_dependent():
     
     assert is_self_dependency(predecessor_project_id, predecessor_task_number, successor_project_id, successor_task_number) is False
 
-def test_is_circular_dependency(db_session: Session):
+async def test_is_circular_dependency(async_db_session: AsyncSession):
     # Mock necessary CRUD functions that is_circular_dependency might call
     # For example, if is_circular_dependency calls get_task_dependencies_for_task, mock it here.
     # Since is_circular_dependency is complex and likely involves graph traversal,
@@ -56,6 +57,6 @@ def test_is_circular_dependency(db_session: Session):
     # mock_get_dependencies.return_value = ["dependency object representing Task 1 -> Task 2"]
     
     # Basic test case where no circular dependency exists
-    assert is_circular_dependency(db_session, predecessor_project_id, predecessor_task_number, successor_project_id, successor_task_number) is False
+    assert await is_circular_dependency(async_db_session, predecessor_project_id, predecessor_task_number, successor_project_id, successor_task_number) is False
 
     # Add more complex test cases here to simulate different dependency graphs and circular conditions 

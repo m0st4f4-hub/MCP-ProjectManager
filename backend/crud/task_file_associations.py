@@ -22,7 +22,7 @@ from . import memory as memory_crud
 from .task_file_association_validation import task_entity_exists, association_exists, delete_associated_memory_relation
 
 
-def get_files_for_task(db: Session, task_project_id: Union[str, uuid.UUID], task_number: int) -> List[TaskFileAssociation]:
+async def get_files_for_task(db: Session, task_project_id: Union[str, uuid.UUID], task_number: int) -> List[TaskFileAssociation]:
     """Get all file associations for a task."""
     return db.query(TaskFileAssociation).filter(
         and_(
@@ -32,7 +32,7 @@ def get_files_for_task(db: Session, task_project_id: Union[str, uuid.UUID], task
     ).all()
 
 
-def get_task_file_association(
+async def get_task_file_association(
     db: Session,
     task_project_id: Union[str, uuid.UUID],
     task_number: int,
@@ -48,7 +48,7 @@ def get_task_file_association(
     ).first()
 
 
-def get_task_files(db: Session, task_project_id: str, task_task_number: int, skip: int = 0, limit: int = 100) -> List[TaskFileAssociation]:
+async def get_task_files(db: Session, task_project_id: str, task_task_number: int, skip: int = 0, limit: int = 100) -> List[TaskFileAssociation]:
     """Get all files associated with a task."""
     return db.query(TaskFileAssociation).filter(
         and_(
@@ -58,13 +58,13 @@ def get_task_files(db: Session, task_project_id: str, task_task_number: int, ski
     ).offset(skip).limit(limit).all()
 
 
-def create_task_file_association(db: Session, task_file: TaskFileAssociationCreate) -> TaskFileAssociation:
+async def create_task_file_association(db: Session, task_file: TaskFileAssociationCreate) -> TaskFileAssociation:
     """Associate a file with a task using the file_memory_entity_id from the schema."""
 
     # Use validation helpers
-    if association_exists(db, task_file.task_project_id, task_file.task_task_number, task_file.file_memory_entity_id):
+    if await association_exists(db, task_file.task_project_id, task_file.task_task_number, task_file.file_memory_entity_id):
         # If association exists, return the existing one
-        return get_task_file_association(db, task_file.task_project_id, task_file.task_task_number, task_file.file_memory_entity_id)
+        return await get_task_file_association(db, task_file.task_project_id, task_file.task_task_number, task_file.file_memory_entity_id)
 
     # Task entity validation (assuming task entity creation happens elsewhere or is not strictly required here)
     # file entity existence check should ideally happen before calling this CRUD function
@@ -75,29 +75,29 @@ def create_task_file_association(db: Session, task_file: TaskFileAssociationCrea
         file_memory_entity_id=task_file.file_memory_entity_id
     )
     db.add(db_task_file)
-    db.commit()
-    db.refresh(db_task_file)
+    await db.commit()
+    await db.refresh(db_task_file)
     return db_task_file
 
 
-def delete_task_file_association(db: Session, task_project_id: str, task_task_number: int, file_memory_entity_id: int) -> bool:
+async def delete_task_file_association(db: Session, task_project_id: str, task_task_number: int, file_memory_entity_id: int) -> bool:
     """Remove a task file association by task composite ID and file memory entity ID."""
 
     # Use validation helper to delete associated memory relation
-    delete_associated_memory_relation(db, task_project_id, task_task_number, file_memory_entity_id)
+    await delete_associated_memory_relation(db, task_project_id, task_task_number, file_memory_entity_id)
 
     # Get and delete the task file association in the main database
-    db_task_file = get_task_file_association(
+    db_task_file = await get_task_file_association(
         db, task_project_id=task_project_id, task_number=task_task_number, file_memory_entity_id=file_memory_entity_id)
 
     if db_task_file:
-        db.delete(db_task_file)
-        db.commit()
+        await db.delete(db_task_file)
+        await db.commit()
         return True
     return False
 
 
-def associate_file_with_task(
+async def associate_file_with_task(
     db: Session,
     task_project_id: Union[str, uuid.UUID],
     task_number: int,
@@ -112,10 +112,10 @@ def associate_file_with_task(
         task_task_number=task_number,
         file_memory_entity_id=file_memory_entity_id
     )
-    return create_task_file_association(db, task_file)
+    return await create_task_file_association(db, task_file)
 
 
-def disassociate_file_from_task(
+async def disassociate_file_from_task(
     db: Session,
     task_project_id: Union[str, uuid.UUID],
     task_number: int,
@@ -123,5 +123,5 @@ def disassociate_file_from_task(
 ) -> bool:
     """Remove a file association from a task by task details and file memory entity ID."""
     # Use the updated delete_task_file_association in CRUD
-    return delete_task_file_association(
+    return await delete_task_file_association(
         db, task_project_id=task_project_id, task_task_number=task_number, file_memory_entity_id=file_memory_entity_id)

@@ -4,6 +4,7 @@ Unit tests for the project CRUD operations.
 import pytest
 from uuid import uuid4
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.crud.projects import (
     get_project,
@@ -17,7 +18,7 @@ from backend.schemas.project import ProjectCreate, ProjectUpdate
 from backend.models import Project
 
 
-def test_create_project(db_session: Session):
+async def test_create_project(async_db_session: AsyncSession):
     """Test creating a project."""
     # Create a project
     project_create = ProjectCreate(
@@ -26,7 +27,7 @@ def test_create_project(db_session: Session):
     )
     
     # Call the CRUD function
-    project = create_project(db_session, project_create)
+    project = await create_project(async_db_session, project_create)
     
     # Verify the project was created correctly
     assert project.name == project_create.name
@@ -35,10 +36,10 @@ def test_create_project(db_session: Session):
     assert project.is_archived is False
 
 
-def test_get_project(db_session: Session, test_project: Project):
+async def test_get_project(async_db_session: AsyncSession, test_project: Project):
     """Test getting a project by ID."""
     # Get the project
-    project = get_project(db_session, test_project.id)
+    project = await get_project(async_db_session, test_project.id)
     
     # Verify the project was retrieved correctly
     assert project is not None
@@ -47,10 +48,10 @@ def test_get_project(db_session: Session, test_project: Project):
     assert project.description == test_project.description
 
 
-def test_get_project_by_name(db_session: Session, test_project: Project):
+async def test_get_project_by_name(async_db_session: AsyncSession, test_project: Project):
     """Test getting a project by name."""
     # Get the project
-    project = get_project_by_name(db_session, test_project.name)
+    project = await get_project_by_name(async_db_session, test_project.name)
     
     # Verify the project was retrieved correctly
     assert project is not None
@@ -58,7 +59,7 @@ def test_get_project_by_name(db_session: Session, test_project: Project):
     assert project.name == test_project.name
 
 
-def test_get_projects(db_session: Session, test_project: Project):
+async def test_get_projects(async_db_session: AsyncSession, test_project: Project):
     """Test getting all projects."""
     # Create another project
     another_project = Project(
@@ -67,11 +68,11 @@ def test_get_projects(db_session: Session, test_project: Project):
         task_count=0,
         is_archived=False
     )
-    db_session.add(another_project)
-    db_session.commit()
+    async_db_session.add(another_project)
+    await async_db_session.commit()
     
     # Get all projects
-    projects = get_projects(db_session)
+    projects = await get_projects(async_db_session)
     
     # Verify both projects are returned
     assert len(projects) >= 2

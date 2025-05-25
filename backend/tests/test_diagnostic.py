@@ -6,6 +6,7 @@ import sys
 import time
 import pytest
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 
 # Add the project root to the path
@@ -15,13 +16,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from backend.schemas.project import ProjectCreate
 from backend.crud import projects as crud_projects
 
-def test_project_creation(db_session: Session):
+async def test_project_creation(async_db_session: AsyncSession):
     """Test creating a project."""
     project_schema = ProjectCreate(
         name="Test Diagnostic Project", description="Created for diagnostics")
     
     print("\nAttempting to create project...")
-    db_project = crud_projects.create_project(db=db_session, project=project_schema)
+    db_project = await crud_projects.create_project(db=async_db_session, project=project_schema)
     
     assert db_project is not None, "Project creation failed - project is None"
     assert db_project.name == project_schema.name, f"Name mismatch: {db_project.name} != {project_schema.name}"
@@ -31,8 +32,8 @@ def test_project_creation(db_session: Session):
     print(f"Project created successfully with ID: {db_project.id}")
     
     print("\nAttempting to retrieve project...")
-    retrieved_project = crud_projects.get_project(
-        db=db_session, project_id=db_project.id)
+    retrieved_project = await crud_projects.get_project(
+        db=async_db_session, project_id=db_project.id)
     
     assert retrieved_project is not None, "Project retrieval failed - project is None"
     assert retrieved_project.id == db_project.id, "ID mismatch"
