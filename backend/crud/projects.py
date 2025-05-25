@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, func
+from sqlalchemy.ext.asyncio import AsyncSession  # Add async session import
+from sqlalchemy import or_, func, select  # Add select import
 from backend import models, schemas
 from backend.schemas.project import ProjectCreate, ProjectUpdate, Project, ProjectMemberCreate, ProjectFileAssociationCreate
 from backend.schemas.memory import MemoryEntityCreate, MemoryEntityUpdate
@@ -12,8 +13,8 @@ from typing import Optional, List
 # from backend.schemas.project_member import ProjectMemberCreate
 # from backend.schemas.project_file_association import ProjectFileAssociationCreate
 
-# Import the memory crud operations
-from . import memory as memory_crud
+# REMOVED: Import the memory crud operations to break circular dependency
+# from . import memory as memory_crud
 
 # Import validation helpers
 from .project_validation import project_name_exists
@@ -49,6 +50,21 @@ async def get_project_by_name(db: AsyncSession, name: str, is_archived: Optional
             models.Task.project_id == project.id)
         task_count_result = await db.execute(task_query)
         project.task_count = task_count_result.scalar() or 0
+    return project
+
+
+# Sync version for service compatibility
+def get_project_by_name_sync(db: Session, name: str, is_archived: Optional[bool] = False):
+    """Synchronous version of get_project_by_name for service layer compatibility."""
+    query = db.query(models.Project).filter(models.Project.name == name)
+    if is_archived is not None:
+        query = query.filter(models.Project.is_archived == is_archived)
+    project = query.first()
+    if project:
+        # Calculate total task count (only non-archived tasks for an active project view)
+        task_count = db.query(func.count()).filter(
+            models.Task.project_id == project.id).scalar() or 0
+        project.task_count = task_count
     return project
 
 
@@ -98,20 +114,19 @@ async def create_project(db: AsyncSession, project: ProjectCreate):
     await db.commit() # Await commit
     await db.refresh(db_project) # Await refresh
 
-    # Create a corresponding MemoryEntity for the project (assuming memory_crud is async)
-    # from backend.schemas import MemoryEntityCreate # Removed import from __init__
-    memory_entity_data = MemoryEntityCreate(
-        type="project",
-        name=db_project.name,
-        description=db_project.description,
-        metadata_={
-            "project_id": db_project.id,
-            "created_at": db_project.created_at.isoformat()
-        },
-        entity_type="project"
-    )
-    # Assuming create_memory_entity is async
-    await memory_crud.create_memory_entity(db=db, entity=memory_entity_data)
+    # REMOVED: Create a corresponding MemoryEntity for the project
+    # memory_entity_data = MemoryEntityCreate(
+    #     type="project",
+    #     name=db_project.name,
+    #     description=db_project.description,
+    #     metadata_={
+    #         "project_id": db_project.id,
+    #         "created_at": db_project.created_at.isoformat()
+    #     },
+    #     entity_type="project"
+    # )
+    # REMOVED: Assuming create_memory_entity is async
+    # memory_crud.create_memory_entity(db=db, entity=memory_entity_data)
 
     return db_project
 
@@ -133,14 +148,13 @@ async def update_project(db: AsyncSession, project_id: str, project_update: Proj
         await db.commit() # Await commit
         await db.refresh(db_project) # Await refresh
 
-        # Update the corresponding MemoryEntity (assuming memory_crud is async)
-        # Await get_entity_by_name
-        memory_entity = await memory_crud.get_entity_by_name(db, name=db_project.name)
-        if memory_entity:
-            # Only update description for now, can expand later
-            memory_update_data = MemoryEntityUpdate(description=db_project.description)
-            # Assuming update_memory_entity is async
-            await memory_crud.update_memory_entity(db, entity_id=memory_entity.id, entity_update=memory_update_data)
+        # REMOVED: Update the corresponding MemoryEntity
+        # memory_entity = await memory_crud.get_entity_by_name(db, name=db_project.name)
+        # if memory_entity:
+        #     # Only update description for now, can expand later
+        #     memory_update_data = MemoryEntityUpdate(description=db_project.description)
+        #     # Assuming update_memory_entity is async
+        #     await memory_crud.update_memory_entity(db, entity_id=memory_entity.id, entity_update=memory_update_data)
 
     return db_project
 
@@ -162,15 +176,15 @@ async def delete_project(db: AsyncSession, project_id: str):
         project_data_to_return = Project.model_validate(db_project)
 
         # Get the corresponding MemoryEntity by name before deleting the project (await the async function)
-        memory_entity = await memory_crud.get_entity_by_name(db, name=db_project.name)
+        # memory_entity = await memory_crud.get_entity_by_name(db, name=db_project.name)
 
         # Delete the project from the database
         await db.delete(db_project) # Await delete
         await db.commit() # Await commit
 
-        # Delete the corresponding MemoryEntity and its relations/observations (assuming memory_crud is async)
-        if memory_entity:
-            await memory_crud.delete_memory_entity(db, entity_id=memory_entity.id)
+        # REMOVED: Get and delete the corresponding MemoryEntity
+        # if memory_entity:
+        #     await memory_crud.delete_memory_entity(db, entity_id=memory_entity.id)
 
         return project_data_to_return
     return None

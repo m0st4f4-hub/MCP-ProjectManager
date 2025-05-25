@@ -35,7 +35,7 @@ from backend.crud.projects import (
 from backend.crud.project_file_associations import (
     associate_file_with_project,
     disassociate_file_from_project,
-    get_files_for_project,
+    get_project_files,
     get_project_file_association
 )
 
@@ -265,7 +265,7 @@ class ProjectService:
 
     def get_project_files(self, project_id: str) -> List[models.ProjectFileAssociation]:
         # Delegate to CRUD in project_file_associations
-        return get_files_for_project(self.db, project_id)
+        return get_project_files(self.db, project_id)
 
     def get_project_file_association(self, project_id: str, file_memory_entity_id: int) -> Optional[models.ProjectFileAssociation]:
         # Delegate to CRUD in project_file_associations

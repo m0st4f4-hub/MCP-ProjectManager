@@ -35,6 +35,14 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Strip whitespace from string values
+        if hasattr(self, 'SECRET_KEY'):
+            self.SECRET_KEY = self.SECRET_KEY.strip()
+        if hasattr(self, 'ALGORITHM'):
+            self.ALGORITHM = self.ALGORITHM.strip()
 
 settings = Settings()
 

@@ -5,8 +5,7 @@ All models imported here for easy access and to avoid circular imports.
 
 # Import base utilities first
 from .base import (
-    Base, BaseModel, JSONText, ProjectMemberRole, ArchivedMixin,
-    generate_uuid, generate_uuid_with_hyphens
+    Base, BaseModel
 )
 
 # Import foundational models
@@ -34,8 +33,7 @@ from .agent_error_protocol import AgentErrorProtocol
 # Export all models
 __all__ = [
     # Base utilities
-    'Base', 'BaseModel', 'JSONText', 'ProjectMemberRole', 'ArchivedMixin',
-    'generate_uuid', 'generate_uuid_with_hyphens',
+    'Base', 'BaseModel',
     
     # Foundational models
     'User', 'UserRole',

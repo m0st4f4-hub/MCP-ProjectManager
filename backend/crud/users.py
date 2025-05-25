@@ -28,6 +28,7 @@ from .user_validation import username_exists
 from backend.enums import UserRoleEnum
 from sqlalchemy.ext.asyncio import AsyncSession # Import AsyncSession
 from sqlalchemy import select # Import select for async queries
+from sqlalchemy.orm import joinedload # Import joinedload for eager loading
 
 # Helper function to verify passwords
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -69,8 +70,12 @@ async def get_user(db: AsyncSession, user_id: str) -> Optional[models.User]:
     return result.scalar_one_or_none()
 
 async def get_user_by_username(db: AsyncSession, username: str) -> Optional[models.User]:
-    result = await db.execute(select(models.User).filter(models.User.username == username))
-    return result.scalar_one_or_none()
+    result = await db.execute(
+        select(models.User)
+        .filter(models.User.username == username)
+        .options(joinedload(models.User.user_roles)) # Eager load user_roles
+    )
+    return result.unique().scalar_one_or_none()
 
 async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[models.User]:
     result = await db.execute(select(models.User).offset(skip).limit(limit))

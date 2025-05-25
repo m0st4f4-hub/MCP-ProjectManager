@@ -10,4 +10,8 @@ python-jose # Added to resolve ModuleNotFoundError
 
 # For CI/Dev
 flake8
-pytest 
+pytest
+pytest-asyncio
+pytest-cov
+httpx
+aiosqlite 

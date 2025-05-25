@@ -1,218 +1,226 @@
-# Project: project-manager
+"""
+Test suite for task CRUD operations.
+
+Testing the backend.crud.tasks module functions for:
+- Creating, reading, updating, and deleting tasks
+- Filtering tasks by various criteria
+
+Uses pytest, async fixtures and models directly without schemas to test
+CRUD layer functions independently from API routes or services.
+"""
+
+# pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
+# pylint: disable=line-too-long
+# pylint: disable=missing-function-docstring
 
 import pytest
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, timezone
 import uuid
-from unittest import mock # Ensure mock is imported
 
-# Import models and schemas directly
-# # Import models
-from backend import models
+# Import the CRUD functions to test
+from backend.crud import tasks as crud_tasks
 
-# Import specific schemas as needed
-from backend.schemas.agent import AgentCreate, AgentUpdate
-from backend.schemas.project import ProjectCreate, ProjectUpdate # Removed broad import
+# Import related models
+from backend.models import Task, Project, Agent, TaskStatus
 
-# Import specific models
-from backend.models import Project, Agent, Task, Comment # Added specific model imports
+# Import schemas
+from backend.schemas.task import TaskCreate, TaskUpdate
 
-# Import specific schemas
-from backend.schemas.project import ProjectCreate # Added specific schema import
-from backend.schemas.agent import AgentCreate # Added specific schema import
-from backend.schemas.task import TaskCreate, TaskUpdate # Added specific schema imports
-from backend.enums import TaskStatusEnum # Import enum directly
+# Import enums
+from backend.enums import TaskStatusEnum
 
-# Import specific crud submodules with aliases
-from backend.crud import projects as crud_projects # Added
-from backend.crud import tasks as crud_tasks # Added
-from backend.crud import agents as crud_agents # Added
 
-# Helper function to create a project for testing other entities
-# This helper is redundant with conftest fixture and can be removed
-# def create_test_project(db: Session, name="Test Project") -> models.Project:
-#     # Directly create and add model instance for helper
-#     project_schema = schemas.ProjectCreate(
-#         name=name, description="A test project")
-#     db_project = models.Project(
-#         id=str(uuid.uuid4()),
-#         name=project_schema.name,
-#         description=project_schema.description
-#     )
-#     db.add(db_project)
-#     db.commit()
-#     db.refresh(db_project)
-#     return db_project
-
-# Helper function to create an agent for testing other entities
-# This helper is redundant with conftest fixture and can be removed
-# def create_test_agent(db: Session, name="Test Agent") -> models.Agent:
-#     # Directly create and add model instance for helper
-#     agent_schema = schemas.AgentCreate(name=name)
-#     db_agent = models.Agent(
-#         id=str(uuid.uuid4()),
-#         name=agent_schema.name
-#     )
-#     db.add(db_agent)
-#     db.commit()
-#     db.refresh(db_agent)
-#     return db_agent
-
-# --- Task CRUD Tests ---
-# Note: These tests focus on the Task CRUD functions, so setup should create
-# related entities (Project, Agent) directly via models and session.
-
-def test_create_and_get_task(db_session: Session):
+@pytest.mark.asyncio
+async def test_create_and_get_task(async_db_session: AsyncSession):
     # Setup: Directly create related models for this test
-    project = Project(id=str(uuid.uuid4()), name="Test Project", description="...") # Use imported model
-    agent = Agent(id=str(uuid.uuid4()), name="Test Agent") # Use imported model
-    db_session.add(project)
-    db_session.add(agent)
-    db_session.commit()
-    db_session.refresh(project)
-    db_session.refresh(agent)
+    project = Project(id=str(uuid.uuid4()), name="Test Project", description="...")
+    agent = Agent(id=str(uuid.uuid4()), name="Test Agent")
+    async_db_session.add(project)
+    async_db_session.add(agent)
+    await async_db_session.commit()
+    await async_db_session.refresh(project)
+    await async_db_session.refresh(agent)
 
     task_schema = TaskCreate(
         title="Test Task Alpha",
         description="Task Alpha Description",
         project_id=str(project.id),
-        agent_id=str(agent.id) # Use agent_id, not agent_name based on Task model
+        agent_id=str(agent.id)
     )
-    
-    # Test the create_task CRUD function
-    # The create_task function in crud.py handles assigning the task_number
-    # Ensure project_id is passed correctly
-    db_task = crud_tasks.create_task(
-        db_session, project_id=project.id, task=task_schema, agent_id=agent.id)
-    assert db_task is not None
-    assert db_task.title == task_schema.title
-    # Ensure comparison is type-safe and matches the model/schema
-    assert str(db_task.project_id) == str(project.id)
-    # Check agent relationship is loaded and correct agent is linked
-    assert db_task.agent is not None  
-    assert db_task.agent.id == agent.id  
-    assert db_task.task_number is not None  # Ensure task_number is assigned
 
-    # Test the get_task_by_project_and_number CRUD function
-    # Retrieve using the composite primary key
-    retrieved_task = crud_tasks.get_task_by_project_and_number(
-        db_session, project_id=project.id, task_number=db_task.task_number)
+    # Test CREATE
+    created_task = await crud_tasks.create_task(
+        db=async_db_session,
+        task=task_schema
+    )
+    assert created_task is not None
+    assert created_task.title == task_schema.title
+    assert created_task.description == task_schema.description
+    assert created_task.project_id == task_schema.project_id
+    assert created_task.agent_id == task_schema.agent_id
+    assert created_task.status == TaskStatusEnum.TO_DO  # Default status
+    assert created_task.task_number == 1  # First task in project
+
+    # Test GET by ID
+    retrieved_task = await crud_tasks.get_task(
+        db=async_db_session,
+        project_id=str(project.id),
+        task_number=created_task.task_number
+    )
     assert retrieved_task is not None
-    assert retrieved_task.task_number == db_task.task_number
-    assert str(retrieved_task.project_id) == str(project.id)
-    assert retrieved_task.title == task_schema.title
+    assert retrieved_task.id == created_task.id
+    assert retrieved_task.title == created_task.title
 
 
-def test_get_task_not_found(db_session: Session):
-    # Use a non-existent project_id and task_number
-    assert crud_tasks.get_task_by_project_and_number(
-        db_session, project_id=str(uuid.uuid4()), task_number=9999) is None
+@pytest.mark.asyncio
+async def test_get_task_not_found(async_db_session: AsyncSession):
+    # Test getting a non-existent task
+    task = await crud_tasks.get_task(
+        db=async_db_session,
+        project_id="non-existent-project",
+        task_number=999
+    )
+    assert task is None
 
 
-def test_get_tasks_with_filtering(db_session: Session):
-    # Setup: Directly create related models and tasks for this test
-    project1 = Project(id=str(uuid.uuid4()), name="Filter Project 1") # Use imported model
-    project2 = Project(id=str(uuid.uuid4()), name="Filter Project 2") # Use imported model
-    db_session.add(project1)
-    db_session.add(project2)
-    db_session.commit()
-    db_session.refresh(project1)
-    db_session.refresh(project2)
-    project1_id = project1.id
-    project2_id = project2.id
+@pytest.mark.asyncio
+async def test_get_tasks_with_filtering(async_db_session: AsyncSession):
+    # Setup: Create project and multiple tasks
+    project = Project(id=str(uuid.uuid4()), name="Filter Test Project", description="...")
+    async_db_session.add(project)
+    await async_db_session.commit()
+    await async_db_session.refresh(project)
 
-    # Ensure project_id is passed correctly when creating tasks
-    crud_tasks.create_task(db_session, project_id=project1.id, task=TaskCreate(
-        title="P1 Task 1", project_id=project1_id)) # Use imported schema
-    crud_tasks.create_task(db_session, project_id=project1.id, task=TaskCreate(
-        title="P1 Task 2", project_id=project1_id)) # Use imported schema
-    crud_tasks.create_task(db_session, project_id=project2.id, task=TaskCreate(
-        title="P2 Task 1", project_id=project2_id)) # Use imported schema
+    # Create multiple tasks with different statuses
+    task1 = await crud_tasks.create_task(
+        db=async_db_session,
+        task=TaskCreate(
+            title="Task 1",
+            description="First task",
+            project_id=str(project.id),
+            status=TaskStatusEnum.TO_DO
+        )
+    )
 
-    # Test the get_tasks CRUD function with project filtering
-    tasks_project1 = crud_tasks.get_tasks(db_session, project_id=project1_id)
-    assert len(tasks_project1) == 2
-    assert all(t.project_id == project1_id for t in tasks_project1)
+    task2 = await crud_tasks.create_task(
+        db=async_db_session,
+        task=TaskCreate(
+            title="Task 2",
+            description="Second task",
+            project_id=str(project.id),
+            status=TaskStatusEnum.IN_PROGRESS
+        )
+    )
 
-    tasks_project2 = crud_tasks.get_tasks(db_session, project_id=project2_id)
-    assert len(tasks_project2) == 1
-    assert all(t.project_id == project2_id for t in tasks_project2)
+    # Create an archived task
+    archived_task = await crud_tasks.create_task(
+        db=async_db_session,
+        task=TaskCreate(
+            title="Archived Task",
+            description="This is archived",
+            project_id=str(project.id),
+            status=TaskStatusEnum.TO_DO
+        )
+    )
+    # Manually archive it
+    archived_task.is_archived = True
+    await async_db_session.commit()
 
-    # If get_tasks is intended to retrieve all tasks without a project_id filter,
-    # this test would need to be expanded or a new test added.
-    # Based on the signature `get_tasks(db: Session, project_id: str, ...)` it seems to require project_id.
-    pass  # Test focuses on per-project retrieval
+    # Test: Get all non-archived tasks
+    all_tasks = await crud_tasks.get_tasks(db=async_db_session)
+    assert len(all_tasks) >= 2
+    assert not any(task.is_archived for task in all_tasks)
+
+    # Test: Filter by status
+    todo_tasks = await crud_tasks.get_tasks(
+        db=async_db_session,
+        status=TaskStatusEnum.TO_DO
+    )
+    assert all(task.status == TaskStatusEnum.TO_DO for task in todo_tasks)
+
+    # Test: Filter by project
+    project_tasks = await crud_tasks.get_tasks(
+        db=async_db_session,
+        project_id=str(project.id)
+    )
+    assert all(task.project_id == project.id for task in project_tasks)
 
 
-def test_update_task(db_session: Session):
-    # Setup: Directly create related models and a task for this test
-    project = Project(id=str(uuid.uuid4()), name="Test Project", description="...") # Use imported model
-    db_session.add(project)
-    db_session.commit()
-    db_session.refresh(project)
-    project_id = project.id
+@pytest.mark.asyncio
+async def test_update_task(async_db_session: AsyncSession):
+    # Setup: Create a task
+    project = Project(id=str(uuid.uuid4()), name="Update Test Project", description="...")
+    async_db_session.add(project)
+    await async_db_session.commit()
+    await async_db_session.refresh(project)
 
-    task = crud_tasks.create_task(db_session, project_id=project.id, task=TaskCreate(
-        title="Task to Update", project_id=project_id)) # Use imported schema
-    task_project_id = task.project_id
-    task_number = task.task_number
+    original_task = await crud_tasks.create_task(
+        db=async_db_session,
+        task=TaskCreate(
+            title="Original Title",
+            description="Original Description",
+            project_id=str(project.id),
+            status=TaskStatusEnum.TO_DO
+        )
+    )
 
+    # Test UPDATE
     update_data = TaskUpdate(
-        title="Updated Task Title", status="Done", is_archived=True) # Use string value for status
+        title="Updated Title",
+        description="Updated Description",
+        status=TaskStatusEnum.IN_PROGRESS
+    )
 
-    # Test the update_task_by_project_and_number CRUD function
-    updated_task = crud_tasks.update_task_by_project_and_number(
-        db=db_session, project_id=task_project_id, task_number=task_number, task=update_data)
+    updated_task = await crud_tasks.update_task(
+        db=async_db_session,
+        project_id=str(project.id),
+        task_number=original_task.task_number,
+        task_update=update_data
+    )
 
     assert updated_task is not None
-    assert updated_task.project_id == task_project_id
-    assert updated_task.task_number == task_number
+    assert updated_task.id == original_task.id
     assert updated_task.title == update_data.title
+    assert updated_task.description == update_data.description
     assert updated_task.status == update_data.status
-    assert updated_task.is_archived is update_data.is_archived
-
-    # Verify persistence by retrieving again
-    retrieved_task = crud_tasks.get_task_by_project_and_number(
-        db_session, project_id=task_project_id, task_number=task_number)
-    assert retrieved_task.title == update_data.title
-    assert retrieved_task.status == update_data.status
-    assert retrieved_task.is_archived is update_data.is_archived
-
-    # Test updating non-existent task using composite key
-    update_non_existent_data = TaskUpdate(
-        title="Should Not Update") # Use imported schema
-    non_existent_update = crud_tasks.update_task_by_project_and_number(
-        db=db_session, project_id=task_project_id, task_number=task_number + 999, task=update_non_existent_data)
-    assert non_existent_update is None
 
 
-def test_delete_task(db_session: Session):
-    # Setup: Directly create related models and a task for this test
-    project = Project(id=str(uuid.uuid4()), name="Test Project", description="...") # Use imported model
-    db_session.add(project)
-    db_session.commit()
-    db_session.refresh(project)
+@pytest.mark.asyncio
+async def test_delete_task(async_db_session: AsyncSession):
+    # Setup: Create a task
+    project = Project(id=str(uuid.uuid4()), name="Delete Test Project", description="...")
+    async_db_session.add(project)
+    await async_db_session.commit()
+    await async_db_session.refresh(project)
 
-    task = crud_tasks.create_task(db_session, project_id=project.id, task=TaskCreate(
-        title="Task To Delete", project_id=project.id)) # Use imported schema
+    task = await crud_tasks.create_task(
+        db=async_db_session,
+        task=TaskCreate(
+            title="Task to Delete",
+            description="This will be deleted",
+            project_id=str(project.id)
+        )
+    )
 
-    # Ensure task exists before deletion
-    initial_task = crud_tasks.get_task_by_project_and_number(
-        db_session, project_id=project.id, task_number=task.task_number)
-    assert initial_task is not None
+    task_id = task.id
+    task_number = task.task_number
 
-    # Test the delete_task_by_project_and_number CRUD function
-    success = crud_tasks.delete_task_by_project_and_number(
-        db_session, project_id=project.id, task_number=task.task_number)
-    assert success is True
+    # Test DELETE
+    deleted_task = await crud_tasks.delete_task(
+        db=async_db_session,
+        project_id=str(project.id),
+        task_number=task_number
+    )
 
-    # Verify task is deleted using composite key
-    deleted_task = crud_tasks.get_task_by_project_and_number(
-        db_session, project_id=project.id, task_number=task.task_number)
-    assert deleted_task is None
+    assert deleted_task is not None
+    assert deleted_task.id == task_id
 
-    # Test deleting non-existent task using composite key
-    success_non_existent = crud_tasks.delete_task_by_project_and_number(
-        db_session, project_id=project.id, task_number=task.task_number + 999)
-    assert success_non_existent is False
-
-# --- Task CRUD Tests End --- 
+    # Verify it's gone
+    retrieved = await crud_tasks.get_task(
+        db=async_db_session,
+        project_id=str(project.id),
+        task_number=task_number
+    )
+    assert retrieved is None

@@ -35,7 +35,7 @@ from backend import models
 from backend.schemas.agent import AgentCreate, AgentUpdate
 from backend.schemas.task import TaskCreate, TaskUpdate
 from backend.schemas.project import ProjectCreate, ProjectUpdate
-from backend.models import ProjectMemberRole # Explicitly import ProjectMemberRole
+from backend.models.base import ProjectMemberRole # Import ProjectMemberRole from base
 
 # Import memory_crud for file association helpers
 from backend.crud import memory as memory_crud

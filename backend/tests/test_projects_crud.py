@@ -1,9 +1,13 @@
 # Project: project-manager
 
 import pytest
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import Session # Removed synchronous Session import
 import uuid
 from unittest import mock
+
+# Import AsyncSession and async delete
+from sqlalchemy.ext.asyncio import AsyncSession # Import AsyncSession
+from sqlalchemy import delete # Import delete for async core operations
 
 # Import models and specific schemas directly
 from backend import models
@@ -14,147 +18,159 @@ from backend.schemas.task import TaskCreate, TaskUpdate
 from backend.crud import projects as crud_projects
 from backend.crud import tasks as crud_tasks
 
-# Helper function to create a project for testing other entities
-def create_test_project(db: Session, name="Test Project") -> models.Project:
+# Mark all tests in this module as async using pytest-asyncio conventions
+pytestmark = pytest.mark.asyncio
+
+# Helper function to create a project for testing other entities (ASYNC)
+async def create_test_project(db: AsyncSession, name="Test Project") -> models.Project:
     project_schema = ProjectCreate(
         name=name, description="A test project")
-    db_project = models.Project(
-        id=str(uuid.uuid4()),
-        name=project_schema.name,
-        description=project_schema.description
-    )
-    db.add(db_project)
-    db.commit()
-    db.refresh(db_project)
-    return db_project
+    # Since create_project is now async CRUD, use that
+    return await crud_projects.create_project(db=db, project=project_schema)
 
 # --- Project CRUD Tests ---
-def test_create_and_get_project(db_session: Session):
+async def test_create_and_get_project(async_db_session: AsyncSession):
+    # Use async_db_session and await
     project_schema = ProjectCreate(
         name="Test Project Alpha", description="Alpha Test Description")
-    db_project = crud_projects.create_project(db=db_session, project=project_schema)
+    db_project = await crud_projects.create_project(db=async_db_session, project=project_schema)
     assert db_project is not None
     assert db_project.name == project_schema.name
     assert db_project.description == project_schema.description
     assert db_project.id is not None
 
-    retrieved_project = crud_projects.get_project(
-        db=db_session, project_id=db_project.id)
+    retrieved_project = await crud_projects.get_project(
+        db=async_db_session, project_id=db_project.id)
     assert retrieved_project is not None
     assert retrieved_project.id == db_project.id
     assert retrieved_project.name == project_schema.name
 
-    retrieved_by_name = crud_projects.get_project_by_name(
-        db=db_session, name=project_schema.name)
+    retrieved_by_name = await crud_projects.get_project_by_name(
+        db=async_db_session, name=project_schema.name)
     assert retrieved_by_name is not None
     assert retrieved_by_name.id == db_project.id
 
 
-def test_get_project_not_found(db_session: Session):
-    retrieved_project = crud_projects.get_project(db=db_session, project_id=str(uuid.uuid4()))
+async def test_get_project_not_found(async_db_session: AsyncSession):
+    # Use async_db_session and await
+    retrieved_project = await crud_projects.get_project(db=async_db_session, project_id=str(uuid.uuid4()))
     assert retrieved_project is None
-    retrieved_by_name = crud_projects.get_project_by_name(
-        db=db_session, name="NonExistentProject")
+    retrieved_by_name = await crud_projects.get_project_by_name(
+        db=async_db_session, name="NonExistentProject")
     assert retrieved_by_name is None
 
 
-def test_get_projects(db_session: Session):
-    project1 = models.Project(id=str(uuid.uuid4()), name="Project List Test 1", description="Desc 1")
-    project2 = models.Project(id=str(uuid.uuid4()), name="Project List Test 2", description="Desc 2")
-    
-    db_session.add(project1)
-    db_session.add(project2)
-    db_session.commit()
+async def test_get_projects(async_db_session: AsyncSession):
+    # Use async_db_session and await. Use CRUD functions for setup/teardown where appropriate.
+    # Clean up any existing projects from previous runs
+    await async_db_session.execute(delete(models.Project))
+    await async_db_session.commit()
 
-    projects_after = crud_projects.get_projects(db=db_session)
-    
-    db_session.query(models.Project).delete()
-    db_session.commit()
+    # Create projects using async CRUD
+    project1_data = ProjectCreate(name="Project List Test 1", description="Desc 1")
+    project2_data = ProjectCreate(name="Project List Test 2", description="Desc 2")
+    project1 = await crud_projects.create_project(async_db_session, project1_data)
+    project2 = await crud_projects.create_project(async_db_session, project2_data)
 
-    project1_clean = models.Project(id=str(uuid.uuid4()), name="Project List Test Clean 1", description="Desc C1")
-    project2_clean = models.Project(id=str(uuid.uuid4()), name="Project List Test Clean 2", description="Desc C2")
-    db_session.add(project1_clean)
-    db_session.add(project2_clean)
-    db_session.commit()
+    # Get projects using async CRUD
+    projects_after_create = await crud_projects.get_projects(db=async_db_session)
+    assert len(projects_after_create) == 2
+    assert {p.name for p in projects_after_create} == {"Project List Test 1", "Project List Test 2"}
 
-    projects_after_clean = crud_projects.get_projects(db=db_session)
-    assert len(projects_after_clean) == 2
+    # Add another project and re-fetch
+    project3_data = ProjectCreate(name="Project List Test 3", description="Desc 3")
+    project3 = await crud_projects.create_project(async_db_session, project3_data)
+
+    projects_after_add = await crud_projects.get_projects(db=async_db_session)
+    assert len(projects_after_add) == 3
+    assert {p.name for p in projects_after_add} == {"Project List Test 1", "Project List Test 2", "Project List Test 3"}
+
+    # Test pagination
+    projects_paginated = await crud_projects.get_projects(db=async_db_session, skip=1, limit=1)
+    assert len(projects_paginated) == 1
+    # Assuming default sort by name, Project 2 should be skipped, Project 3 is the third project
+    # The order depends on the default sort in get_projects. If sorted by name, order is 1, 2, 3.
+    # So skip=1, limit=1 would return Project 2.
+    assert projects_paginated[0].name == "Project List Test 2"
 
 
-def test_update_project(db_session: Session):
-    project = models.Project(id=str(uuid.uuid4()), name="Original Project Name", description="Original Desc")
-    db_session.add(project)
-    db_session.commit()
-    db_session.refresh(project)
+async def test_update_project(async_db_session: AsyncSession):
+    # Use async_db_session and await. Create project using async CRUD.
+    project_data = ProjectCreate(name="Original Project Name", description="Original Desc")
+    project = await crud_projects.create_project(async_db_session, project_data)
+    project_id = project.id
 
     update_data = ProjectUpdate(
         name="Updated Project Name", description="Updated Desc")
-    updated_project = crud_projects.update_project(
-        db=db_session, project_id=project.id, project_update=update_data)
+    updated_project = await crud_projects.update_project(
+        db=async_db_session, project_id=project_id, project_update=update_data)
     assert updated_project is not None
     assert updated_project.name == update_data.name
     assert updated_project.description == update_data.description
 
-    retrieved_project = crud_projects.get_project(db=db_session, project_id=project.id)
+    retrieved_project = await crud_projects.get_project(db=async_db_session, project_id=project_id)
     assert retrieved_project.name == update_data.name
     assert retrieved_project.description == update_data.description
 
-    non_existent_update = crud_projects.update_project(
-        db=db_session, project_id=str(uuid.uuid4()), project_update=update_data)
+    non_existent_update = await crud_projects.update_project(
+        db=async_db_session, project_id=str(uuid.uuid4()), project_update=update_data)
     assert non_existent_update is None
 
 
-def test_delete_project(db_session: Session):
-    project = models.Project(id=str(uuid.uuid4()), name="To Be Deleted", description="Delete me")
-    db_session.add(project)
-    db_session.commit()
-    db_session.refresh(project)
+async def test_delete_project(async_db_session: AsyncSession):
+    # Use async_db_session and await. Create project using async CRUD.
+    project_data = ProjectCreate(name="To Be Deleted", description="Delete me")
+    project = await crud_projects.create_project(async_db_session, project_data)
     project_id = project.id
 
-    deleted_project = crud_projects.delete_project(db=db_session, project_id=project_id)
+    deleted_project = await crud_projects.delete_project(db=async_db_session, project_id=project_id)
     assert deleted_project is not None
     assert deleted_project.id == project_id
-    assert crud_projects.get_project(db=db_session, project_id=project_id) is None
+    assert await crud_projects.get_project(db=async_db_session, project_id=project_id) is None
 
-    non_existent_delete = crud_projects.delete_project(db=db_session, project_id=str(uuid.uuid4()))
+    non_existent_delete = await crud_projects.delete_project(db=async_db_session, project_id=str(uuid.uuid4()))
     assert non_existent_delete is None
 
 
-def test_delete_project_with_tasks_and_mock_print(db_session: Session):
-    project = models.Project(id=str(uuid.uuid4()), name="Project With Tasks For Print Mock Test", description="...")
-    db_session.add(project)
-    db_session.commit()
-    db_session.refresh(project)
+async def test_delete_project_with_tasks_and_mock_print(async_db_session: AsyncSession):
+    # Use async_db_session and await. Create project/tasks using async CRUD.
+    project_data = ProjectCreate(name="Project With Tasks For Print Mock Test", description="...")
+    project = await crud_projects.create_project(async_db_session, project_data)
     project_id = project.id
 
     task1_schema = TaskCreate(title="Task 1 for Print Mock Test", project_id=project_id)
     task2_schema = TaskCreate(title="Task 2 for Print Mock Test", project_id=project_id)
-    crud_tasks.create_task(db_session, project_id=project_id, task=task1_schema, agent_id=None)
-    crud_tasks.create_task(db_session, project_id=project_id, task=task2_schema, agent_id=None)
+    # Assuming crud_tasks.create_task is async
+    await crud_tasks.create_task(async_db_session, project_id=project_id, task=task1_schema, agent_id=None)
+    await crud_tasks.create_task(async_db_session, project_id=project_id, task=task2_schema, agent_id=None)
 
     expected_print_arg = f"[CRUD delete_project] Deleted 2 tasks associated with project_id: {project_id}"
 
     with mock.patch('builtins.print') as mock_print:
-        deleted_project = crud_projects.delete_project(
-            db=db_session, project_id=project_id)
+        # Assuming crud_projects.delete_project is async
+        deleted_project = await crud_projects.delete_project(
+            db=async_db_session, project_id=project_id)
 
     assert deleted_project is not None
-    assert crud_projects.get_project(db=db_session, project_id=project_id) is None
+    assert await crud_projects.get_project(db=async_db_session, project_id=project_id) is None
 
-    tasks_after_delete = crud_tasks.get_tasks(db_session, project_id=project_id)
+    # Assuming crud_tasks.get_tasks is async
+    tasks_after_delete = await crud_tasks.get_tasks(async_db_session, project_id=project_id)
     assert len(tasks_after_delete) == 0
 
+    # Note: Mocking print might not capture output from async functions as expected. Will verify manually if needed.
+    # For now, keep the assertion.
     mock_print.assert_called_once_with(expected_print_arg)
 
 
-def test_delete_project_prints_task_count(db_session):
-    project = models.Project(id=str(uuid.uuid4()), name="Project with Tasks", description="...")
-    db_session.add(project)
-    db_session.commit()
-    db_session.refresh(project)
+async def test_delete_project_prints_task_count(async_db_session: AsyncSession):
+    # Use async_db_session and await. Create project/tasks using async CRUD.
+    project_data = ProjectCreate(name="Project with Tasks", description="...")
+    project = await crud_projects.create_project(async_db_session, project_data)
 
-    task1 = crud_tasks.create_task(db_session, project.id, task=TaskCreate(title="Task 1", project_id=project.id), agent_id=None)
-    task2 = crud_tasks.create_task(db_session, project.id, task=TaskCreate(title="Task 2", project_id=project.id), agent_id=None)
+    # Assuming crud_tasks.create_task is async
+    task1 = await crud_tasks.create_task(async_db_session, project.id, task=TaskCreate(title="Task 1", project_id=project.id), agent_id=None)
+    task2 = await crud_tasks.create_task(async_db_session, project.id, task=TaskCreate(title="Task 2", project_id=project.id), agent_id=None)
 
     import sys
     from io import StringIO
@@ -162,12 +178,14 @@ def test_delete_project_prints_task_count(db_session):
     sys.stdout = stdout
 
     try:
-        deleted_project = crud_projects.delete_project(db_session, project_id=project.id)
+        # Assuming crud_projects.delete_project is async
+        deleted_project = await crud_projects.delete_project(async_db_session, project_id=project.id)
         output = stdout.getvalue()
         assert f"[CRUD delete_project] Deleted 2 tasks associated with project_id: {project.id}" in output
         assert deleted_project is not None
         assert deleted_project.id == project.id
-        assert crud_projects.get_project(db_session, project_id=project.id) is None
+        # Assuming crud_projects.get_project is async
+        assert await crud_projects.get_project(async_db_session, project_id=project.id) is None
 
     finally:
         sys.stdout = sys.__stdout__
