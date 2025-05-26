@@ -54,7 +54,9 @@ async def create_user(db: AsyncSession, user: UserCreate) -> models.User:
     # Hash the password before storing
     hashed_password = get_password_hash(user.password)
     db_user = models.User(username=user.username,
-                          hashed_password=hashed_password)
+                          hashed_password=hashed_password,
+                          email=user.email,
+                          full_name=user.full_name)
     
     # Assign a default role (e.g., USER) to the new user
     default_role = models.UserRole(user=db_user, role_name=UserRoleEnum.USER)

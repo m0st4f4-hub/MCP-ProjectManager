@@ -5,9 +5,11 @@ Handles router configuration and logging setup.
 
 import logging
 from fastapi import FastAPI
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
 from typing import Optional
+# Import load_dotenv
+from dotenv import load_dotenv
 
 # Import routers # REMOVED router imports to break circular dependency
 # from backend.routers.projects import router as projects_router
@@ -17,6 +19,9 @@ from typing import Optional
 # from backend.routers.rules import router as rules_router
 # from backend.routers.memory import router as memory_router
 # from backend.routers.mcp import router as mcp_tools_router
+
+# Load environment variables from a .env file
+load_dotenv()
 
 # Pydantic BaseSettings for application configuration
 class Settings(BaseSettings):
@@ -33,8 +38,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     # Add other configuration variables here as needed
 
-    class Config:
-        env_file = ".env"
+    # Add SettingsConfigDict
+    model_config = SettingsConfigDict(env_file=".env")
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

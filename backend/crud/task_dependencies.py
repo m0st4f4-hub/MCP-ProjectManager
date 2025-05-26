@@ -77,7 +77,7 @@ async def create_task_dependency(db: AsyncSession, task_dependency: TaskDependen
         predecessor_task_number=task_dependency.predecessor_task_number,
         successor_project_id=task_dependency.successor_project_id,
         successor_task_number=task_dependency.successor_task_number,
-        type=task_dependency.type
+        dependency_type=task_dependency.dependency_type
     )
     db.add(db_task_dependency)
     await db.commit()

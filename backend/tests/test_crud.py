@@ -27,6 +27,9 @@ from unittest import mock
 import time
 from fastapi import HTTPException
 
+# Import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
+
 # Import models and schemas directly, including ProjectMemberRole
 # Import models
 from backend import models
@@ -52,61 +55,97 @@ from backend.crud import task_dependencies as crud_task_dependencies
 # Helper functions used across multiple test files
 
 
-def create_test_project(db: Session, name="Test Project") -> models.Project:
+# Convert to async function and use AsyncSession
+async def create_test_project(db: AsyncSession, name="Test Project") -> models.Project:
     project_schema = schemas.ProjectCreate(
         name=name, description="A test project")
-    return crud_projects.create_project(db=db, project=project_schema)
+    # Await the CRUD call
+    project = await crud_projects.create_project(db=db, project=project_schema)
+    # Await session operations if necessary within helpers, though CRUD functions should handle commits/refreshes now.
+    # Assuming CRUD functions handle commit/refresh internally.
+    return project
 
 
-def create_test_agent(db: Session, name="Test Agent") -> models.Agent:
+# Convert to async function and use AsyncSession
+async def create_test_agent(db: AsyncSession, name="Test Agent") -> models.Agent:
     agent_schema = schemas.AgentCreate(name=name)
-    return crud_agents.create_agent(db=db, agent=agent_schema)
+    # Await the CRUD call
+    agent = await crud_agents.create_agent(db=db, agent=agent_schema)
+    # Assuming CRUD functions handle commit/refresh internally.
+    return agent
 
 
-def create_test_task(db: Session, project_id: uuid.UUID, title="Test Task", agent_id: int | None = None) -> models.Task:
+# Convert to async function and use AsyncSession
+async def create_test_task(db: AsyncSession, project_id: uuid.UUID, title="Test Task", agent_id: int | None = None) -> models.Task:
     task_create_schema = schemas.TaskCreate(title=title, project_id=str(project_id), agent_id=agent_id)
-    return crud_tasks.create_task(db, project_id, task=task_create_schema, agent_id=agent_id)
+    # Await the CRUD call
+    task = await crud_tasks.create_task(db, project_id, task=task_create_schema, agent_id=agent_id) # Check if project_id is needed here based on create_task signature
+    # Updated based on previous observations of create_task signature (db, task: TaskCreate)
+    task_create_schema_corrected = schemas.TaskCreate(title=title, project_id=str(project_id), agent_id=agent_id) # Recreate schema with correct type
+    task = await crud_tasks.create_task(db, task=task_create_schema_corrected)
+    # Assuming CRUD functions handle commit/refresh internally.
+    return task
 
 
-def create_test_project_member(db: Session, project_id: uuid.UUID, agent_id: int, role: ProjectMemberRole = ProjectMemberRole.MEMBER) -> models.ProjectMember:
+# Convert to async function and use AsyncSession
+async def create_test_project_member(db: AsyncSession, project_id: uuid.UUID, agent_id: int, role: ProjectMemberRole = ProjectMemberRole.MEMBER) -> models.ProjectMember:
     member_schema = schemas.ProjectMemberCreate(
         project_id=str(project_id),
         agent_id=agent_id,
         role=role
     )
-    return crud_project_members.create_project_member(db, member_schema)
+    # Await the CRUD call
+    member = await crud_project_members.create_project_member(db, member_schema)
+    # Assuming CRUD functions handle commit/refresh internally.
+    return member
 
 
-def create_test_memory_entity(db: Session, name: str, entity_type: str, content: str) -> models.MemoryEntity:
+# Convert to async function and use AsyncSession
+async def create_test_memory_entity(db: AsyncSession, name: str, entity_type: str, content: str) -> models.MemoryEntity:
     entity_schema = schemas.MemoryEntityCreate(name=name, entity_type=entity_type, content=content)
-    return memory_crud.create_memory_entity(db, entity_schema)
+    # Await the CRUD call
+    entity = await memory_crud.create_memory_entity(db, entity_schema)
+    # Assuming CRUD functions handle commit/refresh internally.
+    return entity
 
 
-def create_test_project_file_association(db: Session, project_id: uuid.UUID, file_memory_entity_id: int) -> models.ProjectFileAssociation:
+# Convert to async function and use AsyncSession
+async def create_test_project_file_association(db: AsyncSession, project_id: uuid.UUID, file_memory_entity_id: int) -> models.ProjectFileAssociation:
     association_schema = schemas.ProjectFileAssociationCreate(
         project_id=str(project_id),
         file_memory_entity_id=file_memory_entity_id
     )
-    return crud_project_file_associations.create_project_file_association(db, association_schema)
+    # Await the CRUD call
+    association = await crud_project_file_associations.create_project_file_association(db, association_schema)
+    # Assuming CRUD functions handle commit/refresh internally.
+    return association
 
 
-def create_test_task_file_association(db: Session, task_project_id: uuid.UUID, task_task_number: int, file_memory_entity_id: int) -> models.TaskFileAssociation:
+# Convert to async function and use AsyncSession
+async def create_test_task_file_association(db: AsyncSession, task_project_id: uuid.UUID, task_task_number: int, file_memory_entity_id: int) -> models.TaskFileAssociation:
     association_schema = schemas.TaskFileAssociationCreate(
         task_project_id=str(task_project_id),
         task_task_number=task_task_number,
         file_memory_entity_id=file_memory_entity_id
     )
-    return crud_task_file_associations.create_task_file_association(db, association_schema)
+    # Await the CRUD call
+    association = await crud_task_file_associations.create_task_file_association(db, association_schema)
+    # Assuming CRUD functions handle commit/refresh internally.
+    return association
 
 
-def create_test_task_dependency(db: Session, dependent_task_project_id: uuid.UUID, dependent_task_task_number: int, dependency_task_project_id: uuid.UUID, dependency_task_task_number: int) -> models.TaskDependency:
+# Convert to async function and use AsyncSession
+async def create_test_task_dependency(db: AsyncSession, dependent_task_project_id: uuid.UUID, dependent_task_task_number: int, dependency_task_project_id: uuid.UUID, dependency_task_task_number: int) -> models.TaskDependency:
     dependency_schema = schemas.TaskDependencyCreate(
         dependent_task_project_id=str(dependent_task_project_id),
         dependent_task_task_number=dependent_task_task_number,
         dependency_task_project_id=str(dependency_task_project_id),
         dependency_task_task_number=dependency_task_task_number
     )
-    return crud_task_dependencies.create_task_dependency(db, dependency_schema)
+    # Await the CRUD call
+    dependency = await crud_task_dependencies.create_task_dependency(db, dependency_schema)
+    # Assuming CRUD functions handle commit/refresh internally.
+    return dependency
 
 
 # All CRUD tests have been moved to dedicated test_*.py files in this directory.

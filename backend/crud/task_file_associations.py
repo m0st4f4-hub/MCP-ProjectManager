@@ -4,7 +4,7 @@
 # Project: task-manager
 # Timestamp: 2025-05-09T21:00:00Z
 
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import Session # Removed synchronous Session import
 from sqlalchemy import and_
 from typing import List, Optional, Union
 from ..models import TaskFileAssociation
@@ -14,56 +14,72 @@ from backend.schemas.memory import MemoryEntityCreate, MemoryRelationCreate
 import uuid
 
 # Import the memory crud operations
-from . import memory as memory_crud
+from . import memory as memory_crud # Keep for now, might need async conversion later
 # Import file crud (assuming a files crud exists or we'll handle file entity creation here)
 # from . import files as files_crud # Need to verify file crud location or implement here
 
 # Import validation helpers
 from .task_file_association_validation import task_entity_exists, association_exists, delete_associated_memory_relation
 
+# Import AsyncSession and select for async operations
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from sqlalchemy.future import select as async_select # Use async_select for clarity
 
-async def get_files_for_task(db: Session, task_project_id: Union[str, uuid.UUID], task_number: int) -> List[TaskFileAssociation]:
+
+async def get_files_for_task(db: AsyncSession, task_project_id: Union[str, uuid.UUID], task_number: int) -> List[TaskFileAssociation]:
     """Get all file associations for a task."""
-    return db.query(TaskFileAssociation).filter(
+    # Use async SQLAlchemy syntax
+    stmt = select(TaskFileAssociation).filter(
         and_(
             TaskFileAssociation.task_project_id == str(task_project_id),
             TaskFileAssociation.task_task_number == task_number
         )
-    ).all()
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()
 
 
 async def get_task_file_association(
-    db: Session,
+    db: AsyncSession,
     task_project_id: Union[str, uuid.UUID],
     task_number: int,
     file_memory_entity_id: int
 ) -> Optional[TaskFileAssociation]:
     """Get a specific task-file association by task composite ID and file memory entity ID."""
-    return db.query(TaskFileAssociation).filter(
+    # Use async SQLAlchemy syntax
+    stmt = select(TaskFileAssociation).filter(
         and_(
             TaskFileAssociation.task_project_id == str(task_project_id),
             TaskFileAssociation.task_task_number == task_number,
             TaskFileAssociation.file_memory_entity_id == file_memory_entity_id
         )
-    ).first()
+    )
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
 
 
-async def get_task_files(db: Session, task_project_id: str, task_task_number: int, skip: int = 0, limit: int = 100) -> List[TaskFileAssociation]:
+async def get_task_files(db: AsyncSession, task_project_id: str, task_task_number: int, skip: int = 0, limit: int = 100) -> List[TaskFileAssociation]:
     """Get all files associated with a task."""
-    return db.query(TaskFileAssociation).filter(
+    # Use async SQLAlchemy syntax
+    stmt = select(TaskFileAssociation).filter(
         and_(
             TaskFileAssociation.task_project_id == task_project_id,
             TaskFileAssociation.task_task_number == task_task_number
         )
-    ).offset(skip).limit(limit).all()
+    ).offset(skip).limit(limit)
+    result = await db.execute(stmt)
+    return result.scalars().all()
 
 
-async def create_task_file_association(db: Session, task_file: TaskFileAssociationCreate) -> TaskFileAssociation:
+async def create_task_file_association(db: AsyncSession, task_file: TaskFileAssociationCreate) -> TaskFileAssociation:
     """Associate a file with a task using the file_memory_entity_id from the schema."""
 
-    # Use validation helpers
-    if await association_exists(db, task_file.task_project_id, task_file.task_task_number, task_file.file_memory_entity_id):
-        # If association exists, return the existing one
+    # Use validation helpers (assuming these are async or will be)
+    # if await association_exists(db, task_file.task_project_id, task_file.task_task_number, task_file.file_memory_entity_id):
+    association_already_exists = await association_exists(db, task_file.task_project_id, task_file.task_task_number, task_file.file_memory_entity_id)
+    if association_already_exists:
+        # If association exists, return the existing one (await the async get function)
         return await get_task_file_association(db, task_file.task_project_id, task_file.task_task_number, task_file.file_memory_entity_id)
 
     # Task entity validation (assuming task entity creation happens elsewhere or is not strictly required here)
@@ -75,18 +91,19 @@ async def create_task_file_association(db: Session, task_file: TaskFileAssociati
         file_memory_entity_id=task_file.file_memory_entity_id
     )
     db.add(db_task_file)
+    # Use await db.commit() and await db.refresh()
     await db.commit()
     await db.refresh(db_task_file)
     return db_task_file
 
 
-async def delete_task_file_association(db: Session, task_project_id: str, task_task_number: int, file_memory_entity_id: int) -> bool:
+async def delete_task_file_association(db: AsyncSession, task_project_id: str, task_task_number: int, file_memory_entity_id: int) -> bool:
     """Remove a task file association by task composite ID and file memory entity ID."""
 
-    # Use validation helper to delete associated memory relation
+    # Use validation helper to delete associated memory relation (assuming it's async or will be awaited)
     await delete_associated_memory_relation(db, task_project_id, task_task_number, file_memory_entity_id)
 
-    # Get and delete the task file association in the main database
+    # Get and delete the task file association in the main database (await the async get and delete)
     db_task_file = await get_task_file_association(
         db, task_project_id=task_project_id, task_number=task_task_number, file_memory_entity_id=file_memory_entity_id)
 
@@ -98,7 +115,7 @@ async def delete_task_file_association(db: Session, task_project_id: str, task_t
 
 
 async def associate_file_with_task(
-    db: Session,
+    db: AsyncSession,
     task_project_id: Union[str, uuid.UUID],
     task_number: int,
     file_memory_entity_id: int
@@ -116,7 +133,7 @@ async def associate_file_with_task(
 
 
 async def disassociate_file_from_task(
-    db: Session,
+    db: AsyncSession,
     task_project_id: Union[str, uuid.UUID],
     task_number: int,
     file_memory_entity_id: int

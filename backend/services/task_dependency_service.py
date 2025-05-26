@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_, func
+from sqlalchemy import or_, func, select
 from .. import models
 from typing import List, Optional
 from uuid import UUID
@@ -7,6 +7,8 @@ from backend.crud.task_dependencies import create_task_dependency
 from backend.crud.task_dependency_validation import is_self_dependency, is_circular_dependency
 from backend.schemas.task_dependency import TaskDependencyCreate
 import logging
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -60,27 +62,30 @@ class TaskDependencyService:
             .all()
         )
 
-    def add_dependency(self, predecessor_task_project_id: UUID, predecessor_task_number: int, successor_task_project_id: UUID, successor_task_number: int) -> Optional[models.TaskDependency]:
+    async def add_dependency(self, predecessor_task_project_id: UUID, predecessor_task_number: int, successor_task_project_id: UUID, successor_task_number: int, dependency_type: str) -> Optional[models.TaskDependency]:
         # Use the CRUD function for creation and validation
         task_dependency = TaskDependencyCreate(
             predecessor_project_id=str(predecessor_task_project_id),
             predecessor_task_number=predecessor_task_number,
             successor_project_id=str(successor_task_project_id),
             successor_task_number=successor_task_number,
+            dependency_type=dependency_type
         )
 
         # Check for self-dependency
         if is_self_dependency(task_dependency):
-            logger.error("Self-dependency detected.")
-            return None # Or raise a specific exception
+            logger.error("Self-dependency detected: Service Layer Check.")
+            raise HTTPException(status_code=400, detail="A task cannot be dependent on itself")
 
         # Check for circular dependency
-        if is_circular_dependency(self.db, task_dependency):
-            logger.error("Circular dependency detected.")
-            return None # Or raise a specific exception
+        if await is_circular_dependency(self.db, task_dependency):
+            logger.error("Circular dependency detected: Service Layer Check.")
+            raise HTTPException(status_code=400, detail="Circular dependency detected")
 
         # Create the dependency in the database
-        db_task_dependency = create_task_dependency(self.db, task_dependency)
+        db_task_dependency = await create_task_dependency(self.db, task_dependency)
+        await self.db.commit()
+        await self.db.refresh(db_task_dependency)
 
         logger.info(f"Added task dependency from {predecessor_task_project_id}/{predecessor_task_number} to {successor_task_project_id}/{successor_task_number}")
         return db_task_dependency
@@ -107,19 +112,23 @@ class TaskDependencyService:
             return True
         return False
 
-def create_task_dependency(
-    db: Session,
+async def create_task_dependency(
+    db: AsyncSession,
     task_dependency: TaskDependencyCreate
 ):
-    logger.info(f"Creating task dependency: {task_dependency.dependent_task_id} depends on {task_dependency.dependency_task_id}")
+    """Create a new task dependency in the database."""
+    # Ensure field names match the TaskDependency model
     db_task_dependency = models.TaskDependency(
-        dependent_task_id=task_dependency.dependent_task_id,
-        dependency_task_id=task_dependency.dependency_task_id,
-        # Add other fields as necessary
+        predecessor_project_id=task_dependency.predecessor_project_id,
+        predecessor_task_number=task_dependency.predecessor_task_number,
+        successor_project_id=task_dependency.successor_project_id,
+        successor_task_number=task_dependency.successor_task_number,
+        dependency_type=task_dependency.dependency_type # Use dependency_type from the schema
     )
     db.add(db_task_dependency)
-    db.commit()
-    db.refresh(db_task_dependency)
+    # await db.commit() # Commit and refresh should be handled by the caller (e.g., service method)
+    # await db.refresh(db_task_dependency)
+    # logger.info(f"Created task dependency: {db_task_dependency.predecessor_project_id}/{db_task_dependency.predecessor_task_number} -> {db_task_dependency.successor_project_id}/{db_task_dependency.successor_task_number}")
     return db_task_dependency
 
 # Function to get task dependencies by dependent task ID
@@ -163,23 +172,28 @@ def delete_task_dependency(
 
 # Helper function to check for self-dependency
 def is_self_dependency(task_dependency: TaskDependencyCreate) -> bool:
+    """Check if a task dependency is a self-dependency."""
     return (
-        task_dependency.dependent_task_id == task_dependency.dependency_task_id
+        task_dependency.predecessor_project_id == task_dependency.successor_project_id and
+        task_dependency.predecessor_task_number == task_dependency.successor_task_number
     )
 
 # Helper function to check for circular dependency
-def is_circular_dependency(db: Session, task_dependency: TaskDependencyCreate) -> bool:
-    # This requires a more complex graph traversal algorithm
-    # For a simple check, we can at least prevent immediate circularity A -> B -> A
-    # A full implementation would need to traverse the dependency graph
+async def is_circular_dependency(db: AsyncSession, task_dependency: TaskDependencyCreate) -> bool:
+    """Check if adding this dependency would create a circular dependency."""
+    # This is a simplified check for immediate circularity (A -> B and B -> A).
+    # A full implementation would need to traverse the dependency graph.
 
-    # Simple check: Does the dependency task already depend on the dependent task?
-    existing_dependency = (
-        db.query(models.TaskDependency)
-        .filter(
-            models.TaskDependency.dependent_task_id == task_dependency.dependency_task_id,
-            models.TaskDependency.dependency_task_id == task_dependency.dependent_task_id
+    # Simple check: Does the successor task already depend on the predecessor task?
+    result = await db.execute(
+        select(models.TaskDependency).filter(
+            models.TaskDependency.predecessor_project_id == task_dependency.successor_project_id,
+            models.TaskDependency.predecessor_task_number == task_dependency.successor_task_number,
+            models.TaskDependency.successor_project_id == task_dependency.predecessor_project_id,
+            models.TaskDependency.successor_task_number == task_dependency.predecessor_task_number
         )
-        .first()
     )
+    existing_dependency = result.first()
     return existing_dependency is not None
+
+# Helper function to check if a task is dependent on another

@@ -8,15 +8,19 @@
 Task file association utility functions to avoid circular imports.
 """
 
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import Session # Remove synchronous Session import
 from sqlalchemy import and_
 from typing import Union, Optional
 from uuid import UUID
 from ...models import TaskFileAssociation
 
+# Import AsyncSession and select for async queries
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
-def get_task_file_association_direct(
-    db: Session,
+# Convert to async function and use AsyncSession
+async def get_task_file_association_direct(
+    db: AsyncSession,
     task_project_id: Union[str, UUID],
     task_number: int,
     file_memory_entity_id: int
@@ -25,10 +29,14 @@ def get_task_file_association_direct(
     Get a specific task-file association by task composite ID and file memory entity ID.
     This is a direct database query to avoid circular imports.
     """
-    return db.query(TaskFileAssociation).filter(
-        and_(
-            TaskFileAssociation.task_project_id == str(task_project_id),
-            TaskFileAssociation.task_task_number == task_number,
-            TaskFileAssociation.file_memory_entity_id == file_memory_entity_id
+    # Use async syntax
+    result = await db.execute(
+        select(TaskFileAssociation).where(
+            and_(
+                TaskFileAssociation.task_project_id == str(task_project_id),
+                TaskFileAssociation.task_task_number == task_number,
+                TaskFileAssociation.file_memory_entity_id == file_memory_entity_id
+            )
         )
-    ).first()
+    )
+    return result.scalar_one_or_none()

@@ -1,0 +1,9 @@
+- [x] Model field mismatches (specifically the composite key for Task model)
+  - [x] backend/crud/tasks.py::get_task, update_task, delete_task refactored to use composite key
+  - [x] backend/services/task_service.py methods updated to use composite key
+  - [x] backend/routers/tasks.py endpoints use composite key
+- [x] Validation functions need async conversion
+  - [x] backend/crud/project_validation.py::project_name_exists is already async
+- [x] Mismatches in CRUD function signatures
+  - [x] backend/crud/tasks.py::get_task, update_task, delete_task signatures updated
+  - [x] backend/services/task_service.py methods signatures updated or confirmed correct 

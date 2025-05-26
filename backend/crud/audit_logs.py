@@ -9,8 +9,14 @@ from backend import models
 from backend.models.audit import AuditLog as AuditLogModel
 from backend.schemas.audit_log import AuditLogCreate
 
+# Import async equivalents and necessary functions
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, delete
+from sqlalchemy.future import select as async_select
+
 # Function to create a new audit log entry
-def create_audit_log(db: Session, audit_log: AuditLogCreate) -> AuditLogModel:
+# Convert to async function and use AsyncSession
+async def create_audit_log(db: AsyncSession, audit_log: AuditLogCreate) -> AuditLogModel:
     """Create a new audit log entry."""
     db_audit_log = AuditLogModel(
         user_id=audit_log.user_id,
@@ -19,26 +25,33 @@ def create_audit_log(db: Session, audit_log: AuditLogCreate) -> AuditLogModel:
         details=json.dumps(audit_log.details) if audit_log.details else None # Convert dict to JSON string
     )
     db.add(db_audit_log)
-    db.commit()
-    db.refresh(db_audit_log)
+    # Await commit and refresh
+    await db.commit()
+    await db.refresh(db_audit_log)
     return db_audit_log
 
 # Function to get a single audit log entry by ID
-def get_audit_log(db: Session, audit_log_id: str) -> Optional[AuditLogModel]:
+# Convert to async function and use AsyncSession
+async def get_audit_log(db: AsyncSession, audit_log_id: str) -> Optional[AuditLogModel]:
     """Retrieve a single audit log entry by its ID."""
-    return db.query(AuditLogModel).filter(AuditLogModel.id == audit_log_id).first()
+    # Use async execute with select
+    result = await db.execute(select(AuditLogModel).filter(AuditLogModel.id == audit_log_id))
+    # Use .scalar_one_or_none() for a single result
+    return result.scalar_one_or_none()
 
 # Function to get audit log entries by entity
-def get_audit_logs_by_entity(
-    db: Session,
+# Convert to async function and use AsyncSession
+async def get_audit_logs_by_entity(
+    db: AsyncSession,
     entity_type: str,
     entity_id: str,
     skip: int = 0,
     limit: int = 100
 ) -> List[models.AuditLog]:
     # Eagerly load user if needed
-    return (
-        db.query(models.AuditLog)
+    # Use async execute with select, offset, and limit
+    result = await db.execute(
+        select(models.AuditLog)
         # .options(joinedload(models.AuditLog.user)) # Uncomment if user
         # relationship needs to be eagerly loaded
         .filter(
@@ -48,49 +61,57 @@ def get_audit_logs_by_entity(
         .order_by(models.AuditLog.timestamp.desc())
         .offset(skip)
         .limit(limit)
-        .all()
     )
+    # Use .scalars().all() for multiple results
+    return result.scalars().all()
 
 # Function to get audit log entries by user
-def get_audit_logs_by_user(
-    db: Session,
+# Convert to async function and use AsyncSession
+async def get_audit_logs_by_user(
+    db: AsyncSession,
     user_id: str,
     skip: int = 0,
     limit: int = 100
 ) -> List[models.AuditLog]:
     # Eagerly load user if needed
-    return (
-        db.query(models.AuditLog)
+    # Use async execute with select, offset, and limit
+    result = await db.execute(
+        select(models.AuditLog)
         # .options(joinedload(models.AuditLog.user)) # Uncomment if user
         # relationship needs to be eagerly loaded
         .filter(models.AuditLog.user_id == user_id)
         .order_by(models.AuditLog.timestamp.desc())
         .offset(skip)
         .limit(limit)
-        .all()
     )
+    # Use .scalars().all() for multiple results
+    return result.scalars().all()
 
 # Function to delete an audit log entry by ID
-def delete_audit_log(db: Session, log_id: int) -> bool: # Changed log_id type to int
-    db_log = db.query(models.AuditLog).filter(models.AuditLog.id == log_id).first()
+# Convert to async function and use AsyncSession
+async def delete_audit_log(db: AsyncSession, log_id: int) -> bool: # Changed log_id type to int
+    # Use async execute with select first to get the object if we want to return it
+    db_log = await get_audit_log(db, str(log_id)) # Await the async function call and convert log_id to string
     if db_log:
-        db.delete(db_log)
-        db.commit()
+        await db.delete(db_log) # Await the async delete operation
+        await db.commit() # Await commit
         return True
     return False
 
 # Add functions for getting log entries by date range, action type, etc.
 # as needed.
 
-def get_audit_logs(
-    db: Session,
+# Convert to async function and use AsyncSession
+async def get_audit_logs(
+    db: AsyncSession,
     skip: int = 0,
     limit: int = 100,
     user_id: Optional[str] = None,
     action: Optional[str] = None
 ) -> List[AuditLogModel]:
     """Retrieve multiple audit log entries with optional filtering and pagination."""
-    query = db.query(AuditLogModel)
+    # Use async select and execute
+    query = select(AuditLogModel)
 
     if user_id:
         query = query.filter(AuditLogModel.user_id == user_id)
@@ -98,4 +119,5 @@ def get_audit_logs(
     if action:
         query = query.filter(AuditLogModel.action.ilike(f"%{action}%")) # Case-insensitive search for action
 
-    return query.order_by(AuditLogModel.timestamp.desc()).offset(skip).limit(limit).all()
+    result = await db.execute(query.order_by(AuditLogModel.timestamp.desc()).offset(skip).limit(limit))
+    return result.scalars().all()

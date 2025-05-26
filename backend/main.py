@@ -44,6 +44,7 @@ logger = logging.getLogger(__name__)
 def include_app_routers(application: FastAPI):
     # Import routers inside the function
     from backend.routers import mcp, projects, agents, audit_logs, memory, rules, tasks, users
+    from backend.routers.comments import router as comments_router
 
     # Include routers
     application.include_router(agents.router, prefix="/api/v1", tags=["Agents"])
@@ -54,6 +55,7 @@ def include_app_routers(application: FastAPI):
     application.include_router(rules.router, prefix="/api/v1", tags=["Rules"])
     application.include_router(tasks.router, prefix="/api/v1", tags=["Tasks"])
     application.include_router(users.router, prefix="/api/v1", tags=["Users"])
+    application.include_router(comments_router, prefix="/api/v1", tags=["Comments"])
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -68,7 +70,7 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to initialize database: {e}")
         raise
     
-    # Include routers after database is initialized
+    # Include routers outside of lifespan
     include_app_routers(app)
     logger.info("Routers included")
 

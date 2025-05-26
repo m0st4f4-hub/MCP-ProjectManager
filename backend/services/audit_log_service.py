@@ -10,13 +10,14 @@ from backend import models
 from backend.schemas.audit_log import AuditLogCreate
 from backend.models.audit import AuditLog as AuditLogModel
 from backend.crud import audit_logs as audit_log_crud # Alias to avoid name collision
+from sqlalchemy.ext.asyncio import AsyncSession # Import AsyncSession
 
 
 class AuditLogService:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def create_log(
+    async def create_log(
         self,
         action: str,
         user_id: Optional[str] = None,
@@ -36,7 +37,10 @@ class AuditLogService:
             action=action,
             details=details
         )
-        return audit_log_crud.create_audit_log(db=self.db, audit_log=audit_log_create)
+        # Create the audit log entry using the CRUD function
+        # Pass the async session to the CRUD function
+        await audit_log_crud.create_audit_log(self.db, audit_log_create)
+        return audit_log_create
 
     def get_log(self, audit_log_id: str) -> Optional[AuditLogModel]:
         """Retrieve a single audit log entry by its ID."""

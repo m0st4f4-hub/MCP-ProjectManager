@@ -25,8 +25,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# REMOVED: Import the memory crud operations to break circular dependency
-# from . import memory as memory_crud
+# Import memory_crud
+from backend.crud import memory as memory_crud
+
 # Import async utility functions
 from .utils.file_association_utils import (
     file_entity_exists,

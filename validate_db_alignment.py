@@ -22,15 +22,16 @@ from backend.models import (
 )
 from backend.enums import TaskStatusEnum, UserRoleEnum
 
-def test_database_connection():
+async def test_database_connection():
     """Test the database connection."""
     db_gen = get_db()
-    db = next(db_gen)
-    
+    db = None
     try:
+        db = await anext(db_gen)
         # Test a simple query using text()
         from sqlalchemy import text
-        result = db.execute(text("SELECT 1"))
+        # The query itself needs to be awaited for AsyncSession
+        result = await db.execute(text("SELECT 1"))
         row = result.fetchone()
         assert row[0] == 1, "Database query failed"
         print("✅ Database connection successful")
@@ -40,17 +41,16 @@ def test_database_connection():
         traceback.print_exc()
         return False
     finally:
-        try:
-            db_gen.close()
-        except:
-            pass
+        if db_gen:
+            await db_gen.aclose()
 
-def test_model_creation():
+async def test_model_creation():
     """Test that all models can be initialized and saved."""
     db_gen = get_db()
-    db = next(db_gen)
-    
+    db = None
     try:
+        db = await anext(db_gen)
+        
         # Test timestamp for unique values
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         
@@ -128,35 +128,35 @@ def test_model_creation():
         db.flush()
         
         # Test queries
-        queried_user = db.query(User).filter(User.id == test_user.id).first()
+        # Queries need to be awaited for AsyncSession
+        queried_user = (await db.execute(select(User).filter(User.id == test_user.id))).scalar_one_or_none()
         assert queried_user is not None, "Failed to retrieve test user"
         
-        queried_project = db.query(Project).filter(Project.id == test_project.id).first()
+        queried_project = (await db.execute(select(Project).filter(Project.id == test_project.id))).scalar_one_or_none()
         assert queried_project is not None, "Failed to retrieve test project"
         
-        queried_task = db.query(Task).filter(
+        queried_task = (await db.execute(select(Task).filter(
             Task.project_id == test_project.id,
             Task.task_number == 1
-        ).first()
+        ))).scalar_one_or_none()
         assert queried_task is not None, "Failed to retrieve test task"
         
         print("✅ All models initialized and queried successfully")
         
         # Don't commit - roll back the test data
-        db.rollback()
+        await db.rollback()
         print("✅ Test data rolled back")
         
         return True
     except Exception as e:
         print(f"❌ Model creation failed: {e}")
         traceback.print_exc()
-        db.rollback()
+        if db:
+            await db.rollback()
         return False
     finally:
-        try:
-            db_gen.close()
-        except:
-            pass
+        if db_gen:
+            await db_gen.aclose()
 
 def run_tests():
     """Run all validation tests."""
@@ -164,18 +164,24 @@ def run_tests():
     print("Database-to-Model Alignment Validation")
     print("=" * 60)
     
-    connection_ok = test_database_connection()
-    if not connection_ok:
-        print("❌ Validation failed: Database connection test failed")
-        return False
+    # Need to run async test functions using asyncio
+    import asyncio
     
-    models_ok = test_model_creation()
-    if not models_ok:
-        print("❌ Validation failed: Model creation test failed")
-        return False
-    
-    print("✅ Validation successful! Database and models are aligned.")
-    return True
+    async def async_run_tests():
+        connection_ok = await test_database_connection()
+        if not connection_ok:
+            print("❌ Validation failed: Database connection test failed")
+            return False
+        
+        models_ok = await test_model_creation()
+        if not models_ok:
+            print("❌ Validation failed: Model creation test failed")
+            return False
+        
+        print("✅ Validation successful! Database and models are aligned.")
+        return True
+        
+    return asyncio.run(async_run_tests())
 
 if __name__ == "__main__":
     success = run_tests()

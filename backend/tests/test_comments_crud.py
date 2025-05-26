@@ -79,16 +79,16 @@ async def test_get_comments_by_task(async_db_session: AsyncSession):
     await crud_comments.create_comment(async_db_session, comment_data_2)
 
     # Get comments for task 1
-    task1_comments = await crud_comments.get_comments_by_task(async_db_session, task_project_id=task1.project_id, task_number=task1.task_number)
+    task1_comments = await crud_comments.get_comments_by_task(async_db_session, task_project_id=task1.project_id, task_task_number=task1.task_number)
     assert len(task1_comments) == 2
     assert all(c.task_project_id == task1.project_id and c.task_task_number == task1.task_number for c in task1_comments)
 
     # Get comments for task 2 (should be empty)
-    task2_comments = await crud_comments.get_comments_by_task(async_db_session, task_project_id=task2.project_id, task_number=task2.task_number)
+    task2_comments = await crud_comments.get_comments_by_task(async_db_session, task_project_id=task2.project_id, task_task_number=task2.task_number)
     assert len(task2_comments) == 0
 
     # Get comments for a non-existent task
-    non_existent_comments = await crud_comments.get_comments_by_task(async_db_session, task_project_id=str(uuid.uuid4()), task_number=9999)
+    non_existent_comments = await crud_comments.get_comments_by_task(async_db_session, task_project_id=str(uuid.uuid4()), task_task_number=9999)
     assert len(non_existent_comments) == 0
 
 

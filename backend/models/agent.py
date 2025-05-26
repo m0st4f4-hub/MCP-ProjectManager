@@ -13,7 +13,7 @@ class Agent(Base, BaseModel, ArchivedMixin):
     """Represents an agent that can be assigned to tasks."""
     __tablename__ = "agents"
 
-    id: Mapped[str] = mapped_column(String(32), primary_key=True, index=True)
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, index=True, default=generate_uuid)
     name: Mapped[str] = mapped_column(String, index=True, unique=True)
 
     tasks: Mapped[List["Task"]] = relationship(

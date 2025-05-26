@@ -105,7 +105,7 @@ async def test_get_files_for_project(async_db_session: AsyncSession):
         async_db_session, project_id=other_project.id, file_memory_entity_id=dummy_entity_3.id)
 
     # Get files for the main project (Await async CRUD call)
-    project_files = await crud_project_file_associations.get_files_for_project(
+    project_files = await crud_project_file_associations.get_project_files(
         async_db_session, project_id=project.id)
 
     assert len(project_files) == 2
@@ -114,13 +114,13 @@ async def test_get_files_for_project(async_db_session: AsyncSession):
     assert returned_file_ids == {dummy_entity_1.id, dummy_entity_2.id}
 
     # Get files for the other project (Await async CRUD call)
-    other_project_files = await crud_project_file_associations.get_files_for_project(
+    other_project_files = await crud_project_file_associations.get_project_files(
         async_db_session, project_id=other_project.id)
     assert len(other_project_files) == 1
     assert other_project_files[0].file_memory_entity_id == dummy_entity_3.id
 
     # Get files for a non-existent project (Await async CRUD call)
-    non_existent_files = await crud_project_file_associations.get_files_for_project(
+    non_existent_files = await crud_project_file_associations.get_project_files(
         async_db_session, project_id=str(uuid.uuid4()))
     assert len(non_existent_files) == 0
 
@@ -145,7 +145,7 @@ async def test_disassociate_file_from_project(async_db_session: AsyncSession):
         async_db_session, project_id=project.id, file_memory_entity_id=file_memory_entity_id_to_keep)
 
     # Ensure they are associated initially (Await async CRUD call)
-    initial_files = await crud_project_file_associations.get_files_for_project(
+    initial_files = await crud_project_file_associations.get_project_files(
         async_db_session, project_id=project.id)
     assert len(initial_files) == 2
     assert {assoc.file_memory_entity_id for assoc in initial_files} == {file_memory_entity_id_to_disassociate, file_memory_entity_id_to_keep}
@@ -156,7 +156,7 @@ async def test_disassociate_file_from_project(async_db_session: AsyncSession):
     assert success is True
 
     # Check remaining files (Await async CRUD call)
-    remaining_files = await crud_project_file_associations.get_files_for_project(
+    remaining_files = await crud_project_file_associations.get_project_files(
         async_db_session, project_id=project.id)
     assert len(remaining_files) == 1
     assert remaining_files[0].file_memory_entity_id == file_memory_entity_id_to_keep
@@ -172,7 +172,7 @@ async def test_disassociate_file_from_project(async_db_session: AsyncSession):
     assert success_second is True
 
     # Check remaining files (should be none) (Await async CRUD call)
-    final_files = await crud_project_file_associations.get_files_for_project(
+    final_files = await crud_project_file_associations.get_project_files(
         async_db_session, project_id=project.id)
     assert len(final_files) == 0
 

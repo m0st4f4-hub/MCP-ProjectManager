@@ -100,7 +100,7 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
 
 @router.post("/", response_model=DataResponse[Project], summary="Create Project", operation_id="create_project",
              dependencies=[Depends(RoleChecker([UserRoleEnum.ADMIN]))]) # Protect endpoint
-def create_project(
+async def create_project(
     project: ProjectCreate,
     project_service: ProjectService = Depends(get_project_service),
     current_user: UserModel = Depends(get_current_active_user), # Inject current user
@@ -115,18 +115,27 @@ def create_project(
     - **template_id**: Optional ID of a project template to use.
     """
     try:
-        db_project = project_service.create_project(project=project, created_by_user_id=current_user.id)
+        db_project = await project_service.create_project(project=project, created_by_user_id=current_user.id)
+        
+        # Convert the SQLAlchemy model to Pydantic schema immediately
+        # This ensures all attributes are loaded while the object is still attached to the session
+        project_data = Project.model_validate(db_project)
+        
+        # Extract the needed data for audit log
+        project_id = project_data.id
+        project_name = project_data.name
         
         # Log project creation
-        audit_log_service.create_log(
+        print(f"DEBUG: audit_log_service object in router: {audit_log_service}") # Debug print
+        await audit_log_service.create_log(
             action="create_project",
             user_id=current_user.id,
-            details={"project_id": db_project.id, "project_name": db_project.name}
+            details={"project_id": project_id, "project_name": project_name}
         )
         
-        # Return standardized response
+        # Return standardized response with the Pydantic model
         return DataResponse[Project](
-            data=Project.model_validate(db_project),
+            data=project_data,
             message="Project created successfully"
         )
     except DuplicateEntityError as e:
@@ -141,7 +150,7 @@ def create_project(
 
 
 @router.get("/", response_model=ListResponse[Project], summary="List Projects", operation_id="list_projects")
-def get_project_list(
+async def get_project_list(
     pagination: PaginationParams = Depends(),
     search: Optional[str] = None,
     status: Optional[str] = None,
@@ -151,14 +160,18 @@ def get_project_list(
 ):
     """Retrieves a list of projects."""
     try:
-        # Get total count for pagination
-        # Assuming you have a method to count projects with filters
-        total = len(project_service.get_projects(
-            skip=0, search=search, status=status, is_archived=is_archived))
+        # Get all projects matching filters for total count
+        all_matching_projects = await project_service.get_projects(
+            skip=0, limit=None, # Fetch all for count
+            search=search, status=status, is_archived=is_archived
+        )
+        total = len(all_matching_projects)
         
         # Get paginated projects
-        projects = project_service.get_projects(
-            skip=pagination.offset, search=search, status=status, is_archived=is_archived)
+        projects = await project_service.get_projects(
+            skip=pagination.offset, limit=pagination.page_size, # Use page_size for actual data
+            search=search, status=status, is_archived=is_archived
+        )
 
         # Convert SQLAlchemy models to Pydantic models
         pydantic_projects = [Project.model_validate(
@@ -184,7 +197,7 @@ def get_project_list(
 
 
 @router.get("/{project_id}", response_model=DataResponse[Project], summary="Get Project by ID", operation_id="get_project_by_id")
-def get_project_by_id_endpoint(
+async def get_project_by_id_endpoint(
     project_id: str,
     is_archived: Optional[bool] = Query(
         False, description="Set to true to fetch if archived, null/None to fetch regardless of status."),
@@ -192,7 +205,7 @@ def get_project_by_id_endpoint(
 ):
     """Retrieves a specific project by its ID."""
     try:
-        db_project = project_service.get_project(
+        db_project = await project_service.get_project(
             project_id=project_id, is_archived=is_archived)
         
         # Return standardized response
@@ -252,41 +265,57 @@ def unarchive_project_endpoint(
             status_code=500, detail=f"Failed to unarchive project: {str(e)}")
 
 
-@router.put("/{project_id}", response_model=Project, summary="Update Project", operation_id="update_project_by_id")
-def update_project(
+@router.put("/{project_id}", response_model=DataResponse[Project], summary="Update Project", operation_id="update_project_by_id")
+async def update_project(
     project_id: str,
     project_update: ProjectUpdate,
-    project_service: ProjectService = Depends(get_project_service)
+    project_service: ProjectService = Depends(get_project_service),
+    current_user: UserModel = Depends(get_current_active_user),
+    audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     try:
-        db_project = project_service.update_project(
+        db_project = await project_service.update_project(
             project_id=project_id, project_update=project_update)
-        if db_project is None:
-            raise HTTPException(status_code=404, detail="Project not found")
-        return db_project
-    except ValueError as e:
+        
+        # Log project update
+        await audit_log_service.create_log(
+            action="update_project",
+            user_id=current_user.id,
+            details={"project_id": project_id, "changes": project_update.model_dump(exclude_unset=True)}
+        )
+        
+        # Return standardized response
+        return DataResponse[Project](
+            data=Project.model_validate(db_project),
+            message="Project updated successfully"
+        )
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except DuplicateEntityError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    except ValidationError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except HTTPException as http_exc:
-        raise http_exc
     except Exception as e:
-        print(f"Unexpected error in PUT /projects/{project_id}: {e}")
-        if isinstance(e.__cause__, HTTPException) or isinstance(e.args[0], HTTPException):
-            http_exc = e.__cause__ if isinstance(
-                e.__cause__, HTTPException) else e.args[0]
-            raise http_exc
+        import logging
+        logging.error(f"Unexpected error in PUT /projects/{project_id}: {e}")
         raise HTTPException(
-            status_code=500, detail=f"Internal server error: {e}")
+            status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.delete("/{project_id}", response_model=Project, summary="Delete Project", operation_id="delete_project_by_id")
-def delete_project(
+@router.delete("/{project_id}", response_model=DataResponse[Project], summary="Delete Project", operation_id="delete_project_by_id")
+async def delete_project(
     project_id: str,
     project_service: ProjectService = Depends(get_project_service)
 ):
-    success = project_service.delete_project(project_id=project_id)
-    if not success:
+    db_project = await project_service.delete_project(project_id=project_id)
+    if db_project is None:
         raise HTTPException(status_code=404, detail="Project not found")
-    return JSONResponse(content={"message": "Project deleted successfully"}, status_code=200)
+    
+    # Return standardized response
+    return DataResponse[Project](
+        data=Project.model_validate(db_project), # Return the deleted project data
+        message="Project deleted successfully"
+    )
 
 # --- Placeholder for future planning endpoint (if needed outside MCP) ---
 # Moved planning endpoint to projects router as it's project-related

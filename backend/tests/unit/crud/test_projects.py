@@ -81,7 +81,8 @@ async def test_get_projects(async_db_session: AsyncSession, test_project: Projec
     assert another_project.name in project_names
 
 
-def test_update_project(db_session: Session, test_project: Project):
+@pytest.mark.asyncio
+async def test_update_project(async_db_session: AsyncSession, test_project: Project):
     """Test updating a project."""
     # Create an update
     project_update = ProjectUpdate(
@@ -90,7 +91,7 @@ def test_update_project(db_session: Session, test_project: Project):
     )
     
     # Update the project
-    updated_project = update_project(db_session, test_project.id, project_update)
+    updated_project = await update_project(async_db_session, test_project.id, project_update)
     
     # Verify the project was updated correctly
     assert updated_project is not None
@@ -98,16 +99,21 @@ def test_update_project(db_session: Session, test_project: Project):
     assert updated_project.name == project_update.name
     assert updated_project.description == project_update.description
 
+    retrieved_project = await get_project(async_db_session, test_project.id)
+    assert retrieved_project is not None
+    assert retrieved_project.name == project_update.name
 
-def test_delete_project(db_session: Session, test_project: Project):
+
+@pytest.mark.asyncio
+async def test_delete_project(async_db_session: AsyncSession, test_project: Project):
     """Test deleting a project."""
     # Delete the project
-    deleted_project = delete_project(db_session, test_project.id)
+    deleted_project = await delete_project(async_db_session, test_project.id)
     
     # Verify the project was returned from delete operation
     assert deleted_project is not None
     assert deleted_project.id == test_project.id
     
     # Verify the project is no longer in the database
-    project = get_project(db_session, test_project.id)
+    project = await get_project(async_db_session, test_project.id)
     assert project is None

@@ -7,15 +7,16 @@ import pytest
 # from sqlalchemy import create_engine # Remove synchronous engine import
 # from sqlalchemy.orm import sessionmaker, Session # Remove synchronous session imports
 from sqlalchemy.pool import StaticPool
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 import pytest_asyncio
 from fastapi import FastAPI, Depends
 from jose import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from backend.database import get_db
 from backend.auth import get_current_active_user
-from backend.models import User as UserModel
 from backend.schemas.user import User
+from backend.models.user import User as UserModel
+from unittest.mock import MagicMock, patch, AsyncMock
 
 # Add the project root to the path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -30,8 +31,11 @@ import backend.models
 from backend.models import User, Project, Agent, Task, Comment
 from backend.models.project_template import ProjectTemplate
 
+# Import specific model for type hinting BEFORE its usage
+from backend.models.user import User as UserModel # Moved import here
+
 # REMOVED: Import routers at the module level to avoid circular dependency during conftest loading
-# from backend.routers import mcp, projects, agents, audit_logs, memory, rules, tasks, users
+# from backend.routers import mcp, projects, agents, audit_logs, memory, rules, rules, tasks, users
 
 # Import async database components
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession # Import async components
@@ -39,9 +43,18 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession # Import as
 # Import sessionmaker
 from sqlalchemy.orm import sessionmaker # Import sessionmaker
 
+# Import greenlet_spawn for manual greenlet context management
+from sqlalchemy.util import greenlet_spawn # Import greenlet_spawn
+
 # Import project CRUD for cleanup - Keep this import as it's directly used in cleanup logic
 from backend.crud import projects as crud_projects # Import project CRUD
 import logging # Import logging for debug prints
+
+import asyncio # Import asyncio
+import uuid # Import uuid
+
+# REMOVED: Import models module explicitly (already done above)
+# REMOVED: from backend import models
 
 logger = logging.getLogger(__name__)
 
@@ -53,63 +66,39 @@ os.environ["SECRET_KEY"] = "dummysecretkeyforenv"
 os.environ["ALGORITHM"] = "HS256"
 os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "30"
 
-# Remove synchronous engine fixture
-# @pytest.fixture(scope="session")
-# def engine():
-#     """Create a SQLAlchemy engine for testing."""
-#     engine = create_engine(
-#         TEST_SQLALCHEMY_DATABASE_URL,
-#         connect_args={"check_same_thread": False},
-#         poolclass=StaticPool,  # Use StaticPool for in-memory testing
-#     )
-#     yield engine
-#     Base.metadata.drop_all(bind=engine, checkfirst=True)
-
-# Remove synchronous db_session fixture
-# @pytest.fixture
-# def db_session(engine):
-#     """Create a SQLAlchemy session for testing.
-# 
-#     Uses a transaction which is rolled back after each test.
-#     """
-#     # connect to the database
-#     connection = engine.connect()
-#
-#     # begin a non-ORM transaction
-#     transaction = connection.begin()
-#
-#     # create a Session bound to the connection.
-#     TestingSessionLocal = sessionmaker(bind=connection)
-#     session = TestingSessionLocal()
-#
-#     # Drop and create all tables for a clean state before each test
-#     Base.metadata.drop_all(bind=engine, checkfirst=True)
-#     Base.metadata.create_all(bind=engine, checkfirst=True)
-#
-#     try:
-#         yield session
-#     finally:
-#         # rollback the transaction
-#         transaction.rollback()
-#         connection.close()
-
-
+# Define a session-scoped async engine fixture
 @pytest_asyncio.fixture(scope="function")
-async def async_db_session():
-    """Create an asynchronous SQLAlchemy session for testing."""
-    # from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession # Import async components - already imported above
-    
-    async_engine = create_async_engine(
+async def async_engine():
+    """Create a session-scoped asynchronous SQLAlchemy engine for testing."""
+    engine = create_async_engine(
         TEST_SQLALCHEMY_DATABASE_URL,
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
-    
-    # Create tables before the session starts
+    # No table creation here, it will be handled in async_db_session fixture
+    yield engine
+    # Dispose the engine at the end of the session
+    await engine.dispose()
+
+# Add a session-scoped event_loop fixture
+@pytest_asyncio.fixture(scope="session")
+def event_loop():
+    """Create a session-scoped event loop for async tests."""
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
+
+# Modify async_db_session fixture to use the session-scoped engine
+@pytest_asyncio.fixture(scope="function")
+async def async_db_session(async_engine): # Use the session-scoped engine
+    """Create a function-scoped asynchronous SQLAlchemy session for testing."""
+    # Drop and create tables before each test function
     async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    # Create an async session bound to the connection
+    # Create an async session bound to the engine
     AsyncTestingSessionLocal = sessionmaker(
         bind=async_engine, class_=AsyncSession, expire_on_commit=False
     )
@@ -119,16 +108,14 @@ async def async_db_session():
         try:
             yield session
         finally:
-            # Teardown: drop tables and dispose engine
-            # Ensure session is closed before dropping tables/disposing engine
+            # No drop_all here, handled by the next function scope or session teardown
             await session.close()
-            async with async_engine.begin() as conn:
-                 await conn.run_sync(Base.metadata.drop_all)
-            await async_engine.dispose() # Dispose the engine to release resources
+            # Engine disposal handled by async_engine fixture teardown
 
 
+# Modify async_client fixture to use the session-scoped engine
 @pytest_asyncio.fixture(scope="function")
-async def async_client(async_db_session: AsyncSession): # Add type hint
+async def async_client(async_engine): # Use the session-scoped engine
     """
     Provides an asynchronous test client for the FastAPI application.
     
@@ -140,7 +127,15 @@ async def async_client(async_db_session: AsyncSession): # Add type hint
 
     async def override_get_db():
         logger.debug("[ASYNC CLIENT DEBUG] Overriding get_db dependency.")
-        yield async_db_session
+        # Use the session-scoped engine to create a new session for each request
+        AsyncTestingSessionLocal = sessionmaker(
+            bind=async_engine, class_=AsyncSession, expire_on_commit=False
+        )
+        
+        async with AsyncTestingSessionLocal() as session:
+            yield session
+            
+        # Engine disposal handled by async_engine fixture teardown
 
     test_app.dependency_overrides[get_db] = override_get_db
 
@@ -224,366 +219,242 @@ async def async_client(async_db_session: AsyncSession): # Add type hint
         return current_user
 
     # Generate a real JWT for username 'testuser'
-    from backend.config import SECRET_KEY, ALGORITHM
-    ACCESS_TOKEN_EXPIRE_MINUTES = 30
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode = {"sub": "testuser", "exp": expire}
-    token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    headers = {"Authorization": f"Bearer {token}"}
+    # Need to override get_user_by_username dependency for this to work without a real DB query
+    from backend.crud.users import get_user_by_username as get_user_by_username_crud
+    from backend.auth import create_access_token
+    from backend.auth import ALGORITHM, SECRET_KEY
+    from backend.auth import ACCESS_TOKEN_EXPIRE_MINUTES
+    
+    # Create a mock user model for token generation
+    mock_user_model = MagicMock(spec=UserModel)
+    mock_user_model.username = "testuser"
+    mock_user_model.id = "test-user-id" # Ensure ID is set for token claims
+    mock_user_model.email = "test@example.com"
+    mock_user_model.full_name = "Test User"
+    mock_user_model.disabled = False
+    # Simulate user roles if needed for auth checks
+    mock_user_model.user_roles = [] # Add mock roles if necessary
 
-    # Cleanup: Delete the "API Test Project" before each test
-    try:
-        project_name_to_clean = "API Test Project"
-        logger.info(f"[ASYNC CLIENT DEBUG] Attempting to clean up project: '{project_name_to_clean}'...")
-        project_to_delete = await crud_projects.get_project_by_name(async_db_session, name=project_name_to_clean, is_archived=None)
-        if project_to_delete:
-            logger.info(f"[ASYNC CLIENT DEBUG] Found project to delete: {project_to_delete.id}")
-            deleted_project = await crud_projects.delete_project(async_db_session, project_to_delete.id)
-            if deleted_project:
-                 logger.info(f"[ASYNC CLIENT DEBUG] Successfully deleted project: {deleted_project.name}")
-            else:
-                 logger.warning(f"[ASYNC CLIENT DEBUG] delete_project returned None for project ID: {project_to_delete.id}")
-        else:
-            logger.info(f"[ASYNC CLIENT DEBUG] Project '{project_name_to_clean}' not found for cleanup.")
-    except Exception as e:
-        logger.error(f"[ASYNC CLIENT DEBUG] Error during project cleanup: {e}", exc_info=True)
-        
-    async with AsyncClient(app=test_app, base_url="http://testserver", headers=headers) as client:
-        yield client
+    # Override get_user_by_username CRUD function to return the mock user
+    # This is needed by the get_current_user_from_token dependency in backend.auth
+    # The path to patch is where it's *used*, which is in backend.auth
+    # Need to find the exact path to patch get_user_by_username_crud
+    # It's likely imported and used directly in the get_current_user_from_token dependency function
+
+    # Temporarily override get_user_by_username in backend.auth
+    # This patch is specifically for the token generation part within this fixture.
+    # Other tests might have their own patches for CRUD operations.
+    with patch('backend.auth.get_user_by_username', new_callable=AsyncMock) as mock_get_user_crud:
+         mock_get_user_crud.return_value = mock_user_model
+
+         # Generate a token using the patched get_user_by_username
+         access_token_expires = timedelta(minutes=float(ACCESS_TOKEN_EXPIRE_MINUTES))
+         access_token = create_access_token(
+             data={"sub": mock_user_model.username, "user_id": str(mock_user_model.id)}, # Include user_id in token
+             expires_delta=access_token_expires
+         )
+
+    # Now, override get_current_active_user dependency in the test_app itself
+    # This override will be active for all requests made through this async_client fixture.
+    async def override_get_current_active_user():
+         # In a real scenario, this would use the token to get the user.
+         # Here, we simply return a mock user that represents the authenticated user.
+         # We can use the same mock_user_model or a new mock if needed.
+         return mock_user_model # Return the mock user model representing the authenticated user
+
+    # Apply the override to the test_app
+    test_app.dependency_overrides[get_current_active_user] = override_get_current_active_user
+
+    # Add the test token as a global header for this client
+    # This ensures the test client sends the token with every request
+    async with AsyncClient(transport=ASGITransport(app=test_app), base_url="http://testserver", headers={'Authorization': f'Bearer {access_token}'}) as client:
+         yield client
 
 
+# Ensure the test_user fixture uses the async_db_session
 @pytest_asyncio.fixture(scope="function")
 async def test_user(async_db_session: AsyncSession): # Add type hint
-    """Create a test user with ADMIN role in the async db session."""
-    logger.info("[TEST USER DEBUG] Creating test user...") # Debug print
-    from backend.models.user import UserRole
-    from backend.enums import UserRoleEnum
-    user = User(
-        username="testuser",
-        hashed_password="hashed_password_for_test",
-        email="test@example.com",
-        full_name="Test User",
-        disabled=False
-    )
-    async_db_session.add(user)
-    await async_db_session.commit()
-    await async_db_session.refresh(user)
-    logger.info(f"[TEST USER DEBUG] Created user with ID: {user.id}") # Debug print
-    # Assign ADMIN role
-    admin_role = UserRole(user_id=user.id, role_name=UserRoleEnum.ADMIN)
-    async_db_session.add(admin_role)
-    await async_db_session.commit()
-    # No need to refresh user again here as we only modified user_roles
-    logger.info(f"[TEST USER DEBUG] Assigned ADMIN role to user {user.username}") # Debug print
-    return user
+    """Creates a test user for the duration of a test function."""
+    # Import create_user here to avoid potential circular imports during collection
+    from backend.crud.users import create_user
+    from backend.schemas.user import UserCreate
 
-# Convert synchronous helper fixtures to async
+    # Define user data
+    user_data = UserCreate(
+        username="testuser",
+        password="testpassword",
+        email="test@example.com" # Add email address
+    )
+
+    # Create the user using the CRUD function
+    db_user = await create_user(db=async_db_session, user=user_data)
+    yield db_user
+    # No explicit deletion needed; the database is dropped and recreated for each function-scoped session
+
+
+# Update existing fixtures to use async and async_db_session
 @pytest_asyncio.fixture
 async def test_project(async_db_session: AsyncSession, test_user: UserModel): # Make async, use async_db_session
-    """Create a test project."""
-    logger.info("[TEST PROJECT DEBUG] Creating test project...") # Debug print
-    project = Project(
-        name="Test Project",
-        description="A test project for unit tests",
-        task_count=0,
-        is_archived=False,
-        created_by_id=test_user.id # Assign created_by_id
-    )
-    async_db_session.add(project)
-    await async_db_session.commit()
-    await async_db_session.refresh(project)
-    logger.info(f"[TEST PROJECT DEBUG] Created project with ID: {project.id}") # Debug print
-    return project
+    """Fixture to create and return a test project."""
+    from backend.models.project import Project as ProjectModel
+    from backend.crud.projects import create_project # Import CRUD function
+    from backend.schemas.project import ProjectCreate # Import schema
+
+    project_data = ProjectCreate(name="Test Project", description="A test project")
+    
+    # Create the project using the async CRUD function
+    db_project = await create_project(db=async_db_session, project=project_data)
+    
+    # Return the created project model instance
+    return db_project
+
 
 @pytest_asyncio.fixture
 async def test_agent(async_db_session: AsyncSession): # Make async, use async_db_session
-    """Create a test agent."""
-    logger.info("[TEST AGENT DEBUG] Creating test agent...") # Debug print
-    agent = Agent(
-        name="Test Agent",
-        is_archived=False
-    )
-    async_db_session.add(agent)
-    await async_db_session.commit()
-    await async_db_session.refresh(agent)
-    logger.info(f"[TEST AGENT DEBUG] Created agent with ID: {agent.id}") # Debug print
-    return agent
+    """Fixture to create and return a test agent."""
+    from backend.models.agent import Agent as AgentModel
+    from backend.crud.agents import create_agent # Import CRUD function
+    from backend.schemas.agent import AgentCreate # Import schema
+
+    agent_data = AgentCreate(name="Test Agent", description="A test agent")
+    
+    db_agent = await create_agent(db=async_db_session, agent=agent_data)
+
+    return db_agent
+
 
 @pytest_asyncio.fixture
 async def test_task(async_db_session: AsyncSession, test_project: Project): # Make async, use async_db_session
-    """Create a test task."""
-    logger.info("[TEST TASK DEBUG] Creating test task...") # Debug print
-    from backend.enums import TaskStatusEnum
-    
-    task = Task(
+    """Fixture to create and return a test task."""
+    from backend.models.task import Task as TaskModel
+    from backend.crud.tasks import create_task # Import CRUD function
+    from backend.schemas.task import TaskCreate # Import schema
+
+    task_data = TaskCreate(
         project_id=test_project.id,
         task_number=1,
         title="Test Task",
-        description="A test task for unit tests",
-        status=TaskStatusEnum.TO_DO,
-        is_archived=False
+        description="A test task"
     )
-    async_db_session.add(task)
-    await async_db_session.commit()
-    await async_db_session.refresh(task)
-    logger.info(f"[TEST TASK DEBUG] Created task with ID: {task.id} and number {task.task_number}") # Debug print
-    return task
+
+    db_task = await create_task(db=async_db_session, project_id=test_project.id, task=task_data)
+    
+    return db_task
+
 
 @pytest_asyncio.fixture
 async def test_comment(async_db_session: AsyncSession, test_task: Task, test_user: UserModel): # Make async, use async_db_session
-    """Create a test comment."""
-    logger.info("[TEST COMMENT DEBUG] Creating test comment...") # Debug print
-    comment = Comment(
-        task_project_id=test_task.project_id,
-        task_task_number=test_task.task_number,
-        user_id=test_user.id, # Assign user_id
-        content="This is a test comment."
+    """Fixture to create and return a test comment."""
+    from backend.models.comment import Comment as CommentModel
+    from backend.crud.comments import create_comment # Import CRUD function
+    from backend.schemas.comment import CommentCreate # Import schema
+
+    comment_data = CommentCreate(
+        task_id=test_task.id,
+        user_id=test_user.id,
+        content="Test comment content"
     )
-    async_db_session.add(comment)
-    await async_db_session.commit()
-    await async_db_session.refresh(comment)
-    logger.info(f"[TEST COMMENT DEBUG] Created comment with ID: {comment.id}") # Debug print
-    return comment
 
-# Convert synchronous helper functions to async
-async def create_test_project(db: AsyncSession, name: str, description: str, created_by_id: str): # Make async
-    project = Project(
-        name=name,
-        description=description,
-        task_count=0,
-        is_archived=False,
-        created_by_id=created_by_id
-    )
-    db.add(project)
-    await db.commit() # Use await db.commit()
-    await db.refresh(project) # Use await db.refresh()
-    return project
+    db_comment = await create_comment(db=async_db_session, comment=comment_data)
 
-async def create_test_task(db: AsyncSession, project_id: str, task_number: int, title: str, description: str): # Make async
-     from backend.enums import TaskStatusEnum
+    return db_comment
 
-     task = Task(
-        project_id=project_id,
-        task_number=task_number,
-        title=title,
-        description=description,
-        status=TaskStatusEnum.TO_DO,
-        is_archived=False
-    )
-     db.add(task)
-     await db.commit() # Use await db.commit()
-     await db.refresh(task) # Use await db.refresh()
-     return task
 
-# Remove or convert synchronous CRUD test files
-# Convert test_project_file_associations_crud.py to async
 @pytest_asyncio.fixture
 async def test_project_file_association(async_db_session: AsyncSession, test_project: Project): # Make async
-    logger.info("[TEST PROJECT FILE ASSOC DEBUG] Creating test project file association...")
-    from backend.models import ProjectFileAssociation
-    assoc = ProjectFileAssociation(
+    """Fixture to create a project file association."""
+    from backend.models.project_file_association import ProjectFileAssociation as ProjectFileAssociationModel
+    from backend.crud.project_file_associations import create_project_file_association # Import CRUD
+
+    # Assuming file_memory_entity_id can be a dummy integer for this fixture
+    association = await create_project_file_association(
+        db=async_db_session,
         project_id=test_project.id,
-        file_path="/test/path/to/file.txt",
-        description="Test file association",
+        file_memory_entity_id=999 # Dummy ID
     )
-    async_db_session.add(assoc)
-    await async_db_session.commit()
-    await async_db_session.refresh(assoc)
-    logger.info(f"[TEST PROJECT FILE ASSOC DEBUG] Created association with ID: {assoc.id}")
-    return assoc
+    return association
 
 
-# Convert test_task_file_associations_crud.py to async
 @pytest_asyncio.fixture
 async def test_task_file_association(async_db_session: AsyncSession, test_task: Task): # Make async
-    logger.info("[TEST TASK FILE ASSOC DEBUG] Creating test task file association...")
-    from backend.models import TaskFileAssociation
-    assoc = TaskFileAssociation(
-        task_project_id=test_task.project_id,
-        task_task_number=test_task.task_number,
-        file_path="/test/path/to/task_file.txt",
-        description="Test task file association",
+    """Fixture to create a task file association."""
+    from backend.models.task_file_association import TaskFileAssociation as TaskFileAssociationModel
+    from backend.crud.task_file_associations import create_task_file_association # Import CRUD
+
+    # Assuming file_memory_entity_id can be a dummy integer for this fixture
+    association = await create_task_file_association(
+        db=async_db_session,
+        task_id=test_task.id,
+        file_memory_entity_id=888 # Dummy ID
     )
-    async_db_session.add(assoc)
-    await async_db_session.commit()
-    await async_db_session.refresh(assoc)
-    logger.info(f"[TEST TASK FILE ASSOC DEBUG] Created association with ID: {assoc.id}")
-    return assoc
+    return association
 
 
-# Convert test_task_dependencies_crud.py to async
 @pytest_asyncio.fixture
 async def test_task_dependency(async_db_session: AsyncSession, test_task: Task): # Make async
-    logger.info("[TEST TASK DEPENDENCY DEBUG] Creating test task dependency...")
-    from backend.models import TaskDependency
-    # Need two tasks to create a dependency
-    # Assuming test_task is task 1
-    # Create task 2
-    from backend.crud.tasks import create_task # Import async create_task
-    from backend.schemas.task import TaskCreate # Import schema
-    task2 = await create_task(
+    """Fixture to create a task dependency."""
+    from backend.models.task_dependency import TaskDependency as TaskDependencyModel
+    from backend.crud.task_dependencies import create_task_dependency # Import CRUD
+    
+    # Assuming a dependency on the same task or another dummy task ID
+    dependency = await create_task_dependency(
         db=async_db_session,
-        task=TaskCreate(
-            project_id=test_task.project_id,
-            title="Task 2 for Dependency",
-            description="...",
-            status="To Do" # Use a valid status
-        )
+        dependent_task_id=test_task.id,
+        dependency_task_id=test_task.id # Dependency on itself for simplicity, or create another task fixture
     )
-    # db.commit and refresh are done inside create_task
-
-    dependency = TaskDependency(
-        project_id=test_task.project_id,
-        dependent_task_number=test_task.task_number,
-        dependency_task_number=task2.task_number,
-    )
-    async_db_session.add(dependency)
-    await async_db_session.commit()
-    await async_db_session.refresh(dependency)
-    logger.info(f"[TEST TASK DEPENDENCY DEBUG] Created dependency with ID: {dependency.id}")
     return dependency
 
 
-# Convert test_audit_logs_crud.py to async
 @pytest_asyncio.fixture
 async def test_audit_log_entry(async_db_session: AsyncSession, test_user: UserModel): # Make async
-    logger.info("[TEST AUDIT LOG DEBUG] Creating test audit log entry...")
-    from backend.models import AuditLog
-    from backend.enums import AuditLogAction
-    entry = AuditLog(
-        action=AuditLogAction.USER_LOGIN,
+    """Fixture to create an audit log entry."""
+    from backend.models.audit import AuditLog as AuditLogModel
+    from backend.crud.audit_logs import create_log # Import CRUD
+    
+    log_entry = await create_log(
+        db=async_db_session,
+        action="test_action",
         user_id=test_user.id,
-        details={"ip": "127.0.0.1"},
-        entity_type="user", # Assuming these are required
-        entity_id=str(test_user.id), # Assuming these are required
+        details={"key": "value"}
     )
-    async_db_session.add(entry)
-    await async_db_session.commit()
-    await async_db_session.refresh(entry)
-    logger.info(f"[TEST AUDIT LOG DEBUG] Created entry with ID: {entry.id}")
-    return entry
+    return log_entry
 
 
-# Convert test_comments_crud.py to async
 @pytest_asyncio.fixture
 async def test_comment_entry(async_db_session: AsyncSession, test_task: Task, test_user: UserModel): # Make async
-    logger.info("[TEST COMMENT DEBUG] Creating test comment entry...")
-    from backend.models import Comment
-    entry = Comment(
-        task_project_id=test_task.project_id,
-        task_task_number=test_task.task_number,
+    """Fixture to create a comment entry."""
+    from backend.models.comment import Comment as CommentModel
+    from backend.crud.comments import create_comment # Import CRUD
+
+    comment_data = CommentCreate(
+        task_id=test_task.id,
         user_id=test_user.id,
-        content="Test comment content."
+        content="Test comment content"
     )
-    async_db_session.add(entry)
-    await async_db_session.commit()
-    await async_db_session.refresh(entry)
-    logger.info(f"[TEST COMMENT DEBUG] Created comment entry with ID: {entry.id}")
-    return entry
+
+    db_comment = await create_comment(db=async_db_session, comment=comment_data)
+    return db_comment
 
 
-# Convert test_agents_crud.py to async
 @pytest_asyncio.fixture
 async def test_agent_crud(async_db_session: AsyncSession): # Make async
-     logger.info("[TEST AGENT CRUD DEBUG] Creating test agent for CRUD...")
-     from backend.models import Agent
-     agent = Agent(
-         name="CRUD Test Agent",
-         is_archived=False
-     )
-     async_db_session.add(agent)
-     await async_db_session.commit()
-     await async_db_session.refresh(agent)
-     logger.info(f"[TEST AGENT CRUD DEBUG] Created agent with ID: {agent.id}")
-     return agent
+    """Fixture providing agent CRUD instance with async session."""
+    from backend.crud.agents import AgentCRUD # Import CRUD class
+    return AgentCRUD(async_db_session)
 
-# No need to convert test_diagnostic.py or test_task_dependency_validation.py here,
-# they will be addressed separately if needed. This file is for conftest fixtures.
+from backend.models import (
+    User,
+    Project,
+    Agent,
+    Task,
+    Comment,
+    ProjectTemplate,
+    UserRole,
+    ProjectMember,
+    ProjectFileAssociation,
+    TaskDependency,
+    AuditLog,
+    Comment,
+    TaskFileAssociation # Added missing import for TaskFileAssociation
+)
 
-# @pytest_asyncio.fixture # Removed synchronous fixture
-# def fastapi_app(db_session: Session): # Removed synchronous dependency
-#     """Create a FastAPI app instance for testing with a synchronous session."""
-#     # This synchronous fixture is being replaced by async_client
-#     pass
-
-
-# async def create_test_user(db: AsyncSession): # Make async
-#     """Helper function to create a test user."""
-#     logger.info("[HELPER DEBUG] Creating test user...") # Debug print
-#     from backend.models.user import UserRole
-#     from backend.enums import UserRoleEnum
-#     user = User(
-#         username="testuser_helper",
-#         hashed_password="hashed_password_for_test_helper",
-#         email="test_helper@example.com",
-#         full_name="Test User Helper",
-#         disabled=False
-#     )
-#     db.add(user)
-#     await db.commit()
-#     await db.refresh(user)
-#     logger.info(f"[HELPER DEBUG] Created user with ID: {user.id}") # Debug print
-#     # Assign ADMIN role
-#     admin_role = UserRole(user_id=user.id, role_name=UserRoleEnum.ADMIN)
-#     db.add(admin_role)
-#     await db.commit()
-#     logger.info(f"[HELPER DEBUG] Assigned ADMIN role to user {user.username}") # Debug print
-#     return user
-
-
-# async def create_test_project(db: AsyncSession, name: str, description: str, created_by_id: str): # Make async
-#     """Helper function to create a test project."""
-#     logger.info("[HELPER DEBUG] Creating test project...") # Debug print
-#     project = Project(
-#         name=name,
-#         description=description,
-#         task_count=0,
-#         is_archived=False,
-#         created_by_id=created_by_id
-#     )
-#     db.add(project)
-#     await db.commit()
-#     await db.refresh(project)
-#     logger.info(f"[HELPER DEBUG] Created project with ID: {project.id}") # Debug print
-#     return project
-
-
-# async def create_test_agent(db: AsyncSession, name: str): # Make async
-#      logger.info("[HELPER DEBUG] Creating test agent...") # Debug print
-#      agent = Agent(
-#          name=name,
-#          is_archived=False
-#      )
-#      db.add(agent)
-#      await db.commit()
-#      await db.refresh(agent)
-#      logger.info(f"[HELPER DEBUG] Created agent with ID: {agent.id}") # Debug print
-#      return agent
-
-
-# async def create_test_task(db: AsyncSession, project_id: str, title: str, description: str, status: str = "To Do", is_archived: bool = False, agent_id: Optional[str] = None): # Make async
-#     """Helper function to create a test task."""
-#     logger.info("[HELPER DEBUG] Creating test task...") # Debug print
-#     from backend.enums import TaskStatusEnum
-#     task = Task(
-#         project_id=project_id,
-#         task_number=1, # Assuming task_number generation is handled elsewhere or is simple for tests
-#         title=title,
-#         description=description,
-#         status=TaskStatusEnum(status), # Use enum
-#         is_archived=is_archived,
-#         agent_id=agent_id
-#     )
-#     db.add(task)
-#     await db.commit()
-#     await db.refresh(task)
-#     logger.info(f"[HELPER DEBUG] Created task with ID: {task.id} and number {task.task_number}") # Debug print
-#     return task
-
-# Removed synchronous test files from conftest as they are being converted or are not fixtures
-# from .test_project_file_associations_crud import *
-# from .test_task_file_associations_crud import *
-# from .test_task_dependencies_crud import *
-# from .test_audit_logs_crud import *
-# from .test_comments_crud import *
-# from .test_agents_crud import *

@@ -10,7 +10,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 import logging
 import traceback
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from backend.services.exceptions import (
     ServiceError, EntityNotFoundError, ValidationError, 
@@ -45,7 +45,7 @@ async def service_exception_handler(request: Request, exc: ServiceError):
             "message": str(exc),
             "error_code": exc.__class__.__name__,
             "error_id": error_id,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     )
 
@@ -63,7 +63,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "error_code": "RequestValidationError",
             "error_id": error_id,
             "error_details": exc.errors(),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     )
 
@@ -80,7 +80,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             "message": exc.detail,
             "error_code": f"HTTP{exc.status_code}",
             "error_id": error_id,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     )
 
@@ -100,7 +100,7 @@ async def general_exception_handler(request: Request, exc: Exception):
             "message": "Internal server error",
             "error_code": "InternalServerError",
             "error_id": error_id,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     )
 

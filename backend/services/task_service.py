@@ -11,7 +11,7 @@ from typing import List, Optional, Union
 from uuid import UUID
 
 # Import specific schema classes from their files
-from backend.schemas.task import TaskCreate, TaskUpdate
+from backend.schemas.task import TaskCreate, TaskUpdate, Task
 
 # Import the TaskStatusEnum
 from backend.enums import TaskStatusEnum
@@ -50,7 +50,7 @@ class TaskService:
         self.file_association_service = TaskFileAssociationService(db)
         self.comment_service = CommentService(db)
 
-    def get_task(
+    async def get_task(
         self, project_id: UUID, task_number: int,
         is_archived: Optional[bool] = False
     ) -> models.Task:
@@ -68,12 +68,12 @@ class TaskService:
         Raises:
             EntityNotFoundError: If the task is not found
         """
-        task = crud_get_task(self.db, project_id=str(project_id), task_number=task_number, is_archived=is_archived)
+        task = await crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
         if not task:
             raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
         return task
 
-    def get_tasks_by_project(
+    async def get_tasks_by_project(
         self,
         project_id: UUID,
         skip: int = 0,
@@ -87,14 +87,14 @@ class TaskService:
         sort_direction: Optional[str] = None
     ) -> List[models.Task]:
         # Delegate to CRUD
-        return crud_get_tasks(
+        return await crud_get_tasks(
             self.db, project_id=str(project_id), skip=skip, limit=limit,
             agent_id=agent_id, agent_name=agent_name, search=search,
             status=status, is_archived=is_archived, sort_by=sort_by,
             sort_direction=sort_direction
         )
 
-    def get_all_tasks(
+    async def get_all_tasks(
         self,
         project_id: Optional[UUID] = None,
         skip: int = 0,
@@ -110,7 +110,7 @@ class TaskService:
         # Delegate to CRUD
         # Convert project_id to string if it exists before passing to crud
         project_id_str = str(project_id) if project_id else None
-        return crud_get_all_tasks(
+        return await crud_get_all_tasks(
             self.db, project_id=project_id_str, skip=skip, limit=limit,
             agent_id=agent_id, agent_name=agent_name, search=search,
             status=status, is_archived=is_archived, sort_by=sort_by,
@@ -119,12 +119,12 @@ class TaskService:
 
     # Removed get_next_task_number_for_project as it's handled in CRUD create
 
-    def create_task(
+    async def create_task(
         self,
         project_id: UUID,
         task: TaskCreate,
         agent_id: Optional[str] = None
-    ) -> models.Task:
+    ) -> Task:
         """
         Create a new task for a project.
         
@@ -134,7 +134,7 @@ class TaskService:
             agent_id: Optional agent ID to assign
             
         Returns:
-            The created task
+            The created task ORM model.
             
         Raises:
             EntityNotFoundError: If the project or agent is not found
@@ -142,11 +142,40 @@ class TaskService:
         """
         try:
             # Use transaction context manager
-            with service_transaction(self.db, "create_task") as tx_db:
+            async with service_transaction(self.db, "create_task") as tx_db:
                 try:
                     # CRUD function handles task numbering and validation
-                    db_task = crud_create_task(tx_db, project_id=str(project_id), task=task, agent_id=agent_id)
-                    return db_task
+                    db_task = await crud_create_task(tx_db, project_id=str(project_id), task=task, agent_id=agent_id)
+                    
+                    # Explicitly load necessary relationships before the session closes
+                    # Use selectinload for collections and joinedload for many-to-one
+                    # Determine relationships from Task Pydantic schema:
+                    # project, agent, status_object, dependencies_as_predecessor, dependencies_as_successor, task_files, comments
+
+                    # Re-fetch the task with relationships loaded. Using tx_db ensures it's within the transaction.
+                    from sqlalchemy.orm import selectinload, joinedload
+                    from sqlalchemy import select
+                    
+                    loaded_task_stmt = select(models.Task).filter(models.Task.id == db_task.id).options(
+                        joinedload(models.Task.project), # Assuming Task has a project relationship
+                        joinedload(models.Task.agent), # Assuming Task has an agent relationship
+                        # Assuming Task has a status_object relationship - check models.Task definition
+                        selectinload(models.Task.dependencies_as_predecessor), # Assuming Task has these relationships
+                        selectinload(models.Task.dependencies_as_successor),
+                        selectinload(models.Task.task_files),
+                        selectinload(models.Task.comments) # Assuming Task has a comments relationship
+                    )
+                    
+                    loaded_task_result = await tx_db.execute(loaded_task_stmt)
+                    db_task_loaded = loaded_task_result.scalars().first()
+
+                    if db_task_loaded is None:
+                         # This should not happen if create_task succeeded, but handle defensively
+                         raise EntityNotFoundError("Task", db_task.id)
+
+                    # Convert the fully loaded ORM object to a Pydantic model before returning
+                    return Task.model_validate(db_task_loaded)
+
                 except ValueError as e:
                     # Convert ValueError to ValidationError
                     raise ValidationError(str(e))
@@ -155,11 +184,21 @@ class TaskService:
             if isinstance(e, (EntityNotFoundError, ValidationError)):
                 raise
             # If it's a database-specific error about foreign key constraints
+            # This might catch errors if project_id or agent_id are invalid, even after CRUD checks
             if "foreign key constraint" in str(e).lower():
-                raise EntityNotFoundError("Project or Agent", f"Project: {project_id}, Agent: {agent_id}")
+                 # Attempt to provide more specific error if possible, though this is hard generically
+                 error_detail = str(e)
+                 if "project_id" in error_detail:
+                      raise EntityNotFoundError("Project", project_id)
+                 if "agent_id" in error_detail:
+                      raise EntityNotFoundError("Agent", agent_id)
+                 # Generic FK error if we can't parse it
+                 raise ValidationError(f"Foreign key constraint violation: {error_detail}")
+
+            # Generic catch-all for other exceptions during task creation
             raise ValidationError(f"Error creating task: {str(e)}")
 
-    def update_task(
+    async def update_task(
         self,
         project_id: UUID,
         task_number: int,
@@ -181,14 +220,14 @@ class TaskService:
             ValidationError: If the update data is invalid
         """
         # Check if task exists
-        existing_task = crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
+        existing_task = await crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
         if not existing_task:
             raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
         
         # Use transaction context manager
-        with service_transaction(self.db, "update_task") as tx_db:
+        async with service_transaction(self.db, "update_task") as tx_db:
             try:
-                updated_task = crud_update_task(
+                updated_task = await crud_update_task(
                     tx_db, project_id=str(project_id), task_number=task_number, task=task_update
                 )
                 if not updated_task:
@@ -203,7 +242,7 @@ class TaskService:
                     raise
                 raise ValidationError(f"Error updating task: {str(e)}")
 
-    def delete_task(self, project_id: UUID, task_number: int) -> models.Task:
+    async def delete_task(self, project_id: UUID, task_number: int) -> models.Task:
         """
         Delete a task by project ID and task number.
         
@@ -218,7 +257,7 @@ class TaskService:
             EntityNotFoundError: If the task is not found
         """
         # Check if task exists
-        existing_task = crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
+        existing_task = await crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
         if not existing_task:
             raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
         
@@ -227,29 +266,29 @@ class TaskService:
         task_data = Task.model_validate(existing_task)
         
         # Use transaction context manager
-        with service_transaction(self.db, "delete_task") as tx_db:
-            success = crud_delete_task(tx_db, project_id=str(project_id), task_number=task_number)
-            if not success:
+        async with service_transaction(self.db, "delete_task") as tx_db:
+            deleted_task_obj = await crud_delete_task(tx_db, project_id=str(project_id), task_number=task_number)
+            if not deleted_task_obj:
                 raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
             
             # Return the task data that was deleted
-            return existing_task
+            return deleted_task_obj
 
-    def archive_task(
+    async def archive_task(
         self,
         project_id: UUID,
         task_number: int
     ) -> Optional[models.Task]:
         # Delegate to CRUD archive function
-        return crud_archive_task(self.db, project_id=str(project_id), task_number=task_number)
+        return await crud_archive_task(self.db, project_id=str(project_id), task_number=task_number)
 
-    def unarchive_task(
+    async def unarchive_task(
         self,
         project_id: UUID,
         task_number: int
     ) -> Optional[models.Task]:
         # Delegate to CRUD unarchive function
-        return crud_unarchive_task(self.db, project_id=str(project_id), task_number=task_number)
+        return await crud_unarchive_task(self.db, project_id=str(project_id), task_number=task_number)
 
     def add_dependency(
         self,

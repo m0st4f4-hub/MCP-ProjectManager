@@ -1,10 +1,11 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession  # Add async session import
 from sqlalchemy import or_, func, select  # Add select import
-from backend import models, schemas
+# from backend import models, schemas # Removed schema import
 from backend.schemas.project import ProjectCreate, ProjectUpdate, Project, ProjectMemberCreate, ProjectFileAssociationCreate
 from backend.schemas.memory import MemoryEntityCreate, MemoryEntityUpdate
 from backend.models.project import Project as ProjectModel
+from backend.models.task import Task # Import Task model
 from fastapi import HTTPException
 import uuid
 from typing import Optional, List
@@ -24,69 +25,71 @@ from sqlalchemy import select
 
 
 async def get_project(db: AsyncSession, project_id: str, is_archived: Optional[bool] = False):
-    stmt = select(models.Project).filter(models.Project.id == project_id)
+    stmt = select(ProjectModel).filter(ProjectModel.id == project_id)
     if is_archived is not None:
-        stmt = stmt.filter(models.Project.is_archived == is_archived)
+        stmt = stmt.filter(ProjectModel.is_archived == is_archived)
     result = await db.execute(stmt)
     project = result.scalars().first()
     if project:
         # Calculate total task count (only non-archived tasks for an active project view)
         task_query = select(func.count()).filter(
-            models.Task.project_id == project_id)
+            Task.project_id == project_id)
         task_count_result = await db.execute(task_query)
         project.task_count = task_count_result.scalar() or 0
     return project
 
 
 async def get_project_by_name(db: AsyncSession, name: str, is_archived: Optional[bool] = False):
-    stmt = select(models.Project).filter(models.Project.name == name)
+    stmt = select(ProjectModel).filter(ProjectModel.name == name)
     if is_archived is not None:
-        stmt = stmt.filter(models.Project.is_archived == is_archived)
+        stmt = stmt.filter(ProjectModel.is_archived == is_archived)
     result = await db.execute(stmt)
     project = result.scalars().first()
     if project:
         # Calculate total task count (only non-archived tasks for an active project view)
         task_query = select(func.count()).filter(
-            models.Task.project_id == project.id)
+            Task.project_id == project.id)
         task_count_result = await db.execute(task_query)
         project.task_count = task_count_result.scalar() or 0
     return project
 
 
-# Sync version for service compatibility
-def get_project_by_name_sync(db: Session, name: str, is_archived: Optional[bool] = False):
-    """Synchronous version of get_project_by_name for service layer compatibility."""
-    query = db.query(models.Project).filter(models.Project.name == name)
+# Convert to async version
+async def get_project_by_name_async(db: AsyncSession, name: str, is_archived: Optional[bool] = False):
+    """Asynchronous version of get_project_by_name."""
+    stmt = select(ProjectModel).filter(ProjectModel.name == name)
     if is_archived is not None:
-        query = query.filter(models.Project.is_archived == is_archived)
-    project = query.first()
+        stmt = stmt.filter(ProjectModel.is_archived == is_archived)
+    result = await db.execute(stmt)
+    project = result.scalars().first()
     if project:
         # Calculate total task count (only non-archived tasks for an active project view)
-        task_count = db.query(func.count()).filter(
-            models.Task.project_id == project.id).scalar() or 0
-        project.task_count = task_count
+        task_query = select(func.count()).filter(
+            Task.project_id == project.id)
+        task_count_result = await db.execute(task_query)
+        project.task_count = task_count_result.scalar() or 0
     return project
 
 
 async def get_projects(db: AsyncSession, skip: int = 0, search: Optional[str] = None, status: Optional[str] = None, is_archived: Optional[bool] = False):
-    stmt = select(models.Project)
+    stmt = select(ProjectModel)
     if search:
         search_term = f"%{search}%"
         stmt = stmt.filter(
             or_(
-                models.Project.name.ilike(search_term),
-                models.Project.description.ilike(search_term)
+                ProjectModel.name.ilike(search_term),
+                ProjectModel.description.ilike(search_term)
             )
         )
     # Status filtering logic would go here if Project model had a status field
     # if status:
-    #     stmt = stmt.filter(models.Project.status == status) # Example
+    #     stmt = stmt.filter(ProjectModel.status == status) # Example
 
     if is_archived is not None:
-        stmt = stmt.filter(models.Project.is_archived == is_archived)
+        stmt = stmt.filter(ProjectModel.is_archived == is_archived)
 
     # Apply offset and order_by
-    stmt = stmt.order_by(models.Project.name).offset(skip)
+    stmt = stmt.order_by(ProjectModel.name).offset(skip)
     
     result = await db.execute(stmt)
     projects = result.scalars().all()
@@ -94,7 +97,7 @@ async def get_projects(db: AsyncSession, skip: int = 0, search: Optional[str] = 
     # Calculate task counts for each project asynchronously
     for project_item in projects:
         task_query = select(func.count()).filter(
-            models.Task.project_id == project_item.id)
+            Task.project_id == project_item.id)
         task_count_result = await db.execute(task_query)
         project_item.task_count = task_count_result.scalar() or 0
 
@@ -165,7 +168,7 @@ async def delete_project(db: AsyncSession, project_id: str):
     if db_project:
         # Print number of tasks deleted (for test expectations) - Convert to async count
         task_count_stmt = select(func.count()).filter(
-            models.Task.project_id == project_id)
+            Task.project_id == project_id)
         task_count_result = await db.execute(task_count_stmt)
         task_count = task_count_result.scalar() or 0
 

@@ -21,7 +21,7 @@ class TaskDependencyBase(BaseModel):
         ..., description="The project ID of the successor task.")
     successor_task_number: int = Field(
         ..., description="The task number of the successor task.")
-    type: str = Field(
+    dependency_type: str = Field(
         ..., description="Type of dependency (e.g., 'finishes_to_start').")
 
 

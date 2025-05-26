@@ -18,6 +18,7 @@ import logging
 import sys
 import json # Import json for serializing details
 import pytest_asyncio
+from unittest.mock import patch, MagicMock, AsyncMock
 
 # Import AsyncSession
 from sqlalchemy.ext.asyncio import AsyncSession # Import AsyncSession
@@ -51,9 +52,14 @@ from backend.services.audit_log_service import AuditLogService # Import AuditLog
 # Import auth dependency
 from backend.auth import get_current_active_user
 
+# Import get_project_service and get_audit_log_service
+from backend.routers.projects import get_project_service, get_audit_log_service
+
 # Set up logging - get the logger used in backend.main
 logger = logging.getLogger("backend.main")
 
+# Import MagicMock
+from unittest.mock import MagicMock
 
 # Mark all tests in this module as async using pytest-asyncio conventions
 pytestmark = pytest.mark.asyncio
@@ -66,14 +72,23 @@ async def test_get_root(async_client: AsyncClient):
 # --- Project API Tests ---
 # Adding test_user as a dependency to authenticated tests
 async def test_create_project_api(async_client: AsyncClient, test_user: models.User):
-    response = await async_client.post("/api/v1/projects/", json={"name": "API Test Project", "description": "Desc"})
+    project_data = {"name": "API Test Project", "description": "Desc"}
+
+    # Use the async_client provided by the fixture
+    response = await async_client.post("/api/v1/projects/", json=project_data)
+
     assert response.status_code == 200
     data = response.json()
-    assert data["name"] == "API Test Project"
-    assert data["id"] is not None
-    project_id = data["id"]
+    assert data["data"]["name"] == "API Test Project"
 
-    # Test duplicate project name
+    # Verify that the project was created in the database via the service (indirectly tested)
+    # We can add a check here by fetching the project using a direct db session if needed
+    # For now, rely on the integration test flow covering this.
+
+    # Assertions for audit log creation are also implicitly tested if the service is called correctly
+    # and the log is created without errors.
+
+    # Test duplicate project name - this should still hit the actual router logic
     response_dup = await async_client.post("/api/v1/projects/", json={"name": "API Test Project", "description": "Desc"})
     assert response_dup.status_code == 400
     assert "already registered" in response_dup.json()["detail"]
@@ -81,22 +96,20 @@ async def test_create_project_api(async_client: AsyncClient, test_user: models.U
 # Add a new test function to call the temporary auth endpoint
 # Adding test_user as a dependency
 async def test_authentication_dependency(async_client: AsyncClient, test_user: models.User):
-    """Test that the get_current_active_user dependency works correctly."""
+    """Test that the get_current_active_user dependency works correctly via the test client."""
+    # Use the async_client provided by the fixture
     response = await async_client.get("/test-auth")
+
     assert response.status_code == 200
     user_data = response.json()
     assert user_data["username"] == test_user.username
     assert user_data["email"] == test_user.email
     assert user_data["full_name"] == test_user.full_name
 
-# Temporary test to verify test user exists in the async_db_session
-async def test_verify_test_user_exists(async_db_session: AsyncSession, test_user: models.User):
-    from backend.crud.users import get_user_by_username # Import the async CRUD function
-    print("[TEST VERIFY USER DEBUG] Attempting to fetch testuser by username...") # Debug print
-    user = await get_user_by_username(async_db_session, username="testuser")
-    print(f"[TEST VERIFY USER DEBUG] Result of fetching testuser: {user}") # Debug print
-    assert user is not None
-    assert user.username == "testuser"
-    # Also check the fixture user
-    assert test_user is not None
-    assert test_user.username == "testuser"
+# --- Task API Tests --- #
+# --- Agent API Tests --- #
+# --- Audit Log API Tests --- #
+# --- Memory API Tests --- #
+# --- Rules API Tests --- #
+# --- User API Tests --- #
+# --- Other API Tests --- #

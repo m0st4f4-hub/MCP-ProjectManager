@@ -10,6 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession # Import AsyncSession
 # Import validation helpers
 from .task_validation import project_exists, agent_exists
 
+# Import select for async queries
+from sqlalchemy import select
+
 
 async def create_task(db: AsyncSession, project_id: str, task: TaskCreate, agent_id: Optional[str] = None) -> models.Task:
     """Create a new task for a given project.
@@ -23,11 +26,14 @@ async def create_task(db: AsyncSession, project_id: str, task: TaskCreate, agent
     # Get the next task number for this project, with pessimistic lock
     # Lock the rows for the specific project to prevent other concurrent transactions
     # from querying the max task number before this transaction commits.
-    max_task_number_result = await db.execute(db.query(func.max(models.Task.task_number)).filter(
-        models.Task.project_id == project_id
-    ).with_for_update())
+    # Use async SQLAlchemy syntax with select and await db.execute
+    max_task_number_result = await db.execute(
+        select(func.max(models.Task.task_number))
+        .filter(models.Task.project_id == project_id)
+        .with_for_update()
+    )
     max_task_number = max_task_number_result.scalar_one_or_none()
-    
+
     next_task_number = (max_task_number or 0) + 1
     
     # If agent_name is provided in the task schema, get the agent by name and validate existence
@@ -58,15 +64,18 @@ async def create_task(db: AsyncSession, project_id: str, task: TaskCreate, agent
     return db_task
 
 
-async def get_task(db: AsyncSession, task_id: str) -> Optional[models.Task]:
-    """Get a single task by ID."""
-    result = await db.execute(db.query(models.Task).filter(models.Task.id == task_id))
-    return result.scalar_one_or_none()
+async def get_task(db: AsyncSession, project_id: str, task_number: int) -> Optional[models.Task]:
+    """Get a single task by project ID and task number."""
+    # Use async SQLAlchemy syntax with select and await db.execute
+    # Use the existing get_task_by_project_and_number function
+    return await get_task_by_project_and_number(db, project_id, task_number)
 
 
 async def get_tasks(db: AsyncSession, project_id: str, skip: int = 0, limit: int = 100) -> List[models.Task]:
     """Get multiple tasks for a project."""
-    result = await db.execute(db.query(models.Task).filter(
+    # Use async SQLAlchemy syntax with select and await db.execute
+    from sqlalchemy import select
+    result = await db.execute(select(models.Task).filter(
         models.Task.project_id == project_id
     ).offset(skip).limit(limit))
     return result.scalars().all()
@@ -74,7 +83,9 @@ async def get_tasks(db: AsyncSession, project_id: str, skip: int = 0, limit: int
 
 async def get_task_by_project_and_number(db: AsyncSession, project_id: str, task_number: int) -> Optional[models.Task]:
     """Get a single task by project ID and task number."""
-    result = await db.execute(db.query(models.Task).filter(
+    # Use async SQLAlchemy syntax with select and await db.execute
+    from sqlalchemy import select
+    result = await db.execute(select(models.Task).filter(
         and_(
             models.Task.project_id == project_id,
             models.Task.task_number == task_number
@@ -83,16 +94,16 @@ async def get_task_by_project_and_number(db: AsyncSession, project_id: str, task
     return result.scalar_one_or_none()
 
 
-async def update_task(db: AsyncSession, task_id: str, task: TaskUpdate) -> Optional[models.Task]:
-    """Update a task by ID."""
-    db_task = await get_task(db, task_id)
+async def update_task(db: AsyncSession, project_id: str, task_number: int, task: TaskUpdate) -> Optional[models.Task]:
+    """Update a task by project ID and task number."""
+    db_task = await get_task_by_project_and_number(db, project_id, task_number)
     if db_task:
-        # Handle agent update: if agent_name is provided, find agent ID and validate
+        # Handle agent update: If agent_name is provided, find agent ID and validate
         if task.agent_name is not None:
             from . import agents as crud_agents
             agent = await crud_agents.get_agent_by_name(db, name=task.agent_name)
             if not agent:
-                 raise ValueError(f"Agent with name '{task.agent_name}' not found.")
+                 raise ValueError(f"Agent with name \'{task.agent_name}\' not found.")
             db_task.agent_id = agent.id
         # If agent_id is provided directly in update, validate existence
         elif task.agent_id is not None:
@@ -105,16 +116,18 @@ async def update_task(db: AsyncSession, task_id: str, task: TaskUpdate) -> Optio
         if task.description is not None:
             db_task.description = task.description
         if task.status is not None:
-            db_task.status = task.status if isinstance(task.status, models.TaskStatusEnum) else task.status
+            db_task.status = task.status if isinstance(task.status, TaskStatusEnum) else task.status
+        if task.is_archived is not None:
+            db_task.is_archived = task.is_archived
 
         await db.commit()
         await db.refresh(db_task)
     return db_task
 
 
-async def delete_task(db: AsyncSession, task_id: str) -> Optional[models.Task]:
-    """Delete a task by ID."""
-    db_task = await get_task(db, task_id)
+async def delete_task(db: AsyncSession, project_id: str, task_number: int) -> Optional[models.Task]:
+    """Delete a task by project ID and task number."""
+    db_task = await get_task_by_project_and_number(db, project_id, task_number)
     if db_task:
         await db.delete(db_task)
         await db.commit()
@@ -140,25 +153,18 @@ async def update_task_by_project_and_number(
     """Update a task by project ID and task number."""
     db_task = await get_task_by_project_and_number(db, project_id, task_number)
     if db_task:
-        # Handle agent update: if agent_name is provided, find agent ID and validate
-        if task.agent_name is not None:
-            from . import agents as crud_agents
-            agent = await crud_agents.get_agent_by_name(db, name=task.agent_name)
-            if not agent:
-                 raise ValueError(f"Agent with name '{task.agent_name}' not found.")
-            db_task.agent_id = agent.id
-        # If agent_id is provided directly in update, validate existence
-        elif task.agent_id is not None:
-             if not await agent_exists(db, task.agent_id):
-                  raise ValueError(f"Agent with ID {task.agent_id} not found.")
-             db_task.agent_id = task.agent_id
+        # Handle agent update: If agent_id is provided directly in update, validate existence
+        if task.agent_id is not None:
+            if not await agent_exists(db, task.agent_id):
+                 raise ValueError(f"Agent with ID {task.agent_id} not found.")
+            db_task.agent_id = task.agent_id
 
         if task.title is not None:
             db_task.title = task.title
         if task.description is not None:
             db_task.description = task.description
         if task.status is not None:
-            db_task.status = task.status if isinstance(task.status, models.TaskStatusEnum) else task.status
+            db_task.status = task.status if isinstance(task.status, TaskStatusEnum) else task.status
         if task.is_archived is not None:
             db_task.is_archived = task.is_archived
 
@@ -181,7 +187,9 @@ async def get_all_tasks(
     sort_direction: Optional[str] = None
 ) -> List[models.Task]:
     """Get tasks with optional filters and sorting."""
-    query = db.query(models.Task)
+    # Use async SQLAlchemy syntax with select and await db.execute
+    from sqlalchemy import select
+    query = select(models.Task)
 
     if project_id:
         query = query.filter(models.Task.project_id == project_id)
