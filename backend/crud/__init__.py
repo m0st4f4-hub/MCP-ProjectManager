@@ -10,16 +10,18 @@
 # Removed direct imports to break potential circular dependencies
 
 __all__ = [
-    "projects",
-    "tasks",
-    "agents",
-    "project_members",
-    "task_dependencies",
-    "project_file_associations",
-    "task_file_associations",
-    "memory",
-    "audit_logs",
-    "comments",
-    "rules", # Expose rules
-    "users" # Expose users
+ "projects",
+ "tasks",
+ "agents",
+ "project_members",
+ "task_dependencies",
+ "project_file_associations",
+ "task_file_associations",
+ "memory",
+ "audit_logs",
+ "comments",
+ "rules", # Expose rules
+ "users" # Expose users
 ]
+
+# This makes 'crud' a Python package

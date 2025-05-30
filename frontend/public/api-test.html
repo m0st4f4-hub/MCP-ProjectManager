@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager API Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .task-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .task-item {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 15px;
+    }
+    .task-item .title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .task-item .description {
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .task-item .status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .status-todo {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .status-in-progress {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .status-completed {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status-blocked {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+    }
+    .error {
+      color: red;
+      padding: 10px;
+      background-color: #ffebee;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Task Manager API Test</h1>
+    
+    <div class="card">
+      <h2>Create New Task</h2>
+      <div id="create-error" class="error" style="display: none;"></div>
+      
+      <div class="form-group">
+        <label for="project-id">Project ID</label>
+        <input type="text" id="project-id" value="project-123" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" rows="3"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status">
+          <option value="TO_DO">To Do</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="BLOCKED">Blocked</option>
+        </select>
+      </div>
+      
+      <button id="create-task-btn" class="create-task-button">Create Task</button>
+    </div>
+    
+    <div class="card">
+      <h2>Task List</h2>
+      <div id="fetch-error" class="error" style="display: none;"></div>
+      <div id="loading" class="loading">Loading tasks...</div>
+      <div id="task-list" class="task-list"></div>
+    </div>
+  </div>
+
+  <script>
+    // API configuration
+    const API_BASE_URL = 'http://localhost:8000/api/v1';
+    
+    // Helper functions
+    function getStatusClass(status) {
+      switch (status) {
+        case 'TO_DO':
+          return 'status-todo';
+        case 'IN_PROGRESS':
+          return 'status-in-progress';
+        case 'COMPLETED':
+          return 'status-completed';
+        case 'BLOCKED':
+          return 'status-blocked';
+        default:
+          return '';
+      }
+    }
+    
+    function formatDate(dateString) {
+      return new Date(dateString).toLocaleString();
+    }
+    
+    // Fetch tasks
+    async function fetchTasks() {
+      const taskList = document.getElementById('task-list');
+      const loading = document.getElementById('loading');
+      const errorElement = document.getElementById('fetch-error');
+      
+      loading.style.display = 'block';
+      taskList.innerHTML = '';
+      errorElement.style.display = 'none';
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/tasks`);
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        loading.style.display = 'none';
+        
+        if (data.data.length === 0) {
+          taskList.innerHTML = '<p>No tasks found.</p>';
+          return;
+        }
+        
+        data.data.forEach(task => {
+          const taskElement = document.createElement('div');
+          taskElement.className = 'task-item';
+          taskElement.innerHTML = `
+            <div class="title">${task.title}</div>
+            <div class="description">${task.description || 'No description'}</div>
+            <div class="meta">
+              <div>Project: ${task.project_id}</div>
+              <div>Task #: ${task.task_number}</div>
+              <div>Created: ${formatDate(task.created_at)}</div>
+              <div>Updated: ${formatDate(task.updated_at)}</div>
+            </div>
+            <div class="status ${getStatusClass(task.status)}">${task.status}</div>
+            <div class="actions" style="margin-top: 10px;">
+              <button onclick="deleteTask('${task.project_id}', ${task.task_number})">Delete</button>
+            </div>
+          `;
+          taskList.appendChild(taskElement);
+        });
+        
+      } catch (error) {
+        loading.style.display = 'none';
+        errorElement.textContent = `Failed to fetch tasks: ${error.message}`;
+        errorElement.style.display = 'block';
+        console.error('Error fetching tasks:', error);
+      }
+    }
+    
+    // Create a task
+    async function createTask() {
+      const projectId = document.getElementById('project-id').value;
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value;
+      const status = document.getElementById('status').value;
+      const errorElement = document.getElementById('create-error');
+      
+      if (!projectId || !title) {
+        errorElement.textContent = 'Project ID and Title are required.';
+        errorElement.style.display = 'block';
+        return;
+      }
+      
+      const taskData = {
+        title,
+        description,
+        status
+      };
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/projects/${projectId}/tasks/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(taskData)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Clear form
+        document.getElementById('title').value = '';
+        document.getElementById('description').value = '';
+        document.getElementById('status').value = 'TO_DO';
+        errorElement.style.display = 'none';
+        
+        // Refresh task list
+        fetchTasks();
+        
+        alert('Task created successfully!');
+        
+      } catch (error) {
+        errorElement.textContent = `Failed to create task: ${error.message}`;
+        errorElement.style.display = 'block';
+        console.error('Error creating task:', error);
+      }
+    }
+    
+    // Delete a task
+    async function deleteTask(projectId, taskNumber) {
+      if (!confirm(`Are you sure you want to delete task #${taskNumber}?`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/projects/${projectId}/tasks/${taskNumber}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        // Refresh task list
+        fetchTasks();
+        
+        alert('Task deleted successfully!');
+        
+      } catch (error) {
+        alert(`Failed to delete task: ${error.message}`);
+        console.error('Error deleting task:', error);
+      }
+    }
+    
+    // Event listeners
+    document.getElementById('create-task-btn').addEventListener('click', createTask);
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', fetchTasks);
+  </script>
+</body>
+</html>

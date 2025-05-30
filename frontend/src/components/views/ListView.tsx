@@ -176,7 +176,7 @@ const ListView: React.FC<ListViewProps> = ({
   };
 
   if (isMobile) {
-    const flatTasksForMobile = groupedTasks.groups.reduce(
+    const flatTasksForMobile = (groupedTasks?.groups || []).reduce(
       (acc: Task[], group) => {
         if (group.tasks) {
           acc.push(...group.tasks);

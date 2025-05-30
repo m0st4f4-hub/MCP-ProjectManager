@@ -103,7 +103,7 @@ export default function Home() {
 
   useEffect(() => {
     startPolling();
-    fetchAgents();
+    fetchAgents(0, 100); // Add default skip and limit parameters
     fetchProjects();
     return () => {
       stopPolling();
@@ -267,8 +267,8 @@ export default function Home() {
               return;
             }
             try {
-              await createAgent(name);
-              fetchAgents();
+              await createAgent({ name, description: null });
+              fetchAgents(0, 100);
               onAddAgentClose();
             } catch (error) {
               console.error("Failed to create agent:", error);

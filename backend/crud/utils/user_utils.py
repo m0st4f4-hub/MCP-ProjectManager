@@ -13,7 +13,7 @@ from backend.models import User
 
 
 def username_exists_check(db: Session, username: str) -> bool:
-    """
-    Returns True if a user with the given username already exists.
-    """
-    return db.query(User).filter(User.username == username).first() is not None
+ """
+ Returns True if a user with the given username already exists.
+ """
+ return db.query(User).filter(User.username == username).first() is not None

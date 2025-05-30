@@ -5,6 +5,7 @@ import {
   ProjectFilters,
 } from "@/types";
 import { request } from "./request";
+import { buildApiUrl, API_CONFIG } from "./config";
 
 // Intermediate raw type for projects from backend
 interface RawProject {
@@ -27,7 +28,7 @@ export const getProjects = async (
     queryParams.append("is_archived", String(filters.is_archived));
   }
   const queryString = queryParams.toString();
-  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${queryString ? `?${queryString}` : ""}`;
+  const url = buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, queryString ? `?${queryString}` : "");
   const rawProjects = await request<RawProject[]>(url);
   return rawProjects.map((rawProject) => ({
     ...rawProject,
@@ -51,7 +52,7 @@ export const getProjectById = async (
     queryParams.append("is_archived", String(is_archived));
   }
   const queryString = queryParams.toString();
-  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}${queryString ? `?${queryString}` : ""}`;
+  const url = buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}${queryString ? `?${queryString}` : ""}`);
   const rawProject = await request<RawProject>(url);
   return {
     ...rawProject,
@@ -70,7 +71,7 @@ export const createProject = async (
   projectData: ProjectCreateData,
 ): Promise<Project> => {
   const rawProject = await request<RawProject>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, "/"),
     { method: "POST", body: JSON.stringify(projectData) },
   );
   return {
@@ -91,7 +92,7 @@ export const updateProject = async (
   projectData: ProjectUpdateData,
 ): Promise<Project> => {
   const rawProject = await request<RawProject>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}`),
     { method: "PUT", body: JSON.stringify(projectData) },
   );
   return {
@@ -109,7 +110,7 @@ export const updateProject = async (
 // Delete a project
 export const deleteProject = async (project_id: string): Promise<Project> => {
   const rawProject = await request<RawProject>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}`),
     { method: "DELETE" },
   );
   return {
@@ -127,7 +128,7 @@ export const deleteProject = async (project_id: string): Promise<Project> => {
 // --- Project Archive/Unarchive ---
 export const archiveProject = async (projectId: string): Promise<Project> => {
   const rawProject = await request<RawProject>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/archive`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/archive`),
     { method: "POST" },
   );
   return {
@@ -144,7 +145,7 @@ export const archiveProject = async (projectId: string): Promise<Project> => {
 
 export const unarchiveProject = async (projectId: string): Promise<Project> => {
   const rawProject = await request<RawProject>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/unarchive`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/unarchive`),
     { method: "POST" },
   );
   return {
@@ -171,7 +172,7 @@ export interface AddProjectMemberData {
 }
 
 export const getProjectMembers = async (projectId: string): Promise<ProjectMember[]> => {
-  return request<ProjectMember[]>(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/members`);
+  return request<ProjectMember[]>(buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/members`));
 };
 
 export const addMemberToProject = async (
@@ -179,7 +180,7 @@ export const addMemberToProject = async (
   data: AddProjectMemberData,
 ): Promise<ProjectMember> => {
   return request<ProjectMember>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/members`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/members`),
     {
       method: "POST",
       body: JSON.stringify(data),
@@ -188,7 +189,7 @@ export const addMemberToProject = async (
 };
 
 export const removeMemberFromProject = async (projectId: string, userId: string): Promise<void> => {
-  return request<void>(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/members/${userId}`, {
+  return request<void>(buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/members/${userId}`), {
     method: "DELETE",
   });
 };
@@ -204,7 +205,7 @@ export interface AssociateFileWithProjectData {
 }
 
 export const getProjectFiles = async (projectId: string): Promise<ProjectFileAssociation[]> => {
-  return request<ProjectFileAssociation[]>(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/files`);
+  return request<ProjectFileAssociation[]>(buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/files`));
 };
 
 export const associateFileWithProject = async (
@@ -212,7 +213,7 @@ export const associateFileWithProject = async (
   data: AssociateFileWithProjectData,
 ): Promise<ProjectFileAssociation> => {
   return request<ProjectFileAssociation>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/files`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/files`),
     {
       method: "POST",
       body: JSON.stringify(data),
@@ -221,7 +222,7 @@ export const associateFileWithProject = async (
 };
 
 export const disassociateFileFromProject = async (projectId: string, fileId: string): Promise<void> => {
-  return request<void>(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${projectId}/files/${fileId}`, {
+  return request<void>(buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/files/${fileId}`), {
     method: "DELETE",
   });
 };

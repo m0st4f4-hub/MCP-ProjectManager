@@ -10,14 +10,39 @@ import {
   useToast,
   Button,
 } from "@chakra-ui/react";
+import {
+  EditIcon,
+  TimeIcon,
+  WarningTwoIcon,
+  CheckCircleIcon,
+  InfoOutlineIcon,
+  QuestionOutlineIcon,
+  CheckIcon,
+  NotAllowedIcon,
+  SettingsIcon, // Assuming ListOrderedIcon and RepeatClockIcon map to something like SettingsIcon or need specific imports
+} from "@chakra-ui/icons";
 import { useProjectStore } from "@/store/projectStore";
 import { useTaskStore } from "@/store/taskStore";
-import { getDisplayableStatus, StatusID } from "@/lib/statusUtils";
+import { getDisplayableStatus, StatusID, StatusAttributeObject } from "@/lib/statusUtils";
 import { TaskItemProps } from "./TaskItem.types";
 import { getStatusAccentColor } from "./TaskItem.utils";
 import { useTaskItemStyles } from "../useTaskItemStyles";
 import TaskItemMainSection from "./TaskItemMainSection";
 import TaskItemModals from "../TaskItemModals";
+
+// Define the iconMap
+const iconMap: Record<string, React.ElementType> = {
+  EditIcon: EditIcon,
+  TimeIcon: TimeIcon,
+  WarningTwoIcon: WarningTwoIcon,
+  CheckCircleIcon: CheckCircleIcon,
+  InfoOutlineIcon: InfoOutlineIcon,
+  ListOrderedIcon: SettingsIcon, // Placeholder, replace with actual icon if available
+  RepeatClockIcon: SettingsIcon, // Placeholder, replace with actual icon if available
+  QuestionOutlineIcon: QuestionOutlineIcon,
+  CheckIcon: CheckIcon,
+  NotAllowedIcon: NotAllowedIcon,
+};
 
 /**
  * @module TaskItem
@@ -166,11 +191,11 @@ const TaskItem: React.FC<TaskItemProps> = memo(
                       description: '', // No description
                       isTerminal: false, // Not terminal by default
                       isDynamic: false, // Not dynamic by default
-                    }) as import("@/lib/statusUtils").StatusAttributeObject // Type assertion
+                    }) as StatusAttributeObject // Use imported StatusAttributeObject
               }
               styles={styles} // Pass down styles from useTaskItemStyles
               textColor={textColor} // Pass down calculated text color
-              iconMap={{}} // TODO: Populate or remove if not used in TaskItemMainSection
+              iconMap={iconMap} // Pass down the populated iconMap
               currentStatusId={currentStatusId} // Pass down current status ID
               compact={compact} // Pass down compact prop
               editTaskInStore={editTaskInStore} // Pass down store action for editing
@@ -185,9 +210,9 @@ const TaskItem: React.FC<TaskItemProps> = memo(
           onClick={(e) => {
             e.stopPropagation(); // Prevent task item click when clicking the button
             if (task.is_archived) {
-              unarchiveTask({ project_id: task.project_id, task_number: task.task_number });
+              unarchiveTask(task.project_id, task.task_number);
             } else {
-              archiveTask({ project_id: task.project_id, task_number: task.task_number });
+              archiveTask(task.project_id, task.task_number);
             }
           }}
         >

@@ -1,6 +1,12 @@
 export * from "./project";
 export * from "./agent";
 export * from "./task";
+export * from "./user";
+export * from "./audit_log";
+export * from "./memory";
+export * from "./comment";
+export * from "./rules";
+export * from "./mcp";
 
 // Common types used across the application
 // Canonical shared sort direction type for all entities

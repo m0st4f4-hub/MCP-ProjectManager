@@ -1,3 +1,5 @@
+'use client';
+
 import ProjectDetail from '@/components/project/ProjectDetail';
 import React from 'react';
 

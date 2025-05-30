@@ -18,23 +18,23 @@ from dotenv import load_dotenv
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./sql_app.db")
 
 # Create an async SQLAlchemy engine
-engine = create_async_engine(DATABASE_URL, echo=True)
+engine = create_async_engine(DATABASE_URL, echo=False)
 
 # Create an async sessionmaker
 AsyncSessionLocal = async_sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
+ engine, class_=AsyncSession, expire_on_commit=False
 )
 
 Base = declarative_base()
 
 # Dependency to get DB session
 async def get_db():
-    async with AsyncSessionLocal() as db:
-        try:
-            print("[get_db] Creating database session...")
-            await db.begin()
-            print("[get_db] Yielding database session...")
-            yield db
-        finally:
-            print("[get_db] Closing database session...")
-            await db.close()
+ async with AsyncSessionLocal() as db:
+ try:
+ print("[get_db] Creating database session...")
+ await db.begin()
+ print("[get_db] Yielding database session...")
+ yield db
+ finally:
+ print("[get_db] Closing database session...")
+ await db.close()

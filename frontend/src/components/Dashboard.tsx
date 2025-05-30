@@ -137,7 +137,7 @@ const Dashboard: React.FC = () => {
 
   // State for local filtering and sorting UI controls
   const [agentFilter, setAgentFilter] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "completed" | "active">("all");
   const [showArchived, setShowArchived] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -625,7 +625,7 @@ const Dashboard: React.FC = () => {
           isLoading={isLoadingTasks}
           error={tasksError}
         >
-          <TaskList tasks={sortedTasks} />
+          <TaskList />
         </DashboardSection>
       </VStack>
     </Box>

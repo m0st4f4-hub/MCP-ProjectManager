@@ -5,7 +5,7 @@ All models imported here for easy access and to avoid circular imports.
 
 # Import base utilities first
 from .base import (
-    Base, BaseModel
+ Base, BaseModel
 )
 
 # Import foundational models
@@ -32,28 +32,30 @@ from .agent_error_protocol import AgentErrorProtocol
 
 # Export all models
 __all__ = [
-    # Base utilities
-    'Base', 'BaseModel',
-    
-    # Foundational models
-    'User', 'UserRole',
-    
-    # Core models and those depending on foundational ones
-    'Agent', 'AgentRule', 'AgentRole',
-    'Comment',
-    'MemoryEntity', 'MemoryObservation', 'MemoryRelation',
-    'Project', 'ProjectMember', 'ProjectFileAssociation',
-    'ProjectTemplate',
-    'Task', 'TaskStatus',
-    'TaskDependency', 'TaskFileAssociation',
-    'Workflow', 'WorkflowStep', 'AgentPromptTemplate',
-    'AuditLog', 'AgentRuleViolation', 'AgentBehaviorLog',
-    'UniversalMandate',
-    
-    # Agent Capabilities and related models
-    'AgentCapability',
-    'AgentForbiddenAction',
-    'AgentVerificationRequirement',
-    'AgentHandoffCriteria',
-    'AgentErrorProtocol',
+ # Base utilities
+ 'Base', 'BaseModel',
+ 
+ # Foundational models
+ 'User', 'UserRole',
+ 
+ # Core models and those depending on foundational ones
+ 'Agent', 'AgentRule', 'AgentRole',
+ 'Comment',
+ 'MemoryEntity', 'MemoryObservation', 'MemoryRelation',
+ 'Project', 'ProjectMember', 'ProjectFileAssociation',
+ 'ProjectTemplate',
+ 'Task', 'TaskStatus',
+ 'TaskDependency', 'TaskFileAssociation',
+ 'Workflow', 'WorkflowStep', 'AgentPromptTemplate',
+ 'AuditLog', 'AgentRuleViolation', 'AgentBehaviorLog',
+ 'UniversalMandate',
+ 
+ # Agent Capabilities and related models
+ 'AgentCapability',
+ 'AgentForbiddenAction',
+ 'AgentVerificationRequirement',
+ 'AgentHandoffCriteria',
+ 'AgentErrorProtocol',
 ]
+
+# This makes 'models' a Python package

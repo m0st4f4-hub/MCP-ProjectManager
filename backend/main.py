@@ -21,13 +21,20 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import Dict, Any
 
+# Explicitly import schema models to ensure they are loaded early for Pydantic to resolve forward references
+from .schemas import (
+    task, project, api_responses, task_status, 
+    agent, task_dependency, comment, file_association,
+    memory, user # Assuming these are the main schema modules with interdependencies
+)
+
 # Local imports
-from backend.database import get_db, Base, engine
+from .database import get_db, Base, engine
 # Import middleware initialization
-from backend.middleware import init_middleware
+from .middleware import init_middleware
 
 # Explicitly import models to ensure they are loaded early
-import backend.models
+from . import models
 
 # Add import for MCP (mock if not available)
 try:
@@ -35,27 +42,70 @@ try:
 except ImportError:
     MCPClient = None
 
+# Configure logging format with timestamp
+log_config = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "fmt": "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+        },
+        "uvicorn_standard": {
+            "fmt": "%(asctime)s - %(levelname)s - %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "uvicorn_standard", # Use the new uvicorn_standard formatter
+            "stream": "ext://sys.stderr"
+        }
+    },
+    "loggers": {
+        "uvicorn": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False
+        },
+        "uvicorn.error": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False
+        },
+        "uvicorn.access": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False
+        }
+    }
+}
+
+import logging.config
+logging.config.dictConfig(log_config)
+
 logger = logging.getLogger(__name__)
-
-# Create all tables in the database
-# Base.metadata.create_all(bind=engine) # REMOVED module-level call
-
 # Function to include routers dynamically
 def include_app_routers(application: FastAPI):
-    # Import routers inside the function
-    from backend.routers import mcp, projects, agents, audit_logs, memory, rules, tasks, users
-    from backend.routers.comments import router as comments_router
-
-    # Include routers
-    application.include_router(agents.router, prefix="/api/v1", tags=["Agents"])
-    application.include_router(audit_logs.router, prefix="/api/v1", tags=["Audit"])
-    application.include_router(memory.router, prefix="/api/v1", tags=["Memory"])
-    application.include_router(mcp.router, prefix="/api/v1/mcp-tools", tags=["Mcp Tools"])
-    application.include_router(projects.router, prefix="/api/v1", tags=["Projects"])
-    application.include_router(rules.router, prefix="/api/v1", tags=["Rules"])
-    application.include_router(tasks.router, prefix="/api/v1", tags=["Tasks"])
-    application.include_router(users.router, prefix="/api/v1", tags=["Users"])
-    application.include_router(comments_router, prefix="/api/v1", tags=["Comments"])
+    """Include all application routers."""
+    from .routers import (
+        users, projects, tasks, comments, 
+        agents, memory, mcp, rules, 
+        project_templates, audit_logs
+    )
+    
+    # Include all routers with their prefixes
+    application.include_router(users.router, prefix="/api/users", tags=["users"])
+    application.include_router(projects.router, prefix="/api/projects", tags=["projects"])
+    application.include_router(tasks.router, prefix="/api/tasks", tags=["tasks"])
+    application.include_router(comments.router, prefix="/api/comments", tags=["comments"])
+    application.include_router(agents.router, prefix="/api/agents", tags=["agents"])
+    application.include_router(memory.router, prefix="/api/memory", tags=["memory"])
+    application.include_router(mcp.router, prefix="/api/mcp", tags=["mcp"])
+    application.include_router(rules.router, prefix="/api/rules", tags=["rules"])
+    application.include_router(project_templates.router, prefix="/api/templates", tags=["templates"])
+    application.include_router(audit_logs.router, prefix="/api/audit-logs", tags=["audit-logs"])
+    
+    logger.info("All routers included successfully")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -64,17 +114,48 @@ async def lifespan(app: FastAPI):
     
     # Initialize database tables
     try:
-        Base.metadata.create_all(bind=engine) # MOVED call into lifespan
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
         logger.info("Database tables initialized")
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
         raise
-    
-    # Include routers outside of lifespan
-    include_app_routers(app)
-    logger.info("Routers included")
 
     yield
+    # Log routes and MCP tools after startup
+    routes_info = []
+    for route in app.routes:
+        if hasattr(route, "methods"):
+            methods = ", ".join(list(route.methods))
+        else:
+            methods = "N/A"
+        routes_info.append(f" - {methods} {route.path} ({getattr(route, 'name', '')})")
+
+    mcp_instance = getattr(app.state, "mcp_instance", None)
+    tools_info = []
+    if mcp_instance and hasattr(mcp_instance, 'tools'):
+        if mcp_instance.tools:
+            for tool_name, tool_info in mcp_instance.tools.items():
+                tools_info.append(f" - {tool_name}: {tool_info.get('description', '')}")
+        else:
+            tools_info.append(" No MCP tools registered.")
+    else:
+        tools_info.append(" MCP Client not available or tools not initialized.")
+
+    startup_dashboard = [
+        "\n" + "="*40,
+        "Backend Startup Dashboard",
+        "="*40,
+        "\nAPI Routes:",
+        *routes_info,
+        "\nMCP Tools:",
+        *tools_info,
+        "\n" + "="*40
+    ]
+
+    for line in startup_dashboard:
+        logger.info(line)
+
     logger.info("Shutting down...")
 
 
@@ -84,13 +165,89 @@ app = FastAPI(
     version="2.0.0",
     description="Task Manager with MCP integration",
     openapi_url="/openapi.json",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None, # Disable default docs
+    redoc_url=None, # Disable default redoc
     lifespan=lifespan
 )
 
-# Initialize middleware
+# CORS middleware - MOVED BEFORE other middleware and router inclusion
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"], # Allows all methods
+    allow_headers=["*"], # Allows all headers
+)
+
+# Initialize middleware - MOVED BEFORE including routers
 init_middleware(app)
+
+# Define custom docs and redoc routes *after* middleware init
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    html_content = get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - Swagger UI",
+        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+    )
+    return Response(
+        content=html_content.body,
+        headers={
+            "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' https://fastapi.tiangolo.com"
+        },
+        media_type="text/html"
+    )
+
+@app.get("/redoc", include_in_schema=False)
+async def custom_redoc_html():
+    html_content = get_redoc_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - ReDoc",
+    )
+    return Response(
+        content=html_content.body,
+        headers={
+            "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' https://fastapi.tiangolo.com"
+        },
+        media_type="text/html"
+    )
+
+# Include routers
+include_app_routers(app)
+logger.info("Routers included")
+
+# Explicitly rebuild Pydantic models after routers are included
+# This helps resolve forward references when schemas have interdependencies
+logger.info("Explicitly rebuilding Pydantic models...")
+try:
+    from .schemas.task import Task
+    from .schemas.project import Project 
+    from .schemas.agent import Agent, AgentRule
+    from .schemas.task_dependency import TaskDependency
+    from .schemas.comment import Comment
+    from .schemas.file_association import TaskFileAssociation
+    from .schemas.memory import MemoryEntity
+    from .schemas.user import User
+    from .schemas.task_status import TaskStatus
+    
+    Task.model_rebuild()
+    Project.model_rebuild()
+    Agent.model_rebuild()
+    AgentRule.model_rebuild()
+    TaskDependency.model_rebuild()
+    Comment.model_rebuild()
+    TaskFileAssociation.model_rebuild()
+    MemoryEntity.model_rebuild()
+    User.model_rebuild()
+    TaskStatus.model_rebuild()
+    logger.info("Pydantic models rebuilt successfully.")
+except Exception as e:
+    logger.error(f"Error during Pydantic model rebuild: {e}")
+    # Depending on severity, you might want to raise the exception or handle it differently
+    # For now, we log it and let the application continue, but it might affect OpenAPI spec
+
 
 # --- MCP Instance Initialization ---
 if MCPClient is not None:
@@ -106,13 +263,16 @@ else:
 # --- Health Check and Basic Routes ---
 @app.get("/")
 async def read_root():
-    return {"message": "Welcome to the Task Manager API"}
+    logger.info("Received request for root endpoint (/).")
+    result = {"message": "Welcome to the Task Manager API"}
+    logger.info("Successfully processed request for root endpoint (/).")
+    return result
 
 @app.get("/health", status_code=status.HTTP_200_OK)
 async def health_check(db: Session = Depends(get_db)) -> Dict[str, str]:
     try:
         # Attempt a simple query to check DB connection
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db_status = "connected"
     except Exception as e:
         logger.error(f"Database connection error: {e}")
@@ -163,79 +323,3 @@ async def mcp_docs(request: Request):
         "routes": routes,
         "mcp_project_manager_tools_documentation": md_doc
     }
-
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
-    allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
-)
-
-# Initialize middleware
-init_middleware(app)
-
-# Optional: Add a custom exception handler for HTTPExceptions if needed
-# @app.exception_handler(HTTPException)
-# async def http_exception_handler(request: Request, exc: HTTPException):
-#     return JSONResponse(
-#         status_code=exc.status_code,
-#         content={"detail": exc.detail, "headers": exc.headers if hasattr(exc, 'headers') else None},
-#     )
-
-# Optional: Add a generic exception handler for unhandled errors
-# @app.exception_handler(Exception)
-# async def generic_exception_handler(request: Request, exc: Exception):
-#     logger.error(f"Unhandled exception: {exc}", exc_info=True)
-#     return JSONResponse(
-#         status_code=500,
-#         content={"detail": "An unexpected error occurred."},
-#     )
-
-
-if __name__ == "__main__":
-    import uvicorn
-    import logging
-
-    # Configure logging format with timestamp
-    log_config = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "standard": {
-                "fmt": "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
-            },
-            "uvicorn_standard": {
-                "fmt": "%(asctime)s %(levelname)s %(name)s:%(lineno)d %(message)s"
-            }
-        },
-        "handlers": {
-            "console": {
-                "class": "logging.StreamHandler",
-                "formatter": "uvicorn_standard", # Use the new uvicorn_standard formatter
-                "stream": "ext://sys.stderr"
-            }
-        },
-        "loggers": {
-            "uvicorn": {
-                "handlers": ["console"],
-                "level": "INFO",
-                "propagate": False
-            },
-            "uvicorn.error": {
-                "level": "INFO",
-                "handlers": ["console"],
-                "propagate": False
-            },
-            "uvicorn.access": {
-                "handlers": ["console"],
-                "level": "INFO",
-                "propagate": False
-            }
-        }
-    }
-
-    # Note: For production, consider using Gunicorn or another ASGI server
-    # Also, remove reload=True for production
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, log_config=log_config) # Add log_config

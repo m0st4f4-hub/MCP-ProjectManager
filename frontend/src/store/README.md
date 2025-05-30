@@ -40,6 +40,8 @@ These stores centralize application state and logic for handling data related to
   - `setSortOptions`, `setFilters`.
   - `startPolling` / `stopPolling`: Manages polling for tasks and related project/agent data.
   - Bulk actions: `bulkDeleteTasks`, `bulkSetStatusTasks` using `selectedTaskIds`.
+  - Task Dependencies Actions: `fetchTaskDependencies`, `addTaskDependency`, `removeTaskDependency`.
+  - Task File Associations Actions: `fetchTaskFileAssociations`, `addTaskFileAssociation`, `removeTaskFileAssociation`.
   - `removeTasksByProjectId`: Removes tasks associated with a specific project.
 - **Note**: Does not use `createBaseStore` directly but implements similar patterns.
 

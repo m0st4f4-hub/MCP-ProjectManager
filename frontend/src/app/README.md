@@ -100,4 +100,20 @@ For more details, see:
 
 The following subdirectory exists within `frontend/src/app/` and will be documented separately:
 
-- **`mcp-dev-tools/`**: Likely contains components or routes related to the "MCP Dev Tools" feature that is accessible from the main application page's sidebar. (Contents to be explored)
+*   **`projects/[projectId]/`**: Contains the page component (`page.tsx`) for displaying details of a specific project.
+    *   **`page.tsx`**: This page component (`'use client'`) is responsible for fetching and displaying a single project's details and its associated tasks. It serves as the primary view for managing tasks within the context of a project, including interactions related to task dependencies, file associations, and task archiving.
+
+*   **`mcp-dev-tools/`**: Likely contains components or routes related to the "MCP Dev Tools" feature that is accessible from the main application page's sidebar. (Contents to be explored)
+
+## Directory Contents Overview
+
+This directory (`frontend/src/app/`) contains the core application pages and layout for the frontend, utilizing the Next.js App Router. Files within this directory define the structure and content of the main application views.
+
+Key files and directories:
+
+*   `layout.tsx`: Defines the root layout and providers for the application.
+*   `page.tsx`: The main application page component at the root route (`/`).
+*   `globals.css`: Global CSS styles.
+*   `favicon.ico`: Application favicon.
+*   `projects/[projectId]/`: Directory containing the page for individual project details.
+*   `mcp-dev-tools/`: Directory likely related to developer tools/features.

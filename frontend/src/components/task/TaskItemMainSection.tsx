@@ -213,7 +213,6 @@ const TaskItemMainSection: React.FC<TaskItemMainSectionProps> = ({
       <TaskItemDetailsSection
         task={task}
         projectName={projectName} // Pass down project name
-        statusInfo={statusInfo} // Pass down status info
         styles={styles} // Pass down styles
         iconMap={iconMap} // Pass down icon map (might be used for status icons within details)
         currentStatusId={currentStatusId} // Pass down current status ID

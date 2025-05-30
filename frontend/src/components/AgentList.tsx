@@ -53,7 +53,7 @@ const AgentList: React.FC = () => {
   });
 
   useEffect(() => {
-    fetchAgents();
+    fetchAgents(0, 100);
     fetchProjects();
     fetchTasks();
   }, [fetchAgents, fetchProjects, fetchTasks]);

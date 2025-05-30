@@ -2,6 +2,22 @@
 
 This directory contains components that provide distinct ways of displaying and organizing collections of data items, such as tasks or projects. These views offer different presentational layouts and interaction models.
 
+## Directory Contents Overview
+
+This directory (`frontend/src/components/views/`) contains components that provide distinct ways of displaying and organizing collections of data items, such as tasks or projects. These views offer different presentational layouts and interaction models.
+
+Key files:
+
+*   `ListView.tsx`: Renders data items in a list or table format.
+*   `KanbanView.tsx`: Renders data items in a Kanban board layout.
+*   `ListGroup.tsx`: Component likely used within ListView to group items.
+*   `ListSubgroup.tsx`: Component likely used within ListGroup for further item organization.
+*   `ListTaskMobile.tsx`: A task list item component optimized for mobile display.
+*   `ListView.types.ts`: TypeScript types specific to ListView.
+*   `ListTaskItem.tsx`: Component for displaying individual task items within a list.
+*   `KanbanColumn.tsx`: Component representing a single column in the Kanban view.
+*   `README.md`: This file.
+
 ## Views
 
 - **`KanbanView.tsx`**:

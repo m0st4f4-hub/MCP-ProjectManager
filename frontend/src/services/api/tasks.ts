@@ -1,5 +1,6 @@
 import { TaskFilters, Task, TaskCreateData, TaskUpdateData, TaskFileAssociation, TaskFileAssociationCreateData, TaskDependency, TaskDependencyCreateData, TaskSortOptions } from "@/types";
 import { request, normalizeToStatusID } from "./request";
+import { buildApiUrl, API_CONFIG } from "./config";
 
 // Intermediate raw type for tasks from backend
 interface RawTask {
@@ -30,7 +31,7 @@ export const associateFileWithTask = async (
   fileAssociationData: TaskFileAssociationCreateData // Should contain file_id
 ): Promise<TaskFileAssociation> => {
   return request<TaskFileAssociation>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/files/`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/files/`),
     { method: "POST", body: JSON.stringify(fileAssociationData) }
   );
 };
@@ -52,7 +53,7 @@ export const getFilesAssociatedWithTask = async (
   if (sort_direction) queryParams.append("sort_direction", sort_direction);
   if (filename) queryParams.append("filename", filename);
   const queryString = queryParams.toString();
-  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/files/${queryString ? `?${queryString}` : ""}`;
+  const url = buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/files/${queryString ? `?${queryString}` : ""}`);
   return request<TaskFileAssociation[]>(url);
 };
 
@@ -63,7 +64,7 @@ export const getTaskFileAssociationByFileId = async (
   file_id: string
 ): Promise<TaskFileAssociation> => {
   return request<TaskFileAssociation>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/files/${file_id}`
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/files/${file_id}`)
   );
 };
 
@@ -74,7 +75,7 @@ export const disassociateFileFromTask = async (
   file_id: string
 ): Promise<void> => { // Assuming backend returns success, not the object
   await request<void>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/files/${file_id}`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/files/${file_id}`),
     { method: "DELETE" }
   );
 };
@@ -88,7 +89,7 @@ export const addTaskDependency = async (
   dependencyData: TaskDependencyCreateData // Should contain dependent and depends_on info
 ): Promise<TaskDependency> => {
   return request<TaskDependency>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/dependencies/`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/dependencies/`),
     { method: "POST", body: JSON.stringify(dependencyData) }
   );
 };
@@ -112,7 +113,7 @@ export const getTaskPredecessors = async (
     task_number: number
   ): Promise<TaskDependency[]> => {
     return request<TaskDependency[]>(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/dependencies/predecessors/`
+      buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/dependencies/predecessors/`)
     );
   };
 
@@ -122,7 +123,7 @@ export const getTaskSuccessors = async (
   task_number: number
 ): Promise<TaskDependency[]> => {
   return request<TaskDependency[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/dependencies/successors/`
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/dependencies/successors/`)
   );
 };
 
@@ -136,15 +137,14 @@ export const removeTaskDependency = async (
     // Note: Backend DELETE endpoint uses predecessor_project_id and predecessor_task_number
     // in the path, not in the body.
   await request<void>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/dependencies/${predecessor_project_id}/${predecessor_task_number}`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/dependencies/${predecessor_project_id}/${predecessor_task_number}`),
     { method: "DELETE" }
   );
 };
 
 // Fetch all tasks
-export const getTasks = async (filters?: TaskFilters, sortOptions?: TaskSortOptions): Promise<Task[]> => {
+export const getTasks = async (projectId: string, filters?: TaskFilters, sortOptions?: TaskSortOptions): Promise<Task[]> => {
   const queryParams = new URLSearchParams();
-  if (filters?.projectId) queryParams.append("project_id", filters.projectId);
   if (filters?.agentId) queryParams.append("agent_id", filters.agentId);
   if (filters?.status && filters.status !== "all")
     queryParams.append("status", String(filters.status));
@@ -158,12 +158,53 @@ export const getTasks = async (filters?: TaskFilters, sortOptions?: TaskSortOpti
     if (sortOptions.direction) queryParams.append("sort_direction", sortOptions.direction);
   }
   const queryString = queryParams.toString();
-  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/tasks/${queryString ? `?${queryString}` : ""}`;
+  const url = buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/tasks${queryString ? `?${queryString}` : ""}`);
   const rawTasks = await request<RawTask[]>(url);
   return rawTasks.map((rawTask) => {
     const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
     return {
       ...rawTask,
+      id: `${rawTask.project_id}-${rawTask.task_number}`, // Computed ID for frontend compatibility
+      project_id: String(rawTask.project_id),
+      task_number: Number(rawTask.task_number),
+      title: String(rawTask.title || ""),
+      description: rawTask.description ? String(rawTask.description) : null,
+      status: statusId,
+      agent_id: rawTask.agent_id ? String(rawTask.agent_id) : null,
+      agent_name: rawTask.agent_name ? String(rawTask.agent_name) : null,
+      agent_status: rawTask.agent_status ? String(rawTask.agent_status) : undefined,
+      created_at: String(rawTask.created_at || new Date().toISOString()),
+      updated_at: String(rawTask.updated_at || new Date().toISOString()),
+      is_archived: !!rawTask.is_archived,
+      subtasks: rawTask.subtasks || [],
+      dependencies: rawTask.dependencies || [],
+    } as Task;
+  });
+};
+
+// Fetch all tasks across all projects
+export const getAllTasks = async (filters?: TaskFilters, sortOptions?: TaskSortOptions): Promise<Task[]> => {
+  const queryParams = new URLSearchParams();
+  if (filters?.agentId) queryParams.append("agent_id", filters.agentId);
+  if (filters?.status && filters.status !== "all")
+    queryParams.append("status", String(filters.status));
+  if (filters?.search) queryParams.append("search", filters.search);
+  if (filters?.is_archived !== undefined && filters.is_archived !== null) {
+    queryParams.append("is_archived", String(filters.is_archived));
+  }
+  // Add sorting parameters if provided
+  if (sortOptions) {
+    if (sortOptions.field) queryParams.append("sort_by", sortOptions.field);
+    if (sortOptions.direction) queryParams.append("sort_direction", sortOptions.direction);
+  }
+  const queryString = queryParams.toString();
+  const url = buildApiUrl(API_CONFIG.ENDPOINTS.TASKS, queryString ? `?${queryString}` : "");
+  const rawTasks = await request<RawTask[]>(url);
+  return rawTasks.map((rawTask) => {
+    const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
+    return {
+      ...rawTask,
+      id: `${rawTask.project_id}-${rawTask.task_number}`, // Computed ID for frontend compatibility
       project_id: String(rawTask.project_id),
       task_number: Number(rawTask.task_number),
       title: String(rawTask.title || ""),
@@ -192,11 +233,12 @@ export const getTaskById = async (
     queryParams.append("is_archived", String(is_archived));
   }
   const queryString = queryParams.toString();
-  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}${queryString ? `?${queryString}` : ""}`;
+  const url = buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}${queryString ? `?${queryString}` : ""}`);
   const rawTask = await request<RawTask>(url);
   const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
   return {
     ...rawTask,
+    id: `${rawTask.project_id}-${rawTask.task_number}`, // Computed ID for frontend compatibility
     project_id: String(rawTask.project_id),
     task_number: Number(rawTask.task_number),
     title: String(rawTask.title || ""),
@@ -216,12 +258,13 @@ export const getTaskById = async (
 // Create a new task
 export const createTask = async (project_id: string, taskData: TaskCreateData): Promise<Task> => {
   const rawTask = await request<RawTask>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/`),
     { method: "POST", body: JSON.stringify(taskData) },
   );
   const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
   return {
     ...rawTask,
+    id: `${rawTask.project_id}-${rawTask.task_number}`, // Computed ID for frontend compatibility
     project_id: String(rawTask.project_id),
     task_number: Number(rawTask.task_number),
     title: String(rawTask.title || ""),
@@ -249,12 +292,13 @@ export const updateTask = async (
     delete payload.completed;
   }
   const rawTask = await request<RawTask>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}`),
     { method: "PUT", body: JSON.stringify(payload) },
   );
   const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
   return {
     ...rawTask,
+    id: `${rawTask.project_id}-${rawTask.task_number}`, // Computed ID for frontend compatibility
     project_id: String(rawTask.project_id),
     task_number: Number(rawTask.task_number),
     title: String(rawTask.title || ""),
@@ -270,13 +314,16 @@ export const updateTask = async (
   } as Task;
 };
 
-// Delete a task
+// Fetch all tasks for a specific project (alias for getTasks for backward compatibility)
+export const getAllTasksForProject = async (projectId: string, filters?: TaskFilters, sortOptions?: TaskSortOptions): Promise<Task[]> => {
+  return getTasks(projectId, filters, sortOptions);
+};
 export const deleteTask = async (
   project_id: string,
   task_number: number,
 ): Promise<Task> => {
   const rawTask = await request<RawTask>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}`),
     { method: "DELETE" },
   );
   if (!rawTask) {
@@ -287,6 +334,7 @@ export const deleteTask = async (
   const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
   return {
     ...rawTask,
+    id: `${rawTask.project_id}-${rawTask.task_number}`, // Computed ID for frontend compatibility
     project_id: String(rawTask.project_id),
     task_number: Number(rawTask.task_number),
     title: String(rawTask.title || ""),
@@ -309,7 +357,7 @@ export const getTaskComments = async (
   task_number: number
 ): Promise<any[]> => {
   return request<any[]>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/comments/`
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/comments/`)
   );
 };
 
@@ -319,7 +367,7 @@ export const addTaskComment = async (
   commentData: { content: string; user_id?: string }
 ): Promise<any> => {
   return request<any>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/comments/`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/comments/`),
     { method: "POST", body: JSON.stringify(commentData) }
   );
 };
@@ -330,12 +378,13 @@ export const archiveTask = async (
   task_number: number,
 ): Promise<Task> => {
   const rawTask = await request<RawTask>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/archive`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/archive`),
     { method: "POST" },
   );
   const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
   return {
     ...rawTask,
+    id: `${rawTask.project_id}-${rawTask.task_number}`, // Computed ID for frontend compatibility
     project_id: String(rawTask.project_id),
     task_number: Number(rawTask.task_number),
     status: statusId,
@@ -355,12 +404,13 @@ export const unarchiveTask = async (
   task_number: number,
 ): Promise<Task> => {
   const rawTask = await request<RawTask>(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}/projects/${project_id}/tasks/${task_number}/unarchive`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/unarchive`),
     { method: "POST" },
   );
   const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
   return {
     ...rawTask,
+    id: `${rawTask.project_id}-${rawTask.task_number}`, // Computed ID for frontend compatibility
     project_id: String(rawTask.project_id),
     task_number: Number(rawTask.task_number),
     status: statusId,

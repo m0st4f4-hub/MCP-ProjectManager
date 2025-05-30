@@ -2,11 +2,11 @@ import { z } from "zod";
 // import { SortDirection, TaskSortField, TaskSortOptions } from "./index";
 
 export enum TaskStatus {
-  PENDING = "pending",
-  TODO = "todo",
-  IN_PROGRESS = "in_progress",
-  COMPLETED = "completed",
-  BLOCKED = "blocked",
+  TO_DO = "To Do",
+  IN_PROGRESS = "In Progress", 
+  COMPLETED = "Completed",
+  BLOCKED = "Blocked",
+  CANCELLED = "Cancelled",
 }
 
 export enum TaskPriority {
@@ -36,7 +36,10 @@ export const taskSchema = z.object({
 });
 
 // Runtime type for Task
-export type Task = z.infer<typeof taskSchema>;
+export type Task = z.infer<typeof taskSchema> & {
+  // Computed ID field for frontend compatibility (project_id + task_number)
+  id?: string;
+};
 
 // Schema for creating a new task
 export const taskCreateSchema = taskSchema.omit({
@@ -63,14 +66,14 @@ export interface TaskWithMeta extends Task {
 }
 
 // Task filter options
-// export interface TaskFilters {
-//   projectId?: string;
-//   agentId?: string;
-//   status?: "all" | "completed" | "active";
-//   search?: string;
-//   hideCompleted?: boolean;
-//   is_archived?: boolean | null;
-// }
+export interface TaskFilters {
+  projectId?: string;
+  agentId?: string;
+  status?: "all" | "completed" | "active";
+  search?: string;
+  hideCompleted?: boolean;
+  is_archived?: boolean | null;
+}
 
 // Task error types
 export interface TaskError {
@@ -128,3 +131,22 @@ export const taskDependencySchema = taskDependencyBaseSchema.extend({
 });
 
 export type TaskDependency = z.infer<typeof taskDependencySchema>;
+
+// --- Task Comment Schemas ---
+export const taskCommentBaseSchema = z.object({
+  task_project_id: z.string(),
+  task_number: z.number(),
+  user_id: z.string().nullable(), // Or a specific user schema/ID type
+  content: z.string().min(1, "Comment content cannot be empty"),
+});
+
+export const taskCommentCreateSchema = taskCommentBaseSchema;
+export type TaskCommentCreateData = z.infer<typeof taskCommentCreateSchema>;
+
+export const taskCommentSchema = taskCommentBaseSchema.extend({
+  id: z.string(), // Unique ID for the comment
+  created_at: z.string(), // ISO date string
+  updated_at: z.string().optional(), // ISO date string
+});
+
+export type TaskComment = z.infer<typeof taskCommentSchema>;

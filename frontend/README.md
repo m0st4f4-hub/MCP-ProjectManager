@@ -35,6 +35,16 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
+## Key Features and UI Components
+
+This frontend application provides a modern and responsive user interface for managing projects and tasks, built with Next.js, TypeScript, and Chakra UI. Key implemented features and their corresponding UI components include:
+
+*   **Comprehensive Task Management:** Create, view, update, delete, archive, and unarchive tasks directly through the UI. The `ProjectDetail` page (`src/app/projects/[projectId]/page.tsx`) serves as the main hub for managing tasks within a project, utilizing components like `TaskItem` (`src/components/task/TaskItem.tsx`).
+*   **Task Dependencies:** Visualize and manage task dependencies directly within the task details or project view.
+*   **Task File Associations:** View and manage files linked to specific tasks, leveraging the backend Memory service.
+*   **Responsive Design:** The UI is built with Chakra UI, providing a responsive layout that adapts to different screen sizes.
+*   **Themeability:** Supports light and dark modes.
+
 ---
 
 ## Inception Project: Refactoring Status
@@ -79,3 +89,21 @@ While significant progress has been made, particularly with the `TaskItem` compo
 2.  **Implement a robust testing suite** for the frontend, including unit and integration tests.
 3.  **Resolve browser connector issues** to enable comprehensive UI audits.
 4.  Consider refactoring other larger components like `AgentList.tsx` and `SettingsContent.tsx`.
+
+## Directory Contents Overview
+
+This directory contains the Next.js frontend application for the MCP Project Manager Suite. It provides the user interface for interacting with the backend API.
+
+Key files and directories:
+
+*   `public/`: Static assets like images, favicons, and other public files.
+*   `src/`: Contains the main application source code (pages, components, services, etc.).
+*   `README.md`: This file, providing an overview of the frontend application and refactoring status.
+*   `package.json`: Node.js package file managing dependencies and scripts.
+*   `package-lock.json`: Records the exact versions of dependencies.
+*   `next.config.ts`: Next.js configuration file.
+*   `tsconfig.json`: TypeScript configuration file.
+*   `postcss.config.mjs`: PostCSS configuration file.
+*   `tailwind.config.ts`: Tailwind CSS configuration file.
+*   `tests-e2e/`: End-to-end tests using Playwright.
+*   `vitest.config.*`: Configuration files for Vitest unit/integration tests.

@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
-import { getProjects, Project } from '@/services/api/projects';
+import { getProjects } from '@/services/api/projects';
+import { Project } from '@/types';
 import Link from 'next/link';
 
 const ProjectList: React.FC = () => {

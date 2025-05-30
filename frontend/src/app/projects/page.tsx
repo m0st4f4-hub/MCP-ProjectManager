@@ -1,3 +1,5 @@
+'use client';
+
 import ProjectList from '@/components/project/ProjectList';
 import React from 'react';
 

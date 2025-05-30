@@ -426,7 +426,12 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
               <VStack align="stretch" spacing={1} mt={1}>
                 {predecessors.map((dependency, index) => (
                   <HStack key={`pred-${index}`} justifyContent="space-between">
-                    <TaskDependencyTag dependency={dependency} />
+                    <TaskDependencyTag 
+                      dependency={{
+                        project_id: dependency.depends_on_task_project_id,
+                        task_number: dependency.depends_on_task_number,
+                      }}
+                    />
                     <IconButton
                       aria-label={`Remove dependency on task ${dependency.depends_on_task_project_id}/${dependency.depends_on_task_number}`}
                       icon={<DeleteIcon />}
@@ -449,7 +454,13 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
               <VStack align="stretch" spacing={1} mt={1}>
                 {successors.map((dependency, index) => (
                   <HStack key={`succ-${index}`} justifyContent="space-between">
-                    <TaskDependencyTag dependency={dependency} />
+                    <TaskDependencyTag 
+                      dependency={{
+                        project_id: dependency.dependent_task_project_id,
+                        task_number: dependency.dependent_task_number,
+                      }}
+                      isSuccessor={true}
+                    />
                     <IconButton
                       aria-label={`Remove dependency blocking task ${dependency.dependent_task_project_id}/${dependency.dependent_task_number}`}
                       icon={<DeleteIcon />}
@@ -482,7 +493,7 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
              <VStack align="stretch" spacing={3} mt={2}>
                {comments.map((comment) => (
                  <Box key={comment.id} p={3} borderWidth="1px" borderRadius="md" bg="gray.50">
-                   <Text fontSize="sm" mb={1}><strong>{comment.author || "Unknown User"}:</strong> {comment.content}</Text>
+                   <Text fontSize="sm" mb={1}><strong>{comment.user_id || "Unknown User"}:</strong> {comment.content}</Text>
                    <Text fontSize="xs" color="gray.500">{new Date(comment.created_at).toLocaleString()}</Text>
                  </Box>
                ))}

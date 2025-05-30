@@ -86,3 +86,23 @@ This directory contains general-purpose, reusable React components that provide 
   - The `children` prop is rendered within the form, allowing for custom input fields.
   - Includes a submit `Button` that shows a loading state and calls the `onSubmit` prop.
 - **Exports**: `AddFormBase` (React Functional Component).
+
+## Directory Contents Overview
+
+This directory (`frontend/src/components/common/`) contains general-purpose, reusable React components used across the frontend application. These components provide shared UI elements and patterns, promoting consistency and reducing code duplication.
+
+Key files:
+
+*   `FilterSidebar.tsx`: Component for filtering and sorting lists.
+*   `ConfirmationModal.tsx`: Generic modal for action confirmation.
+*   `EditModalBase.tsx`: Base modal structure for editing entities.
+*   `AddFormBase.tsx`: Base form structure for adding entities.
+*   `TaskDependencyTag.tsx`: Component to display task dependency status.
+*   `TaskAgentTag.tsx`: Component to display assigned agent.
+*   `TaskActionsMenu.tsx`: Menu for task-specific actions.
+*   `TaskTitleEditor.tsx`: Inline editor for task titles.
+*   `TaskStatusTag.tsx`: Component to display task status.
+*   `TaskProjectTag.tsx`: Component to display associated project.
+*   `TaskDescriptionEditor.tsx`: Inline editor for task descriptions.
+*   `FilterPanel.tsx`: Panel containing filter controls (likely used within `FilterSidebar`).
+*   `AppIcon.tsx`: Component for displaying application icons.

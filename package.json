@@ -6,10 +6,13 @@
     "mcp-project-manager": "./cli.js"
   },
   "scripts": {
-    "predev": "powershell -NoProfile -Command \"$ports = @(8080, 3000); foreach ($port in $ports) { try { $process = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue; if ($process) { Stop-Process -Id $process.OwningProcess -Force -ErrorAction SilentlyContinue; Write-Host ('Killed process on port ' + $port) } else { Write-Host ('No process found on port ' + $port) } } catch { Write-Host $_.Exception.Message } }; exit 0\"",
+    "predev": "powershell -NoProfile -Command \"$ports = @(8000, 3000); foreach ($port in $ports) { try { $process = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue; if ($process) { Stop-Process -Id $process.OwningProcess -Force -ErrorAction SilentlyContinue; Write-Host ('Killed process on port ' + $port) } else { Write-Host ('No process found on port ' + $port) } } catch { Write-Host $_.Exception.Message } }; exit 0\"",
     "start": "node cli.js",
-    "dev:backend": ".\\backend\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8080 --reload",
+    "dev": "dev_launcher.bat",
+    "dev:backend": "cd backend && .venv\\Scripts\\python.exe -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload",
+    "dev:backend:full": "backend\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload",
     "dev:frontend": "cd frontend && npm run dev",
+    "test:backend": "cd backend && .venv\\Scripts\\pytest.exe tests\\test_async_example.py -v",
     "lint:frontend": "cd frontend && npx eslint . --ext .js,.jsx,.ts,.tsx --config ./eslint.config.cjs --format json --output-file ../eslint_report.json",
     "watch:pack": "nodemon --watch cli.js --watch package.json --watch .npmignore --watch .cursor/rules --ext js,json,mdc --exec \"npm pack\"",
     "build:all": "cd frontend && npm run build && cd .. && backend\\.venv\\Scripts\\python.exe -m pip install -r backend\\requirements.txt",

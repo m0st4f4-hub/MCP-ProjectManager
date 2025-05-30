@@ -13,7 +13,7 @@ from .utils.user_utils import username_exists_check
 
 
 def username_exists(db: Session, username: str) -> bool:
-    """
-    Returns True if a user with the given username already exists.
-    """
-    return username_exists_check(db, username)
+ """
+ Returns True if a user with the given username already exists.
+ """
+ return username_exists_check(db, username)

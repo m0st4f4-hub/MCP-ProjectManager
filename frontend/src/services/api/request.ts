@@ -16,6 +16,7 @@ export const normalizeToStatusID = (
     if (lowerStatus === "in progress") return "IN_PROGRESS";
     if (lowerStatus === "blocked") return "BLOCKED";
     if (lowerStatus === "completed") return "COMPLETED";
+    if (lowerStatus === "cancelled") return "FAILED"; // Map cancelled to FAILED as closest equivalent
     if (lowerStatus === "pending_verification") return "PENDING_VERIFICATION";
     if (lowerStatus === "verification_complete") return "VERIFICATION_COMPLETE";
     if (lowerStatus === "verification_failed") return "VERIFICATION_FAILED";
@@ -69,6 +70,9 @@ export async function request<T>(
       const errorData = await response.json();
       if (errorData && errorData.detail) {
         errorDetail = errorData.detail;
+      } else if (errorData && errorData.message) {
+        // Handle standardized ErrorResponse format
+        errorDetail = errorData.message;
       } else {
         errorDetail = response.statusText || errorDetail; // Use statusText if detail is not present
       }
@@ -83,5 +87,16 @@ export async function request<T>(
   if (response.status === 204) {
     return null as T; // Or handle as needed, maybe a specific type for no content
   }
-  return response.json();
+  
+  const responseData = await response.json();
+  
+  // Handle standardized backend response formats
+  // Check if this is a DataResponse<T> or ListResponse<T> wrapper
+  if (responseData && typeof responseData === 'object' && 'data' in responseData) {
+    // This is a wrapped response from the backend
+    return responseData.data as T;
+  }
+  
+  // For backwards compatibility, return the raw response if it's not wrapped
+  return responseData as T;
 }

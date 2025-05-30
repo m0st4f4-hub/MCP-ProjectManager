@@ -27,3 +27,15 @@ They likely leverage Chakra UI for form elements and a library like React Hook F
   - Interacts with `useAgentStore` or an API service to submit the updated agent data.
 
 These components centralize form logic, making it easier to manage and reuse form structures across the application.
+
+## Directory Contents Overview
+
+This directory (`frontend/src/components/forms/`) contains form components used for creating and editing various entities within the application, such as tasks, projects, and agents.
+
+Key files:
+
+*   `TaskForm.tsx`: A core form component likely used as a base for both adding and editing tasks.
+*   `AddProjectForm.tsx`: Form for creating new projects.
+*   `EditAgentForm.tsx`: Form for editing existing agent details.
+*   `AddAgentForm.tsx`: Form for adding new agents.
+*   `AddTaskForm.tsx`: Form for adding new tasks (likely a specific implementation using `TaskForm.tsx`).

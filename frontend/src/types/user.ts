@@ -7,6 +7,8 @@ export const userBaseSchema = z.object({
 
 export const userCreateSchema = userBaseSchema.extend({
   password: z.string(),
+  email: z.string().email(),
+  full_name: z.string().optional(),
 });
 
 export type UserCreateData = z.infer<typeof userCreateSchema>;
@@ -19,7 +21,9 @@ export type UserUpdateData = z.infer<typeof userUpdateSchema>;
 
 export const userSchema = userBaseSchema.extend({
   id: z.string(),
-  is_active: z.boolean(), // Assuming is_active exists based on common patterns
+  email: z.string().nullable().optional(),
+  full_name: z.string().nullable().optional(),
+  disabled: z.boolean().default(false),
 });
 
 export type User = z.infer<typeof userSchema>;

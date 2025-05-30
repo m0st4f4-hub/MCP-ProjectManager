@@ -1,162 +1,194 @@
-# Task Manager Backend v2.0
+# Task Manager Backend - Server & Testing Guide
 
-## 🎯 Overview
-Consolidated and optimized task manager backend with API and MCP tool integration. Refactored to maintain 230 LoC limit per file with removed duplications and enhanced functionality.
+## 🚀 Quick Start
 
-## 🏗️ Architecture
+### Start the Development Server
 
-### 📁 Directory Structure
-```
-backend/
-├── config/               # Application configuration
-│   ├── __init__.py
-│   ├── logging_config.py
-│   └── router_config.py
-├── models/               # Database models (under 230 LoC each)
-│   ├── __init__.py
-│   ├── base.py          # Base utilities and mixins
-│   ├── user.py          # User and authentication models
-│   ├── agent.py         # Agent core models
-│   ├── project.py       # Project management models
-│   ├── task.py          # Task models
-│   ├── task_relations.py # Task dependencies and files
-│   ├── comment.py       # Comment model
-│   ├── memory.py        # Knowledge graph models
-│   ├── workflow.py      # Workflow and templates
-│   └── audit.py         # Audit and logging models
-├── mcp_tools/           # MCP tool implementations
-│   ├── __init__.py
-│   ├── project_tools.py
-│   ├── task_tools.py
-│   └── memory_tools.py
-├── routers/             # API route handlers
-├── services/            # Business logic services
-├── crud/                # Database operations
-├── schemas/             # Pydantic models
-├── main.py              # FastAPI application
-├── database.py          # Database configuration
-└── run_backend.py       # Startup script
-```
+**From the project root directory (`D:\mcp\task-manager`):**
 
-## 🚀 Features
-
-### ✅ API Endpoints
-- **Projects**: CRUD operations for project management
-- **Tasks**: Task creation, assignment, and tracking
-- **Agents**: Agent management and rule enforcement
-- **Memory**: Knowledge graph operations
-- **Audit**: Activity logging and tracking
-- **Rules**: Agent behavior rules and validation
-
-### 🔧 MCP Tools Integration
-- **Project Tools**: Create projects, list projects
-- **Task Tools**: Create tasks, list tasks with filtering
-- **Memory Tools**: Add entities, create relations, search knowledge graph
-- **Agent Tools**: Agent validation and rule enforcement
-
-### 🛠️ Key Improvements
-1. **Consolidated Models**: Removed duplication between models.py and models/ directory
-2. **230 LoC Limit**: All files respect the line count limit
-3. **Modular Design**: Separated concerns into focused modules
-4. **Enhanced MCP**: Full MCP tool integration with FastAPI-MCP
-5. **Better Configuration**: Centralized configuration management
-6. **Improved Logging**: Structured logging with file output
-
-## 🔄 Quick Start
-
-### 1. Install Dependencies
 ```bash
-pip install -r requirements.txt
+cd D:\mcp\task-manager
+backend\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 2. Start the Server
+The server will start and you should see:
+- ✅ Database tables being checked/initialized
+- ✅ "Application startup complete."
+- ✅ Server running on `http://0.0.0.0:8000`
+
+### Access the API
+
+- **API Documentation**: http://localhost:8000/docs
+- **Interactive API**: http://localhost:8000/redoc
+- **Health Check**: http://localhost:8000/health
+- **Root Endpoint**: http://localhost:8000/
+
+## 🧪 Running Tests
+
+### Run Individual Test Suites
+
+**From the project root directory (`D:\mcp\task-manager`):**
+
 ```bash
-python run_backend.py
+# Run async example tests
+backend\.venv\Scripts\pytest.exe backend\tests\test_async_example.py -v
+
+# Run CRUD tests
+backend\.venv\Scripts\pytest.exe backend\tests\test_projects_crud.py backend\tests\test_tasks_crud.py backend\tests\test_agents_crud.py -v
+
+# Run specific test files
+backend\.venv\Scripts\pytest.exe backend\tests\test_comments_crud.py -v
+backend\.venv\Scripts\pytest.exe backend\tests\test_audit_logs_crud.py -v
 ```
 
-### 3. Access APIs
-- **API Documentation**: http://localhost:8080/docs
-- **Health Check**: http://localhost:8080/health
-- **Root Endpoint**: http://localhost:8080/
+### Run All Working Tests
 
-## 📊 API Usage Examples
-
-### Create Project via MCP Tool
 ```bash
-curl -X POST "http://localhost:8080/api/v1/mcp-tools/project/create" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "New Project", "description": "Project description"}'
+# From the project root
+backend\.venv\Scripts\pytest.exe backend\tests\test_async_example.py backend\tests\test_projects_crud.py backend\tests\test_tasks_crud.py backend\tests\test_agents_crud.py backend\tests\test_comments_crud.py backend\tests\test_audit_logs_crud.py -v
+```
+## 📁 Project Structure
+
+```
+D:\mcp\task-manager\
+├── backend\                    # Backend application
+│   ├── .env                    # Environment configuration ✅
+│   ├── .venv\                  # Virtual environment ✅
+│   ├── main.py                 # FastAPI application entry point ✅
+│   ├── database.py             # Database configuration ✅
+│   ├── requirements.txt        # Python dependencies ✅
+│   ├── pytest.ini             # Test configuration ✅
+│   ├── alembic.ini             # Database migrations config
+│   │
+│   ├── config\                 # Configuration modules
+│   │   ├── __init__.py
+│   │   └── app_config.py       # Settings and environment loading ✅
+│   │
+│   ├── models\                 # SQLAlchemy data models ✅
+│   ├── schemas\                # Pydantic schemas
+│   ├── crud\                   # Database operations
+│   ├── services\               # Business logic
+│   ├── routers\                # API endpoints
+│   ├── middleware\             # Request/response middleware
+│   ├── tests\                  # Test files ✅
+│   └── alembic\                # Database migration files
+│
+├── frontend\                   # Frontend application
+└── (run commands from here)    # ← Important!
 ```
 
-### List Tasks
-```bash
-curl -X GET "http://localhost:8080/api/v1/mcp-tools/tasks/list?project_id=123&status=In Progress"
+## 🔧 Configuration
+
+### Environment Variables (`.env`)
+
+The backend uses these environment variables (located in `backend\.env`):
+
+```env
+DATABASE_URL=sqlite+aiosqlite:///./sql_app.db
+TEST_DATABASE_URL=sqlite+aiosqlite:///./test.db
+SECRET_KEY=mysecretkey
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+DEBUG=True
 ```
-
-### Add Knowledge Graph Entity
-```bash
-curl -X POST "http://localhost:8080/api/v1/mcp-tools/memory/add-entity" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "User Story", "type": "concept", "description": "Requirements gathering"}'
-```
-
-## 🧰 MCP Integration
-
-The backend provides full MCP tool support through FastAPI-MCP integration:
-
-1. **Automatic Tool Registration**: MCP tools are automatically exposed
-2. **Database Integration**: All tools have database session management
-3. **Error Handling**: Comprehensive error handling and logging
-4. **Audit Trail**: All MCP operations are logged for tracking
-
-## 🔐 Security Features
-
-- **CORS Configuration**: Properly configured for frontend integration
-- **Session Management**: Database session handling with cleanup
-- **Error Logging**: Comprehensive error tracking and logging
-- **Input Validation**: Pydantic schema validation for all inputs
-
-## 📈 Performance Optimizations
-
-1. **Lazy Loading**: Database connections only when needed
-2. **Connection Pooling**: SQLAlchemy connection management
-3. **Modular Imports**: Reduced startup time with focused imports
-4. **Caching Ready**: Architecture supports future caching implementation
-
-## 🧪 Development
-
-### Running Tests
-```bash
-pytest
-```
-
-### Code Quality
-- **Line Limit**: All files under 230 LoC
-- **No Duplications**: Consolidated all duplicate logic
-- **Type Hints**: Full type annotation support
-- **Documentation**: Comprehensive docstrings
-
-## 📝 Configuration
-
-### Environment Variables
-- `DATABASE_URL`: Database connection string
-- `LOG_LEVEL`: Logging level (INFO, DEBUG, ERROR)
-- `CORS_ORIGINS`: Allowed CORS origins
 
 ### Database
-- **Default**: SQLite database in project root
-- **Production**: PostgreSQL support available
-- **Migrations**: Alembic for database migrations
 
-## 🎉 Success Indicators
+- **Production DB**: `backend\sql_app.db` (SQLite with async support)
+- **Test DB**: `backend\test.db` (Separate database for tests)
+- **Migrations**: Use Alembic for schema changes
+## 🛠️ Development Workflow
 
-✅ All functionality restored and working  
-✅ Removed dummy server and unused files  
-✅ All files under 230 LoC limit  
-✅ No code duplication  
-✅ MCP tools fully integrated  
-✅ API endpoints optimized  
-✅ Comprehensive error handling  
-✅ Structured logging implemented  
+### 1. Make Code Changes
+Edit files in the appropriate directories:
+- **Models**: `backend\models\`
+- **API Routes**: `backend\routers\`
+- **Business Logic**: `backend\services\`
+- **Database Operations**: `backend\crud\`
 
-The backend is now fully optimized, consolidated, and ready for production use with both REST API and MCP tool capabilities.
+### 2. Test Your Changes
+```bash
+# Run relevant tests
+backend\.venv\Scripts\pytest.exe backend\tests\test_[module_name].py -v
+
+# Start the server to test manually
+backend\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 3. Database Changes
+If you modify models, create and run migrations:
+```bash
+cd backend
+.venv\Scripts\alembic.exe revision --autogenerate -m "Description of changes"
+.venv\Scripts\alembic.exe upgrade head
+```
+
+## ✅ What's Working
+
+- ✅ **Server Startup**: FastAPI server starts successfully
+- ✅ **Database**: SQLite with async support (aiosqlite)
+- ✅ **Configuration**: Environment variables loaded correctly
+- ✅ **Tests**: Multiple test suites passing
+- ✅ **API Documentation**: Auto-generated Swagger/OpenAPI docs
+- ✅ **Hot Reload**: Code changes trigger automatic server restart
+- ✅ **Memory Service / Knowledge Graph**: Centralized storage for entities and relationships.
+- ✅ **Extended Task API**: Endpoints for task dependencies, file associations, archiving, and unarchiving.
+- ✅ **Database Migrations**: Alembic support updated for Memory Service models.
+## 🔍 Troubleshooting
+
+### Server Won't Start
+1. Make sure you're in the correct directory (`D:\mcp\task-manager`)
+2. Check that the virtual environment exists (`backend\.venv\`)
+3. Verify the `.env` file has all required variables
+
+### Tests Failing
+1. Make sure the test database is not locked
+2. Run tests individually to isolate issues
+3. Check that imports work correctly
+
+### Import Errors
+- The project is designed to run from the root directory
+- All imports should be relative to the `backend` package
+- Don't run files directly from the backend directory
+
+## 🎯 Key Commands Reference
+
+```bash
+# Start server (from root)
+backend\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+
+# Run tests (from root)
+backend\.venv\Scripts\pytest.exe backend\tests\test_async_example.py -v
+
+# Check requirements
+backend\.venv\Scripts\pip.exe list
+
+# Install new dependencies
+backend\.venv\Scripts\pip.exe install package_name
+backend\.venv\Scripts\pip.exe freeze > backend\requirements.txt
+```
+
+---
+
+**Remember**: Always run commands from the project root directory (`D:\mcp\task-manager`) for correct module resolution!
+
+## Directory Contents Overview
+
+This directory contains the FastAPI backend application for the MCP Project Manager Suite. It houses the API logic, database interactions, business services, and configuration.
+
+Key files and directories:
+
+*   `alembic/`: Database migration scripts.
+*   `config/`: Application configuration settings.
+*   `crud/`: Database Create, Read, Update, and Delete (CRUD) operations.
+*   `middleware/`: FastAPI middleware for request processing.
+*   `models/`: SQLAlchemy ORM models defining database schema.
+*   `routers/`: FastAPI routers defining API endpoints.
+*   `schemas/`: Pydantic schemas for data validation and serialization.
+*   `services/`: Business logic and service layer.
+*   `tests/`: Backend test suites (unit and integration).
+*   `.venv/`: Python virtual environment for dependencies.
+*   `main.py`: Main FastAPI application entry point.
+*   `database.py`: Database connection and session setup.
+*   `requirements.txt`: Python project dependencies.
+*   `auth.py`: Authentication related code.

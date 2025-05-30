@@ -10,6 +10,7 @@ import {
   AgentRuleRemoveResponse,
 } from "@/types";
 import { request } from "./request";
+import { buildApiUrl, API_CONFIG } from "./config";
 
 // Intermediate raw type for agents from backend
 interface RawAgent {
@@ -23,8 +24,6 @@ interface RawAgent {
   [key: string]: unknown;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-
 // Fetch all agents
 export const getAgents = async (skip: number = 0, limit: number = 100, search?: string, status?: string, is_archived?: boolean): Promise<Agent[]> => {
   const queryParams = new URLSearchParams();
@@ -34,7 +33,7 @@ export const getAgents = async (skip: number = 0, limit: number = 100, search?: 
   if (status !== undefined) queryParams.append("status", status);
   if (is_archived !== undefined) queryParams.append("is_archived", String(is_archived));
   const queryString = queryParams.toString();
-  const url = `${API_BASE_URL}/agents/${queryString ? `?${queryString}` : ""}`;
+  const url = buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `?${queryString}`);
   const rawAgents = await request<RawAgent[]>(url);
   return rawAgents.map((rawAgent) => ({
     ...rawAgent,
@@ -50,7 +49,7 @@ export const getAgents = async (skip: number = 0, limit: number = 100, search?: 
 
 export const getAgentById = async (agent_id: string): Promise<Agent> => {
   const rawAgent = await request<RawAgent>(
-    `${API_BASE_URL}/agents/${agent_id}`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/id/${agent_id}`)
   );
   return {
     ...rawAgent,
@@ -62,7 +61,7 @@ export const getAgentById = async (agent_id: string): Promise<Agent> => {
 
 export const getAgentByName = async (agent_name: string): Promise<Agent> => {
   const rawAgent = await request<RawAgent>(
-    `${API_BASE_URL}/agents/${agent_name}`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/${agent_name}`)
   );
   return {
     ...rawAgent,
@@ -74,7 +73,7 @@ export const getAgentByName = async (agent_name: string): Promise<Agent> => {
 
 export const createAgent = async (agentData: AgentCreateData): Promise<Agent> => {
   const rawAgent = await request<RawAgent>(
-    `${API_BASE_URL}/agents/`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, "/"),
     { method: "POST", body: JSON.stringify(agentData) },
   );
   return {
@@ -90,7 +89,7 @@ export const updateAgentById = async (
   agentData: AgentUpdateDataType,
 ): Promise<Agent> => {
   const rawAgent = await request<RawAgent>(
-    `${API_BASE_URL}/agents/${agent_id}`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/${agent_id}`),
     { method: "PUT", body: JSON.stringify(agentData) },
   );
   return {
@@ -103,28 +102,42 @@ export const updateAgentById = async (
 
 export const deleteAgentById = async (agent_id: string): Promise<null> => {
   await request<null>(
-    `${API_BASE_URL}/agents/${agent_id}`,
+    buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/${agent_id}`),
     { method: "DELETE" },
   );
   return null;
 };
 
 export const archiveAgent = async (agentId: string): Promise<AgentArchiveResponse> => {
-  return request<AgentArchiveResponse>(`${API_BASE_URL}/agents/${agentId}/archive`, { method: "POST" });
+  return request<AgentArchiveResponse>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/${agentId}/archive`), 
+    { method: "POST" }
+  );
 };
 
 export const unarchiveAgent = async (agentId: string): Promise<AgentUnarchiveResponse> => {
-  return request<AgentUnarchiveResponse>(`${API_BASE_URL}/agents/${agentId}/unarchive`, { method: "POST" });
+  return request<AgentUnarchiveResponse>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/${agentId}/unarchive`), 
+    { method: "POST" }
+  );
 };
 
 export const addRuleToAgent = async (agentId: string, ruleId: string): Promise<AgentRuleAddResponse> => {
-  return request<AgentRuleAddResponse>(`${API_BASE_URL}/agents/${agentId}/rules/`, { method: "POST", body: JSON.stringify({ rule_id: ruleId }) });
+  return request<AgentRuleAddResponse>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/${agentId}/rules/`), 
+    { method: "POST", body: JSON.stringify({ rule_id: ruleId }) }
+  );
 };
 
 export const removeRuleFromAgent = async (agentId: string, ruleId: string): Promise<AgentRuleRemoveResponse> => {
-  return request<AgentRuleRemoveResponse>(`${API_BASE_URL}/agents/${agentId}/rules/${ruleId}`, { method: "DELETE" });
+  return request<AgentRuleRemoveResponse>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/${agentId}/rules/${ruleId}`), 
+    { method: "DELETE" }
+  );
 };
 
 export const getAgentRules = async (agentId: string): Promise<AgentRule[]> => {
-  return request<AgentRule[]>(`${API_BASE_URL}/agents/${agentId}/rules/`);
+  return request<AgentRule[]>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/${agentId}/rules/`)
+  );
 };

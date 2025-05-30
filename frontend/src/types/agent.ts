@@ -19,6 +19,14 @@ export type AgentUpdateData = z.infer<typeof agentUpdateSchema>;
 
 export const agentSchema = agentBaseSchema.extend({
   id: z.string(), // Assuming UUID as string
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+  task_count: z.number().optional(),
+  completed_task_count: z.number().optional(),
+  project_names: z.array(z.string()).optional(),
+  status: z.string().optional(),
+  tasks: z.array(z.any()).optional(), // Tasks array from backend
+  agent_rules: z.array(z.any()).optional(), // Agent rules from backend
 });
 
 export type Agent = z.infer<typeof agentSchema>;

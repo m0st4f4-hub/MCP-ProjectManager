@@ -2,10 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getProjectById, deleteProject, archiveProject, unarchiveProject, Project } from '@/services/api/projects';
+import { getProjectById, deleteProject, archiveProject, unarchiveProject } from '@/services/api/projects';
+import { Project } from '@/types/project';
 import { generateProjectManagerPlanningPrompt, PlanningRequestData, PlanningResponseData } from '@/services/api/planning';
 import ProjectMembers from './ProjectMembers';
 import ProjectFiles from './ProjectFiles';
+import { getAllTasksForProject } from '@/services/api/tasks';
+import { Task } from '@/types/task';
+import TaskItem from '@/components/task/TaskItem';
 
 const ProjectDetail: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -17,6 +21,10 @@ const ProjectDetail: React.FC = () => {
   const [planningPrompt, setPlanningPrompt] = useState<string | null>(null);
   const [planningLoading, setPlanningLoading] = useState(false);
   const [planningError, setPlanningError] = useState<string | null>(null);
+
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasksLoading, setTasksLoading] = useState(true);
+  const [tasksError, setTasksError] = useState<string | null>(null);
 
   const fetchProject = async () => {
     if (!projectId) return;
@@ -31,8 +39,22 @@ const ProjectDetail: React.FC = () => {
     }
   };
 
+  const fetchTasks = async () => {
+    if (!projectId) return;
+    try {
+      const data = await getAllTasksForProject(projectId);
+      setTasks(data);
+    } catch (err) {
+      setTasksError('Failed to fetch tasks');
+      console.error(err);
+    } finally {
+      setTasksLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchProject();
+    fetchTasks();
   }, [projectId]);
 
   const handleDelete = async () => {
@@ -41,7 +63,7 @@ const ProjectDetail: React.FC = () => {
       try {
         await deleteProject(project.id);
         alert('Project deleted successfully!');
-        router.push('/projects'); // TODO: Redirect to project list or dashboard after deletion
+        router.push('/projects');
       } catch (err) {
         alert('Failed to delete project');
         console.error(err);
@@ -54,7 +76,7 @@ const ProjectDetail: React.FC = () => {
     try {
       await archiveProject(project.id);
       alert('Project archived successfully!');
-      fetchProject(); // TODO: Update UI to reflect archived status or refetch project
+      fetchProject();
     } catch (err) {
       alert('Failed to archive project');
       console.error(err);
@@ -66,7 +88,7 @@ const ProjectDetail: React.FC = () => {
     try {
       await unarchiveProject(project.id);
       alert('Project unarchived successfully!');
-      fetchProject(); // TODO: Update UI to reflect unarchived status or refetch project
+      fetchProject();
     } catch (err) {
       alert('Failed to unarchive project');
       console.error(err);
@@ -112,6 +134,21 @@ const ProjectDetail: React.FC = () => {
       </div>
 
       <ProjectMembers projectId={project.id} />
+
+      <h2>Tasks</h2>
+      {tasksLoading ? (
+        <div>Loading tasks...</div>
+      ) : tasksError ? (
+        <div>Error: {tasksError}</div>
+      ) : tasks.length === 0 ? (
+        <p>No tasks found for this project.</p>
+      ) : (
+        <div>
+          {tasks.map((task) => (
+            <TaskItem key={task.id} task={task} projectName={project.name} />
+          ))}
+        </div>
+      )}
 
       <ProjectFiles projectId={project.id} />
 

@@ -79,6 +79,27 @@ For more details, see:
 - `frontend/src/theme/chakra-theme.ts` (theme config)
 - `frontend/src/contexts/ThemeContext.tsx` (theme switching logic)
 
+## Directory Contents Overview
+
+This directory (`frontend/src/`) contains the main source code for the frontend application, built with Next.js and TypeScript. It is organized into several subdirectories, each responsible for a specific aspect of the application's architecture.
+
+Key files and directories:
+
+*   `app/`: Contains Next.js App Router pages and core application layout.
+*   `components/`: Reusable UI components.
+*   `contexts/`: React Context providers for global state.
+*   `lib/`: Utility functions and helper modules.
+*   `providers/`: Wrappers for external libraries or services.
+*   `services/`: API clients and frontend service logic.
+*   `store/`: Frontend state management.
+*   `theme/`: Application theme configuration.
+*   `tokens/`: Design token definitions.
+*   `types/`: TypeScript type definitions.
+*   `utils/`: General utility functions.
+*   `__tests__/`: Frontend test files.
+*   `react-18-shims.d.ts`: TypeScript shims for React 18 compatibility.
+*   `theme.ts`: Main theme file using Chakra UI.
+
 ## Subdirectories
 
 The `src/` directory is further organized into the following subdirectories:

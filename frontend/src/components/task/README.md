@@ -19,6 +19,9 @@ The core component in this module is `TaskItem.tsx`. It acts as a container and 
 - Displays a summarized view of the task.
 - Allows users to expand the task to see more details.
 - Provides access to task actions (e.g., edit, delete, mark complete) via the `common/TaskActionsMenu.tsx` component.
+- Displays and manages task dependencies (predecessors and successors).
+- Displays and manages associated files (Memory entities).
+- Provides options for archiving and unarchiving the task.
 - Handles the logic for conditional rendering of details and action states.
 
 ### Data Flow
@@ -59,7 +62,7 @@ The core component in this module is `TaskItem.tsx`. It acts as a container and 
 - **Props:** `isOpen`, `onClose`, `task`, `onUpdate`.
 
 ### `modals/TaskDetailsModal.tsx`
-- **Purpose:** Modal dialog for viewing comprehensive task details and performing actions (archive, delete).
+- **Purpose:** Modal dialog for viewing comprehensive task details. Allows users to view and manage task dependencies, view and add associated files (Memory entities), and perform actions like archive, unarchive, and delete.
 - **Props:** `isOpen`, `onClose`, `taskId`.
 
 See `frontend/src/components/modals/README.md` for more details.
@@ -111,8 +114,21 @@ See `frontend/src/components/modals/README.md` for more details.
 
 - Integration with real-time updates.
 - Advanced filtering or sorting options.
-- Improved accessibility and automated testing.
 
 ---
 
-For specific implementation details, refer to the JSDoc comments within each `.tsx` file.
+For specific implementation details, refer to the JSDoc comments within each `.tsx`
+
+## Directory Contents Overview
+
+This directory (`frontend/src/components/task/`) contains the React components specifically designed for displaying and interacting with individual tasks within the frontend application. It includes the main `TaskItem` component and its related sub-components, utilities, and types.
+
+Key files:
+
+*   `TaskItem.tsx`: The primary component for rendering a single task item.
+*   `TaskItemMainSection.tsx`: Renders the main, visible part of a task item.
+*   `TaskItemDetailsSection.tsx`: Renders the expandable details section of a task item.
+*   `TaskItem.utils.ts`: Contains utility functions used by task components.
+*   `TaskItem.types.ts`: Defines TypeScript types for task components.
+*   `TaskItem.styles.ts`: Contains styling definitions for task components.
+*   `README.md`: This file.

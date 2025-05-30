@@ -6,6 +6,29 @@
 
 An open-source, full-stack suite for collaborative project management, empowering human users and AI agents to manage, automate, and execute complex projects—end-to-end. Built with a FastAPI backend, a Next.js/Chakra UI frontend, and integrated with the Model Context Protocol (MCP) for advanced agentic capabilities.
 
+## 🚀 Quick Start
+
+### **One-Command Development Setup**
+```bash
+# Clone and setup (if needed), then:
+dev_launcher.bat
+```
+
+This will automatically:
+- ✅ Clear ports 8000 and 3000
+- ✅ Start backend server at http://localhost:8000  
+- ✅ Start frontend server at http://localhost:3000
+- ✅ Open API docs at http://localhost:8000/docs
+
+### **Alternative Launch Methods**
+```bash
+npm run dev                    # NPM script
+node dev_launcher.js          # Cross-platform Node.js
+powershell dev_launcher.ps1   # PowerShell (Windows)
+```
+
+See [`DEV_LAUNCHER_GUIDE.md`](./DEV_LAUNCHER_GUIDE.md) for complete setup instructions.
+
 ## Tech Stack
 
 *   **Backend:**
@@ -82,10 +105,21 @@ project-manager/
     *   Enables agents and potentially human users to store, retrieve, and relate entities, observations, and facts.
     *   Powers enhanced contextual understanding and persistent memory for agents.
 *   **Unified Interface:** Modern WebGUI (Next.js/Chakra UI) for human interaction, monitoring, and guidance.
-*   **Comprehensive Task Management:** Create, view, update, delete, and assign tasks and subtasks.
+*   **Comprehensive Task Management:** Create, view, update, delete, assign, archive, and unarchive tasks and subtasks.
 *   **Project Organization:** Group tasks into projects with descriptions and statuses.
+*   **Task Dependencies:** Model relationships between tasks (predecessors and successors).
+*   **Task File Associations:** Link relevant files (Memory Entities) directly to tasks.
 *   **Flexible Filtering:** Filter and search tasks by various criteria.
 *   **CLI for Easy Setup & Management:** One-command setup and an `npx`-runnable CLI to manage the entire suite.
+
+## Advanced Features
+
+Beyond basic task and project management, the MCP Project Manager Suite offers advanced features to enhance collaboration, automation, and knowledge management:
+
+*   **Task Dependencies:** Define relationships between tasks, ensuring that tasks are completed in the correct order. This helps visualize project flow and identify bottlenecks.
+*   **Task File Associations:** Link relevant files (such as design documents, code snippets, or research notes) directly to tasks using the integrated Memory service. This keeps all task-related information easily accessible.
+*   **Task Archiving:** Archive completed or irrelevant tasks to keep your project views clean without permanently deleting historical data. Archived tasks can be easily unarchived if needed.
+*   **System-Wide Task API:** A robust API layer (built with FastAPI) allows external tools and AI agents to interact with the task management system programmatically. This enables deep automation and integration with other services.
 
 ## Setup and Running
 
@@ -235,4 +269,25 @@ If you encounter any issues:
 ## License
 
 ISC
+
+## Directory Contents Overview
+
+This is the root directory of the MCP Project Manager Suite. It contains top-level configuration files, build scripts, documentation, and the main entry points for the backend and frontend applications.
+
+Key files and directories:
+
+*   `backend/`: Contains the FastAPI backend application code.
+*   `frontend/`: Contains the Next.js frontend application code.
+*   `README.md`: This file, providing a high-level overview of the project.
+*   `package.json`: Node.js package file, managing frontend dependencies and scripts.
+*   `package-lock.json`: Records the exact versions of frontend dependencies.
+*   `dev_launcher.*`: Scripts for easily launching the development environment.
+*   `*.md`: Various top-level documentation files (e.g., guides, reports).
+*   `.gitignore`: Specifies intentionally untracked files that Git should ignore.
+*   `.npmignore`: Specifies files that should be ignored when publishing to npm.
+*   `LICENSE`: Project license file.
+*   `sql_app.db`: Default SQLite database file (generated on first run).
+*   `.github/`: Contains GitHub Actions workflows for CI/CD.
+*   `docs/`: Placeholder for additional documentation (currently empty).
+*   `.cursor/`: Contains MCP rules and agent configurations.
 

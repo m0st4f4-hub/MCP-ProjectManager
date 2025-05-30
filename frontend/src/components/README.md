@@ -130,3 +130,18 @@ For more details, see:
 - `modals/`: Contains various modal dialog components used throughout the application (e.g., confirmation modals, detail view modals like `TaskDetailsModal.tsx`).
 - `subtasks/`: Contains components related to the display and management of subtasks within a parent task.
 - `views/`: This new directory likely contains components that define larger view structures or layouts, possibly for different ways of displaying lists or collections of data (e.g., `ListView`, `KanbanView` might be moved or new view components defined here).
+
+## Directory Contents Overview
+
+This directory (`frontend/src/components/`) contains the reusable React components that build the user interface for the frontend application. Components are organized into subdirectories based on their function or the feature area they belong to.
+
+Key files and directories:
+
+*   `common/`: General-purpose reusable components.
+*   `dashboard/`: Components specific to the dashboard view.
+*   `forms/`: Reusable form components or specific forms.
+*   `modals/`: Modal dialog components.
+*   `subtasks/`: Components related to subtask management.
+*   `task/`: Components for displaying and interacting with individual tasks.
+*   `views/`: Components defining larger view structures or layouts.
+*   Individual component files like `TaskList.tsx`, `ProjectList.tsx`, `AgentList.tsx`, `AddTaskForm.tsx`, etc.

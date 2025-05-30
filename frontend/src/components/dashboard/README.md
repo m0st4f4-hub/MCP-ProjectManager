@@ -58,3 +58,24 @@ These components are likely responsible for rendering various charts using a lib
   - Receives `recentActivity` data from `Dashboard.tsx`.
 
 These components collectively allow for a modular and maintainable dashboard, where `Dashboard.tsx` handles data aggregation and logic, while these child components focus purely on presentation.
+
+## Directory Contents Overview
+
+This directory (`frontend/src/components/dashboard/`) contains modular components specifically designed for the dashboard view. These components handle the presentation of various dashboard sections, charts, and lists, receiving processed data from the parent `Dashboard.tsx` component.
+
+Key files:
+
+*   `DashboardStatsGrid.tsx`: Renders a grid of key statistics.
+*   `TaskStatusChart.tsx`: Chart visualizing task distribution by status.
+*   `TasksOverTimeChart.tsx`: Chart showing task creation/completion trends over time.
+*   `ProjectProgressChart.tsx`: Chart showing project progress.
+*   `AgentWorkloadChart.tsx`: Chart visualizing agent workload.
+*   `UnassignedTasksList.tsx`: Displays a list of unassigned tasks.
+*   `TopPerformersLists.tsx`: Displays lists of top-performing agents or projects.
+*   `RecentActivityList.tsx`: Displays a feed of recent activities.
+*   `useDashboardData.ts`: Custom hook for fetching and processing dashboard data.
+*   `DashboardError.tsx`: Component to display when there is an error loading dashboard data.
+*   `DashboardLoading.tsx`: Loading indicator for the dashboard.
+*   `DashboardSection.tsx`: Reusable component for structuring sections within the dashboard.
+*   `CreateProjectModal.tsx`: Modal for creating new projects.
+*   `EditProjectModal.tsx`: Modal for editing project details.

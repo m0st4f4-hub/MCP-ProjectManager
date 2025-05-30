@@ -43,7 +43,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
   const [description, setDescription] = useState(initialData.description || "");
   const [projectId, setProjectId] = useState(initialData.project_id || "");
   const [agentId, setAgentId] = useState(initialData.agent_id || "");
-  const [status, setStatus] = useState(initialData.status || TaskStatus.PENDING);
+  const [status, setStatus] = useState(initialData.status || TaskStatus.TO_DO);
 
   useEffect(() => {
     fetchProjectsAndAgents();
@@ -54,7 +54,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
     setDescription(initialData.description || "");
     setProjectId(initialData.project_id || "");
     setAgentId(initialData.agent_id || "");
-    setStatus(initialData.status || TaskStatus.PENDING);
+    setStatus(initialData.status || TaskStatus.TO_DO);
   }, [initialData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,7 +82,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
         setDescription("");
         setProjectId("");
         setAgentId("");
-        setStatus(TaskStatus.PENDING);
+        setStatus(TaskStatus.TO_DO);
       }
     } catch (error) {
       toast({

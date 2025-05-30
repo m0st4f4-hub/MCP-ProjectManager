@@ -32,6 +32,8 @@ This is the primary file in this directory and serves as the central hub for all
 
     - Provides a comprehensive set of exported asynchronous functions for various CRUD (Create, Read, Update, Delete) operations and listings for main entities:
       - **Tasks**: `getTasks` (supports filtering), `getTaskById`, `createTask`, `updateTask`, `deleteTask`, `archiveTask`, `unarchiveTask`.
+      - **Task Dependencies**: `getTaskDependencies`, `addTaskDependency`, `removeTaskDependency`.
+      - **Task File Associations**: `getTaskFileAssociations`, `addTaskFileAssociation`, `removeTaskFileAssociation`.
       - **Projects**: `getProjects` (supports filtering), `getProjectById`, `createProject`, `updateProject`, `deleteProject`, `archiveProject`, `unarchiveProject`.
       - **Agents**: `getAgents` (supports filtering), `getAgentById`, `getAgentByName`, `createAgent`, `updateAgentById`, `deleteAgentById`.
     - List operations (`getTasks`, `getProjects`, `getAgents`) dynamically construct URL query parameters based on the provided filter objects.

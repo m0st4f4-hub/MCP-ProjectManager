@@ -27,8 +27,9 @@ from sqlalchemy.ext.asyncio import AsyncSession # Import AsyncSession
 from backend import models
 
 # Import specific schemas as needed
-from backend.schemas.task import TaskCreate, TaskUpdate
-from backend.schemas.user import User # Import User schema
+from .schemas.task import TaskCreate, TaskUpdate
+from .schemas.user import User # Import User schema
+from .schemas import user as schemas # Add import for schemas alias
 
 # Import specific crud submodules with aliases
 from backend.crud import projects as crud_projects
@@ -44,13 +45,13 @@ from backend.crud.users import get_user_by_username # Import user crud
 from backend.main import lifespan
 
 # Import necessary services for helper functions
-from backend.services import project_service
-from backend.services import agent_service
-from backend.services.agent_service import AgentService  # Import AgentService
-from backend.services.audit_log_service import AuditLogService # Import AuditLogService
+from .services import project_service
+from .services import agent_service
+from .services.agent_service import AgentService # Import AgentService
+from .services.audit_log_service import AuditLogService # Import AuditLogService
 
 # Import auth dependency
-from backend.auth import get_current_active_user
+from .auth import get_current_active_user # Import the dependency itself
 
 # Import get_project_service and get_audit_log_service
 from backend.routers.projects import get_project_service, get_audit_log_service
@@ -65,46 +66,52 @@ from unittest.mock import MagicMock
 pytestmark = pytest.mark.asyncio
 
 async def test_get_root(async_client: AsyncClient):
-    response = await async_client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to the Task Manager API"}
+ response = await async_client.get("/")
+ assert response.status_code == 200
+ assert response.json() == {"message": "Welcome to the Task Manager API"}
 
 # --- Project API Tests ---
 # Adding test_user as a dependency to authenticated tests
-async def test_create_project_api(async_client: AsyncClient, test_user: models.User):
-    project_data = {"name": "API Test Project", "description": "Desc"}
+async def test_create_project_api(async_client: AsyncClient, test_user: schemas.UserWithRole):
+ project_data = {"name": "API Test Project", "description": "Desc"}
 
-    # Use the async_client provided by the fixture
-    response = await async_client.post("/api/v1/projects/", json=project_data)
+ print(" [D:\\mcp\\task-manager\\backend\\tests\\test_main_api.py > test_create_project_api] Sending first POST request with data:", project_data)
+ # Use the async_client provided by the fixture
+ response = await async_client.post("/api/v1/projects/", json=project_data)
 
-    assert response.status_code == 200
-    data = response.json()
-    assert data["data"]["name"] == "API Test Project"
+ assert response.status_code == 200
+ data = response.json()
+ print(" [D:\\mcp\\task-manager\\backend\\tests\\test_main_api.py > test_create_project_api] First POST response status code:", response.status_code)
+ print(" [D:\\mcp\\task-manager\\backend\\tests\\test_main_api.py > test_create_project_api] First POST response body:", response.json())
+ assert data["data"]["name"] == "API Test Project"
 
-    # Verify that the project was created in the database via the service (indirectly tested)
-    # We can add a check here by fetching the project using a direct db session if needed
-    # For now, rely on the integration test flow covering this.
+ # Verify that the project was created in the database via the service (indirectly tested)
+ # We can add a check here by fetching the project using a direct db session if needed
+ # For now, rely on the integration test flow covering this.
 
-    # Assertions for audit log creation are also implicitly tested if the service is called correctly
-    # and the log is created without errors.
+ # Assertions for audit log creation are also implicitly tested if the service is called correctly
+ # and the log is created without errors.
 
-    # Test duplicate project name - this should still hit the actual router logic
-    response_dup = await async_client.post("/api/v1/projects/", json={"name": "API Test Project", "description": "Desc"})
-    assert response_dup.status_code == 400
-    assert "already registered" in response_dup.json()["detail"]
+ print(" [D:\\mcp\\task-manager\\backend\\tests\\test_main_api.py > test_create_project_api] Sending second POST request (duplicate) with data:", {"name": "API Test Project", "description": "Desc"})
+ # Test duplicate project name - this should still hit the actual router logic
+ response_dup = await async_client.post("/api/v1/projects/", json={"name": "API Test Project", "description": "Desc"})
+ print(" [D:\\mcp\\task-manager\\backend\\tests\\test_main_api.py > test_create_project_api] Second POST response status code:", response_dup.status_code)
+ print(" [D:\\mcp\\task-manager\\backend\\tests\\test_main_api.py > test_create_project_api] Second POST response body:", response_dup.json())
+ assert response_dup.status_code == 409
+ assert "Project with identifier API Test Project already exists" in response_dup.json()["detail"]
 
 # Add a new test function to call the temporary auth endpoint
 # Adding test_user as a dependency
 async def test_authentication_dependency(async_client: AsyncClient, test_user: models.User):
-    """Test that the get_current_active_user dependency works correctly via the test client."""
-    # Use the async_client provided by the fixture
-    response = await async_client.get("/test-auth")
+ """Test that the get_current_active_user dependency works correctly via the test client."""
+ # Use the async_client provided by the fixture
+ response = await async_client.get("/test-auth")
 
-    assert response.status_code == 200
-    user_data = response.json()
-    assert user_data["username"] == test_user.username
-    assert user_data["email"] == test_user.email
-    assert user_data["full_name"] == test_user.full_name
+ assert response.status_code == 200
+ user_data = response.json()
+ assert user_data["username"] == test_user.username
+ assert user_data["email"] == test_user.email
+ assert user_data["full_name"] == test_user.full_name
 
 # --- Task API Tests --- #
 # --- Agent API Tests --- #

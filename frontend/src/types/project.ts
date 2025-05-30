@@ -12,6 +12,7 @@ export const projectSchema = z.object({
   task_count: z.number().optional(),
   completed_task_count: z.number().optional(),
   is_archived: z.boolean().optional(),
+  progress: z.number().optional(),
 });
 
 // Runtime type for Project
