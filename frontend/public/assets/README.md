@@ -5,3 +5,9 @@ This directory serves as a container for various static assets used by the front
 Key subdirectories:
 
 *   `images/`: Contains image files used throughout the application. 
+
+<!-- File List Start -->
+## File List
+
+
+<!-- File List End -->

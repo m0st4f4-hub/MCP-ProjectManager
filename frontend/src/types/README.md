@@ -66,3 +66,19 @@ This directory centralizes all TypeScript type definitions, interfaces, enums, a
   - `TaskFilters`: Interface for task filtering criteria.
   - `TaskSortOptions`: Interface for task sorting options.
   - `TaskError`, `TaskResponse`, `TaskListResponse`: API-related types for tasks.
+
+<!-- File List Start -->
+## File List
+
+- `agent.ts`
+- `audit_log.ts`
+- `comment.ts`
+- `index.ts`
+- `mcp.ts`
+- `memory.ts`
+- `project.ts`
+- `rules.ts`
+- `task.ts`
+- `user.ts`
+
+<!-- File List End -->

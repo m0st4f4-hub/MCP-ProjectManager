@@ -10,3 +10,15 @@ Key files:
 *   `AddAgentModal.tsx`: Modal for adding a new agent.
 *   `EditAgentModal.tsx`: Modal for editing an existing agent.
 *   `CliPromptModal.tsx`: Modal related to command-line interface prompts, potentially used in agent interactions. 
+
+<!-- File List Start -->
+## File List
+
+- `AddAgentModal.tsx`
+- `AgentCard.tsx`
+- `AgentList.tsx`
+- `AgentListHeader.tsx`
+- `CliPromptModal.tsx`
+- `EditAgentModal.tsx`
+
+<!-- File List End -->

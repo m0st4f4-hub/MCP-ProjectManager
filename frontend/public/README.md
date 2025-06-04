@@ -10,3 +10,19 @@ Key files and directories:
 *   `api-test.html`: An HTML file likely used for API testing or demonstration purposes.
 *   `next.svg`, `vercel.svg`: Default Next.js and Vercel logos.
 *   Other static files required for the application. 
+
+<!-- File List Start -->
+## File List
+
+- `api-test.html`
+- `favicon_dark_32.png`
+- `favicon_dark_64.png`
+- `favicon_light_32.png`
+- `favicon_light_64.png`
+- `file.svg`
+- `globe.svg`
+- `next.svg`
+- `vercel.svg`
+- `window.svg`
+
+<!-- File List End -->

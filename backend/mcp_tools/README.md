@@ -8,3 +8,13 @@ Key files:
 *   `memory_tools.py`: MCP-specific tools for interacting with the Memory Service.
 *   `project_tools.py`: MCP-specific tools for interacting with projects.
 *   `__init__.py`: Initializes the mcp_tools package. 
+
+<!-- File List Start -->
+## File List
+
+- `__init__.py`
+- `memory_tools.py`
+- `project_tools.py`
+- `task_tools.py`
+
+<!-- File List End -->
