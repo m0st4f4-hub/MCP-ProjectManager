@@ -1,15 +1,14 @@
 import { request } from "./request";
-import { buildApiUrl, API_CONFIG } from "./config";
-// TODO: Import or define types for ProjectTemplate, ProjectTemplateCreate, ProjectTemplateUpdate
-
-// Placeholder types (replace with real types if available)
-export type ProjectTemplate = any;
-export type ProjectTemplateCreate = any;
-export type ProjectTemplateUpdate = any;
+import { buildApiUrl } from "./config";
+import {
+  ProjectTemplate,
+  ProjectTemplateCreateData,
+  ProjectTemplateUpdateData,
+} from "@/types/project_template";
 
 export const projectTemplatesApi = {
   // Create a new project template
-  create: async (data: ProjectTemplateCreate): Promise<ProjectTemplate> => {
+  create: async (data: ProjectTemplateCreateData): Promise<ProjectTemplate> => {
     return request<ProjectTemplate>(
       buildApiUrl("/project-templates/"),
       {
@@ -37,7 +36,10 @@ export const projectTemplatesApi = {
   },
 
   // Update a project template by ID
-  update: async (templateId: string, data: ProjectTemplateUpdate): Promise<ProjectTemplate> => {
+  update: async (
+    templateId: string,
+    data: ProjectTemplateUpdateData,
+  ): Promise<ProjectTemplate> => {
     return request<ProjectTemplate>(
       buildApiUrl("/project-templates/", `/${templateId}`),
       {

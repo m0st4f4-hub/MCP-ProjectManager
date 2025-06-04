@@ -100,7 +100,9 @@ This section should be dynamically updated based on `COMPONENT_AUDIT_AND_REFACTO
 *   `ProjectList.tsx` (Partially Refactored)
 *   `TaskItem.tsx` (Refactored - grep based)
 *   `TaskControls.tsx` (Compliant)
-*   `FilterSidebar.tsx` (TODO: Audit)
+*   `FilterSidebar.tsx` (Audited & token compliant)
+*   `FilterPanel.tsx` (Audited & token compliant)
+*   Modal components used in `page.tsx` (`AddTaskModal`, `AddProjectModal`, `AddAgentModal`, `ImportPlanModal`, `CreateProjectModal`, `DevToolsDrawer`) are token compliant
 *   `Dashboard.tsx` and its sub-components (`DashboardStatsGrid`, `TaskStatusChart`, etc.)
     *   `DashboardStatsGrid.tsx`: Accessibility improvements made (keyboard, ARIA).
     *   `Dashboard.tsx`: Requires further work for landmarks, ARIA live regions.
