@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { TestWrapper } from '@/__tests__/utils/test-utils';
+import { render, screen } from '@/__tests__/utils/test-utils';
 import VirtualizedList from '../VirtualizedList';
 
 vi.mock('@chakra-ui/react', async () => {
@@ -14,55 +12,19 @@ vi.mock('@chakra-ui/react', async () => {
 });
 
 describe('VirtualizedList', () => {
-  const user = userEvent.setup();
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should render without crashing', () => {
-    render(
-      <TestWrapper>
-        <VirtualizedList />
-      </TestWrapper>
+  it('shows empty and loading states', () => {
+    const { rerender } = render(
+      <VirtualizedList items={[]} itemHeight={10} renderItem={() => null} isLoading={false} />,
     );
-    expect(document.body).toBeInTheDocument();
-  });
+    expect(screen.getByText('No items to display')).toBeInTheDocument();
 
-  it('should handle props correctly', () => {
-    const props = { 
-      testId: 'test-component',
-      'data-testid': 'test-component'
-    };
-    
-    render(
-      <TestWrapper>
-        <VirtualizedList {...props} />
-      </TestWrapper>
+    rerender(
+      <VirtualizedList items={[]} itemHeight={10} renderItem={() => null} isLoading />,
     );
-    
-    const component = screen.queryByTestId('test-component');
-    expect(component || document.body).toBeInTheDocument();
-  });
-
-  it('should handle user interactions', async () => {
-    render(
-      <TestWrapper>
-        <VirtualizedList />
-      </TestWrapper>
-    );
-    
-    const buttons = screen.queryAllByRole('button');
-    const inputs = screen.queryAllByRole('textbox');
-    
-    if (buttons.length > 0) {
-      await user.click(buttons[0]);
-    }
-    
-    if (inputs.length > 0) {
-      await user.type(inputs[0], 'test input');
-    }
-    
-    expect(document.body).toBeInTheDocument();
+    expect(screen.getByText('Loading items...')).toBeInTheDocument();
   });
 });

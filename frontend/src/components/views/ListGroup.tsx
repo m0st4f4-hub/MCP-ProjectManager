@@ -79,6 +79,7 @@ const ListGroup: React.FC<ListGroupProps> = ({
             <ListTaskItem
               key={`${task.project_id}-${task.task_number}`}
               task={task}
+              projectName={task.project_name || ""}
               selectedTaskIds={selectedTaskIds}
               toggleTaskSelection={toggleTaskSelection}
               handleAssignAgent={handleAssignAgent}

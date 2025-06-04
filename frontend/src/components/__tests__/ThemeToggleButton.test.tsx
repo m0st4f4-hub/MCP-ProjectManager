@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { TestWrapper } from '@/__tests__/utils/test-utils';
+import { render, screen } from '@/__tests__/utils/test-utils';
 import ThemeToggleButton from '../ThemeToggleButton';
 
 vi.mock('@chakra-ui/react', async () => {
@@ -14,55 +12,19 @@ vi.mock('@chakra-ui/react', async () => {
 });
 
 describe('ThemeToggleButton', () => {
-  const user = userEvent.setup();
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should render without crashing', () => {
-    render(
-      <TestWrapper>
-        <ThemeToggleButton />
-      </TestWrapper>
-    );
-    expect(document.body).toBeInTheDocument();
-  });
+  it('calls toggle function', async () => {
+    const toggle = vi.fn();
+    vi.mocked(require('@chakra-ui/react').useColorMode).mockReturnValue({
+      colorMode: 'light',
+      toggleColorMode: toggle,
+    } as any);
 
-  it('should handle props correctly', () => {
-    const props = { 
-      testId: 'test-component',
-      'data-testid': 'test-component'
-    };
-    
-    render(
-      <TestWrapper>
-        <ThemeToggleButton {...props} />
-      </TestWrapper>
-    );
-    
-    const component = screen.queryByTestId('test-component');
-    expect(component || document.body).toBeInTheDocument();
-  });
-
-  it('should handle user interactions', async () => {
-    render(
-      <TestWrapper>
-        <ThemeToggleButton />
-      </TestWrapper>
-    );
-    
-    const buttons = screen.queryAllByRole('button');
-    const inputs = screen.queryAllByRole('textbox');
-    
-    if (buttons.length > 0) {
-      await user.click(buttons[0]);
-    }
-    
-    if (inputs.length > 0) {
-      await user.type(inputs[0], 'test input');
-    }
-    
-    expect(document.body).toBeInTheDocument();
+    render(<ThemeToggleButton />);
+    await screen.getByRole('button').click();
+    expect(toggle).toHaveBeenCalled();
   });
 });

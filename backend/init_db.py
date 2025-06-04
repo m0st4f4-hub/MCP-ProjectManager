@@ -88,6 +88,17 @@ async def create_seed_data():
                 TaskStatus(id=3, name="Blocked", description="Task is blocked", order=3, is_final=False),
                 TaskStatus(id=4, name="Completed", description="Task is completed", order=4, is_final=True),
                 TaskStatus(id=5, name="Cancelled", description="Task is cancelled", order=5, is_final=True),
+                TaskStatus(id=6, name="Context Acquired", description="Agent gathered context", order=6, is_final=False),
+                TaskStatus(id=7, name="Planning Complete", description="Planning phase finished", order=7, is_final=False),
+                TaskStatus(id=8, name="Execution In Progress", description="Agent executing task", order=8, is_final=False),
+                TaskStatus(id=9, name="Pending Verification", description="Awaiting verification", order=9, is_final=False),
+                TaskStatus(id=10, name="Verification Complete", description="Verification succeeded", order=10, is_final=False),
+                TaskStatus(id=11, name="Verification Failed", description="Verification failed", order=11, is_final=False),
+                TaskStatus(id=12, name="Completed Awaiting Project Manager", description="Waiting for PM review", order=12, is_final=True),
+                TaskStatus(id=13, name="Completed Handoff", description="Completed with handoff", order=13, is_final=True),
+                TaskStatus(id=14, name="Failed", description="Task failed", order=14, is_final=True),
+                TaskStatus(id=15, name="In Progress Awaiting Subtask", description="Waiting for subtask", order=15, is_final=False),
+                TaskStatus(id=16, name="Pending Recovery Attempt", description="Recovery in progress", order=16, is_final=False),
             ]
 
             for status in statuses:

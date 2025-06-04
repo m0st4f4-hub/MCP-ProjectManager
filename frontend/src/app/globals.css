@@ -7,16 +7,7 @@
 }
 
 body {
-  font-family:
-    "Geist Sans",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial,
-    "Noto Sans",
-    sans-serif;
+  font-family: var(--font-sans);
 }
 
 h1,
@@ -25,16 +16,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family:
-    "Geist Sans",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial,
-    "Noto Sans",
-    sans-serif;
+  font-family: var(--font-sans);
 }
 
 a {
@@ -50,11 +32,11 @@ a {
 
 /* Add overrides after Tailwind imports */
 .chakra-modal__overlay {
-  background-color: var(--colors-overlay-default);
+  background-color: var(--chakra-colors-overlayDefault);
 }
 
 .chakra-modal__content {
-  background-color: var(--colors-bgModal);
+  background-color: var(--chakra-colors-bgModal);
 }
 
 /* Existing global styles below if any */
