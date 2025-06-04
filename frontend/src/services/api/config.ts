@@ -2,7 +2,7 @@
  * Central API configuration for consistent base URLs across all API services
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 const API_VERSION = "/api"; // Backend uses /api, not /api/v1
 
 export const API_CONFIG = {
