@@ -33,7 +33,7 @@ export const mapStatusToStatusID = (
   status: string | null | undefined,
 ): CanonicalStatusID => {
   if (!status || typeof status !== "string" || status.trim() === "") {
-    return "To Do"; // Default for null, undefined, or empty/non-string if it somehow bypasses Status type
+    return "TO_DO"; // Default for null, undefined, or empty/non-string
   }
 
   // Handle common display names case-insensitively
@@ -41,15 +41,19 @@ export const mapStatusToStatusID = (
   switch (lowerStatus) {
     case "to do":
     case "todo":
-      return "To Do";
+      return "TO_DO";
     case "in progress":
-      return "In Progress";
+      return "IN_PROGRESS";
     case "blocked":
-      return "Blocked";
+      return "BLOCKED";
     case "completed":
-      return "Completed";
+      return "COMPLETED";
     case "cancelled":
-      return "Cancelled";
+      return "CANCELLED";
+    case "failed":
+      return "FAILED";
+    case "verification failed":
+      return "VERIFICATION_FAILED";
     // Add more explicit mappings if other common display names exist
     // e.g., case 'context acquired': return 'CONTEXT_ACQUIRED';
   }
@@ -73,8 +77,8 @@ export const mapStatusToStatusID = (
   // If no match after explicit cases and direct StatusID check, then it's unknown.
   if (typeof console !== "undefined") {
     console.warn(
-      `[mapStatusToStatusID] Unknown status value: "${status}", defaulting to To Do.`,
+      `[mapStatusToStatusID] Unknown status value: "${status}", defaulting to TO_DO.`,
     );
   }
-  return "To Do";
+  return "TO_DO";
 };

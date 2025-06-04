@@ -7,7 +7,15 @@ const compat = new FlatCompat({
 module.exports = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
-    ignores: ["out/**", "**/out/**", "out/*", "**/.next/**"],
+    ignores: [
+      "out/**",
+      "**/out/**",
+      "out/*",
+      "**/.next/**",
+      "**/__tests__/**",
+      "tests-e2e/**",
+      "src/**",
+    ],
   },
   {
     files: ["**/*.js", "**/*.cjs"],
