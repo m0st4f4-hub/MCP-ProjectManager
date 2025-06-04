@@ -144,8 +144,8 @@ export const rulesApi = {
     },
 
     // Toggle agent rule active status
-    toggle: async (ruleId: string): Promise<AgentRule> => {
-      const response = await request<RuleResponse<AgentRule>>(
+    toggle: async (ruleId: string): Promise<RuleAgentRule> => {
+      const response = await request<RuleResponse<RuleAgentRule>>(
         buildApiUrl(API_CONFIG.ENDPOINTS.RULES, `/agent-rules/${ruleId}/toggle`),
         {
           method: "PUT",

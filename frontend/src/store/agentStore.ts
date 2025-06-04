@@ -98,7 +98,7 @@ const agentActionsCreator = (
         limit,
         effectiveFilters.search,
         effectiveFilters.status,
-        effectiveFilters.is_archived
+        effectiveFilters.is_archived ?? undefined
       );
       set((state) => {
         const updatedAgents = upsertAgents(fetchedAgents, state.agents);
@@ -121,7 +121,7 @@ const agentActionsCreator = (
     set({ loading: true, error: null });
     try {
       console.log(`[Store] Calling API to create agent: ${agentData.name}`);
-      const newAgent = await api.createAgent(agentData.name);
+      const newAgent = await api.createAgent(agentData);
       console.log(`[Store] API returned new agent:`, newAgent);
       set(
         (state) =>
@@ -202,8 +202,8 @@ export const useAgentStore = createBaseStore<AgentState, AgentActions>(
 const sortAgents = (agents: Agent[], options: AgentSortOptions): Agent[] => {
   return [...agents].sort((a, b) => {
     if (options.field === "created_at") {
-      const dateA = new Date(a.created_at).getTime();
-      const dateB = new Date(b.created_at).getTime();
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return options.direction === "asc" ? dateA - dateB : dateB - dateA;
     }
     if (options.field === "name") {
