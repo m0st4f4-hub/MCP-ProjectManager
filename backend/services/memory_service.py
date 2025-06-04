@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException, status
+import httpx
 from .. import models
 from typing import List, Optional, Dict, Any
 import logging
@@ -95,6 +97,59 @@ class MemoryService:
         except Exception as e:
             logger.error(f"Error ingesting file {file_path}: {e}")
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error ingesting file: {str(e)}")
+
+    def ingest_url(self, url: str, user_id: Optional[str] = None) -> models.MemoryEntity:
+        """Fetch a URL and store its contents as a MemoryEntity."""
+        try:
+            response = httpx.get(url)
+            response.raise_for_status()
+            entity_create = MemoryEntityCreate(
+                entity_type="url",
+                content=response.text,
+                entity_metadata={"url": url, "status_code": response.status_code},
+                source="url_ingestion",
+                source_metadata={"url": url},
+                created_by_user_id=user_id,
+            )
+            return self.create_entity(entity_create)
+        except Exception as e:  # pragma: no cover - network errors
+            logger.error(f"Error ingesting url {url}: {e}")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error ingesting url: {str(e)}")
+
+    def ingest_text(
+        self,
+        text: str,
+        user_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> models.MemoryEntity:
+        """Store a raw text snippet as a MemoryEntity."""
+        try:
+            entity_create = MemoryEntityCreate(
+                entity_type="text",
+                content=text,
+                entity_metadata=metadata,
+                source="text_ingestion",
+                source_metadata=None,
+                created_by_user_id=user_id,
+            )
+            return self.create_entity(entity_create)
+        except Exception as e:
+            logger.error(f"Error ingesting text: {e}")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error ingesting text: {str(e)}")
+
+    def get_file_content(self, entity_id: int) -> str:
+        """Return stored content for a file MemoryEntity."""
+        entity = self.get_entity(entity_id)
+        if not entity:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity not found")
+        return entity.content or ""
+
+    def get_file_metadata(self, entity_id: int) -> Dict[str, Any]:
+        """Return stored metadata for a file MemoryEntity."""
+        entity = self.get_entity(entity_id)
+        if not entity:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity not found")
+        return entity.entity_metadata or {}
 
     def create_memory_entity(self, entity: MemoryEntityCreate) -> models.MemoryEntity:
         """Creates a new memory entity."""
