@@ -1,19 +1,9 @@
-import sys
-import os
-print("---- sys.path ----")
-for p in sys.path:
-    print(p)
-print("--------------------")
-print("---- os.getcwd() ----")
-print(os.getcwd())
-print("---------------------")
-
-
 """
 Task Manager Backend - Simplified Main Application
 """
-
 import logging
+import os
+import sys
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
