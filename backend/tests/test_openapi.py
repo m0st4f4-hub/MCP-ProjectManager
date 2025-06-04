@@ -1,23 +1,21 @@
-#!/usr/bin/env python3
-"""
-Test script to debug OpenAPI schema generation issues
-"""
 
-import sys
-import os  # Add the backend directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
+from backend.main import app
 
-try:
-    print("Testing import of main FastAPI app...")
-    from backend.main import app
-    print("[SUCCESS] Successfully imported main app")
 
-    print("\nTesting OpenAPI schema generation...")
-    openapi_schema = app.openapi()
-    print("[SUCCESS] Successfully generated OpenAPI schema")
-    print(f"Schema has {len(openapi_schema.get('paths', {}))} paths")
+def test_openapi_contains_key_paths():
+    """Ensure generated OpenAPI schema exposes core endpoints."""
+    schema = app.openapi()
+    assert "paths" in schema
+    paths = schema["paths"]
 
-except Exception as e:
-    print(f"[ERROR] Error: {e}")
-    import traceback
-    traceback.print_exc()
+    # Basic checks on schema
+    assert isinstance(paths, dict)
+    assert len(paths) > 0
+
+    # Verify a couple of important endpoints are documented
+    expected = [
+        "/api/v1/users/",
+        "/api/memory/entities/",
+    ]
+    for path in expected:
+        assert path in paths
