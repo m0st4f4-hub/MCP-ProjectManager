@@ -71,7 +71,7 @@ async function main() {
         ? path.join(projectRoot, 'backend', '.venv', 'Scripts', 'python.exe')
         : path.join(projectRoot, 'backend', '.venv', 'bin', 'python');
     
-    const backendArgs = ['-m', 'uvicorn', 'backend.main:app', '--host', '0.0.0.0', '--port', '8080', '--reload'];
+    const backendArgs = ['-m', 'uvicorn', 'backend.main:app', '--host', '0.0.0.0', '--port', '8000', '--reload'];
     
     const backendProcess = spawn(backendPath, backendArgs, {
         cwd: projectRoot,

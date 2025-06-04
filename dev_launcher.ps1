@@ -24,8 +24,8 @@ function Clear-Port {
 }
 
 # Clear ports
-Write-Host "Checking and clearing ports 7500 and 3000..." -ForegroundColor Yellow
-Clear-Port -Port 7500
+Write-Host "Checking and clearing ports 8000 and 3000..." -ForegroundColor Yellow
+Clear-Port -Port 8000
 Clear-Port -Port 3000
 Write-Host ""
 
@@ -35,10 +35,10 @@ Set-Location $projectRoot
 
 # Start Backend Server
 Write-Host "Starting Backend Server (Python/FastAPI)..." -ForegroundColor Yellow
-Write-Host "Backend will be available at: http://localhost:7500" -ForegroundColor Cyan
-Write-Host "API Documentation at: http://localhost:7500/docs" -ForegroundColor Cyan
+Write-Host "Backend will be available at: http://localhost:8000" -ForegroundColor Cyan
+Write-Host "API Documentation at: http://localhost:8000/docs" -ForegroundColor Cyan
 
-$backendCommand = "backend\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 7500 --reload"
+$backendCommand = "backend\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload"
 Start-Process -FilePath "pwsh.exe" -ArgumentList "-NoExit", "-Command", $backendCommand -WindowStyle Normal
 
 # Wait for backend to start
@@ -59,9 +59,9 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "          Servers Starting..." -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Backend:  http://localhost:7500" -ForegroundColor Green
-Write-Host "Frontend: http://localhost:3000" -ForegroundColor Green  
-Write-Host "API Docs: http://localhost:7500/docs" -ForegroundColor Green
+Write-Host "Backend:  http://localhost:8000" -ForegroundColor Green
+Write-Host "Frontend: http://localhost:3000" -ForegroundColor Green
+Write-Host "API Docs: http://localhost:8000/docs" -ForegroundColor Green
 Write-Host ""
 Write-Host "Both servers are launching in separate windows." -ForegroundColor White
 Write-Host "Press any key to exit launcher..." -ForegroundColor Gray
