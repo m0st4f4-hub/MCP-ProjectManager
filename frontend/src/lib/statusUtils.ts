@@ -43,12 +43,34 @@ export type StatusID =
   | "Completed"
   | "Blocked"
   | "Cancelled"
+  | "Context Acquired"
+  | "Planning Complete"
+  | "Execution In Progress"
+  | "Pending Verification"
+  | "Verification Complete"
+  | "Verification Failed"
+  | "Completed Awaiting Project Manager"
+  | "Completed Handoff"
+  | "Failed"
+  | "In Progress Awaiting Subtask"
+  | "Pending Recovery Attempt"
   | "TO_DO"
   | "IN_PROGRESS"
   | "IN_REVIEW"
   | "COMPLETED"
   | "BLOCKED"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "CONTEXT_ACQUIRED"
+  | "PLANNING_COMPLETE"
+  | "EXECUTION_IN_PROGRESS"
+  | "PENDING_VERIFICATION"
+  | "VERIFICATION_COMPLETE"
+  | "VERIFICATION_FAILED"
+  | "COMPLETED_AWAITING_PROJECT_MANAGER"
+  | "COMPLETED_HANDOFF_TO_..."
+  | "FAILED"
+  | "IN_PROGRESS_AWAITING_SUBTASK"
+  | "PENDING_RECOVERY_ATTEMPT";
 
 /**
  * Represents the full set of attributes for a canonical task status.
@@ -198,6 +220,230 @@ const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
     colorScheme: "red",
     icon: "CloseIcon",
     isTerminal: true,
+    isDynamic: false,
+  },
+  "Context Acquired": {
+    id: "Context Acquired",
+    displayName: "Context Acquired",
+    category: "inProgress",
+    description: "Agent has gathered necessary context.",
+    colorScheme: "blue",
+    icon: "InfoIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  CONTEXT_ACQUIRED: {
+    id: "Context Acquired",
+    displayName: "Context Acquired",
+    category: "inProgress",
+    description: "Agent has gathered necessary context.",
+    colorScheme: "blue",
+    icon: "InfoIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  "Planning Complete": {
+    id: "Planning Complete",
+    displayName: "Planning Complete",
+    category: "inProgress",
+    description: "Planning phase finished.",
+    colorScheme: "purple",
+    icon: "CalendarIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  PLANNING_COMPLETE: {
+    id: "Planning Complete",
+    displayName: "Planning Complete",
+    category: "inProgress",
+    description: "Planning phase finished.",
+    colorScheme: "purple",
+    icon: "CalendarIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  "Execution In Progress": {
+    id: "Execution In Progress",
+    displayName: "Execution In Progress",
+    category: "inProgress",
+    description: "Agent is executing the task.",
+    colorScheme: "blue",
+    icon: "TimeIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  EXECUTION_IN_PROGRESS: {
+    id: "Execution In Progress",
+    displayName: "Execution In Progress",
+    category: "inProgress",
+    description: "Agent is executing the task.",
+    colorScheme: "blue",
+    icon: "TimeIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  "Pending Verification": {
+    id: "Pending Verification",
+    displayName: "Pending Verification",
+    category: "pendingInput",
+    description: "Awaiting verification of results.",
+    colorScheme: "orange",
+    icon: "ViewIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  PENDING_VERIFICATION: {
+    id: "Pending Verification",
+    displayName: "Pending Verification",
+    category: "pendingInput",
+    description: "Awaiting verification of results.",
+    colorScheme: "orange",
+    icon: "ViewIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  "Verification Complete": {
+    id: "Verification Complete",
+    displayName: "Verification Complete",
+    category: "completed",
+    description: "Verification succeeded.",
+    colorScheme: "green",
+    icon: "CheckCircleIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  VERIFICATION_COMPLETE: {
+    id: "Verification Complete",
+    displayName: "Verification Complete",
+    category: "completed",
+    description: "Verification succeeded.",
+    colorScheme: "green",
+    icon: "CheckCircleIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  "Verification Failed": {
+    id: "Verification Failed",
+    displayName: "Verification Failed",
+    category: "failed",
+    description: "Verification failed.",
+    colorScheme: "red",
+    icon: "WarningTwoIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  VERIFICATION_FAILED: {
+    id: "Verification Failed",
+    displayName: "Verification Failed",
+    category: "failed",
+    description: "Verification failed.",
+    colorScheme: "red",
+    icon: "WarningTwoIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  "Completed Awaiting Project Manager": {
+    id: "Completed Awaiting Project Manager",
+    displayName: "Completed Awaiting Project Manager",
+    category: "completed",
+    description: "Waiting for project manager review.",
+    colorScheme: "purple",
+    icon: "TimeIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
+  COMPLETED_AWAITING_PROJECT_MANAGER: {
+    id: "Completed Awaiting Project Manager",
+    displayName: "Completed Awaiting Project Manager",
+    category: "completed",
+    description: "Waiting for project manager review.",
+    colorScheme: "purple",
+    icon: "TimeIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
+  "Completed Handoff": {
+    id: "Completed Handoff",
+    displayName: "Completed Handoff",
+    category: "completed",
+    description: "Completed with handoff to another task.",
+    colorScheme: "green",
+    icon: "ArrowForwardIcon",
+    isTerminal: true,
+    isDynamic: true,
+    dynamicPartsExtractor: /^COMPLETED_HANDOFF_TO_(([a-zA-Z0-9-]+(?:\s*,\s*[a-zA-Z0-9-]+)*))$/,
+    dynamicDisplayNamePattern: "Handoff to: {value}",
+  },
+  "COMPLETED_HANDOFF_TO_...": {
+    id: "Completed Handoff",
+    displayName: "Completed Handoff",
+    category: "completed",
+    description: "Completed with handoff to another task.",
+    colorScheme: "green",
+    icon: "ArrowForwardIcon",
+    isTerminal: true,
+    isDynamic: true,
+    dynamicPartsExtractor: /^COMPLETED_HANDOFF_TO_(([a-zA-Z0-9-]+(?:\s*,\s*[a-zA-Z0-9-]+)*))$/,
+    dynamicDisplayNamePattern: "Handoff to: {value}",
+  },
+  Failed: {
+    id: "Failed",
+    displayName: "Failed",
+    category: "failed",
+    description: "Task failed to complete.",
+    colorScheme: "red",
+    icon: "CloseIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
+  FAILED: {
+    id: "Failed",
+    displayName: "Failed",
+    category: "failed",
+    description: "Task failed to complete.",
+    colorScheme: "red",
+    icon: "CloseIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
+  "In Progress Awaiting Subtask": {
+    id: "In Progress Awaiting Subtask",
+    displayName: "In Progress Awaiting Subtask",
+    category: "inProgress",
+    description: "Waiting for subtask completion.",
+    colorScheme: "orange",
+    icon: "TimeIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  IN_PROGRESS_AWAITING_SUBTASK: {
+    id: "In Progress Awaiting Subtask",
+    displayName: "In Progress Awaiting Subtask",
+    category: "inProgress",
+    description: "Waiting for subtask completion.",
+    colorScheme: "orange",
+    icon: "TimeIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  "Pending Recovery Attempt": {
+    id: "Pending Recovery Attempt",
+    displayName: "Pending Recovery Attempt",
+    category: "pendingInput",
+    description: "Awaiting recovery attempt.",
+    colorScheme: "orange",
+    icon: "RepeatIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  PENDING_RECOVERY_ATTEMPT: {
+    id: "Pending Recovery Attempt",
+    displayName: "Pending Recovery Attempt",
+    category: "pendingInput",
+    description: "Awaiting recovery attempt.",
+    colorScheme: "orange",
+    icon: "RepeatIcon",
+    isTerminal: false,
     isDynamic: false,
   },
 };
