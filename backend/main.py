@@ -1,12 +1,5 @@
 import sys
 import os
-print("---- sys.path ----")
-for p in sys.path:
-    print(p)
-print("--------------------")
-print("---- os.getcwd() ----")
-print(os.getcwd())
-print("---------------------")
 
 
 """
