@@ -1,34 +1,10 @@
 import React from "react";
-import {
-  ViewIcon,
-  ViewOffIcon,
-  ChevronDownIcon,
-  DeleteIcon,
-} from "@chakra-ui/icons";
-import {
-  Flex,
-  HStack,
-  VStack,
-  Checkbox,
-  Button,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  MenuDivider,
-  Select,
-  Spinner,
-  Divider,
-  Text,
-  useDisclosure,
-  FormLabel,
-} from "@chakra-ui/react";
+import { VStack, Divider, useDisclosure } from "@chakra-ui/react";
 import { GroupByType, ViewMode } from "@/types";
 import { useTaskStore } from "@/store/taskStore";
-import * as statusUtils from "@/lib/statusUtils";
 import ConfirmationModal from "./common/ConfirmationModal";
-import AppIcon from "./common/AppIcon";
-import { sizing, typography } from "../tokens";
+import BulkActionsBar from "./BulkActionsBar";
+import TaskViewControls from "./TaskViewControls";
 import TaskFilters from "./task/TaskFilters";
 
 interface TaskControlsProps {
@@ -80,13 +56,6 @@ const TaskControls: React.FC<TaskControlsProps> = ({
     }
   };
 
-  const availableStatusesForBulkUpdate = React.useMemo(() => {
-    return statusUtils.getAllStatusIds().filter((id) => {
-      const attrs = statusUtils.getStatusAttributes(id);
-      return !attrs?.isTerminal && !attrs?.isDynamic;
-    });
-  }, []);
-
   const handleBulkDeleteConfirm = async () => {
     await bulkDeleteTasks();
     onDeleteConfirmClose();
@@ -107,193 +76,29 @@ const TaskControls: React.FC<TaskControlsProps> = ({
       align="stretch"
     >
       {showBulkActionsBar && (
-        <>
-          <Divider borderColor="borderDecorative" />
-          <Flex justify="space-between" align="center" wrap="wrap" gap="3">
-            <HStack spacing="3">
-              <AppIcon name="info" color="blue.400" mr={2} />
-              <Checkbox
-                isChecked={areAllTasksSelected}
-                onChange={handleSelectAllToggle}
-                isDisabled={allFilterableTaskIds.length === 0}
-                colorScheme="brandPrimaryScheme"
-                size="sm"
-              >
-                <Text as="span" ml="2" fontSize={typography.fontSize.sm}>
-                  Select All ({allFilterableTaskIds.length})
-                </Text>
-              </Checkbox>
-              {selectedTaskIds.length > 0 && (
-                <Text fontSize={typography.fontSize.sm} color="textSecondary">
-                  {selectedTaskIds.length} selected
-                </Text>
-              )}
-            </HStack>
-
-            {selectedTaskIds.length > 0 && (
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  variant="outline"
-                  colorScheme="brandPrimaryScheme"
-                  size="sm"
-                  rightIcon={<ChevronDownIcon />}
-                >
-                  Bulk Actions
-                </MenuButton>
-                <MenuList
-                  bg="bgSurface"
-                  borderColor="borderDecorative"
-                  shadow="md"
-                  minW="menu"
-                  py="1"
-                  zIndex="popover"
-                >
-                  <MenuItem
-                    icon={<DeleteIcon />}
-                    color="error"
-                    _hover={{ bg: "errorBgSubtle" }}
-                    onClick={onDeleteConfirmOpen}
-                    isDisabled={taskStoreLoading}
-                  >
-                    Delete Selected ({selectedTaskIds.length})
-                  </MenuItem>
-                  <MenuDivider borderColor="borderDecorative" />
-                  <MenuItem
-                    isDisabled={true}
-                    _hover={{ bg: "transparent" }}
-                    cursor="default"
-                    color="textSecondary"
-                  >
-                    Set Status to...
-                  </MenuItem>
-                  {availableStatusesForBulkUpdate.map((statusId) => {
-                    const statusAttrs =
-                      statusUtils.getStatusAttributes(statusId);
-                    return (
-                      <MenuItem
-                        key={statusId}
-                        onClick={() => bulkSetStatusTasks(statusId)}
-                        pl="8"
-                        _hover={{ bg: "gray.100", _dark: { bg: "gray.700" } }}
-                      >
-                        {statusAttrs?.displayName || statusId}
-                      </MenuItem>
-                    );
-                  })}
-                </MenuList>
-              </Menu>
-            )}
-          </Flex>
-        </>
+        <BulkActionsBar
+          selectedTaskIds={selectedTaskIds}
+          allFilterableTaskIds={allFilterableTaskIds}
+          areAllTasksSelected={areAllTasksSelected}
+          onSelectAllToggle={handleSelectAllToggle}
+          onDeleteSelected={onDeleteConfirmOpen}
+          bulkSetStatusTasks={bulkSetStatusTasks}
+          loading={taskStoreLoading}
+        />
       )}
 
       <Divider borderColor="borderDecorative" />
 
-      <Flex
-        justify="space-between"
-        direction={{ base: "column", md: "row" }}
-        align={{ base: "stretch", md: "center" }}
-        gap={{ base: "3", md: "4" }}
-        mt={!showBulkActionsBar ? `-${sizing.spacing[4]}` : undefined}
-      >
-        <HStack
-          align="center"
-          wrap="wrap"
-          w={{ base: "full", md: "auto" }}
-          gap={{ base: "2", md: "3" }}
-          spacing={{ base: 0, md: 3 }}
-        >
-          {isPolling && <Spinner size="sm" color="primary" />}
-          {!hideGroupBy && (
-            <Flex align="center" gap="2">
-              <FormLabel
-                htmlFor="task-group-by-select"
-                mb="0"
-                fontSize={typography.fontSize.sm}
-                color="textSecondary"
-                whiteSpace="nowrap"
-              >
-                Group:
-              </FormLabel>
-              <Select
-                id="task-group-by-select"
-                aria-label="Group by"
-                value={groupBy}
-                onChange={(e) => setGroupBy(e.target.value as GroupByType)}
-                size="sm"
-                w={{ base: "auto", md: "130px" }}
-                focusBorderColor="borderFocused"
-                bg="surface"
-                borderColor="borderInteractive"
-                _hover={{ borderColor: "borderFocused" }}
-              >
-                <option
-                  value="title"
-                  className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-                >
-                  Title
-                </option>
-                <option
-                  value="status"
-                  className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-                >
-                  Status
-                </option>
-                <option
-                  value="project"
-                  className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-                >
-                  Project
-                </option>
-                <option
-                  value="agent"
-                  className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-                >
-                  Agent
-                </option>
-                <option
-                  value="createdAt"
-                  className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-                >
-                  Creation Date
-                </option>
-                <option
-                  value="updatedAt"
-                  className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-                >
-                  Last Updated
-                </option>
-              </Select>
-            </Flex>
-          )}
-        </HStack>
+      <TaskViewControls
+        groupBy={groupBy}
+        setGroupBy={setGroupBy}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        hideGroupBy={hideGroupBy}
+        isPolling={isPolling}
+      />
 
-        <HStack
-          wrap="nowrap"
-          w={{ base: "full", md: "auto" }}
-          justify={{ base: "space-between", md: "flex-end" }}
-          gap={{ base: "2", md: "3" }}
-          spacing={{ base: 0, md: 3 }}
-        >
-          <Button
-            variant="outline"
-            colorScheme="brandSecondaryScheme"
-            size="sm"
-            onClick={() =>
-              setViewMode(viewMode === "kanban" ? "list" : "kanban")
-            }
-            aria-label={
-              viewMode === "kanban"
-                ? "Switch to List View"
-                : "Switch to Kanban View"
-            }
-            leftIcon={viewMode === "kanban" ? <ViewIcon /> : <ViewOffIcon />}
-          >
-            {viewMode === "kanban" ? "List View" : "Kanban View"}
-          </Button>
-        </HStack>
-      </Flex>
+      <TaskFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
       <ConfirmationModal
         isOpen={isDeleteConfirmOpen}
@@ -305,68 +110,6 @@ const TaskControls: React.FC<TaskControlsProps> = ({
         confirmButtonColorScheme="red"
         isLoading={taskStoreLoading}
       />
-
-      <TaskFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-
-      {/* Group By Select */}
-      {/* {!hideGroupBy && (
-        <HStack spacing={sizing.sm} alignItems="center">
-          <FormLabel htmlFor="task-group-by-select" mb="0">
-            Group by:
-          </FormLabel>
-          <Select
-            id="task-group-by-select"
-            aria-label="Group by"
-            value={groupBy}
-            onChange={(e) => setGroupBy(e.target.value as GroupByType)}
-            size="sm"
-            w={{ base: "auto", md: "130px" }}
-            focusBorderColor="borderFocused"
-            bg="surface"
-            borderColor="borderInteractive"
-            _hover={{ borderColor: "borderFocused" }}
-          >
-            <option
-              value="id"
-              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-            >
-              ID
-            </option>
-            <option
-              value="title"
-              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-            >
-              Title
-            </option>
-            <option
-              value="status"
-              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-            >
-              Status
-            </option>
-            <option
-              value="project"
-              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-            >
-              Project
-            </option>
-            <option
-              value="agent"
-              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-            >
-              Agent
-            </option>
-            <option
-              value="createdAt"
-              className="bg-surface dark:bg-surface text-textPrimary dark:text-textPrimary"
-            >
-              Creation Date
-            </option>
-          </Select>
-        </HStack>
-      )} */}
-
-      {/* View Mode Toggle */}
     </VStack>
   );
 };
