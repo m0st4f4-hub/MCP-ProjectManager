@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Path, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
+from ....schemas.file_ingest import FileIngestInput
 
 from ....database import get_sync_db as get_db
 from ....services.memory_service import MemoryService
@@ -123,9 +124,6 @@ def delete_memory_entity_endpoint(
 # Ingestion Inputs
 # =============================
 
-class FileIngestInput(BaseModel):
-    file_path: str = Field(..., description="Absolute path to the file to ingest.")
-
 
 class UrlIngestInput(BaseModel):
     url: str = Field(..., description="URL to ingest")
@@ -147,7 +145,7 @@ def ingest_file_endpoint(
     current_user: UserModel = Depends(get_current_active_user),
 ):
     try:
-        return memory_service.ingest_file(file_path=ingest_input.file_path, user_id=current_user.id)
+        return memory_service.ingest_file(ingest_input=ingest_input, user_id=current_user.id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to ingest file: {e}")
 
