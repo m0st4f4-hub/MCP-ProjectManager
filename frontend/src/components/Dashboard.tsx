@@ -22,10 +22,7 @@ import NoTasks from "./NoTasks";
 import TaskLoading from "./TaskLoading";
 import TaskError from "./TaskError";
 import KanbanView from "./views/KanbanView";
-import {
-  applyAllFilters,
-  groupTasksByStatus,
-} from "./TaskList.utils";
+import { applyAllFilters, groupTasksByStatus } from "./TaskList.utils";
 import type { GroupedTasks } from "./views/ListView.types";
 import TaskPagination from "./task/TaskPagination";
 
@@ -162,6 +159,7 @@ const TaskList: React.FC = () => {
           isMobile={isMobile}
         />
       )}
+
       {viewMode === "kanban" && (
         <KanbanView
           filteredTasks={paginatedTasks}
