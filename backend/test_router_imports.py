@@ -4,9 +4,10 @@
 import sys
 import os
 
-# Change to backend directory and add to path
-os.chdir('D:/mcp/task-manager/backend')
-sys.path.insert(0, os.getcwd())
+# Change to backend directory and add to path using the current file location
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(BACKEND_DIR)
+sys.path.insert(0, BACKEND_DIR)
 
 routers_to_test = [
     'routers.memory',
