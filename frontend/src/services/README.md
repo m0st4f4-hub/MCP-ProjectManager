@@ -10,7 +10,7 @@ This is the primary file in this directory and serves as the central hub for all
 
 1.  **Base Configuration**:
 
-    - Defines the `API_BASE_URL` for all requests, configurable via `process.env.NEXT_PUBLIC_API_BASE_URL` (defaults to `http://localhost:8080`).
+    - Defines the `API_BASE_URL` for all requests, configurable via `process.env.NEXT_PUBLIC_API_BASE_URL` (defaults to `http://localhost:8000`).
 
 2.  **Generic Request Handler (`request<T>`)**:
 

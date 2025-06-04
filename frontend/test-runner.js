@@ -123,7 +123,7 @@ async function checkPrerequisites() {
       exec('curl -f http://localhost:8000/health || echo "Backend not running"', (error, stdout, stderr) => {
         if (stdout.includes('Backend not running')) {
           console.log('⚠️  Backend not running. Some tests may fail.')
-          console.log('   Start backend with: cd ../backend && python dev_start.py')
+          console.log('   Start backend with: python ../run_backend.py')
         } else {
           console.log('✅ Backend is running')
         }

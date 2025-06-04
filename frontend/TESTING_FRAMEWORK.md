@@ -46,7 +46,7 @@ This comprehensive testing framework ensures the reliability, performance, and c
 npm install
 
 # Ensure backend is running (for integration/E2E tests)
-cd ../backend && python dev_start.py
+python ../run_backend.py
 ```
 
 ### Running Tests
@@ -438,7 +438,7 @@ npm run test:ci
 1. **Backend Not Running**
    ```bash
    # Start backend first
-   cd ../backend && python dev_start.py
+   python ../run_backend.py
    ```
 
 2. **Port Conflicts**
