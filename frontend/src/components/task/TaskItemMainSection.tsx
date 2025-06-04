@@ -6,6 +6,7 @@ import { inputStyle, textareaStyle } from "./TaskItem.styles";
 import { Task, TaskUpdateData, TaskStatus } from "@/types/task"; // Assuming Task is ITask or similar
 import TaskItemDetailsSection from "./TaskItemDetailsSection";
 import { StatusID, StatusAttributeObject } from "@/lib/statusUtils";
+import { IconMap } from "../common/iconMap";
 
 
 /**
@@ -25,8 +26,8 @@ interface TaskItemMainSectionProps {
   styles: Record<string, unknown>; // Consider a more specific type if possible
   /** The color to use for text elements, determined by archiving status or other factors. */
   textColor: string;
-  /** A map of status IDs to React ElementType, for rendering status icons. */
-  iconMap: Record<string, React.ElementType>;
+  /** A map of icon names to components used by TaskStatusTag. */
+  iconMap: IconMap;
   /** The current status ID of the task. */
   currentStatusId: StatusID;
   /** If true, renders a more compact version of this section. */

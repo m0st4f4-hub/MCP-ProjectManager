@@ -1,12 +1,21 @@
 import React from "react";
 import { Tag, TagLabel, TagLeftIcon } from "@chakra-ui/react";
 import { getDisplayableStatus, StatusID } from "@/lib/statusUtils";
+import { IconMap, defaultIconMap } from "./iconMap";
 
+/**
+ * Props for {@link TaskStatusTag}. The optional {@link IconMap iconMap}
+ * allows consumers to supply custom icon components keyed by the string
+ * identifiers used in {@link getDisplayableStatus}.
+ */
 interface TaskStatusTagProps {
   statusId: StatusID;
   fontWeight?: string | number;
   fontSize?: string | number;
-  iconMap: Record<string, React.ElementType>;
+  /**
+   * Mapping from icon name to component. Defaults to {@link defaultIconMap}.
+   */
+  iconMap?: IconMap;
   style?: React.CSSProperties;
   bg: string;
   color: string;
@@ -16,7 +25,7 @@ const TaskStatusTag: React.FC<TaskStatusTagProps> = ({
   statusId,
   fontWeight,
   fontSize,
-  iconMap,
+  iconMap = defaultIconMap,
   style,
   bg,
   color,

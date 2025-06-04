@@ -34,6 +34,7 @@ import TaskStatusTag from "../common/TaskStatusTag";
 import TaskProjectTag from "../common/TaskProjectTag";
 import TaskAgentTag from "../TaskAgentTag";
 import TaskDependencyTag from "../common/TaskDependencyTag";
+import { IconMap } from "../common/iconMap";
 import {
   Task,
   TaskFileAssociation,
@@ -67,8 +68,8 @@ interface TaskItemDetailsSectionProps {
   projectName?: string;
   /** Style object, typically from a custom hook like useTaskItemStyles. */
   styles: Record<string, unknown>; // Consider a more specific type
-  /** Optional: A map of status IDs to React ElementType for rendering status icons in TaskStatusTag. */
-  iconMap?: Record<string, React.ElementType>;
+  /** Optional: Icon mapping used by `TaskStatusTag` for status icons. */
+  iconMap?: IconMap;
   /** The current status ID of the task, used by TaskStatusTag. */
   currentStatusId: StatusID;
   /** If true, applies specific styling adjustments, like reduced margin-top. */
