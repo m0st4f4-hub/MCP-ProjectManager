@@ -16,3 +16,19 @@ Key files:
 *   `blur.ts`: Defines blur values.
 *   `index.ts`: Barrel file re-exporting all tokens.
 *   `__tests__/`: Contains unit tests for the design tokens. 
+
+<!-- File List Start -->
+## File List
+
+- `blur.ts`
+- `breakpoints.ts`
+- `colors.ts`
+- `index.ts`
+- `opacity.ts`
+- `shadows.ts`
+- `sizing.ts`
+- `transitions.ts`
+- `typography.ts`
+- `zIndex.ts`
+
+<!-- File List End -->

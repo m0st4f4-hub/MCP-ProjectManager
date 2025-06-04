@@ -134,6 +134,9 @@ cd backend
 - ✅ **Memory Service / Knowledge Graph**: Centralized storage for entities and relationships.
 - ✅ **Extended Task API**: Endpoints for task dependencies, file associations, archiving, and unarchiving.
 - ✅ **Database Migrations**: Alembic support updated for Memory Service models.
+- ✅ **Task Listing**: Global task listing available at `/api/v1/tasks` with optional `project_id` and pagination. Project-specific listing at `/api/v1/projects/{project_id}/tasks`.
+- ✅ **Task Comments**: API for listing and adding comments to tasks is fully functional.
+- ✅ **Project Members**: API for managing project members (add, remove, list) is fully functional.
 ## 🔍 Troubleshooting
 
 ### Server Won't Start
@@ -192,3 +195,48 @@ Key files and directories:
 *   `database.py`: Database connection and session setup.
 *   `requirements.txt`: Python project dependencies.
 *   `auth.py`: Authentication related code.
+
+<!-- File List Start -->
+## File List
+
+- `.env`
+- `.flake8`
+- `__init__.py`
+- `alembic.ini`
+- `auth.py`
+- `check_routes.py`
+- `comprehensive_flake8_fixer.py`
+- `comprehensive_indent_fix.py`
+- `database.py`
+- `debug_tables.py`
+- `debug_test_db.py`
+- `enums.py`
+- `fix_all_indentation.py`
+- `fix_comprehensive_flake8.py`
+- `fix_conftest.py`
+- `fix_flake8.py`
+- `fix_indentation.py`
+- `fix_line.py`
+- `fix_mcp_indentation.py`
+- `fix_project_indentation.py`
+- `flake8_output.txt`
+- `fresh_flake8_output.txt`
+- `init_db.py`
+- `main.py`
+- `middleware.py`
+- `post_fix_flake8.txt`
+- `pytest.ini`
+- `quick_fix_project_service.py`
+- `quick_indent_fix.py`
+- `requirements.txt`
+- `security.py`
+- `test_app_import.py`
+- `test_basic_imports.py`
+- `test_endpoints.py`
+- `test_individual_models.py`
+- `test_lazy_imports.py`
+- `test_openapi.json`
+- `test_router_imports.py`
+- `validation.py`
+
+<!-- File List End -->

@@ -5,6 +5,7 @@ from typing import List, Optional
 from ...database import get_sync_db as get_db
 from ...services.agent_service import AgentService
 from ...schemas.agent import Agent, AgentCreate, AgentUpdate
+from ...schemas.api_responses import DataResponse
 
 def get_agent_service(db: Session = Depends(get_db)) -> AgentService:
     """Dependency that provides an AgentService instance."""
@@ -30,22 +31,27 @@ def create_agent(agent: AgentCreate, db: Session = Depends(get_db)):
             status_code=400, detail="Agent name already registered")
     return agent_service.create_agent(agent=agent)
 
-@router.get("/", response_model=List[Agent], summary="Get Agents", operation_id="get_agents")
-
-
-def get_agent_list(
-    search: Optional[str] = None,  # Added search parameter  # Added status parameter (though Agent model doesn't have status yet)
+@router.get("/", response_model=DataResponse[List[Agent]], summary="Get Agents", operation_id="get_agents")
+async def get_agent_list(
+    skip: int = 0,
+    limit: int = 100,
+    search: Optional[str] = None,
     status: Optional[str] = None,
     is_archived: Optional[bool] = Query(
         False, description="Filter by archived status. False for non-archived,"
-            "True for archived, null/None for all."),  # ADDED
-    db: Session = Depends(get_db)  # ADDED db session dependency
+            "True for archived, null/None for all."),
+    db: Session = Depends(get_db)
 ):
-    """Retrieves a list of registered agents with optional filtering."""  # Instantiate AgentService
+    """Retrieves a list of registered agents with optional filtering and pagination."""
     agent_service = AgentService(db)
     agents = agent_service.get_agents(
-        search=search, status=status, is_archived=is_archived)  # Pass new params
-    return agents
+        skip=skip,
+        limit=limit,
+        search=search,
+        status=status,
+        is_archived=is_archived
+    )
+    return DataResponse[List[Agent]](data=agents, message="Agents retrieved successfully")
 
 @router.get("/{agent_name}", response_model=Agent, summary="Get Agent by Name", tags=["Agents"], operation_id="get_agent_by_name")
 

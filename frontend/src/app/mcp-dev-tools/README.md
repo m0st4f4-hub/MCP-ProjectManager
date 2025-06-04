@@ -11,3 +11,10 @@ This directory defines the Next.js route for the MCP Developer Tools page, acces
 - **Functionality**: As a result, navigating to `/mcp-dev-tools` in the browser will render the `MCPDevTools` component, which provides a dedicated interface for development and debugging related to MCP functionalities.
 
 The `MCPDevTools` component itself (located in `frontend/src/components/`) is responsible for the actual UI and features of the developer tools panel.
+
+<!-- File List Start -->
+## File List
+
+- `page.tsx`
+
+<!-- File List End -->

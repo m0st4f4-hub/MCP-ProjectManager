@@ -132,3 +132,15 @@ Key files:
 *   `TaskItem.types.ts`: Defines TypeScript types for task components.
 *   `TaskItem.styles.ts`: Contains styling definitions for task components.
 *   `README.md`: This file.
+
+<!-- File List Start -->
+## File List
+
+- `TaskItem.styles.ts`
+- `TaskItem.tsx`
+- `TaskItem.types.ts`
+- `TaskItem.utils.ts`
+- `TaskItemDetailsSection.tsx`
+- `TaskItemMainSection.tsx`
+
+<!-- File List End -->

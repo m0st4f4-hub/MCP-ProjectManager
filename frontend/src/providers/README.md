@@ -44,3 +44,11 @@ This directory contains React components that act as context providers, setting 
 - **Props**: `children: React.ReactNode`.
 - **Exports**: `ModalProvider` (Default React Functional Component).
 - **Usage**: This provider is intended to be used high up in the component tree. In this project, it is conveniently wrapped by `ChakraProviderWrapper`.
+
+<!-- File List Start -->
+## File List
+
+- `ChakraProviderWrapper.tsx`
+- `ModalProvider.tsx`
+
+<!-- File List End -->

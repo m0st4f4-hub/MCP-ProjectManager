@@ -15,3 +15,11 @@ Key files:
 ## Files
 
 ### `ProjectContext.tsx`
+
+<!-- File List Start -->
+## File List
+
+- `ProjectContext.tsx`
+- `ThemeContext.tsx`
+
+<!-- File List End -->

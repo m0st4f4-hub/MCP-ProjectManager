@@ -10,3 +10,11 @@ Key files and directories:
 *   `mocks/`: Mock implementations for dependencies (e.g., API services).
 *   `utils/`: Test utility functions.
 *   `.gitkeep`: Placeholder file to ensure the directory is included in Git. 
+
+<!-- File List Start -->
+## File List
+
+- `.gitkeep`
+- `setup.ts`
+
+<!-- File List End -->

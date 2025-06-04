@@ -37,3 +37,17 @@ Key files:
     - Could be a more detailed or tabular alternative to simpler list components like `TaskList.tsx` or `ProjectList.tsx`, or it might be a generic, configurable list component.
 
 These view components allow users to switch between different perspectives when examining their data, catering to various workflow preferences.
+
+<!-- File List Start -->
+## File List
+
+- `KanbanColumn.tsx`
+- `KanbanView.tsx`
+- `ListGroup.tsx`
+- `ListSubgroup.tsx`
+- `ListTaskItem.tsx`
+- `ListTaskMobile.tsx`
+- `ListView.tsx`
+- `ListView.types.ts`
+
+<!-- File List End -->

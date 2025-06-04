@@ -56,15 +56,15 @@ async def get_project_members_endpoint(
 
 async def add_project_member_endpoint(
     project_id: str,
-    member_data: dict,
+    member_data: schemas.ProjectMemberCreate,
     project_member_service: ProjectMemberService = Depends(get_project_member_service),
     current_user: UserModel = Depends(get_current_active_user),
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Add a member to a project."""
     try:  # Extract user_id and role from member_data
-        user_id = member_data.get("user_id")
-        role = member_data.get("role", "member")
+        user_id = member_data.user_id
+        role = member_data.role
 
         if not user_id:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="user_id is required")
