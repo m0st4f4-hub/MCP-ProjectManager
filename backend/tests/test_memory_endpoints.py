@@ -3,7 +3,8 @@ import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient, ASGITransport
 
-from backend.routers.memory.core.core import router, get_memory_service, get_current_active_user
+from backend.routers.memory import router, get_memory_service, get_current_active_user
+from backend.routers.memory.core.core import get_memory_service as core_get_memory_service
 from backend.schemas.memory import MemoryEntity
 from datetime import datetime, timezone
 
@@ -54,6 +55,7 @@ def override_service():
 app = FastAPI()
 app.include_router(router)
 app.dependency_overrides[get_memory_service] = override_service
+app.dependency_overrides[core_get_memory_service] = override_service
 app.dependency_overrides[get_current_active_user] = override_user
 
 
@@ -79,3 +81,19 @@ async def test_ingest_url_and_get_metadata():
         resp = await client.get(f"/entities/{entity_id}/metadata")
         assert resp.status_code == 200
         assert resp.json()["metadata"] == {}
+
+
+@pytest.mark.asyncio
+async def test_root_ingest_text():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.post("/ingest-text", json={"text": "root"})
+        assert resp.status_code == 201
+        assert resp.json()["content"] == "root"
+
+
+@pytest.mark.asyncio
+async def test_root_ingest_url():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.post("/ingest-url", json={"url": "http://root.com"})
+        assert resp.status_code == 201
+        assert resp.json()["content"] == "content from http://root.com"
