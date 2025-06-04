@@ -10,32 +10,40 @@ from ..models import ProjectMember  # from backend.schemas import ProjectMemberC
 from backend.schemas.project import ProjectMemberCreate, ProjectMemberUpdate
 from .project_member_validation import member_exists  # Assuming member_exists is async or will be handled
 from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession  # Assuming member_exists is now async or will be awaited appropriately where called
+from sqlalchemy.orm import selectinload
 
 async def get_project_member(db: AsyncSession, project_id: str, user_id: str) -> Optional[ProjectMember]:
     """Get a specific project member by project_id and user_id."""
-    result = await db.execute(
-    select(ProjectMember).filter(
-    and_(ProjectMember.project_id == project_id, ProjectMember.user_id == user_id)
+    stmt = (
+        select(ProjectMember)
+        .options(selectinload(ProjectMember.user), selectinload(ProjectMember.project))
+        .filter(and_(ProjectMember.project_id == project_id, ProjectMember.user_id == user_id))
     )
-    )
+    result = await db.execute(stmt)
     return result.scalar_one_or_none()
 
 async def get_project_members(db: AsyncSession, project_id: str, skip: int = 0, limit: int = 100) -> List[ProjectMember]:
     """Get all members of a project."""
-    result = await db.execute(
-    select(ProjectMember).filter(
-    ProjectMember.project_id == project_id
-    ).offset(skip).limit(limit)
+    stmt = (
+        select(ProjectMember)
+        .options(selectinload(ProjectMember.user), selectinload(ProjectMember.project))
+        .filter(ProjectMember.project_id == project_id)
+        .offset(skip)
+        .limit(limit)
     )
+    result = await db.execute(stmt)
     return result.scalars().all()
 
 async def get_user_projects(db: AsyncSession, user_id: str, skip: int = 0, limit: int = 100) -> List[ProjectMember]:
     """Get all projects a user is a member of."""
-    result = await db.execute(
-    select(ProjectMember).filter(
-    ProjectMember.user_id == user_id
-    ).offset(skip).limit(limit)
+    stmt = (
+        select(ProjectMember)
+        .options(selectinload(ProjectMember.project), selectinload(ProjectMember.user))
+        .filter(ProjectMember.user_id == user_id)
+        .offset(skip)
+        .limit(limit)
     )
+    result = await db.execute(stmt)
     return result.scalars().all()
 
 async def add_project_member(db: AsyncSession, project_member: ProjectMemberCreate) -> ProjectMember:
