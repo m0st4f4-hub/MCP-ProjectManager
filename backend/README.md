@@ -91,6 +91,9 @@ ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 DEBUG=True
 ```
+`DATABASE_URL` is read by `database.py` and `init_db.py`. Set it to a
+SQLAlchemy-compatible URL (e.g., a custom SQLite file path or PostgreSQL URI)
+to override the default `sql_app.db`.
 
 ### Database
 
