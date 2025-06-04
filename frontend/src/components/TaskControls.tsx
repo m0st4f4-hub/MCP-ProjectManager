@@ -30,6 +30,7 @@ import {
 import { GroupByType, ViewMode } from "@/types";
 import { useTaskStore } from "@/store/taskStore";
 import * as statusUtils from "@/lib/statusUtils";
+import { TaskStatus } from "@/types/task";
 import ConfirmationModal from "./common/ConfirmationModal";
 import AppIcon from "./common/AppIcon";
 import { sizing, typography } from "../tokens";
@@ -173,10 +174,11 @@ const TaskControls: React.FC<TaskControlsProps> = ({
                   {availableStatusesForBulkUpdate.map((statusId) => {
                     const statusAttrs =
                       statusUtils.getStatusAttributes(statusId);
+                    const targetStatus = statusAttrs?.id as TaskStatus;
                     return (
                       <MenuItem
                         key={statusId}
-                        onClick={() => bulkSetStatusTasks(statusId)}
+                        onClick={() => bulkSetStatusTasks(targetStatus)}
                         pl="8"
                         _hover={{ bg: "gray.100", _dark: { bg: "gray.700" } }}
                       >

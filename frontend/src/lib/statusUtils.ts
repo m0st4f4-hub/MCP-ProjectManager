@@ -48,7 +48,10 @@ export type StatusID =
   | "IN_REVIEW"
   | "COMPLETED"
   | "BLOCKED"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "PENDING_VERIFICATION"
+  | "FAILED"
+  | "VERIFICATION_FAILED";
 
 /**
  * Represents the full set of attributes for a canonical task status.
@@ -197,6 +200,36 @@ const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
     description: "Task was cancelled and will not be completed.",
     colorScheme: "red",
     icon: "CloseIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
+  PENDING_VERIFICATION: {
+    id: "PENDING_VERIFICATION",
+    displayName: "Pending Verification",
+    category: "inProgress",
+    description: "Task awaiting verification.",
+    colorScheme: "orange",
+    icon: "TimeIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  FAILED: {
+    id: "FAILED",
+    displayName: "Failed",
+    category: "failed",
+    description: "Task execution failed.",
+    colorScheme: "red",
+    icon: "WarningTwoIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
+  VERIFICATION_FAILED: {
+    id: "VERIFICATION_FAILED",
+    displayName: "Verification Failed",
+    category: "failed",
+    description: "Task verification failed.",
+    colorScheme: "red",
+    icon: "WarningTwoIcon",
     isTerminal: true,
     isDynamic: false,
   },

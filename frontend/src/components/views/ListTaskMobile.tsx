@@ -42,7 +42,7 @@ const ListTaskMobile: React.FC<ListTaskMobileProps> = ({
     <Box flex={1}>
       <TaskItem
         task={task}
-        projectName={task.project_name}
+        projectName={task.project_name || ""}
         onAssignAgent={onAssignAgent}
         onDeleteInitiate={onDeleteInitiate}
         onClick={onClick}

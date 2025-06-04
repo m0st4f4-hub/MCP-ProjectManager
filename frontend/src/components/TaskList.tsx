@@ -44,32 +44,13 @@ import {
   applyAllFilters,
   groupTasksByStatus,
 } from "./TaskList.utils";
+import type { TaskGroup, TaskSubgroup, GroupedTasks } from "./views/ListView.types";
 
 type ViewMode = "list" | "kanban";
 // type StatusType = 'To Do' | 'In Progress' | 'Blocked' | 'Completed'; // For Kanban later
 // type ColorMap = { // For Kanban later
 //     [K in StatusType]: string;
 // };
-
-interface TaskGroup {
-  id: string;
-  name: string;
-  tasks?: Task[];
-  subgroups?: TaskSubgroup[];
-  status?: string;
-}
-
-interface TaskSubgroup {
-  id: string;
-  name: string;
-  tasks: Task[];
-  status?: string;
-}
-
-interface GroupedTasks {
-  type: GroupByType;
-  groups: TaskGroup[];
-}
 
 const TaskList: React.FC = () => {
   const tasks = useTaskStore((state) => state.tasks);
@@ -193,6 +174,10 @@ const TaskList: React.FC = () => {
     return allFilterableTasks;
   }, [allFilterableTasks]);
 
+  const groupedAndFilteredTasks: GroupedTasks = useMemo(() => {
+    return groupTasksByStatus(allFilterableTasks, sortOptions);
+  }, [allFilterableTasks, sortOptions]);
+
   // Force groupBy to 'status' in Kanban view
   // const effectiveGroupBy = viewMode === "kanban" ? "status" : "status";
 
@@ -256,7 +241,7 @@ const TaskList: React.FC = () => {
       {/* Conditional Rendering based on viewMode */}
       {viewMode === "list" && (
         <ListView
-          groupedTasks={tasks}
+          groupedTasks={groupedAndFilteredTasks}
           isLoading={loading && isInitialLoad}
           isMobile={isMobile}
         />

@@ -5,22 +5,7 @@ import { Task, TaskFilters, GroupByType, Project, Agent, TaskSortOptions } from 
 import { mapStatusToStatusID, formatDisplayName } from "@/lib/utils";
 import * as statusUtils from "@/lib/statusUtils";
 import { sortTasks } from "@/store/taskStore";
-
-// Add TaskGroup type alias for use in this file
-export type TaskGroup = {
-  id: string;
-  name: string;
-  tasks?: Task[];
-  subgroups?: TaskSubgroup[];
-  status?: string;
-};
-export type TaskSubgroup = TaskGroup;
-
-// This type is used only internally within grouping logic, so moved here:
-export type GroupedTasks = {
-  type: GroupByType;
-  groups: TaskGroup[];
-};
+import type { TaskGroup, TaskSubgroup, GroupedTasks } from "./views/ListView.types";
 
 function getTaskCategory(task: Task): string {
   const attrs = statusUtils.getStatusAttributes(task.status as statusUtils.StatusID);
