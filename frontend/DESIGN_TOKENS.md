@@ -1,6 +1,6 @@
 # Design Token System Documentation
 
-This document outlines the structure and usage of the design tokens for this project. The **single source of truth (SSOT)** for all design tokens is the TypeScript files: `frontend/src/tokens/colors.ts`, `frontend/src/tokens/sizing.ts`, `frontend/src/tokens/typography.ts`, and `frontend/src/tokens/index.ts`.
+This document outlines the structure and usage of the design tokens for this project. The **single source of truth (SSOT)** for all design tokens is the TypeScript files: `frontend/src/tokens/colors.ts`, `frontend/src/tokens/sizing.ts`, `frontend/src/tokens/fontFamily.ts`, `frontend/src/tokens/fontSize.ts`, `frontend/src/tokens/typography.ts`, and `frontend/src/tokens/index.ts`.
 
 ## Philosophy
 
