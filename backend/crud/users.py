@@ -85,12 +85,16 @@ async def update_user(db: AsyncSession, user_id: str, user_update: UserUpdate) -
                         result_existing_email = await db.execute(select(models.User).filter(models.User.email == update_data["email"]))
                         existing_user_with_email = result_existing_email.scalar_one_or_none()
                         if existing_user_with_email and existing_user_with_email.id != user_id:
-                            raise ValueError(f"Email '{update_data["email"]}' already exists for another user")  # Check for duplicate username if username is being updated
+                            raise ValueError(
+                                f"Email '{update_data['email']}' already exists for another user"
+                            )  # Check for duplicate username if username is being updated
                         if "username" in update_data and update_data["username"] is not None and update_data["username"] != db_user.username:
                             result_existing_username = await db.execute(select(models.User).filter(models.User.username == update_data["username"]))
                             existing_user_with_username = result_existing_username.scalar_one_or_none()
                             if existing_user_with_username and existing_user_with_username.id != user_id:
-                                raise ValueError(f"Username '{update_data["username"]}' already exists for another user")
+                                raise ValueError(
+                                    f"Username '{update_data['username']}' already exists for another user"
+                                )
 
                     # Apply updates for all fields in update_data
                     for key, value in update_data.items():

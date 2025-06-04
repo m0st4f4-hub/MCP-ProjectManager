@@ -5,7 +5,8 @@
 # Timestamp: <timestamp>
 
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional, List, datetime
+from typing import Optional, List
+from datetime import datetime
 
 # Import UserRoleEnum
 from ..enums import UserRoleEnum
