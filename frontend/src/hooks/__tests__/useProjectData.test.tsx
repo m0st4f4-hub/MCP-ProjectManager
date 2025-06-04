@@ -1,8 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useProjectData } from '../useProjectData';
-import * as api from '@/services/api';
 import { TaskStatus } from '@/types/task';
+import * as api from '@/services/api';
+
+vi.mock('@chakra-ui/react', async () => {
+  const actual = await vi.importActual<any>('@chakra-ui/react');
+  return { ...actual, useToast: vi.fn(), useColorModeValue: vi.fn((l: any) => l) };
+});
 
 vi.mock('@/services/api', () => ({
   getProjectById: vi.fn(),
@@ -20,7 +25,7 @@ describe('useProjectData', () => {
   it('loads project and tasks on mount', async () => {
     const project = { id: 'p1', name: 'Project 1', created_at: '2024' } as any;
     const tasks = [
-      { project_id: 'p1', task_number: 1, title: 'T1', status: TaskStatus.TO_DO, created_at: '2024' } as any,
+      { id: 't1', project_id: 'p1', task_number: 1, title: 'T1', status: TaskStatus.TO_DO, created_at: '2024' } as any,
     ];
     mockedApi.getProjectById.mockResolvedValueOnce(project);
     mockedApi.getAllTasksForProject.mockResolvedValueOnce(tasks);

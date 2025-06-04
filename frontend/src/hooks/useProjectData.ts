@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { getProjectById, updateProject, getAllTasksForProject } from "@/services/api";
 import { Project, ProjectUpdateData, Task } from "@/types";
 
-interface UseProjectDataResult {
+export interface UseProjectDataResult {
   project: Project | null;
   tasks: Task[];
   loading: boolean;
@@ -63,7 +63,14 @@ export const useProjectData = (projectId: string): UseProjectDataResult => {
     [projectId],
   );
 
-  return { project, tasks, loading, error, refresh: fetchData, updateProjectDetails };
+  return {
+    project,
+    tasks,
+    loading,
+    error,
+    refresh: fetchData,
+    updateProjectDetails,
+  };
 };
 
 export default useProjectData;
