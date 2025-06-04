@@ -283,3 +283,14 @@ This documentation provides a starting point. As the system evolves, so should t
 ## ⚠️ Update: CSS Modules Removed
 
 All component and page styling is now handled via Chakra UI props and global CSS using the design token system. No CSS Modules (`.module.css` files) are used in the project. All previous references to CSS Modules are deprecated. 
+## Future Work
+
+- Audit remaining components for direct CSS values. Some still include inline colors (e.g., '#888') and raw sizes (e.g., '0.85em', '20px').
+- Replace these with semantic tokens from `frontend/src/tokens/`.
+- Areas noted during this review:
+  - `AgentAssignmentModal.tsx` uses an inline gray color and font size.
+  - `TaskAgentTag.tsx` sets a badge font size with an 'em' value.
+  - `APITester.tsx` specifies fixed pixel widths and heights.
+  - `FilterPanel.tsx` and `FilterSidebar.tsx` use rem and pixel values for spacing and sizing.
+  - Several modals and skeleton components reference pixel sizes for icons and elements.
+- Continue migrating these to design tokens for full consistency.
