@@ -9,3 +9,14 @@ Key files:
 *   `dependency_utils.py`: Utility functions for task dependencies.
 *   `file_association_utils.py`: Utility functions for file associations (likely related to the Memory service).
 *   `__init__.py`: Initializes the utils package. 
+
+<!-- File List Start -->
+## File List
+
+- `__init__.py`
+- `dependency_utils.py`
+- `file_association_utils.py`
+- `task_file_utils.py`
+- `user_utils.py`
+
+<!-- File List End -->

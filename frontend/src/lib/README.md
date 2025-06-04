@@ -83,3 +83,15 @@ Defines the structure and provides a list of available MCP (Multi-Context Person
       - Tasks: `create_task`, `get_task_list`, `get_task_by_id`, `update_task`, `delete_task`
       - Planning: `generate_planning_prompt`
     - Each tool definition specifies its HTTP method, path, parameters (including their type, whether they are required, and if they are path, query, or body parameters), and a brief description.
+
+<!-- File List Start -->
+## File List
+
+- `mcpTools.ts`
+- `promptUtils.ts`
+- `statusUtils.test.ts`
+- `statusUtils.ts`
+- `taskUtils.ts`
+- `utils.ts`
+
+<!-- File List End -->

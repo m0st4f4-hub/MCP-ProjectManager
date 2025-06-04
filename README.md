@@ -291,3 +291,38 @@ Key files and directories:
 *   `docs/`: Placeholder for additional documentation (currently empty).
 *   `.cursor/`: Contains MCP rules and agent configurations.
 
+
+<!-- File List Start -->
+## File List
+
+- `.cursorignore`
+- `.gitignore`
+- `.npmignore`
+- `AEROSPACE_GRADE_DOCUMENTATION.md`
+- `BACKEND_FRONTEND_ALIGNMENT_REPORT.md`
+- `CLEANUP_SUMMARY.md`
+- `DEV_LAUNCHER_COMPLETE.md`
+- `DEV_LAUNCHER_GUIDE.md`
+- `LICENSE`
+- `SYSTEM_GUIDE.md`
+- `TEST_ENHANCEMENT_REPORT.md`
+- `THE_BUILDERS_COMPLETION_REPORT.md`
+- `dev_launcher.bat`
+- `dev_launcher.js`
+- `dev_launcher.ps1`
+- `final_integration.py`
+- `image-dark.png`
+- `image-light.png`
+- `package-lock.json`
+- `package.json`
+- `run_backend.py`
+- `run_core_backend.py`
+- `run_minimal_backend.py`
+- `run_production_backend.py`
+- `sql_app.db`
+- `start_system.py`
+- `test_openapi.py`
+- `validate_alignment.py`
+- `validate_frontend.js`
+
+<!-- File List End -->

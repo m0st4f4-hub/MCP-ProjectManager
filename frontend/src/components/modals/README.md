@@ -49,3 +49,20 @@ Key files:
 *   `ImportPlanModal.tsx`: Modal for importing project plans from a file or text.
 *   `DevToolsDrawer.tsx`: Likely a modal or drawer component for developer tools.
 *   `README.md`: This file.
+
+<!-- File List Start -->
+## File List
+
+- `AddAgentModal.tsx`
+- `AddProjectModal.tsx`
+- `AddTaskModal.tsx`
+- `AgentAssignmentModal.tsx`
+- `CreateProjectModal.tsx`
+- `DevToolsDrawer.tsx`
+- `EditAgentModal.tsx`
+- `EditProjectModal.tsx`
+- `EditTaskModal.tsx`
+- `ImportPlanModal.tsx`
+- `TaskDetailsModal.tsx`
+
+<!-- File List End -->

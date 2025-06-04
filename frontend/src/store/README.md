@@ -62,3 +62,14 @@ These stores centralize application state and logic for handling data related to
 - **Usage**: Provides a single, convenient import point for accessing any of the store hooks or types (e.g., `import { useTaskStore, useProjectStore } from '@/store';`).
 
 These stores are fundamental to the application's reactivity and data flow, providing a structured way to manage and interact with backend data on the client side.
+
+<!-- File List Start -->
+## File List
+
+- `agentStore.ts`
+- `baseStore.ts`
+- `index.ts`
+- `projectStore.ts`
+- `taskStore.ts`
+
+<!-- File List End -->

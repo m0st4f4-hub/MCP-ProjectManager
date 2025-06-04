@@ -19,3 +19,26 @@ Key service files include:
 *   `project_file_association_service.py`: Contains logic for managing associations between projects and files/Memory entities.
 *   `exceptions.py`: Defines custom exceptions used within the services.
 *   `utils.py`: Contains utility functions used across services. 
+
+<!-- File List Start -->
+## File List
+
+- `__init__.py`
+- `agent_service.py`
+- `audit_log_service.py`
+- `comment_service.py`
+- `exceptions.py`
+- `memory_service.py`
+- `project_file_association_service.py`
+- `project_member_service.py`
+- `project_service.py`
+- `project_template_service.py`
+- `rules_service.py`
+- `task_dependency_service.py`
+- `task_file_association_service.py`
+- `task_service.py`
+- `user_role_service.py`
+- `user_service.py`
+- `utils.py`
+
+<!-- File List End -->
