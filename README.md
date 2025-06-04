@@ -104,6 +104,8 @@ project-manager/
     *   Provides a centralized, database-backed store for structured information.
     *   Enables agents and potentially human users to store, retrieve, and relate entities, observations, and facts.
     *   Powers enhanced contextual understanding and persistent memory for agents.
+    *   Offers `/api/memory/ingest-url` and `/api/memory/ingest-text` endpoints
+        to capture web pages and raw text snippets directly into the memory graph.
 *   **Unified Interface:** Modern WebGUI (Next.js/Chakra UI) for human interaction, monitoring, and guidance.
 *   **Comprehensive Task Management:** Create, view, update, delete, assign, archive, and unarchive tasks and subtasks.
 *   **Project Organization:** Group tasks into projects with descriptions and statuses.
