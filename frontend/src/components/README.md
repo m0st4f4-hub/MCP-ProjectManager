@@ -146,6 +146,15 @@ Key files and directories:
 *   `views/`: Components defining larger view structures or layouts.
 *   Individual component files like `TaskList.tsx`, `ProjectList.tsx`, `AgentList.tsx`, `AddTaskForm.tsx`, etc.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

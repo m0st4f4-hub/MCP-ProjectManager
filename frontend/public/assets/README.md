@@ -4,7 +4,16 @@ This directory serves as a container for various static assets used by the front
 
 Key subdirectories:
 
-*   `images/`: Contains image files used throughout the application. 
+*   `images/`: Contains image files used throughout the application.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

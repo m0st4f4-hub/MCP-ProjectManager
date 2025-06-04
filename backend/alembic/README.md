@@ -27,6 +27,15 @@ Key files and directories:
 
 -   **`
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

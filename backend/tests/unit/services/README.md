@@ -4,7 +4,16 @@ This directory contains unit tests for the business logic service layer in the b
 
 Key files:
 
-*   `test_project_service.py`: Unit tests for project-related service logic. 
+*   `test_project_service.py`: Unit tests for project-related service logic.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

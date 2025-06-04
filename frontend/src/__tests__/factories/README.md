@@ -8,7 +8,16 @@ Key files:
 *   `user.factory.ts`: Factory for generating user data.
 *   `project.factory.ts`: Factory for generating project data.
 *   `task.factory.ts`: Factory for generating task data.
-*   `index.ts`: Barrel file re-exporting the factories. 
+*   `index.ts`: Barrel file re-exporting the factories.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

@@ -63,6 +63,15 @@ These stores centralize application state and logic for handling data related to
 
 These stores are fundamental to the application's reactivity and data flow, providing a structured way to manage and interact with backend data on the client side.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

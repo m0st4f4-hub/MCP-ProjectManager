@@ -84,6 +84,15 @@ Defines the structure and provides a list of available MCP (Multi-Context Person
       - Planning: `generate_planning_prompt`
     - Each tool definition specifies its HTTP method, path, parameters (including their type, whether they are required, and if they are path, query, or body parameters), and a brief description.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

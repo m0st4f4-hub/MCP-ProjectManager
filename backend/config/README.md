@@ -7,7 +7,16 @@ Key files:
 *   `app_config.py`: Contains the main application settings loaded from environment variables using Pydantic Settings.
 *   `router_config.py`: Configures API routers and their dependencies.
 *   `logging_config.py`: Sets up logging for the application.
-*   `__init__.py`: Initializes the config package. 
+*   `__init__.py`: Initializes the config package.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

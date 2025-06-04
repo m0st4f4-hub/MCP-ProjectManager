@@ -4,7 +4,16 @@ This directory contains utility functions and helpers specifically designed to s
 
 Key files:
 
-*   `test-utils.tsx`: Contains custom rendering utilities (likely re-exporting or extending `@testing-library/react` methods). 
+*   `test-utils.tsx`: Contains custom rendering utilities (likely re-exporting or extending `@testing-library/react` methods).
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

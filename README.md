@@ -293,6 +293,14 @@ Key files and directories:
 *   `docs/`: Placeholder for additional documentation (currently empty).
 *   `.cursor/`: Contains MCP rules and agent configurations.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

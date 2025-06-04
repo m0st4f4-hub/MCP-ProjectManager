@@ -15,7 +15,16 @@ Key files:
 *   `opacity.ts`: Defines opacity values.
 *   `blur.ts`: Defines blur values.
 *   `index.ts`: Barrel file re-exporting all tokens.
-*   `__tests__/`: Contains unit tests for the design tokens. 
+*   `__tests__/`: Contains unit tests for the design tokens.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

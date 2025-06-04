@@ -45,6 +45,15 @@
 ## Continuous Integration
 Tests are automatically run on push and pull requests via GitHub Actions.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

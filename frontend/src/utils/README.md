@@ -6,6 +6,15 @@ These might include functions for data formatting, validation, calculations, or 
 
 Currently, this directory is empty. As common, reusable utility functions are identified or developed, they can be placed here.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

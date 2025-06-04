@@ -38,7 +38,16 @@ This directory contains the FastAPI routers that define the API endpoints for th
     *   `auth/`: Authentication and token generation.
     *   `core/`: Core user management operations.
 
-Interactive API documentation is available at `/docs` and `/redoc` when the backend server is running. 
+Interactive API documentation is available at `/docs` and `/redoc` when the backend server is running.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

@@ -4,7 +4,16 @@ This directory contains unit tests specifically for the database CRUD functions 
 
 Key files:
 
-*   `test_projects.py`: Unit tests for project CRUD functions. 
+*   `test_projects.py`: Unit tests for project CRUD functions.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

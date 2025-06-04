@@ -18,7 +18,16 @@ Key service files include:
 *   `project_template_service.py`: Contains logic for managing project templates.
 *   `project_file_association_service.py`: Contains logic for managing associations between projects and files/Memory entities.
 *   `exceptions.py`: Defines custom exceptions used within the services.
-*   `utils.py`: Contains utility functions used across services. 
+*   `utils.py`: Contains utility functions used across services.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

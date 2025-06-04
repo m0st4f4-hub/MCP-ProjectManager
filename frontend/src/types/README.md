@@ -67,6 +67,15 @@ This directory centralizes all TypeScript type definitions, interfaces, enums, a
   - `TaskSortOptions`: Interface for task sorting options.
   - `TaskError`, `TaskResponse`, `TaskListResponse`: API-related types for tasks.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

@@ -6,7 +6,16 @@ Key files:
 
 *   `request_middleware.py`: Contains middleware for processing incoming requests.
 *   `error_handlers.py`: Defines custom exception handlers for the application.
-*   `__init__.py`: Initializes the middleware package. 
+*   `__init__.py`: Initializes the middleware package.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

@@ -45,6 +45,15 @@ This is the primary file in this directory and serves as the central hub for all
 
 The Zustand stores (in `frontend/src/store/`) extensively use these API service functions to fetch and mutate data, with the `api.ts` module acting as the sole interface to the backend, ensuring consistency and separation of concerns.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

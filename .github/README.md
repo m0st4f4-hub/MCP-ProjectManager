@@ -20,7 +20,16 @@ This directory stores configurations and templates specific to the project's Git
         -   Potentially build the applications.
         -   The badge at the top of the main `README.md` ( [![CI - Main](...ci.yml/badge.svg...)](...ci.yml) ) usually reflects the status of this CI workflow.
 
-These configurations are standard for GitHub-hosted projects and aim to improve collaboration, code quality, and automation. 
+These configurations are standard for GitHub-hosted projects and aim to improve collaboration, code quality, and automation.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List
