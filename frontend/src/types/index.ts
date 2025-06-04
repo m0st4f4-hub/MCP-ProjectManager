@@ -7,6 +7,7 @@ export * from "./memory";
 export * from "./comment";
 export * from "./rules";
 export * from "./mcp";
+export * from "./project_template";
 
 // Common types used across the application
 // Canonical shared sort direction type for all entities

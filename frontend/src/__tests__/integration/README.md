@@ -19,5 +19,6 @@ graph TD
 ## File List
 
 - `task-management.test.tsx`
+- `validate-frontend.test.ts`
 
 <!-- File List End -->
