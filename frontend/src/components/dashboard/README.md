@@ -79,3 +79,23 @@ Key files:
 *   `DashboardSection.tsx`: Reusable component for structuring sections within the dashboard.
 *   `CreateProjectModal.tsx`: Modal for creating new projects.
 *   `EditProjectModal.tsx`: Modal for editing project details.
+
+<!-- File List Start -->
+## File List
+
+- `AgentWorkloadChart.tsx`
+- `CreateProjectModal.tsx`
+- `DashboardError.tsx`
+- `DashboardLoading.tsx`
+- `DashboardSection.tsx`
+- `DashboardStatsGrid.tsx`
+- `EditProjectModal.tsx`
+- `ProjectProgressChart.tsx`
+- `RecentActivityList.tsx`
+- `TaskStatusChart.tsx`
+- `TasksOverTimeChart.tsx`
+- `TopPerformersLists.tsx`
+- `UnassignedTasksList.tsx`
+- `useDashboardData.ts`
+
+<!-- File List End -->

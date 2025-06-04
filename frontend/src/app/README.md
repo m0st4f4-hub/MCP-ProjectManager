@@ -117,3 +117,13 @@ Key files and directories:
 *   `favicon.ico`: Application favicon.
 *   `projects/[projectId]/`: Directory containing the page for individual project details.
 *   `mcp-dev-tools/`: Directory likely related to developer tools/features.
+
+<!-- File List Start -->
+## File List
+
+- `favicon.ico`
+- `globals.css`
+- `layout.tsx`
+- `page.tsx`
+
+<!-- File List End -->

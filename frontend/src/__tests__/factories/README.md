@@ -9,3 +9,14 @@ Key files:
 *   `project.factory.ts`: Factory for generating project data.
 *   `task.factory.ts`: Factory for generating task data.
 *   `index.ts`: Barrel file re-exporting the factories. 
+
+<!-- File List Start -->
+## File List
+
+- `comprehensive.factory.ts`
+- `index.ts`
+- `project.factory.ts`
+- `task.factory.ts`
+- `user.factory.ts`
+
+<!-- File List End -->

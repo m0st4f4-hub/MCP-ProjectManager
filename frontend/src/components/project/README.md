@@ -8,3 +8,13 @@ Key files:
 *   `ProjectDetail.tsx`: Component for displaying the detailed information of a single project.
 *   `ProjectFiles.tsx`: Component for displaying and managing files associated with a project.
 *   `ProjectMembers.tsx`: Component for displaying and managing members associated with a project. 
+
+<!-- File List Start -->
+## File List
+
+- `ProjectDetail.tsx`
+- `ProjectFiles.tsx`
+- `ProjectList.tsx`
+- `ProjectMembers.tsx`
+
+<!-- File List End -->

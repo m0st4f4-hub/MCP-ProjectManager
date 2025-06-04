@@ -106,3 +106,22 @@ Key files:
 *   `TaskDescriptionEditor.tsx`: Inline editor for task descriptions.
 *   `FilterPanel.tsx`: Panel containing filter controls (likely used within `FilterSidebar`).
 *   `AppIcon.tsx`: Component for displaying application icons.
+
+<!-- File List Start -->
+## File List
+
+- `AddFormBase.tsx`
+- `AppIcon.tsx`
+- `ConfirmationModal.tsx`
+- `EditModalBase.tsx`
+- `FilterPanel.tsx`
+- `FilterSidebar.tsx`
+- `TaskActionsMenu.tsx`
+- `TaskAgentTag.tsx`
+- `TaskDependencyTag.tsx`
+- `TaskDescriptionEditor.tsx`
+- `TaskProjectTag.tsx`
+- `TaskStatusTag.tsx`
+- `TaskTitleEditor.tsx`
+
+<!-- File List End -->
