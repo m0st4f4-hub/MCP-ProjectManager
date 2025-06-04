@@ -148,6 +148,10 @@ def ingest_file_endpoint(
 ):
     try:
         return memory_service.ingest_file(file_path=ingest_input.file_path, user_id=current_user.id)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to ingest file: {e}")
 
