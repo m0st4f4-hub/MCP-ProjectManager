@@ -8,9 +8,9 @@
  * Compliance: NASA NPR 7150.2, SpaceX Software Standards
  */
 
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 // Aerospace-Grade Test Configuration
 export default defineConfig({
@@ -21,6 +21,7 @@ export default defineConfig({
     setupFiles: ['./src/__tests__/setup.ts'],
     include: [
       'src/lib/__tests__/utils.test.tsx',
+      'src/store/__tests__/*.test.ts',
       'src/__tests__/integration/**/*.{ts,tsx}'
     ],
     coverage: {
@@ -64,4 +65,4 @@ export default defineConfig({
       '@lib': path.resolve(__dirname, './src/lib'),
     },
   },
-})
+});
