@@ -187,6 +187,17 @@ The frontend application will be available at `http://localhost:3000`.
 
 A `dev_launcher.bat` script is available in the project root. This batch file attempts to clear ports **8000** (for the backend) and **3000** (for the frontend), then starts the backend server with `uvicorn` and the frontend with `npm run dev` in separate command windows. Run it by double-clicking the file or executing `dev_launcher.bat` from the project root.
 
+### Makefile Shortcuts
+A `Makefile` in the project root provides handy commands:
+
+```bash
+make setup-backend   # create backend virtualenv and install deps
+make setup-frontend  # install frontend npm packages
+make test            # run backend and frontend tests
+make lint            # run flake8 and frontend eslint
+make dev             # launch backend and frontend together
+```
+
 
 ## How It Works
 
