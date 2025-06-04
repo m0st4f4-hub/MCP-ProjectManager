@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@/__tests__/utils/test-utils'
+import { render, screen, waitFor, fireEvent } from '@/__tests__/utils'
 import { createMockTask, createMockTasks } from '@/__tests__/factories'
 import TaskList from '../TaskList'
 import { useTaskStore } from '@/store/taskStore'

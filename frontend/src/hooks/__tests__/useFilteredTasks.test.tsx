@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Remove screen, fireEvent, waitFor imports
-// import { screen, fireEvent, waitFor } from '@testing-library/react';
+// import { screen, fireEvent, waitFor } from '@/__tests__/utils';
 import userEvent from '@testing-library/user-event';
 // Change default import to named import
 import { useFilteredTasks } from '../useFilteredTasks';
 // Add renderHook import
-// import { renderHook } from '@testing-library/react';
+// import { renderHook } from '@/__tests__/utils';
 
 vi.mock('@chakra-ui/react', async () => {
   const actual = await vi.importActual('@chakra-ui/react');

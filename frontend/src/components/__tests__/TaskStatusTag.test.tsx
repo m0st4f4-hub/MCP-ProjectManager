@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '@/__tests__/utils/test-utils'
+import { render, screen } from '@/__tests__/utils'
 import { CheckIcon, TimeIcon, WarningIcon } from '@chakra-ui/icons'
 import TaskStatusTag from '../TaskStatusTag'
 

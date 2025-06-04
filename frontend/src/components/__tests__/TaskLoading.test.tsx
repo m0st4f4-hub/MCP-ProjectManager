@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/__tests__/utils/test-utils';
+import { render, screen } from '@/__tests__/utils';
 import TaskLoading from '../TaskLoading';
 
 vi.mock('@chakra-ui/react', async () => {

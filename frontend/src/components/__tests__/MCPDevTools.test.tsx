@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "@/__tests__/utils";
 import userEvent from "@testing-library/user-event";
-import { TestWrapper } from "@/__tests__/utils/test-utils";
+import { TestWrapper } from "@/__tests__/utils";
 import MCPDevTools from "../MCPDevTools";
 
 vi.mock("@chakra-ui/react", async () => {

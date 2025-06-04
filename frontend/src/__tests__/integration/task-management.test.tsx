@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { render, screen, waitFor, fireEvent, within } from '@/__tests__/utils/test-utils'
+import { render, screen, waitFor, fireEvent, within } from '@/__tests__/utils'
 import { server } from '@/__tests__/mocks/server'
 import { http, HttpResponse } from 'msw'
 import { 
