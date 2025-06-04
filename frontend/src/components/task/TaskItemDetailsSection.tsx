@@ -32,7 +32,7 @@ import {
 import { DeleteIcon } from '@chakra-ui/icons';
 import TaskStatusTag from "../common/TaskStatusTag";
 import TaskProjectTag from "../common/TaskProjectTag";
-import TaskAgentTag from "../common/TaskAgentTag";
+import TaskAgentTag from "../TaskAgentTag";
 import TaskDependencyTag from "../common/TaskDependencyTag";
 import {
   Task,
@@ -339,17 +339,10 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
     {/* Conditionally render the agent tag if agent_name or agent_id is present on the task. */}
     {((task.agent_name || task.agent_id) && (
       <TaskAgentTag
-            agentName={(task.agent_name || task.agent_id) ?? ''}
-            agentTagStyle={
-              (styles.agentTagStyle as {
-                bg: string;
-                color: string;
-                fontWeight: string | number;
-              }) || { bg: '', color: '', fontWeight: 'normal' }
-            }
-        fontSize={styles.tagFontSize as string | number}
-            style={styles.agentTagStyle as React.CSSProperties}
-            status={task.agent_status}
+        agentName={(task.agent_name || task.agent_id) ?? ""}
+        tagBg={(styles.agentTagStyle as { bg: string }).bg}
+        tagColor={(styles.agentTagStyle as { color: string }).color}
+        fontWeight={(styles.agentTagStyle as { fontWeight: string | number }).fontWeight}
       />
     ))}
   </HStack>
