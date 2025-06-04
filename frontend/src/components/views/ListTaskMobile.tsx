@@ -32,4 +32,4 @@ const ListTaskMobile: React.FC<ListTaskMobileProps> = ({
   />
 );
 
-export default ListTaskMobile; 
+export default ListTaskMobile;

@@ -1,58 +1,57 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useProjectData } from '../useProjectData';
+import { TaskStatus } from '@/types/task';
+import * as api from '@/services/api';
 
 vi.mock('@chakra-ui/react', async () => {
   const actual = await vi.importActual<any>('@chakra-ui/react');
   return { ...actual, useToast: vi.fn(), useColorModeValue: vi.fn((l: any) => l) };
 });
 
-vi.mock('@/services/api/projects', () => ({
+vi.mock('@/services/api', () => ({
   getProjectById: vi.fn(),
+  getAllTasksForProject: vi.fn(),
   updateProject: vi.fn(),
 }));
 
-vi.mock('@/services/api/tasks', () => ({
-  getAllTasksForProject: vi.fn(),
-}));
-
-import { getProjectById, updateProject } from '@/services/api/projects';
-import { getAllTasksForProject } from '@/services/api/tasks';
-
-const mockedProjects = vi.mocked({ getProjectById, updateProject });
-const mockedTasks = vi.mocked({ getAllTasksForProject });
+const mockedApi = vi.mocked(api as any);
 
 describe('useProjectData', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('fetches project and tasks on mount', async () => {
-    mockedProjects.getProjectById.mockResolvedValueOnce({ id: '1', name: 'P', created_at: '' } as any);
-    mockedTasks.getAllTasksForProject.mockResolvedValueOnce([{ id: 't1', project_id: '1', task_number: 1, title: 'T', status: 'todo', created_at: '' }] as any);
+  it('loads project and tasks on mount', async () => {
+    const project = { id: 'p1', name: 'Project 1', created_at: '2024' } as any;
+    const tasks = [
+      { id: 't1', project_id: 'p1', task_number: 1, title: 'T1', status: TaskStatus.TO_DO, created_at: '2024' } as any,
+    ];
+    mockedApi.getProjectById.mockResolvedValueOnce(project);
+    mockedApi.getAllTasksForProject.mockResolvedValueOnce(tasks);
 
-    const { result } = renderHook(() => useProjectData('1'));
+    const { result } = renderHook(() => useProjectData('p1'));
 
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(mockedProjects.getProjectById).toHaveBeenCalledWith('1');
-    expect(mockedTasks.getAllTasksForProject).toHaveBeenCalledWith('1');
-    expect(result.current.project?.id).toBe('1');
-    expect(result.current.tasks).toHaveLength(1);
+    await waitFor(() => expect(result.current.project).toEqual(project));
+    expect(result.current.tasks).toEqual(tasks);
+    expect(result.current.error).toBeNull();
   });
 
-  it('updates project via save', async () => {
-    mockedProjects.getProjectById.mockResolvedValueOnce({ id: '1', name: 'P', created_at: '' } as any);
-    mockedTasks.getAllTasksForProject.mockResolvedValueOnce([]);
-    mockedProjects.updateProject.mockResolvedValueOnce({ id: '1', name: 'Updated', created_at: '' } as any);
+  it('updates project details', async () => {
+    const project = { id: 'p1', name: 'Project 1', created_at: '2024' } as any;
+    const updated = { ...project, name: 'Updated' };
+    mockedApi.getProjectById.mockResolvedValue(project);
+    mockedApi.getAllTasksForProject.mockResolvedValue([]);
+    mockedApi.updateProject.mockResolvedValue(updated);
 
-    const { result } = renderHook(() => useProjectData('1'));
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    const { result } = renderHook(() => useProjectData('p1'));
+    await waitFor(() => expect(result.current.project).toEqual(project));
 
     await act(async () => {
-      await result.current.save({ name: 'Updated' });
+      await result.current.updateProjectDetails({ name: 'Updated' } as any);
     });
 
-    expect(mockedProjects.updateProject).toHaveBeenCalledWith('1', { name: 'Updated' });
-    expect(result.current.project?.name).toBe('Updated');
+    expect(mockedApi.updateProject).toHaveBeenCalledWith('p1', { name: 'Updated' });
+    expect(result.current.project).toEqual(updated);
   });
 });
