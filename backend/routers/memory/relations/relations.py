@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from ...database import get_sync_db as get_db
-from ...services.memory_service import MemoryService  # Assuming relation management is part of memory service
-from ...schemas.memory import MemoryRelation, MemoryRelationCreate
-from ...services.exceptions import EntityNotFoundError, DuplicateEntityError
+from ....database import get_sync_db as get_db
+from ....services.memory_service import MemoryService  # Assuming relation management is part of memory service
+from ....schemas.memory import MemoryRelation, MemoryRelationCreate
+from ....services.exceptions import EntityNotFoundError, DuplicateEntityError
 
 router = APIRouter()
 

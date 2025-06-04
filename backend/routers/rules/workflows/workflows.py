@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from ...database import get_sync_db as get_db
-from ...crud import rules as crud_rules
-from ...schemas.workflow import Workflow, WorkflowCreate, WorkflowUpdate
+from ....database import get_sync_db as get_db
+from ....crud import rules as crud_rules
+from ....schemas.workflow import Workflow, WorkflowCreate, WorkflowUpdate
 
 router = APIRouter()  # Workflows
 @router.get("/", response_model=List[Workflow])

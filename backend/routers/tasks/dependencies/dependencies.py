@@ -3,12 +3,12 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import uuid
 
-from ...database import get_sync_db as get_db
-from ...services.task_dependency_service import TaskDependencyService
+from ....database import get_sync_db as get_db
+from ....services.task_dependency_service import TaskDependencyService
 
-from ...schemas.task_dependency import TaskDependency, TaskDependencyCreate
-from ...schemas.api_responses import DataResponse, ListResponse
-from ...services.exceptions import EntityNotFoundError, DuplicateEntityError
+from ....schemas.task_dependency import TaskDependency, TaskDependencyCreate
+from ....schemas.api_responses import DataResponse, ListResponse
+from ....services.exceptions import EntityNotFoundError, DuplicateEntityError
 
 router = APIRouter()
 

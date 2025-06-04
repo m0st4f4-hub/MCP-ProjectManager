@@ -11,14 +11,14 @@ from typing import List, Dict, Any, Optional
 import logging
 import json
 
-from ...database import get_sync_db as get_db
-from ...services.project_service import ProjectService
-from ...services.task_service import TaskService
-from ...services.audit_log_service import AuditLogService
-from ...services.memory_service import MemoryService
-from ...schemas.project import ProjectCreate
-from ...schemas.task import TaskCreate
-from ...schemas.memory import (
+from ....database import get_sync_db as get_db
+from ....services.project_service import ProjectService
+from ....services.task_service import TaskService
+from ....services.audit_log_service import AuditLogService
+from ....services.memory_service import MemoryService
+from ....schemas.project import ProjectCreate
+from ....schemas.task import TaskCreate
+from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
     MemoryObservationCreate,

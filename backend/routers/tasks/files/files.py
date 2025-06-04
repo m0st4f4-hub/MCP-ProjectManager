@@ -3,12 +3,12 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import uuid
 
-from ...database import get_sync_db as get_db
-from ...services.task_file_association_service import TaskFileAssociationService
+from ....database import get_sync_db as get_db
+from ....services.task_file_association_service import TaskFileAssociationService
 
-from ...schemas.file_association import TaskFileAssociation, TaskFileAssociationCreate
-from ...schemas.api_responses import DataResponse, ListResponse
-from ...services.exceptions import EntityNotFoundError
+from ....schemas.file_association import TaskFileAssociation, TaskFileAssociationCreate
+from ....schemas.api_responses import DataResponse, ListResponse
+from ....services.exceptions import EntityNotFoundError
 
 router = APIRouter()
 
