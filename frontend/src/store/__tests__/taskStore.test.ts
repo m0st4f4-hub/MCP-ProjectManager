@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { act } from 'react-dom/test-utils'
 import { useTaskStore } from '../taskStore'
 import * as api from '@/services/api'
 import { TaskStatus } from '@/types/task'
@@ -48,7 +49,9 @@ describe('taskStore', () => {
     const tasks = [{ project_id: 'p1', task_number: 1, title: 'T1', status: TaskStatus.TO_DO, created_at: '2024' }]
     mockedApi.getAllTasks.mockResolvedValueOnce(tasks)
 
-    await useTaskStore.getState().fetchTasks()
+    await act(async () => {
+      await useTaskStore.getState().fetchTasks()
+    })
 
     expect(mockedApi.getAllTasks).toHaveBeenCalled()
     expect(useTaskStore.getState().tasks).toEqual(tasks)
@@ -60,7 +63,9 @@ describe('taskStore', () => {
     mockedApi.getProjects.mockResolvedValueOnce([])
     mockedApi.getAgents.mockResolvedValueOnce([])
 
-    await useTaskStore.getState().addTask({ project_id: 'p1', title: 'New' } as any)
+    await act(async () => {
+      await useTaskStore.getState().addTask({ project_id: 'p1', title: 'New' } as any)
+    })
 
     expect(mockedApi.createTask).toHaveBeenCalledWith('p1', { project_id: 'p1', title: 'New' })
     expect(useTaskStore.getState().tasks[0]).toEqual(newTask)
