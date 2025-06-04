@@ -1,12 +1,11 @@
 from typing import List, Optional, Dict, Any
 import logging
-import json
 import os
+import httpx
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-import httpx
 
 from .. import models
 from ..schemas.memory import (
@@ -23,13 +22,12 @@ from ..crud.memory import (
     delete_memory_entity,
     get_memory_entities_by_source_type
 )
+from ..services.exceptions import EntityNotFoundError
 
 logger = logging.getLogger(__name__)
 
 
 class MemoryService:
-    """Service for managing memory entities, observations, and relations."""
-
     def __init__(self, db: Session):
         self.db = db
 
@@ -54,7 +52,8 @@ class MemoryService:
     def ingest_file(self, file_path: str, user_id: Optional[str] = None) -> models.MemoryEntity:
         try:
             if not os.path.exists(file_path):
-                raise ValueError(f"File not found: {file_path}")
+                logger.error(f"File not found during ingestion: {file_path}")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"File not found: {file_path}")
 
             file_stat = os.stat(file_path)
             file_info = {
@@ -85,7 +84,6 @@ class MemoryService:
                 created_by_user_id=user_id
             )
             return self.create_entity(entity_create)
-
         except Exception as e:
             logger.error(f"Error ingesting file {file_path}: {e}")
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error ingesting file: {str(e)}")
@@ -125,7 +123,7 @@ class MemoryService:
     def get_file_content(self, entity_id: int) -> str:
         entity = self.get_entity(entity_id)
         if not entity:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity not found")
+            raise EntityNotFoundError("MemoryEntity", entity_id)
         return entity.content or ""
 
     def get_file_metadata(self, entity_id: int) -> Dict[str, Any]:

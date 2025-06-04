@@ -12,6 +12,7 @@ export const API_CONFIG = {
     TASKS: "/tasks/", // This might need adjustment for nested structure
     AGENTS: "/agents",
     USERS: "/users",
+    AUTH: "/auth",
     AUDIT_LOGS: "/audit-logs",
     COMMENTS: "/comments",
     MEMORY: "/memory",
