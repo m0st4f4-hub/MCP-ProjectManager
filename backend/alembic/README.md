@@ -26,3 +26,12 @@ Key files and directories:
 ## Key Files and Directories
 
 -   **`
+
+<!-- File List Start -->
+## File List
+
+- `README`
+- `env.py`
+- `script.py.mako`
+
+<!-- File List End -->

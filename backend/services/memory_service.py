@@ -35,6 +35,10 @@ class MemoryService:
         """Retrieve a MemoryEntity by ID."""
         return get_memory_entity(self.db, entity_id)
 
+    def get_memory_entity_by_id(self, entity_id: int) -> Optional[models.MemoryEntity]:
+        """Alias for get_entity for backwards compatibility."""
+        return self.get_entity(entity_id)
+
     def get_entities(self, skip: int = 0, limit: int = 100) -> List[models.MemoryEntity]:
         """Retrieve multiple MemoryEntities."""
         return get_memory_entities(self.db, skip, limit)
@@ -133,7 +137,7 @@ class MemoryService:
 
     def delete_memory_entity(self, entity_id: int) -> Optional[models.MemoryEntity]:
         """Deletes a memory entity and its associated observations and relations."""
-        db_entity = self.get_memory_entity_by_id(db_entity)
+        db_entity = self.get_entity(entity_id)
         if db_entity:
             self.db.delete(db_entity)
             self.db.commit()

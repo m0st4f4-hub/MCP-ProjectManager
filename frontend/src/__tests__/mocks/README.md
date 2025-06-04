@@ -6,3 +6,11 @@ Key files:
 
 *   `handlers.ts`: Defines request handlers for mocked API endpoints.
 *   `server.ts`: Sets up and configures the mock server (likely using libraries like MSW - Mock Service Worker). 
+
+<!-- File List Start -->
+## File List
+
+- `handlers.ts`
+- `server.ts`
+
+<!-- File List End -->

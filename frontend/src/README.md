@@ -114,3 +114,9 @@ The `src/` directory is further organized into the following subdirectories:
 - `theme/`: May contain more granular theme customizations, overrides, or theme-related assets (although `theme.ts` is at the `src/` root).
 - `types/`: TypeScript type definitions and interfaces used across the application.
 - `__tests__/`: Contains test files, likely for unit or integration testing of the components and logic within the `src/` directory.
+
+<!-- File List Start -->
+## File List
+
+
+<!-- File List End -->

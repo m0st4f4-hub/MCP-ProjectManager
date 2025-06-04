@@ -44,3 +44,9 @@ This is the primary file in this directory and serves as the central hub for all
 ### Usage:
 
 The Zustand stores (in `frontend/src/store/`) extensively use these API service functions to fetch and mutate data, with the `api.ts` module acting as the sole interface to the backend, ensuring consistency and separation of concerns.
+
+<!-- File List Start -->
+## File List
+
+
+<!-- File List End -->

@@ -64,7 +64,7 @@ async def create_project(
         db_project = await project_service.create_project(project=project, created_by_user_id=current_user.id)  # Convert the SQLAlchemy model to Pydantic schema immediately  # This ensures all attributes are loaded while the object is still attached to the session
         project_data = Project.model_validate(db_project)  # Extract the needed data for audit log
         project_id = project_data.id
-        project_name = project_data.name  # Log project creation  # print(f"DEBUG: audit_log_service object in router: {audit_log_service}")  # Debug print
+        project_name = project_data.name  # Log project creation
         await audit_log_service.create_log(
             action="create_project",
             user_id=current_user.id,

@@ -1,5 +1,5 @@
 """Minimal tasks router for testing"""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from ...database import get_db
@@ -8,7 +8,7 @@ from ...schemas.task import Task, TaskCreate, TaskUpdate
 from ...schemas.api_responses import DataResponse
 from ...auth import get_current_active_user
 from ...models import User as UserModel
-from typing import List
+from typing import List, Optional
 
 router = APIRouter()
 
@@ -96,16 +96,22 @@ async def create_task_for_project(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @router.get("/", response_model=DataResponse[List[Task]])
 async def get_tasks(
     db: AsyncSession = Depends(get_db),
-    current_user: UserModel = Depends(get_current_active_user)
+    current_user: UserModel = Depends(get_current_active_user),
+    project_id: Optional[str] = None,
+    skip: int = 0,
+    limit: int = Query(20, le=1000),
 ):
-    """Get all tasks for authenticated user"""
+    """Get all tasks with optional project_id filter and pagination"""
     try:
         task_service = TaskService(db)
-        tasks = await task_service.get_tasks(project_id=None, skip=0, limit=100)
+        tasks = await task_service.get_all_tasks(
+            project_id=UUID(project_id) if project_id else None,
+            skip=skip,
+            limit=limit
+        )
         return DataResponse[List[Task]](data=tasks, message="Tasks retrieved successfully")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

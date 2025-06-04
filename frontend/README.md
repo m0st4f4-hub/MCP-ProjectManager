@@ -107,3 +107,32 @@ Key files and directories:
 *   `tailwind.config.ts`: Tailwind CSS configuration file.
 *   `tests-e2e/`: End-to-end tests using Playwright.
 *   `vitest.config.*`: Configuration files for Vitest unit/integration tests.
+
+<!-- File List Start -->
+## File List
+
+- `.gitignore`
+- `ARCHITECTURE.md`
+- `BRAND_ASSETS_GUIDE.md`
+- `COMPONENT_AUDIT_AND_REFACTOR_PLAN.md`
+- `DESIGN_TOKENS.md`
+- `TESTING_FRAMEWORK.md`
+- `TESTING_FRAMEWORK_COMPLETE.md`
+- `UI_UX_DESIGN_SYSTEM_SPECIFICATION.md`
+- `dev_start.js`
+- `eslint.config.cjs`
+- `generate-comprehensive-tests.cjs`
+- `generate-tests.js`
+- `next.config.ts`
+- `package-lock.json`
+- `package.json`
+- `playwright.config.ts`
+- `postcss.config.mjs`
+- `tailwind.config.ts`
+- `test-runner.js`
+- `tsconfig.json`
+- `validate-testing-framework.js`
+- `vitest.config.js`
+- `vitest.config.ts`
+
+<!-- File List End -->

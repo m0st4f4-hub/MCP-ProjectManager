@@ -45,7 +45,6 @@ async def generate_planning_prompt_endpoint(
         )
 
     except Exception as e:
-        import logging
         logging.error(f"Error in POST /projects/generate-planning-prompt: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error: {str(e)}")

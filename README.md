@@ -183,8 +183,10 @@ npm run dev
 
 The frontend application will be available at `http://localhost:3000`.
 
-**Windows Development Tip:**
-A `dev_launcher.bat` script is available in the project root. This batch file attempts to clear ports **8000** (for backend) and **3000** (for frontend) and then launches the backend (`npm run dev:backend`) and frontend (`npm run dev:frontend`) development servers in separate terminal windows. You can run it by double-clicking or executing `dev_launcher.bat` in your terminal from the project root.
+### **Windows Development Tip**
+
+A `dev_launcher.bat` script is available in the project root. This batch file attempts to clear ports **8000** (for the backend) and **3000** (for the frontend), then starts the backend server with `uvicorn` and the frontend with `npm run dev` in separate command windows. Run it by double-clicking the file or executing `dev_launcher.bat` from the project root.
+
 
 ## How It Works
 
@@ -291,3 +293,38 @@ Key files and directories:
 *   `docs/`: Placeholder for additional documentation (currently empty).
 *   `.cursor/`: Contains MCP rules and agent configurations.
 
+
+<!-- File List Start -->
+## File List
+
+- `.cursorignore`
+- `.gitignore`
+- `.npmignore`
+- `AEROSPACE_GRADE_DOCUMENTATION.md`
+- `BACKEND_FRONTEND_ALIGNMENT_REPORT.md`
+- `CLEANUP_SUMMARY.md`
+- `DEV_LAUNCHER_COMPLETE.md`
+- `DEV_LAUNCHER_GUIDE.md`
+- `LICENSE`
+- `SYSTEM_GUIDE.md`
+- `TEST_ENHANCEMENT_REPORT.md`
+- `THE_BUILDERS_COMPLETION_REPORT.md`
+- `dev_launcher.bat`
+- `dev_launcher.js`
+- `dev_launcher.ps1`
+- `final_integration.py`
+- `image-dark.png`
+- `image-light.png`
+- `package-lock.json`
+- `package.json`
+- `run_backend.py`
+- `run_core_backend.py`
+- `run_minimal_backend.py`
+- `run_production_backend.py`
+- `sql_app.db`
+- `start_system.py`
+- `test_openapi.py`
+- `validate_alignment.py`
+- `validate_frontend.js`
+
+<!-- File List End -->

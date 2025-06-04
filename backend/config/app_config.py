@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     Settings are loaded from environment variables, with values from a .env file
     taking precedence over defaults defined here.
     """
-    DATABASE_URL: str = "sqlite:///D:/mcp/task-manager/sql_app.db"  # Default database URL, can be overridden by DATABASE_URL env var in .env
+    DATABASE_URL: str = "sqlite+aiosqlite:///./sql_app.db"  # Default database URL, can be overridden by DATABASE_URL env var in .env
     TEST_DATABASE_URL: Optional[str] = None  # Optional test database URL
     SECRET_KEY: str
     ALGORITHM: str
