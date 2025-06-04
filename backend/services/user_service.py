@@ -22,8 +22,8 @@ from backend.crud.users import (
     update_user,
     delete_user,
     authenticate_user as crud_authenticate_user,
-    username_exists
-)  # Import configuration settings
+)
+from backend.crud.user_validation import username_exists
 from backend.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession
