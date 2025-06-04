@@ -1,11 +1,6 @@
 import { request } from "./request";
 import { buildApiUrl, API_CONFIG } from "./config";
-// TODO: Import or define types for ProjectTemplate, ProjectTemplateCreate, ProjectTemplateUpdate
-
-// Placeholder types (replace with real types if available)
-export type ProjectTemplate = any;
-export type ProjectTemplateCreate = any;
-export type ProjectTemplateUpdate = any;
+import { ProjectTemplate, ProjectTemplateCreate, ProjectTemplateUpdate } from "@/types";
 
 export const projectTemplatesApi = {
   // Create a new project template
@@ -52,7 +47,8 @@ export const projectTemplatesApi = {
     return request<{ message: string }>(
       buildApiUrl("/project-templates/", `/${templateId}`),
       {
-        method: "DELETE" }
+        method: "DELETE",
+      }
     );
   },
-}; 
+};
