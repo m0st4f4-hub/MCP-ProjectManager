@@ -52,6 +52,7 @@ backend\.venv\Scripts\pytest.exe backend\tests\test_async_example.py backend\tes
 ```
 D:\mcp\task-manager\
 ├── backend\                    # Backend application
+│   ├── .env.example           # Example environment variables
 │   ├── .env                    # Environment configuration ✅
 │   ├── .venv\                  # Virtual environment ✅
 │   ├── main.py                 # FastAPI application entry point ✅
@@ -81,7 +82,7 @@ D:\mcp\task-manager\
 
 ### Environment Variables (`.env`)
 
-The backend uses these environment variables (located in `backend\.env`):
+Copy `backend/.env.example` to `backend/.env` and update the values as needed. The backend expects these variables:
 
 ```env
 DATABASE_URL=sqlite+aiosqlite:///./sql_app.db
@@ -142,7 +143,7 @@ cd backend
 ### Server Won't Start
 1. Make sure you're in the correct directory (`D:\mcp\task-manager`)
 2. Check that the virtual environment exists (`backend\.venv\`)
-3. Verify the `.env` file has all required variables
+3. Verify the `.env` file (copied from `.env.example`) has all required variables
 
 ### Tests Failing
 1. Make sure the test database is not locked
@@ -208,6 +209,7 @@ graph TD
 <!-- File List Start -->
 ## File List
 
+- `.env.example`
 - `.env`
 - `.flake8`
 - `__init__.py`
