@@ -73,7 +73,6 @@ async def test_async_function():
     assert result == 8
 
 
-
 class TestClassExample:
     """Test class with multiple test methods."""
 

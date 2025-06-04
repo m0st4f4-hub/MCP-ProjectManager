@@ -4,19 +4,18 @@ sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..')))
 
 # ADD THIS LINE TO EXPLICITLY IMPORT MODELS
-from backend.models import (
+from backend.models import (  # noqa: F401,E402
     Project,
     Agent,
     Task,
     MemoryEntity,
     MemoryObservation,
-    MemoryRelation
+    MemoryRelation,
 )
-from backend.models import Base  # Adjusted import
-from alembic import context
-from sqlalchemy import pool
-from sqlalchemy import engine_from_config
-from logging.config import fileConfig
+from backend.models import Base  # noqa: F401,E402
+from alembic import context  # noqa: E402
+# from sqlalchemy import engine_from_config  # noqa: F401,E402
+from logging.config import fileConfig  # noqa: E402
 
 # this is the Alembic Config object,
 # which provides access to the values within the .ini file in use.
