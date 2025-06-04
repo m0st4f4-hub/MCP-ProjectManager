@@ -4,7 +4,6 @@ import {
   ViewOffIcon,
   ChevronDownIcon,
   DeleteIcon,
-  SearchIcon,
 } from "@chakra-ui/icons";
 import {
   Flex,
@@ -23,9 +22,6 @@ import {
   Text,
   useDisclosure,
   FormLabel,
-  InputGroup,
-  InputLeftElement,
-  Input,
 } from "@chakra-ui/react";
 import { GroupByType, ViewMode } from "@/types";
 import { useTaskStore } from "@/store/taskStore";
@@ -33,6 +29,7 @@ import * as statusUtils from "@/lib/statusUtils";
 import ConfirmationModal from "./common/ConfirmationModal";
 import AppIcon from "./common/AppIcon";
 import { sizing, typography } from "../tokens";
+import TaskFilters from "./task/TaskFilters";
 
 interface TaskControlsProps {
   groupBy: GroupByType;
@@ -309,23 +306,7 @@ const TaskControls: React.FC<TaskControlsProps> = ({
         isLoading={taskStoreLoading}
       />
 
-      {/* Search Input */}
-      {/* <InputGroup size="sm" width="100%" maxW="300px">
-        <InputLeftElement pointerEvents="none">
-          <SearchIcon color="textSecondary" />
-        </InputLeftElement>
-        <Input
-          type="text"
-          placeholder="Search tasks..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          bg="surface"
-          borderColor="borderInteractive"
-          _hover={{ borderColor: "borderFocused" }}
-          focusBorderColor="borderFocused"
-          color="textPrimary"
-        />
-      </InputGroup> */}
+      <TaskFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
       {/* Group By Select */}
       {/* {!hideGroupBy && (
