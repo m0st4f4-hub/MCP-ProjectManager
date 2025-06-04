@@ -249,3 +249,9 @@ graph TD
 - `validation.py`
 
 <!-- File List End -->
+
+## FastAPI-MCP Documentation
+Local reference docs for [FastAPI-MCP](https://github.com/tadata-org/fastapi_mcp) are available in `docs/fastapi_mcp/`.
+
+## FastAPI Documentation
+A local snapshot of the FastAPI tutorial is available in `docs/fastapi/` for offline reference. See `docs/fastapi/index.md` and the `tutorial` subfolder.
