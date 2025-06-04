@@ -15,7 +15,16 @@ Key models include:
 *   `AuditLog`: Records audit trails of actions.
 *   `AgentHandoffCriteria`, `AgentVerificationRequirement`, `AgentForbiddenAction`, `AgentErrorProtocol`, `AgentCapability`, `AgentRole`: Models related to agent capabilities and protocols.
 *   `UniversalMandate`: Represents system-wide mandates.
-*   `Workflow`, `ProjectMember`, `ProjectTemplate`, `TaskStatus`, `TaskRelations`, `Core`, `Base`, `Types`: Other supporting models and base classes. 
+*   `Workflow`, `ProjectMember`, `ProjectTemplate`, `TaskStatus`, `TaskRelations`, `Core`, `Base`, `Types`: Other supporting models and base classes.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

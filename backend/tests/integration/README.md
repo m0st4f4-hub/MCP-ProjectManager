@@ -4,7 +4,16 @@ This directory contains integration tests for the backend application. Integrati
 
 Key files:
 
-*   `test_project_task_flow.py`: Tests the integrated flow of project and task management operations. 
+*   `test_project_task_flow.py`: Tests the integrated flow of project and task management operations.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

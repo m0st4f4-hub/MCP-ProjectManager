@@ -40,6 +40,15 @@ Key files:
 *   `AddAgentForm.tsx`: Form for adding new agents.
 *   `AddTaskForm.tsx`: Form for adding new tasks (likely a specific implementation using `TaskForm.tsx`).
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

@@ -9,7 +9,16 @@ Key files and directories:
 *   `factories/`: Test data factories for generating consistent test data.
 *   `mocks/`: Mock implementations for dependencies (e.g., API services).
 *   `utils/`: Test utility functions.
-*   `.gitkeep`: Placeholder file to ensure the directory is included in Git. 
+*   `.gitkeep`: Placeholder file to ensure the directory is included in Git.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

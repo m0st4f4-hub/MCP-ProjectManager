@@ -115,6 +115,15 @@ The `src/` directory is further organized into the following subdirectories:
 - `types/`: TypeScript type definitions and interfaces used across the application.
 - `__tests__/`: Contains test files, likely for unit or integration testing of the components and logic within the `src/` directory.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

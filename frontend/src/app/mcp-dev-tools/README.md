@@ -12,6 +12,15 @@ This directory defines the Next.js route for the MCP Developer Tools page, acces
 
 The `MCPDevTools` component itself (located in `frontend/src/components/`) is responsible for the actual UI and features of the developer tools panel.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

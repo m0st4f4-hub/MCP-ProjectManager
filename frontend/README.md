@@ -108,6 +108,15 @@ Key files and directories:
 *   `tests-e2e/`: End-to-end tests using Playwright.
 *   `vitest.config.*`: Configuration files for Vitest unit/integration tests.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

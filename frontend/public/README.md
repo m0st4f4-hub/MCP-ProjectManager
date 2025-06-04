@@ -9,7 +9,16 @@ Key files and directories:
 *   `*.svg`: Various SVG icon files.
 *   `api-test.html`: An HTML file likely used for API testing or demonstration purposes.
 *   `next.svg`, `vercel.svg`: Default Next.js and Vercel logos.
-*   Other static files required for the application. 
+*   Other static files required for the application.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

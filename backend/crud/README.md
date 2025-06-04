@@ -17,7 +17,16 @@ Key CRUD and validation files include:
 *   `project_members.py`: CRUD operations for project members.
 *   `project_templates.py`: CRUD operations for project templates.
 *   `project_file_associations.py`: CRUD operations for project file associations.
-*   `task_validation.py`, `task_dependency_validation.py`, `task_file_association_validation.py`, `project_validation.py`, `project_member_validation.py`, `comment_validation.py`, `agent_validation.py`, `project_file_association_validation.py`, `user_validation.py`: Files containing validation logic used by CRUD functions. 
+*   `task_validation.py`, `task_dependency_validation.py`, `task_file_association_validation.py`, `project_validation.py`, `project_member_validation.py`, `comment_validation.py`, `agent_validation.py`, `project_file_association_validation.py`, `user_validation.py`: Files containing validation logic used by CRUD functions.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List

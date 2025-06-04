@@ -45,6 +45,15 @@ This directory contains React components that act as context providers, setting 
 - **Exports**: `ModalProvider` (Default React Functional Component).
 - **Usage**: This provider is intended to be used high up in the component tree. In this project, it is conveniently wrapped by `ChakraProviderWrapper`.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

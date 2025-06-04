@@ -107,6 +107,15 @@ Key files:
 *   `FilterPanel.tsx`: Panel containing filter controls (likely used within `FilterSidebar`).
 *   `AppIcon.tsx`: Component for displaying application icons.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

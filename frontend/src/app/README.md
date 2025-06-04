@@ -118,6 +118,15 @@ Key files and directories:
 *   `projects/[projectId]/`: Directory containing the page for individual project details.
 *   `mcp-dev-tools/`: Directory likely related to developer tools/features.
 
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
+
 <!-- File List Start -->
 ## File List
 

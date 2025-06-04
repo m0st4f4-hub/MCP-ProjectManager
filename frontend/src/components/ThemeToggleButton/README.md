@@ -4,7 +4,16 @@ This directory contains the reusable component for toggling between light and da
 
 Key file:
 
-*   `ThemeToggleButton.tsx`: A button component that uses the application's theme context to switch between defined color modes. 
+*   `ThemeToggleButton.tsx`: A button component that uses the application's theme context to switch between defined color modes.
+
+## Architecture Diagram
+```mermaid
+graph TD
+    user((User)) -->|interacts with| frontend(Frontend)
+    frontend -->|API requests| backend(Backend)
+    backend -->|persists| database[(Database)]
+    backend -->|integrates| mcp(MCP Server)
+```
 
 <!-- File List Start -->
 ## File List
