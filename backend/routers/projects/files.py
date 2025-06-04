@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from typing import List  # Import logging at the top of the file
+import logging
 
 from ... import models
 from ... import schemas
@@ -13,7 +15,6 @@ from ...schemas.api_responses import (
     ListResponse  # Import Pydantic for bulk association schema
 )
 from pydantic import BaseModel
-from typing import List  # Define schema for bulk file association input
 
 
 class BulkFileAssociationInput(BaseModel):
@@ -53,7 +54,6 @@ async def get_project_files_endpoint(
             message=f"Retrieved {len(files)} project files"
         )
     except Exception as e:
-        import logging
         logging.error(f"Error in GET /projects/{project_id}/files: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error: {str(e)}")
@@ -90,7 +90,6 @@ async def associate_project_file_endpoint(
             message="File associated with project successfully"
         )
     except Exception as e:
-        import logging
         logging.error(f"Error in POST /projects/{project_id}/files: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error: {str(e)}")
@@ -126,7 +125,6 @@ async def disassociate_project_file_endpoint(
             message="File disassociated from project successfully"
         )
     except Exception as e:
-        import logging
         logging.error(f"Error in DELETE /projects/{project_id}/files/{file_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error: {str(e)}")

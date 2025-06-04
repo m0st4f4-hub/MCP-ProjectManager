@@ -134,6 +134,9 @@ cd backend
 - ✅ **Memory Service / Knowledge Graph**: Centralized storage for entities and relationships.
 - ✅ **Extended Task API**: Endpoints for task dependencies, file associations, archiving, and unarchiving.
 - ✅ **Database Migrations**: Alembic support updated for Memory Service models.
+- ✅ **Task Listing**: Global task listing available at `/api/v1/tasks` with optional `project_id` and pagination. Project-specific listing at `/api/v1/projects/{project_id}/tasks`.
+- ✅ **Task Comments**: API for listing and adding comments to tasks is fully functional.
+- ✅ **Project Members**: API for managing project members (add, remove, list) is fully functional.
 ## 🔍 Troubleshooting
 
 ### Server Won't Start
