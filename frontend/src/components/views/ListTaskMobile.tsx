@@ -1,6 +1,5 @@
 import React from "react";
-import { ListItem, Checkbox, Box } from "@chakra-ui/react";
-import TaskItem from "../task/TaskItem";
+import TaskRow from "../task/TaskRow";
 import { Task } from "@/types";
 
 interface ListTaskMobileProps {
@@ -22,34 +21,15 @@ const ListTaskMobile: React.FC<ListTaskMobileProps> = ({
   onClick,
   onCopyGetCommand,
 }) => (
-  <ListItem
-    display="flex"
-    alignItems="center"
-    py="2"
-    px="2"
-    borderBottomWidth="DEFAULT"
-    borderBottomStyle="solid"
-    borderColor="borderDecorative"
-    bg={selected ? "surfaceElevated" : "transparent"}
-  >
-    <Checkbox
-      isChecked={selected}
-      onChange={onSelect}
-      mr="3"
-      colorScheme="blue"
-      aria-label={`Select task ${task.title}`}
-    />
-    <Box flex={1}>
-      <TaskItem
-        task={task}
-        projectName={task.project_name || ""}
-        onAssignAgent={onAssignAgent}
-        onDeleteInitiate={onDeleteInitiate}
-        onClick={onClick}
-        onCopyGetCommand={(projectId, taskNumber) => onCopyGetCommand(projectId, taskNumber)}
-      />
-    </Box>
-  </ListItem>
+  <TaskRow
+    task={task}
+    selected={selected}
+    onSelect={onSelect}
+    onAssignAgent={() => onAssignAgent(task)}
+    onDelete={() => onDeleteInitiate(task)}
+    onClick={onClick}
+    onCopyGetCommand={() => onCopyGetCommand(task.project_id, task.task_number)}
+  />
 );
 
-export default ListTaskMobile; 
+export default ListTaskMobile;

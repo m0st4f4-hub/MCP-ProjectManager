@@ -26,7 +26,7 @@ interface TaskItemMainSectionProps {
   /** The color to use for text elements, determined by archiving status or other factors. */
   textColor: string;
   /** A map of status IDs to React ElementType, for rendering status icons. */
-  iconMap: Record<string, React.ElementType>; // TODO: Confirm usage or remove if not used directly here
+  iconMap: Record<string, React.ElementType>;
   /** The current status ID of the task. */
   currentStatusId: StatusID;
   /** If true, renders a more compact version of this section. */
