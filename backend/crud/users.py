@@ -6,7 +6,7 @@ from typing import List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from .. import models
 from backend.schemas.user import UserCreate, UserUpdate
@@ -73,8 +73,14 @@ async def create_user(db: AsyncSession, user: UserCreate) -> models.User:
 
 
 async def get_user(db: AsyncSession, user_id: str) -> Optional[models.User]:
-    result = await db.execute(select(models.User).filter(models.User.id == user_id))
-    return result.scalar_one_or_none()
+    """Retrieve a single user with roles eagerly loaded."""
+    stmt = (
+        select(models.User)
+        .options(joinedload(models.User.user_roles))
+        .filter(models.User.id == user_id)
+    )
+    result = await db.execute(stmt)
+    return result.unique().scalar_one_or_none()
 
 
 async def get_user_by_username(
@@ -91,7 +97,14 @@ async def get_user_by_username(
 async def get_users(
     db: AsyncSession, skip: int = 0, limit: int = 100
 ) -> List[models.User]:
-    result = await db.execute(select(models.User).offset(skip).limit(limit))
+    """Retrieve users with roles eagerly loaded."""
+    stmt = (
+        select(models.User)
+        .options(selectinload(models.User.user_roles))
+        .offset(skip)
+        .limit(limit)
+    )
+    result = await db.execute(stmt)
     return result.scalars().all()
 
 
