@@ -28,6 +28,8 @@ powershell dev_launcher.ps1   # PowerShell (Windows)
 ```
 
 See [`DEV_LAUNCHER_GUIDE.md`](./DEV_LAUNCHER_GUIDE.md) for complete setup instructions.
+For a quick summary of the launcher utilities and system startup scripts, see
+[`DEV_SCRIPTS.md`](./DEV_SCRIPTS.md).
 
 ## Tech Stack
 
@@ -328,6 +330,7 @@ graph TD
 - `CLEANUP_SUMMARY.md`
 - `DEV_LAUNCHER_COMPLETE.md`
 - `DEV_LAUNCHER_GUIDE.md`
+- `DEV_SCRIPTS.md`
 - `LICENSE`
 - `SYSTEM_GUIDE.md`
 - `TEST_ENHANCEMENT_REPORT.md`
