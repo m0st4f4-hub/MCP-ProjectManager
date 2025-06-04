@@ -37,11 +37,11 @@ from .middleware import RateLimitMiddleware, SecurityHeadersMiddleware, init_mid
 # Explicitly import models to ensure they are loaded early
 from . import models
 
-# Add import for MCP (mock if not available)
+# Add import for FastAPI-MCP (mock if not available)
 try:
-    from fastapi_mcp import MCPClient
+    from fastapi_mcp import FastApiMCP
 except ImportError:
-    MCPClient = None
+    FastApiMCP = None
 
 # Configure logging format with timestamp
 log_config = {
@@ -332,8 +332,14 @@ except Exception as e:
 
 
 # --- MCP Instance Initialization ---
-if MCPClient is not None:
-    mcp = MCPClient(app, rules_dir=".cursor/rules")
+if FastApiMCP is not None:
+    mcp = FastApiMCP(
+        app,
+        name="Task Manager MCP",
+        description="MCP server for task manager",
+        include_tags=["mcp-tools"],
+    )
+    mcp.mount()
     app.state.mcp_instance = mcp
 else:
     # Mock MCP instance for /mcp-docs
