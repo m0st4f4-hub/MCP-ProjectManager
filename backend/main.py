@@ -337,7 +337,6 @@ if FastApiMCP is not None:
         app,
         name="Task Manager MCP",
         description="MCP server for task manager",
-        include_tags=["mcp-tools"],
     )
     mcp.mount()
     app.state.mcp_instance = mcp
