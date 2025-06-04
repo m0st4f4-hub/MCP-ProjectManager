@@ -20,6 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import Dict, Any
+import json
 
 # Explicitly import schema models to ensure they are loaded early for Pydantic to resolve forward references
 from .schemas import (
@@ -191,6 +192,16 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
         raise
+
+    # Display MCP server info for developers
+    server_addr = os.getenv("MCP_SERVER_ADDRESS", "http://localhost:8000")
+    cursor_info = {
+        "mcp_server": server_addr,
+        "openapi_url": f"{server_addr}/openapi.json",
+        "tools_url": f"{server_addr}/mcp-docs"
+    }
+    logger.info(f"MCP server running at {server_addr}")
+    logger.info(f"Cursor IDE integration JSON: {json.dumps(cursor_info)}")
 
     yield
     # Log routes and MCP tools after startup
