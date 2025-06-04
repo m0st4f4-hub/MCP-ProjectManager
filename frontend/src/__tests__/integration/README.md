@@ -20,5 +20,6 @@ graph TD
 
 - `task-management.test.tsx`
 - `validate-frontend.test.ts`
+- `validate-testing-framework.test.ts`
 
 <!-- File List End -->

@@ -104,6 +104,8 @@ project-manager/
     *   Provides a centralized, database-backed store for structured information.
     *   Enables agents and potentially human users to store, retrieve, and relate entities, observations, and facts.
     *   Powers enhanced contextual understanding and persistent memory for agents.
+    *   Offers `/api/memory/ingest-url` and `/api/memory/ingest-text` endpoints
+        to capture web pages and raw text snippets directly into the memory graph.
 *   **Unified Interface:** Modern WebGUI (Next.js/Chakra UI) for human interaction, monitoring, and guidance.
 *   **Comprehensive Task Management:** Create, view, update, delete, assign, archive, and unarchive tasks and subtasks.
 *   **Project Organization:** Group tasks into projects with descriptions and statuses.
@@ -287,6 +289,10 @@ python final_integration.py --mode all
 
 ISC
 
+## Contributing
+
+Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for coding standards, commit guidelines, and test requirements.
+
 ## Directory Contents Overview
 
 This is the root directory of the MCP Project Manager Suite. It contains top-level configuration files, build scripts, documentation, and the main entry points for the backend and frontend applications.
@@ -341,9 +347,6 @@ graph TD
 - `package-lock.json`
 - `package.json`
 - `run_backend.py`
-- `run_core_backend.py`
-- `run_minimal_backend.py`
-- `run_production_backend.py`
 - `sql_app.db`
 - `start_system.py`
 - `test_openapi.py`

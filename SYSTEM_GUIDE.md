@@ -15,7 +15,7 @@ python start_system.py
 #### Backend Setup
 ```bash
 # From the project root
-python run_backend.py
+python run_backend.py [--core|--minimal]
 ```
 
 #### Frontend Setup  

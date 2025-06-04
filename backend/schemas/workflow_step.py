@@ -20,7 +20,7 @@ class WorkflowStepBase(BaseModel):
 
 class WorkflowStepCreate(WorkflowStepBase):
     """Schema for creating a new workflow step."""
-    pass
+    model_config = ConfigDict(from_attributes=True)
 
 class WorkflowStepUpdate(BaseModel):
     """Schema for updating an existing workflow step."""

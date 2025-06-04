@@ -20,10 +20,8 @@ router = APIRouter(
     tags=["Memory Entities"],
 )
 
-
 def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
     return MemoryService(db)
-
 
 # =============================
 # CRUD Endpoints
@@ -43,7 +41,6 @@ def create_memory_entity_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
-
 @router.get("/{entity_id}", response_model=MemoryEntity)
 def read_memory_entity_endpoint(
     entity_id: int = Path(...),
@@ -59,7 +56,6 @@ def read_memory_entity_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
-
 @router.get("/", response_model=List[MemoryEntity])
 def list_memory_entities_endpoint(
     type: Optional[str] = Query(None),
@@ -73,7 +69,6 @@ def list_memory_entities_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
-
 @router.get("/by-type/{entity_type}", response_model=List[MemoryEntity])
 def read_entities_by_type(
     entity_type: str = Path(...),
@@ -85,7 +80,6 @@ def read_entities_by_type(
         return memory_service.get_entities_by_type(entity_type=entity_type, skip=skip, limit=limit)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
-
 
 @router.put("/{entity_id}", response_model=MemoryEntity)
 def update_memory_entity_endpoint(
@@ -103,7 +97,6 @@ def update_memory_entity_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
-
 @router.delete("/{entity_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_memory_entity_endpoint(
     entity_id: int = Path(...),
@@ -119,20 +112,16 @@ def delete_memory_entity_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
-
 # =============================
 # Ingestion Inputs
 # =============================
 
-
 class UrlIngestInput(BaseModel):
     url: str = Field(..., description="URL to ingest")
-
 
 class TextIngestInput(BaseModel):
     text: str = Field(..., description="Text snippet to ingest")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Optional metadata")
-
 
 # =============================
 # Ingestion Endpoints
@@ -146,9 +135,12 @@ def ingest_file_endpoint(
 ):
     try:
         return memory_service.ingest_file(ingest_input=ingest_input, user_id=current_user.id)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to ingest file: {e}")
-
 
 @router.post("/ingest/url", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
 def ingest_url_endpoint(
@@ -160,7 +152,6 @@ def ingest_url_endpoint(
         return memory_service.ingest_url(url=ingest_input.url, user_id=current_user.id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to ingest url: {e}")
-
 
 @router.post("/ingest/text", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
 def ingest_text_endpoint(
@@ -176,7 +167,6 @@ def ingest_text_endpoint(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to ingest text: {e}")
-
 
 # =============================
 # File Content & Metadata
@@ -194,7 +184,6 @@ def get_file_content_endpoint(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
-
 
 @router.get("/{entity_id}/metadata")
 def get_file_metadata_endpoint(
