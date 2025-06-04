@@ -11,19 +11,19 @@ An open-source, full-stack suite for collaborative project management, empowerin
 ### **One-Command Development Setup**
 ```bash
 # Clone and setup (if needed), then:
-dev_launcher.bat
+python start_system.py
 ```
 
 This will automatically:
+- ✅ Launch the FastAPI backend and Next.js frontend together
 - ✅ Clear ports 8000 and 3000
-- ✅ Start backend server at http://localhost:8000  
-- ✅ Start frontend server at http://localhost:3000
 - ✅ Open API docs at http://localhost:8000/docs
 
 ### **Alternative Launch Methods**
 ```bash
-npm run dev                    # NPM script
+dev_launcher.bat              # Windows batch script
 node dev_launcher.js          # Cross-platform Node.js
+npm run dev                   # NPM script
 powershell dev_launcher.ps1   # PowerShell (Windows)
 ```
 
