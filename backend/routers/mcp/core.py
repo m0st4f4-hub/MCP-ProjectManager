@@ -26,7 +26,7 @@ from ...schemas.memory import (
 )
 
 logger = logging.getLogger(__name__)
-router = APIRouter()
+router = APIRouter(tags=["mcp-tools"])
 
 
 def get_db_session():
@@ -42,7 +42,11 @@ def get_memory_service(db: Session = Depends(get_db_session)) -> MemoryService:
     return MemoryService(db)
 
 
-@router.post("/mcp-tools/project/create")
+@router.post(
+    "/mcp-tools/project/create",
+    tags=["mcp-tools"],
+    operation_id="create_project_tool",
+)
 async def mcp_create_project(
     project_data: ProjectCreate,
     db: Session = Depends(get_db_session)
@@ -77,7 +81,11 @@ async def mcp_create_project(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/mcp-tools/task/create")
+@router.post(
+    "/mcp-tools/task/create",
+    tags=["mcp-tools"],
+    operation_id="create_task_tool",
+)
 async def mcp_create_task(
     task_data: TaskCreate,
     db: Session = Depends(get_db_session)
@@ -118,7 +126,11 @@ async def mcp_create_task(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/mcp-tools/projects/list")
+@router.get(
+    "/mcp-tools/projects/list",
+    tags=["mcp-tools"],
+    operation_id="list_projects_tool",
+)
 async def mcp_list_projects(
     skip: int = 0,
     limit: int = 100,
@@ -153,7 +165,11 @@ async def mcp_list_projects(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/mcp-tools/tasks/list")
+@router.get(
+    "/mcp-tools/tasks/list",
+    tags=["mcp-tools"],
+    operation_id="list_tasks_tool",
+)
 async def mcp_list_tasks(
     project_id: Optional[str] = None,
     status: Optional[str] = None,
@@ -192,7 +208,11 @@ async def mcp_list_tasks(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/mcp-tools/memory/add-entity")
+@router.post(
+    "/mcp-tools/memory/add-entity",
+    tags=["mcp-tools"],
+    operation_id="add_memory_entity_tool",
+)
 async def mcp_add_memory_entity(
     entity_data: MemoryEntityCreate,
     memory_service: MemoryService = Depends(get_memory_service)
@@ -225,7 +245,11 @@ async def mcp_add_memory_entity(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/mcp-tools/memory/update-entity")
+@router.post(
+    "/mcp-tools/memory/update-entity",
+    tags=["mcp-tools"],
+    operation_id="update_memory_entity_tool",
+)
 async def mcp_update_memory_entity(
     entity_id: int,
     entity_update: MemoryEntityUpdate,
@@ -256,7 +280,11 @@ async def mcp_update_memory_entity(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/mcp-tools/memory/add-observation")
+@router.post(
+    "/mcp-tools/memory/add-observation",
+    tags=["mcp-tools"],
+    operation_id="add_memory_observation_tool",
+)
 async def mcp_add_memory_observation(
     entity_id: int,
     observation_data: MemoryObservationCreate,
@@ -286,7 +314,11 @@ async def mcp_add_memory_observation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/mcp-tools/memory/add-relation")
+@router.post(
+    "/mcp-tools/memory/add-relation",
+    tags=["mcp-tools"],
+    operation_id="add_memory_relation_tool",
+)
 async def mcp_add_memory_relation(
     relation_data: MemoryRelationCreate,
     memory_service: MemoryService = Depends(get_memory_service)
@@ -318,7 +350,11 @@ async def mcp_add_memory_relation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/mcp-tools/memory/search")
+@router.get(
+    "/mcp-tools/memory/search",
+    tags=["mcp-tools"],
+    operation_id="search_memory_tool",
+)
 async def mcp_search_memory(
     query: str,
     limit: int = 10,
