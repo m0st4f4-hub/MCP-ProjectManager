@@ -289,7 +289,7 @@ The system employs a multi-layered testing approach following NASA standards:
 ### 7.1 System Startup Procedures
 ```bash
 # Standard Startup Sequence
-1. python final_integration.py    # System validation
+1. python final_integration.py --mode all    # Validation + integration tests
 2. python start_system.py         # System startup
 3. Verify health endpoints        # System verification
 4. Monitor performance metrics    # Ongoing monitoring

@@ -268,6 +268,21 @@ If you encounter any issues:
 2. Check if the ports 8000 and 3000 are available
 3. If services fail to start, check the logs for detailed error messages
 
+## System Validation & Testing
+
+Use `final_integration.py` to verify the entire suite or run integration tests.
+
+```bash
+# Validate only
+python final_integration.py --mode validate
+
+# Integration tests only
+python final_integration.py --mode test
+
+# Run both validation and tests (default)
+python final_integration.py --mode all
+```
+
 ## License
 
 ISC
