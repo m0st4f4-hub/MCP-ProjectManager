@@ -141,7 +141,7 @@ const TaskItem: React.FC<TaskItemProps> = memo(
         overflow="hidden" // Ensures content respects border radius
         bg={
           // Background color based on completion status
-          task.status === "COMPLETED"
+          task.status === TaskStatus.COMPLETED
             ? styles.bgSurfaceElevatedColor // Elevated background for completed tasks
             : styles.bgSurfaceColor // Standard background for other tasks
         }
@@ -161,11 +161,11 @@ const TaskItem: React.FC<TaskItemProps> = memo(
           {/* Checkbox for task completion */}
           <Box pt="spacing.0-5">
             <Checkbox
-              isChecked={task.status === "COMPLETED"} // Checked if task is completed
+              isChecked={task.status === TaskStatus.COMPLETED} // Checked if task is completed
               onChange={handleToggleCompletion} // Handler to toggle completion
               size="lg" // Large size checkbox
               colorScheme={statusInfo?.colorScheme || "gray"} // Color scheme based on status
-              aria-label={`Mark task ${task.title} as ${task.status === "COMPLETED" ? "incomplete" : "complete"}`}
+              aria-label={`Mark task ${task.title} as ${task.status === TaskStatus.COMPLETED ? "incomplete" : "complete"}`}
             />
           </Box>
 

@@ -36,12 +36,9 @@ Base = declarative_base()
 async def get_db():
     async with AsyncSessionLocal() as db:
         try:
-            print("[get_db] Creating database session...")
             await db.begin()
-            print("[get_db] Yielding database session...")
             yield db
         finally:
-            print("[get_db] Closing database session...")
             await db.close()
 
 # Sync dependency to get DB session

@@ -1,11 +1,32 @@
 import React from "react";
-import { VStack, Divider, useDisclosure } from "@chakra-ui/react";
+import {
+  VStack,
+  Divider,
+  useDisclosure,
+  Flex,
+  HStack,
+  Checkbox,
+  Text,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  MenuDivider,
+  Button,
+} from "@chakra-ui/react";
+import { ChevronDownIcon, DeleteIcon } from "@chakra-ui/icons";
+
 import { GroupByType, ViewMode } from "@/types";
+import { TaskStatus } from "@/types/task";
+import * as statusUtils from "@/lib/statusUtils";
 import { useTaskStore } from "@/store/taskStore";
+
 import ConfirmationModal from "./common/ConfirmationModal";
 import BulkActionsBar from "./BulkActionsBar";
 import TaskViewControls from "./TaskViewControls";
 import TaskFilters from "./task/TaskFilters";
+import AppIcon from "./common/AppIcon";
+import { sizing, typography } from "../tokens";
 
 interface TaskControlsProps {
   groupBy: GroupByType;
@@ -19,6 +40,14 @@ interface TaskControlsProps {
   setSearchTerm: (value: string) => void;
 }
 
+const availableStatusesForBulkUpdate: TaskStatus[] = [
+  "pending",
+  "in_progress",
+  "done",
+  "blocked",
+  "archived",
+];
+
 const TaskControls: React.FC<TaskControlsProps> = ({
   groupBy,
   setGroupBy,
@@ -30,12 +59,12 @@ const TaskControls: React.FC<TaskControlsProps> = ({
   searchTerm,
   setSearchTerm,
 }) => {
-  const selectedTaskIds = useTaskStore((state) => state.selectedTaskIds);
-  const selectAllTasks = useTaskStore((state) => state.selectAllTasks);
-  const deselectAllTasks = useTaskStore((state) => state.deselectAllTasks);
-  const bulkDeleteTasks = useTaskStore((state) => state.bulkDeleteTasks);
-  const bulkSetStatusTasks = useTaskStore((state) => state.bulkSetStatusTasks);
-  const taskStoreLoading = useTaskStore((state) => state.loading);
+  const selectedTaskIds = useTaskStore((s) => s.selectedTaskIds);
+  const selectAllTasks = useTaskStore((s) => s.selectAllTasks);
+  const deselectAllTasks = useTaskStore((s) => s.deselectAllTasks);
+  const bulkDeleteTasks = useTaskStore((s) => s.bulkDeleteTasks);
+  const bulkSetStatusTasks = useTaskStore((s) => s.bulkSetStatusTasks);
+  const taskStoreLoading = useTaskStore((s) => s.loading);
 
   const {
     isOpen: isDeleteConfirmOpen,
@@ -49,11 +78,9 @@ const TaskControls: React.FC<TaskControlsProps> = ({
   }, [selectedTaskIds, allFilterableTaskIds]);
 
   const handleSelectAllToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      selectAllTasks(allFilterableTaskIds);
-    } else {
-      deselectAllTasks();
-    }
+    e.target.checked
+      ? selectAllTasks(allFilterableTaskIds)
+      : deselectAllTasks();
   };
 
   const handleBulkDeleteConfirm = async () => {
@@ -76,15 +103,85 @@ const TaskControls: React.FC<TaskControlsProps> = ({
       align="stretch"
     >
       {showBulkActionsBar && (
-        <BulkActionsBar
-          selectedTaskIds={selectedTaskIds}
-          allFilterableTaskIds={allFilterableTaskIds}
-          areAllTasksSelected={areAllTasksSelected}
-          onSelectAllToggle={handleSelectAllToggle}
-          onDeleteSelected={onDeleteConfirmOpen}
-          bulkSetStatusTasks={bulkSetStatusTasks}
-          loading={taskStoreLoading}
-        />
+        <>
+          <Divider borderColor="borderDecorative" />
+          <Flex justify="space-between" align="center" wrap="wrap" gap="3">
+            <HStack spacing="3">
+              <AppIcon name="info" color="blue.400" mr={2} />
+              <Checkbox
+                isChecked={areAllTasksSelected}
+                onChange={handleSelectAllToggle}
+                isDisabled={allFilterableTaskIds.length === 0}
+                colorScheme="brandPrimaryScheme"
+                size="sm"
+              >
+                <Text as="span" ml="2" fontSize={typography.fontSize.sm}>
+                  Select All ({allFilterableTaskIds.length})
+                </Text>
+              </Checkbox>
+              {selectedTaskIds.length > 0 && (
+                <Text fontSize={typography.fontSize.sm} color="textSecondary">
+                  {selectedTaskIds.length} selected
+                </Text>
+              )}
+            </HStack>
+
+            {selectedTaskIds.length > 0 && (
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  variant="outline"
+                  colorScheme="brandPrimaryScheme"
+                  size="sm"
+                  rightIcon={<ChevronDownIcon />}
+                >
+                  Bulk Actions
+                </MenuButton>
+                <MenuList
+                  bg="bgSurface"
+                  borderColor="borderDecorative"
+                  shadow="md"
+                  minW="menu"
+                  py="1"
+                  zIndex="popover"
+                >
+                  <MenuItem
+                    icon={<DeleteIcon />}
+                    color="error"
+                    _hover={{ bg: "errorBgSubtle" }}
+                    onClick={onDeleteConfirmOpen}
+                    isDisabled={taskStoreLoading}
+                  >
+                    Delete Selected ({selectedTaskIds.length})
+                  </MenuItem>
+                  <MenuDivider borderColor="borderDecorative" />
+                  <MenuItem
+                    isDisabled
+                    _hover={{ bg: "transparent" }}
+                    cursor="default"
+                    color="textSecondary"
+                  >
+                    Set Status to...
+                  </MenuItem>
+                  {availableStatusesForBulkUpdate.map((statusId) => {
+                    const statusAttrs = statusUtils.getStatusAttributes(statusId);
+                    const targetStatus = statusAttrs?.id as TaskStatus;
+                    return (
+                      <MenuItem
+                        key={statusId}
+                        onClick={() => bulkSetStatusTasks(targetStatus)}
+                        pl="8"
+                        _hover={{ bg: "gray.100", _dark: { bg: "gray.700" } }}
+                      >
+                        {statusAttrs?.displayName || statusId}
+                      </MenuItem>
+                    );
+                  })}
+                </MenuList>
+              </Menu>
+            )}
+          </Flex>
+        </>
       )}
 
       <Divider borderColor="borderDecorative" />

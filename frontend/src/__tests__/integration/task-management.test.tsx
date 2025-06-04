@@ -22,7 +22,7 @@ import {
   createLargeDataSet
 } from '@/__tests__/factories/comprehensive.factory'
 import TaskList from '@/components/TaskList'
-import ProjectList from '@/components/ProjectList'
+import ProjectList from '@/components/project/ProjectList'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
 
