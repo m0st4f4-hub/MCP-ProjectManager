@@ -37,17 +37,10 @@ import { Task } from "@/types/task";
 import { useFilteredTasks } from "@/hooks/useFilteredTasks";
 import { useFilteredProjects } from "@/hooks/useFilteredProjects";
 
-import AppIcon from "./common/AppIcon";
-import DashboardStatsGrid from "./dashboard/DashboardStatsGrid";
-import TaskStatusChart from "./dashboard/TaskStatusChart";
-import TasksOverTimeChart from "./dashboard/TasksOverTimeChart";
-import ProjectProgressChart from "./dashboard/ProjectProgressChart";
-import AgentWorkloadChart from "./dashboard/AgentWorkloadChart";
-import UnassignedTasksList from "./dashboard/UnassignedTasksList";
-import TopPerformersLists from "./dashboard/TopPerformersLists";
-import RecentActivityList from "./dashboard/RecentActivityList";
-import DashboardSection from "./dashboard/DashboardSection";
-import { sizing, typography, semanticColors } from "../tokens";
+import DashboardHeader from "./dashboard/DashboardHeader";
+import DashboardViews from "./dashboard/DashboardViews";
+import DashboardSidebar from "./dashboard/DashboardSidebar";
+import { sizing } from "../tokens";
 import { useDashboardData } from "./dashboard/useDashboardData";
 import DashboardLoading from "./dashboard/DashboardLoading";
 import DashboardError from "./dashboard/DashboardError";
@@ -504,7 +497,6 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  return (
     <Box
       as="main"
       w="full"
@@ -512,121 +504,33 @@ const Dashboard: React.FC = () => {
       aria-busy={!!combinedLoading && !initialLoadError && !otherError}
     >
       <VStack spacing={sizing.spacing[6] || 6} align="stretch">
-        <HStack justifyContent="space-between" alignItems="center">
-          <HStack spacing={sizing.spacing[3] || 3} alignItems="center">
-            <AppIcon
-              component={FaTasks}
-              w={sizing.spacing[8] || "32px"}
-              h={sizing.spacing[8] || "32px"}
-              color="icon.primary"
-              mr={sizing.spacing[2] || 2}
-              aria-hidden="true"
-            />
-            <Heading
-              as="h1"
-              size="xl"
-              color={semanticColors.textPrimary?.DEFAULT || "inherit"}
-              fontFamily={typography.fontFamily.heading.join(",")}
-            >
-              Dashboard Overview
-            </Heading>
-          </HStack>
-        </HStack>
-
-        <DashboardStatsGrid stats={overallStats} isLoading={isLoadingAll} />
-
-        {tasksError && !initialLoadError && !otherError && (
-          <Box
-            role="alert"
-            p={sizing.spacing[2]}
-            borderWidth="1px"
-            borderRadius={sizing.borderRadius.md}
-            borderColor={"red.500"}
-            bg={"red.100"}
-            my={sizing.spacing[2]}
-          >
-            <Text color={"red.700"} fontSize={typography.fontSize.sm}>
-              Note: There was an issue loading some task-related charts/data.{" "}
-              {tasksError}
-            </Text>
-          </Box>
-        )}
-
-        <SimpleGrid
-          columns={{ base: 1, md: 2 }}
-          spacing={sizing.spacing[6] || 6}
-        >
-          <DashboardSection
-            title="Task Status Distribution"
-            isLoading={isLoadingTasks}
-            error={tasksError}
-          >
-            <TaskStatusChart statusCounts={statusCounts} />
-          </DashboardSection>
-          <DashboardSection
-            title="Tasks - Created vs Completed (Last 14 Days)"
-            isLoading={isLoadingTasks}
-            error={tasksError}
-          >
-            <TasksOverTimeChart tasksOverTime={tasksOverTime} />
-          </DashboardSection>
-        </SimpleGrid>
-
-        <DashboardSection
-          title="Project Progress"
-          isLoading={isLoadingProjects || isLoadingTasks}
-          error={projectsError || tasksError}
-        >
-          <ProjectProgressChart tasksPerProject={tasksPerProject} />
-        </DashboardSection>
-
-        <DashboardSection
-          title="Agent Workload"
-          isLoading={isLoadingAgents || isLoadingTasks}
-          error={agentsError || tasksError}
-        >
-          <AgentWorkloadChart agentWorkload={tasksPerAgent} />
-        </DashboardSection>
-
-        <SimpleGrid
-          columns={{ base: 1, lg: 2 }}
-          spacing={sizing.spacing[6] || 6}
-        >
-          <VStack spacing={sizing.spacing[6] || 6} align="stretch">
-            {unassignedTasks.length > 0 && (
-              <DashboardSection
-                title="Unassigned Tasks"
-                isLoading={isLoadingTasks}
-                error={tasksError}
-              >
-                <UnassignedTasksList
-                  unassignedTasks={unassignedTasks}
-                  projects={filteredProjectsForDashboard}
-                />
-              </DashboardSection>
-            )}
-          </VStack>
-
-          <DashboardSection
-            title="Recent Activity & Top Performers"
-            isLoading={isLoadingAgents || isLoadingTasks}
-            error={agentsError || tasksError}
-          >
-            <TopPerformersLists
-              topAgents={topAgentsForList}
-              topProjects={topProjects}
-            />
-            <RecentActivityList recentActivity={recentActivity} />
-          </DashboardSection>
-        </SimpleGrid>
-
-        <DashboardSection
-          title="All Tasks"
-          isLoading={isLoadingTasks}
-          error={tasksError}
-        >
-          <TaskList />
-        </DashboardSection>
+        <DashboardHeader />
+        <DashboardViews
+          overallStats={overallStats}
+          isLoadingAll={isLoadingAll}
+          tasksError={tasksError}
+          otherError={otherError}
+          isLoadingTasks={isLoadingTasks}
+          statusCounts={statusCounts}
+          tasksOverTime={tasksOverTime}
+          tasksPerProject={tasksPerProject}
+          tasksPerAgent={tasksPerAgent}
+          isLoadingProjects={isLoadingProjects}
+          isLoadingAgents={isLoadingAgents}
+          projectsError={projectsError}
+          agentsError={agentsError}
+        />
+        <DashboardSidebar
+          unassignedTasks={unassignedTasks}
+          projects={filteredProjectsForDashboard}
+          topAgents={topAgentsForList}
+          topProjects={topProjects}
+          recentActivity={recentActivity}
+          isLoadingTasks={isLoadingTasks}
+          tasksError={tasksError}
+          isLoadingAgents={isLoadingAgents}
+          agentsError={agentsError}
+        />
       </VStack>
     </Box>
   );
