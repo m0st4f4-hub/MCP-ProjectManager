@@ -75,24 +75,3 @@ export const useFilteredTasks = (
   }, [tasks, filters]);
 };
 
-// Note: You'll need to move or ensure `getTaskCategory` is accessible.
-// It might be better in a shared utility file, e.g., `src/lib/taskUtils.ts`.
-// For now, assuming it's made available, e.g., by moving it to `lib/taskUtils.ts`
-// and importing it here. If `getTaskCategory` itself uses `mapStatusToStatusID`
-// and `getStatusAttributes`, those also need to be correctly pathed or moved.
-
-// Placeholder for getTaskCategory if not refactored yet, to make hook self-contained for now.
-// This should be replaced by a proper import from a utility file.
-// const getTaskCategory = (task: Task): string => {
-//   if (!task.status) return "todo";
-//   // const canonicalStatusId = mapStatusToStatusID(task.status); // Needs mapStatusToStatusID
-//   // const attributes = getStatusAttributes(canonicalStatusId); // Needs getStatusAttributes
-//   // return attributes ? attributes.category : "todo";
-//   // Simplified for placeholder:
-//   const statusLower = task.status.toLowerCase();
-//   if (statusLower.includes("done") || statusLower.includes("complete")) return "completed";
-//   if (statusLower.includes("progress")) return "inProgress";
-//   if (statusLower.includes("block")) return "blocked";
-//   if (statusLower.includes("fail")) return "failed";
-//   return "todo";
-// };
