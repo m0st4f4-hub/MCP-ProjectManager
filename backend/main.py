@@ -397,8 +397,21 @@ async def mcp_docs(request: Request):
     md = ["# MCP Project Manager Tools Documentation\n"]
     md.append("## Tools\n")
     if tools:
-        for tool_name, tool_info in tools.items():
+        if isinstance(tools, dict):
+            tool_iter = tools.items()
+        elif isinstance(tools, list):
+            tool_iter = []
+            for idx, tool in enumerate(tools):
+                if isinstance(tool, dict):
+                    name = tool.get("name", f"tool_{idx}")
+                    tool_iter.append((name, tool))
+        else:
+            tool_iter = []
+
+        for tool_name, tool_info in tool_iter:
             md.append(f"- **{tool_name}**: {tool_info.get('description', '')}")
+        if not tool_iter:
+            md.append("No tools registered.\n")
     else:
         md.append("No tools registered.\n")
     md.append("\n## Routes\n")
