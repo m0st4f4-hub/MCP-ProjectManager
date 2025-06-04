@@ -10,13 +10,15 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { login } from "@/services/api/users";
-import { LoginRequest } from "@/types/user";
+import { LoginRequest, TokenResponse } from "@/types/user";
+import { useAuthStore } from "@/store/authStore";
 
 const LoginForm: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const setToken = useAuthStore((state) => state.setToken);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -26,11 +28,9 @@ const LoginForm: React.FC = () => {
     const loginData: LoginRequest = { username, password };
 
     try {
-      const response = await login(loginData);
-      console.log("Login successful:", response);
-      // TODO: Handle successful login (e.g., store token, redirect, update auth state)
-      // For now, just log the response and perhaps show a success message
-      alert("Login successful! Check console for user data.");
+      const response: TokenResponse = await login(loginData);
+      setToken(response.access_token);
+      alert("Login successful!");
     } catch (err: any) {
       console.error("Login failed:", err);
       setError(err.message || "An error occurred during login.");
