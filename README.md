@@ -289,6 +289,10 @@ python final_integration.py --mode all
 
 ISC
 
+## Contributing
+
+Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for coding standards, commit guidelines, and test requirements.
+
 ## Directory Contents Overview
 
 This is the root directory of the MCP Project Manager Suite. It contains top-level configuration files, build scripts, documentation, and the main entry points for the backend and frontend applications.
