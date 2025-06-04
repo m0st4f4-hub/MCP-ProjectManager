@@ -69,7 +69,7 @@ function installDependencies() {
     return runCommand('npm install', 'Installing npm dependencies', { timeout: 300000 });
 }
 
-function checkBackendConnection() {
+async function checkBackendConnection() {
     console.log('🔗 Checking backend connection...');
     
     // Read environment configuration
@@ -85,11 +85,19 @@ function checkBackendConnection() {
     }
     
     console.log(`🔍 Checking backend at: ${backendUrl}`);
-    
-    // Simple connectivity check would go here
-    // For now, just log the configuration
-    console.log('⚠️  Backend connectivity check skipped (implement if needed)');
-    return true;
+
+    try {
+        const response = await fetch(`${backendUrl}/health`);
+        if (!response.ok) {
+            console.log(`❌ Backend health check failed with status ${response.status}`);
+            return false;
+        }
+        console.log('✅ Backend is reachable');
+        return true;
+    } catch (error) {
+        console.log(`❌ Failed to reach backend: ${error.message || error}`);
+        return false;
+    }
 }
 
 function startDevelopmentServer() {
@@ -120,7 +128,7 @@ function startDevelopmentServer() {
     }
 }
 
-function main() {
+async function main() {
     console.log('🎨 Task Manager Frontend Development Setup');
     console.log('='.repeat(50));
     
@@ -137,7 +145,7 @@ function main() {
     }
     
     // Check backend connection
-    if (!checkBackendConnection()) {
+    if (!(await checkBackendConnection())) {
         console.log('⚠️  Backend connection issues detected');
     }
     
@@ -146,7 +154,10 @@ function main() {
 }
 
 if (require.main === module) {
-    main();
+    main().catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
 }
 
 module.exports = { runCommand, checkNodeEnvironment, installDependencies };
