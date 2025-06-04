@@ -9,12 +9,13 @@ This directory (`frontend/src/contexts/`) contains React Context providers and h
 Key files:
 
 *   `ThemeContext.tsx`: Provides context for managing the application's theme (light/dark mode).
-*   `ProjectContext.tsx`: A placeholder context likely intended for project-related data.
+*   `ProjectContext.tsx`: Provides the currently selected project and a setter to change it.
 *   `README.md`: This file.
 
 ## Files
 
 ### `ProjectContext.tsx`
+Manages the currently selected project and provides a hook to update it across the app.
 
 ## Architecture Diagram
 ```mermaid

@@ -1,68 +1,31 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { TestWrapper } from '@/__tests__/utils/test-utils';
-import ProjectContext from '../ProjectContext';
+import { ProjectProvider, useProjectContext } from '../ProjectContext';
+import { createMockProject } from '@/__tests__/factories/project.factory';
 
-vi.mock('@chakra-ui/react', async () => {
-  const actual = await vi.importActual('@chakra-ui/react');
-  return {
-    ...actual,
-    useToast: () => vi.fn(),
-    useColorModeValue: (light: any, dark: any) => light,
-  };
-});
+const TestComponent = () => {
+  const { selectedProject, setSelectedProject } = useProjectContext();
+  const mock = createMockProject();
+  return (
+    <div>
+      <span data-testid="project-name">{selectedProject?.name || 'none'}</span>
+      <button onClick={() => setSelectedProject(mock)}>set</button>
+    </div>
+  );
+};
 
 describe('ProjectContext', () => {
-  const user = userEvent.setup();
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should render without crashing', () => {
+  it('provides and updates selected project', async () => {
+    const user = userEvent.setup();
     render(
-      <TestWrapper>
-        <ProjectContext />
-      </TestWrapper>
+      <ProjectProvider>
+        <TestComponent />
+      </ProjectProvider>
     );
-    expect(document.body).toBeInTheDocument();
-  });
 
-  it('should handle props correctly', () => {
-    const props = { 
-      testId: 'test-component',
-      'data-testid': 'test-component'
-    };
-    
-    render(
-      <TestWrapper>
-        <ProjectContext {...props} />
-      </TestWrapper>
-    );
-    
-    const component = screen.queryByTestId('test-component');
-    expect(component || document.body).toBeInTheDocument();
-  });
-
-  it('should handle user interactions', async () => {
-    render(
-      <TestWrapper>
-        <ProjectContext />
-      </TestWrapper>
-    );
-    
-    const buttons = screen.queryAllByRole('button');
-    const inputs = screen.queryAllByRole('textbox');
-    
-    if (buttons.length > 0) {
-      await user.click(buttons[0]);
-    }
-    
-    if (inputs.length > 0) {
-      await user.type(inputs[0], 'test input');
-    }
-    
-    expect(document.body).toBeInTheDocument();
+    expect(screen.getByTestId('project-name').textContent).toBe('none');
+    await user.click(screen.getByRole('button'));
+    expect(screen.getByTestId('project-name').textContent).not.toBe('none');
   });
 });

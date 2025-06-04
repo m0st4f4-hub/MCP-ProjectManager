@@ -1,20 +1,31 @@
-import React from "react";
+"use client";
 
-// Placeholder for Project Context - needed to resolve test errors
-// TODO: Implement actual context or remove if not needed
+import React, { createContext, useContext, useState } from "react";
+import { Project } from "@/types/project";
 
-const ProjectContext = React.createContext({}); // Empty context for now
+interface ProjectContextValue {
+  selectedProject: Project | null;
+  setSelectedProject: (project: Project | null) => void;
+}
 
-export const ProjectProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+const ProjectContext = createContext<ProjectContextValue | undefined>(undefined);
+
+export const ProjectProvider = ({ children }: { children: React.ReactNode }) => {
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
   return (
-    <ProjectContext.Provider value={{}}>{children}</ProjectContext.Provider>
+    <ProjectContext.Provider value={{ selectedProject, setSelectedProject }}>
+      {children}
+    </ProjectContext.Provider>
   );
 };
 
-export const useProjectContext = () => React.useContext(ProjectContext);
+export const useProjectContext = (): ProjectContextValue => {
+  const context = useContext(ProjectContext);
+  if (context === undefined) {
+    throw new Error("useProjectContext must be used within a ProjectProvider");
+  }
+  return context;
+};
 
 export default ProjectContext;
