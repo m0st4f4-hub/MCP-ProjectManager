@@ -184,7 +184,7 @@ npm run dev
 The frontend application will be available at `http://localhost:3000`.
 
 **Windows Development Tip:**
-A `dev_launcher.bat` script is available in the project root. This batch file attempts to clear ports 8080 (for backend) and 3000 (for frontend) and then launches the backend (`npm run dev:backend`) and frontend (`npm run dev:frontend`) development servers in separate terminal windows. You can run it by double-clicking or executing `dev_launcher.bat` in your terminal from the project root.
+A `dev_launcher.bat` script is available in the project root. This batch file attempts to clear ports 8000 (for backend) and 3000 (for frontend) and then starts the backend server with `uvicorn` and the frontend with `npm run dev` in separate command windows. You can run it by double-clicking or executing `dev_launcher.bat` in your terminal from the project root.
 
 ## How It Works
 
