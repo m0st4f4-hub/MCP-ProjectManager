@@ -1,34 +1,104 @@
-# Contributing
+# Contributing Guide
 
-Thank you for taking the time to contribute to MCP Project Manager! Follow these steps to get your environment ready.
+Thank you for taking the time to contribute to **MCP Project Manager**! This project follows several conventions to ensure a clean, reliable, and collaborative development process.
 
-## Install Dependencies
+---
 
-1. **Python**
-   ```bash
-   cd backend
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
+## 🔧 Install Dependencies
 
-2. **Node.js**
-   ```bash
-   cd frontend
-   npm install
-   ```
+### 1. Backend (Python)
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+````
 
-## Set Up Pre-commit Hooks
+### 2. Frontend (Node.js)
 
-This project uses [pre-commit](https://pre-commit.com/) to run linting checks automatically.
+```bash
+cd frontend
+npm install
+```
 
-1. Install `pre-commit`:
-   ```bash
-   pip install pre-commit
-   ```
-2. Install the hooks:
-   ```bash
-   pre-commit install
-   ```
+---
 
-The hooks will run `flake8` on Python files and `npm run lint` for the frontend whenever you commit.
+## 🧹 Set Up Pre-commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to automatically check code quality and enforce consistency.
+
+### Install `pre-commit` and activate hooks:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+### What gets checked:
+
+* **Backend**: `flake8` runs on Python files
+* **Frontend**: `npm run lint` runs on JS/TS files
+
+These checks will automatically run on every commit.
+
+---
+
+## 📐 Coding Standards
+
+* Follow existing code structure and conventions.
+* Keep code self-explanatory and remove unused code.
+* **Frontend**:
+
+  * Run: `npm run lint`, `npm run fix`, and `npm run format` before committing.
+* **Backend**:
+
+  * Run: `flake8` and ensure no style violations or unused imports remain.
+
+---
+
+## 📝 Commit Style
+
+This repo uses [Conventional Commits](https://www.conventionalcommits.org/) to maintain clean history and enable automatic changelog generation.
+
+### Examples:
+
+```bash
+feat: add project deadline editing modal
+fix: resolve crash on null status ID
+docs: update instructions for local setup
+```
+
+Always prefix commits with `feat`, `fix`, `chore`, `docs`, etc.
+Reference related issues if applicable (e.g. `fix: #42`).
+
+---
+
+## ✅ Test Requirements
+
+Before opening a Pull Request, ensure the following tests and linters pass:
+
+### Frontend
+
+```bash
+cd frontend
+npm run lint
+npm test
+```
+
+### Backend
+
+```bash
+cd backend
+pytest
+```
+
+All tests and linters must pass locally before submitting a PR.
+
+---
+
+## 🤝 Thank You
+
+Your contributions help make this project better.
+Whether it's fixing a bug, improving documentation, or adding a new feature, we appreciate your effort.
+
+```
