@@ -60,7 +60,7 @@ class MemoryService:
             import os
 
             if not os.path.exists(file_path):
-                raise ValueError(f"File not found: {file_path}")
+                raise FileNotFoundError(file_path)
             
             file_stat = os.stat(file_path)
             file_info = {
@@ -92,9 +92,29 @@ class MemoryService:
             )
             
             return self.create_entity(entity_create)
+        except FileNotFoundError:
+            logger.error(f"File not found during ingestion: {file_path}")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"File not found: {file_path}")
         except Exception as e:
             logger.error(f"Error ingesting file {file_path}: {e}")
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error ingesting file: {str(e)}")
+
+    def ingest_text(self, text: str, user_id: Optional[str] = None) -> models.MemoryEntity:
+        """Create a MemoryEntity from raw text."""
+        entity_create = MemoryEntityCreate(
+            entity_type="text",
+            content=text,
+            source="text_ingestion",
+            created_by_user_id=user_id,
+        )
+        return self.create_entity(entity_create)
+
+    def get_file_content(self, entity_id: int) -> str:
+        """Return the stored content for a file-based entity."""
+        entity = self.get_entity(entity_id)
+        if entity is None:
+            raise EntityNotFoundError("MemoryEntity", entity_id)
+        return entity.content or ""
 
     def create_memory_entity(self, entity: MemoryEntityCreate) -> models.MemoryEntity:
         """Creates a new memory entity."""

@@ -144,6 +144,9 @@ def delete_memory_entity_endpoint(
 class FileIngestInput(BaseModel):
     file_path: str = Field(..., description="Absolute path to the file to ingest.")
 
+class TextIngestInput(BaseModel):
+    text: str = Field(..., description="Raw text to store as a memory entity.")
+
 @router.post("/ingest/file", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
 
 
@@ -161,4 +164,29 @@ def ingest_file_endpoint(
         db_entity = memory_service.ingest_file(file_path=ingest_input.file_path, user_id=current_user.id)
         return db_entity
     except Exception as e:  # TODO: Handle specific file reading/metadata extraction errors more gracefully
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to ingest file: {e}")  # TODO: Add endpoints for retrieving file content/metadata by MemoryEntity ID.  # TODO: Add endpoints for other ingestion types (e.g., URL, text snippet).
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to ingest file: {e}")
+
+@router.post("/ingest/text", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
+def ingest_text_endpoint(
+    ingest_input: TextIngestInput = Body(..., description="Input data for text ingestion."),
+    memory_service: MemoryService = Depends(get_memory_service),
+    current_user: UserModel = Depends(get_current_active_user),
+):
+    """Create a MemoryEntity from raw text."""
+    try:
+        return memory_service.ingest_text(text=ingest_input.text, user_id=current_user.id)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to ingest text: {e}")
+
+@router.get("/{entity_id}/file", response_model=str)
+def get_file_content_endpoint(
+    entity_id: int = Path(..., description="ID of the MemoryEntity"),
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """Retrieve stored content for a file entity."""
+    try:
+        return memory_service.get_file_content(entity_id)
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")

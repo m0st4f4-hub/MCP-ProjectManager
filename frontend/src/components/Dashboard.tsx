@@ -38,11 +38,12 @@ import { useFilteredTasks } from "@/hooks/useFilteredTasks";
 import { useFilteredProjects } from "@/hooks/useFilteredProjects";
 
 import AppIcon from "./common/AppIcon";
+import dynamic from "next/dynamic";
 import DashboardStatsGrid from "./dashboard/DashboardStatsGrid";
-import TaskStatusChart from "./dashboard/TaskStatusChart";
-import TasksOverTimeChart from "./dashboard/TasksOverTimeChart";
-import ProjectProgressChart from "./dashboard/ProjectProgressChart";
-import AgentWorkloadChart from "./dashboard/AgentWorkloadChart";
+const TaskStatusChart = dynamic(() => import("./dashboard/TaskStatusChart"), { ssr: false });
+const TasksOverTimeChart = dynamic(() => import("./dashboard/TasksOverTimeChart"), { ssr: false });
+const ProjectProgressChart = dynamic(() => import("./dashboard/ProjectProgressChart"), { ssr: false });
+const AgentWorkloadChart = dynamic(() => import("./dashboard/AgentWorkloadChart"), { ssr: false });
 import UnassignedTasksList from "./dashboard/UnassignedTasksList";
 import TopPerformersLists from "./dashboard/TopPerformersLists";
 import RecentActivityList from "./dashboard/RecentActivityList";
