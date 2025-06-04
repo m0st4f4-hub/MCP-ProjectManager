@@ -11,6 +11,7 @@ import os
 import time
 import json
 import aiohttp
+import argparse
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 import threading
@@ -367,10 +368,42 @@ class TheBuilderSystemIntegrator:
         return overall_success
 
 async def main():
-    """Main execution function."""
+    """Main execution function with optional modes."""
+    parser = argparse.ArgumentParser(
+        description="Run system validation and integration tests"
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["all", "validate", "test"],
+        default="all",
+        help=(
+            "Choose 'validate' for validation only, 'test' for integration tests only, "
+            "or 'all' (default) to run both"
+        ),
+    )
+    args = parser.parse_args()
+
     integrator = TheBuilderSystemIntegrator()
-    success = await integrator.execute_final_integration()
-    
+    integrator.print_builder_header()
+
+    validation_success = True
+    if args.mode in ("validate", "all"):
+        validation_success = await integrator.validate_complete_system()
+        integrator.integration_results["validation_passed"] = validation_success
+    else:
+        integrator.integration_results["validation_passed"] = True
+
+    if args.mode in ("test", "all"):
+        if args.mode == "test" or validation_success:
+            await integrator.perform_integration_tests()
+        else:
+            print("\n⚠️  Skipping integration tests due to validation failures")
+            integrator.integration_results["backend_tests"] = False
+    else:
+        integrator.integration_results["backend_tests"] = True
+
+    success = await integrator.generate_final_report()
+
     if not success:
         sys.exit(1)
 

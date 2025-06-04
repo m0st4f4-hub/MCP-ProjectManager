@@ -44,6 +44,7 @@ import {
   applyAllFilters,
   groupTasksByStatus,
 } from "./TaskList.utils";
+import TaskPagination from "./task/TaskPagination";
 
 type ViewMode = "list" | "kanban";
 // type StatusType = 'To Do' | 'In Progress' | 'Blocked' | 'Completed'; // For Kanban later
@@ -97,6 +98,8 @@ const TaskList: React.FC = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [searchTerm, setSearchTerm] = useState(filters.search || "");
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10;
 
   const {} = useDisclosure(); // isFilterOpen and onFilterOpen are unused, onFilterClose was removed previously
 
@@ -193,6 +196,11 @@ const TaskList: React.FC = () => {
     return allFilterableTasks;
   }, [allFilterableTasks]);
 
+  const paginatedTasks = useMemo(() => {
+    const start = currentPage * itemsPerPage;
+    return allFilterableTasks.slice(start, start + itemsPerPage);
+  }, [allFilterableTasks, currentPage, itemsPerPage]);
+
   // Force groupBy to 'status' in Kanban view
   // const effectiveGroupBy = viewMode === "kanban" ? "status" : "status";
 
@@ -256,22 +264,34 @@ const TaskList: React.FC = () => {
       {/* Conditional Rendering based on viewMode */}
       {viewMode === "list" && (
         <ListView
-          groupedTasks={tasks}
+          groupedTasks={paginatedTasks}
           isLoading={loading && isInitialLoad}
           isMobile={isMobile}
         />
       )}
       {viewMode === "kanban" && (
         <KanbanView
-          filteredTasks={tasks}
+          filteredTasks={paginatedTasks}
           // onOpenModal={handleOpenAddTaskModalCallback} // If needed later for Kanban
           compactView={isMobile} // Or a specific compact state for Kanban
         />
       )}
 
-      {(!loading || !isInitialLoad) && tasks.length === 0 && (
+      {(!loading || !isInitialLoad) && allFilterableTasks.length === 0 && (
         <NoTasks onAddTask={handleOpenAddTaskModalCallback} />
       )}
+
+      <TaskPagination
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        totalItems={allFilterableTasks.length}
+        onPrevious={() => setCurrentPage((p) => Math.max(0, p - 1))}
+        onNext={() =>
+          setCurrentPage((p) =>
+            Math.min(Math.ceil(allFilterableTasks.length / itemsPerPage) - 1, p + 1)
+          )
+        }
+      />
 
       <Modal
         isOpen={isAddTaskModalOpen}

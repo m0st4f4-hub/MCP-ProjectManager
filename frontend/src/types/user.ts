@@ -58,9 +58,9 @@ export const loginRequestSchema = z.object({
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
 
 // The backend /users/token returns a message and the user object
-export const loginResponseSchema = z.object({
-  message: z.string(),
-  user: userSchema,
+export const tokenResponseSchema = z.object({
+  access_token: z.string(),
+  token_type: z.string(),
 });
 
-export type LoginResponse = z.infer<typeof loginResponseSchema>; 
+export type TokenResponse = z.infer<typeof tokenResponseSchema>;

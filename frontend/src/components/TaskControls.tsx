@@ -5,6 +5,7 @@ import { useTaskStore } from "@/store/taskStore";
 import ConfirmationModal from "./common/ConfirmationModal";
 import BulkActionsBar from "./BulkActionsBar";
 import TaskViewControls from "./TaskViewControls";
+import TaskFilters from "./task/TaskFilters";
 
 interface TaskControlsProps {
   groupBy: GroupByType;
@@ -96,6 +97,8 @@ const TaskControls: React.FC<TaskControlsProps> = ({
         hideGroupBy={hideGroupBy}
         isPolling={isPolling}
       />
+
+      <TaskFilters searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
       <ConfirmationModal
         isOpen={isDeleteConfirmOpen}

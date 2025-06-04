@@ -1,46 +1,72 @@
-import { request } from "./request";
-import { User, UserCreateData, UserUpdateData, LoginRequest, LoginResponse } from "@/types/user"; // Anticipating user types
-import { buildApiUrl, API_CONFIG } from "./config";
+import { request } from './request';
+import {
+  User,
+  UserCreateData,
+  UserUpdateData,
+  LoginRequest,
+  TokenResponse, // unified type for auth token
+} from '@/types/user';
+import { buildApiUrl, API_CONFIG } from './config';
 
-// Create a new user
+/**
+ * Create a new user
+ */
 export const createUser = async (userData: UserCreateData): Promise<User> => {
-  return request<User>(`buildApiUrl(API_CONFIG.ENDPOINTS.USERS/`, { method: "POST", body: JSON.stringify(userData) });
+  return request<User>(buildApiUrl(API_CONFIG.ENDPOINTS.USERS, '/'), {
+    method: 'POST',
+    body: JSON.stringify(userData),
+  });
 };
 
-// Fetch a single user by ID
+/**
+ * Get a user by ID
+ */
 export const getUserById = async (userId: string): Promise<User> => {
-  return request<User>(`buildApiUrl(API_CONFIG.ENDPOINTS.USERS/${userId}`);
+  return request<User>(buildApiUrl(API_CONFIG.ENDPOINTS.USERS, `/${userId}`));
 };
 
-// Fetch a list of users
-export const getUsers = async (skip: number = 0, limit: number = 100): Promise<User[]> => {
-  const queryParams = new URLSearchParams();
-  queryParams.append("skip", String(skip));
-  queryParams.append("limit", String(limit));
-  const queryString = queryParams.toString();
-  const url = `buildApiUrl(API_CONFIG.ENDPOINTS.USERS/${queryString ? `?${queryString}` : ""}`;;
-  return request<User[]>(url);
+/**
+ * Get a paginated list of users
+ */
+export const getUsers = async (skip = 0, limit = 100): Promise<User[]> => {
+  const params = new URLSearchParams();
+  params.append('skip', String(skip));
+  params.append('limit', String(limit));
+  const query = params.toString();
+  return request<User[]>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.USERS, query ? `/?${query}` : '/')
+  );
 };
 
-// Update an existing user
+/**
+ * Update a user
+ */
 export const updateUser = async (
   userId: string,
-  userData: UserUpdateData
+  userData: UserUpdateData,
 ): Promise<User> => {
-  return request<User>(`buildApiUrl(API_CONFIG.ENDPOINTS.USERS/${userId}`, { method: "PUT", body: JSON.stringify(userData) });
-};
-
-// Delete a user
-export const deleteUser = async (userId: string): Promise<User> => {
-  return request<User>(`buildApiUrl(API_CONFIG.ENDPOINTS.USERS/${userId}`, { method: "DELETE" });
-};
-
-// Login (placeholder for token, returns user info from backend)
-export const login = async (formData: LoginRequest): Promise<LoginResponse> => {
-  // Note: Backend expects OAuth2 form data, but we'll send JSON for now
-  return request<LoginResponse>(`buildApiUrl(API_CONFIG.ENDPOINTS.USERS/token`, { 
-    method: "POST", 
-    headers: { "Content-Type": "application/x-www-form-urlencoded" }, // Backend expects form data
-    body: new URLSearchParams(formData as Record<string, string>).toString(), // Sending as form data
+  return request<User>(buildApiUrl(API_CONFIG.ENDPOINTS.USERS, `/${userId}`), {
+    method: 'PUT',
+    body: JSON.stringify(userData),
   });
-}; 
+};
+
+/**
+ * Delete a user
+ */
+export const deleteUser = async (userId: string): Promise<User> => {
+  return request<User>(buildApiUrl(API_CONFIG.ENDPOINTS.USERS, `/${userId}`), {
+    method: 'DELETE',
+  });
+};
+
+/**
+ * Login to acquire token (OAuth2 compatible)
+ */
+export const login = async (formData: LoginRequest): Promise<TokenResponse> => {
+  return request<TokenResponse>(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/login'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(formData as Record<string, string>).toString(),
+  });
+};
