@@ -1,0 +1,15 @@
+repos:
+- repo: https://github.com/pycqa/flake8
+  rev: 7.0.0
+  hooks:
+    - id: flake8
+      additional_dependencies: []
+      # run only on backend python files
+      files: ^backend/
+- repo: local
+  hooks:
+    - id: npm-lint
+      name: npm lint
+      entry: npm run lint --prefix frontend
+      language: system
+      pass_filenames: false
