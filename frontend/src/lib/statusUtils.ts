@@ -42,7 +42,13 @@ export type StatusID =
   | "In Review"
   | "Completed"
   | "Blocked"
-  | "Cancelled";
+  | "Cancelled"
+  | "TO_DO"
+  | "IN_PROGRESS"
+  | "IN_REVIEW"
+  | "COMPLETED"
+  | "BLOCKED"
+  | "CANCELLED";
 
 /**
  * Represents the full set of attributes for a canonical task status.
@@ -57,6 +63,8 @@ export interface StatusAttributeObject {
   icon?: ElementType | string;
   isTerminal: boolean;
   isDynamic: boolean;
+  dynamicPartsExtractor?: string | RegExp;
+  dynamicDisplayNamePattern?: string;
 }
 
 /**
@@ -82,7 +90,27 @@ const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
     isTerminal: false,
     isDynamic: false,
   },
+  TO_DO: {
+    id: "To Do",
+    displayName: "To Do",
+    category: "todo",
+    description: "Task is pending and has not yet been started.",
+    colorScheme: "gray",
+    icon: "EditIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
   "In Progress": {
+    id: "In Progress",
+    displayName: "In Progress",
+    category: "inProgress",
+    description: "Task is actively being worked on.",
+    colorScheme: "blue",
+    icon: "TimeIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  IN_PROGRESS: {
     id: "In Progress",
     displayName: "In Progress",
     category: "inProgress",
@@ -102,7 +130,27 @@ const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
     isTerminal: false,
     isDynamic: false,
   },
+  IN_REVIEW: {
+    id: "In Review",
+    displayName: "In Review",
+    category: "inProgress",
+    description: "Task is under review.",
+    colorScheme: "purple",
+    icon: "ViewIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
   Blocked: {
+    id: "Blocked",
+    displayName: "Blocked",
+    category: "blocked",
+    description: "Task cannot proceed due to a dependency or issue.",
+    colorScheme: "orange",
+    icon: "WarningTwoIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  BLOCKED: {
     id: "Blocked",
     displayName: "Blocked",
     category: "blocked",
@@ -122,7 +170,27 @@ const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
     isTerminal: true,
     isDynamic: false,
   },
+  COMPLETED: {
+    id: "Completed",
+    displayName: "Completed",
+    category: "completed",
+    description: "Task has been finished successfully.",
+    colorScheme: "green",
+    icon: "CheckCircleIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
   Cancelled: {
+    id: "Cancelled",
+    displayName: "Cancelled",
+    category: "failed",
+    description: "Task was cancelled and will not be completed.",
+    colorScheme: "red",
+    icon: "CloseIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
+  CANCELLED: {
     id: "Cancelled",
     displayName: "Cancelled",
     category: "failed",
@@ -152,7 +220,16 @@ const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
 export function getStatusAttributes(
   statusId: StatusID,
 ): StatusAttributeObject | undefined {
-  return STATUS_MAP[statusId];
+  let key = statusId as string;
+  if (key === key.toUpperCase()) {
+    key =
+      key
+        .toLowerCase()
+        .split("_")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+  }
+  return STATUS_MAP[key as StatusID];
 }
 
 /**

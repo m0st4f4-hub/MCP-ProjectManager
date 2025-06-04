@@ -9,6 +9,7 @@ import {
   Agent,
   TaskSortField,
 } from "@/types";
+import { TaskStatus } from "@/types/task";
 import { create } from "zustand";
 import * as api from "@/services/api";
 import { produce } from "immer";
@@ -112,7 +113,7 @@ export interface TaskState {
   deselectAllTasks: () => void;
   // Bulk actions
   bulkDeleteTasks: () => Promise<void>;
-  bulkSetStatusTasks: (status: string) => Promise<void>;
+  bulkSetStatusTasks: (status: TaskStatus) => Promise<void>;
   removeTasksByProjectId: (projectId: string) => void;
 
   // Archive actions ADDED
@@ -448,7 +449,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       console.error("Bulk Delete Error:", error);
     }
   },
-  bulkSetStatusTasks: async (status: string) => {
+  bulkSetStatusTasks: async (status: TaskStatus) => {
     const { selectedTaskIds, tasks } = get();
     if (selectedTaskIds.length === 0) return;
 

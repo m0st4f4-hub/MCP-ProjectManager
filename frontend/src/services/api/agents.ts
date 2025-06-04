@@ -40,6 +40,7 @@ export const getAgents = async (skip: number = 0, limit: number = 100, search?: 
     id: String(rawAgent.id),
     name: String(rawAgent.name || ""),
     created_at: String(rawAgent.created_at || new Date().toISOString()),
+    is_archived: (rawAgent as any).is_archived ?? false,
     // Include new fields in the mapping
     task_count: rawAgent.task_count ?? 0,
     completed_task_count: rawAgent.completed_task_count ?? 0,
@@ -56,6 +57,7 @@ export const getAgentById = async (agent_id: string): Promise<Agent> => {
     id: String(rawAgent.id),
     name: String(rawAgent.name || ""),
     created_at: String(rawAgent.created_at || new Date().toISOString()),
+    is_archived: (rawAgent as any).is_archived ?? false,
   };
 };
 
@@ -68,6 +70,7 @@ export const getAgentByName = async (agent_name: string): Promise<Agent> => {
     id: String(rawAgent.id),
     name: String(rawAgent.name || ""),
     created_at: String(rawAgent.created_at || new Date().toISOString()),
+    is_archived: (rawAgent as any).is_archived ?? false,
   };
 };
 
@@ -81,6 +84,7 @@ export const createAgent = async (agentData: AgentCreateData): Promise<Agent> =>
     id: String(rawAgent.id),
     name: String(rawAgent.name || ""),
     created_at: String(rawAgent.created_at || new Date().toISOString()),
+    is_archived: (rawAgent as any).is_archived ?? false,
   };
 };
 
@@ -97,6 +101,7 @@ export const updateAgentById = async (
     id: String(rawAgent.id),
     name: String(rawAgent.name || ""),
     created_at: String(rawAgent.created_at || new Date().toISOString()),
+    is_archived: (rawAgent as any).is_archived ?? false,
   };
 };
 
