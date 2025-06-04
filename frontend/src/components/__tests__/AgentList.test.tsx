@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { render } from '@testing-library/react';
 import AgentList from '../AgentList';
 
 vi.mock('@chakra-ui/react', async () => {
