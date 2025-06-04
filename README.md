@@ -324,17 +324,18 @@ graph TD
 - `.gitignore`
 - `.npmignore`
 - `AEROSPACE_GRADE_DOCUMENTATION.md`
+- `AGENTS.MD`
 - `BACKEND_FRONTEND_ALIGNMENT_REPORT.md`
 - `CLEANUP_SUMMARY.md`
+- `CONTRIBUTING.md`
 - `DEV_LAUNCHER_COMPLETE.md`
 - `DEV_LAUNCHER_GUIDE.md`
 - `LICENSE`
 - `SYSTEM_GUIDE.md`
-- `TEST_ENHANCEMENT_REPORT.md`
-- `THE_BUILDERS_COMPLETION_REPORT.md`
 - `dev_launcher.bat`
 - `dev_launcher.js`
 - `dev_launcher.ps1`
+- `eslint_report.json`
 - `final_integration.py`
 - `image-dark.png`
 - `image-light.png`
@@ -351,3 +352,4 @@ graph TD
 - `validate_frontend.js`
 
 <!-- File List End -->
+

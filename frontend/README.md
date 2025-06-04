@@ -130,6 +130,8 @@ graph TD
 <!-- File List Start -->
 ## File List
 
+- `.env.local`
+- `.env.local.example`
 - `.gitignore`
 - `ARCHITECTURE.md`
 - `BRAND_ASSETS_GUIDE.md`
@@ -155,3 +157,4 @@ graph TD
 - `vitest.config.ts`
 
 <!-- File List End -->
+

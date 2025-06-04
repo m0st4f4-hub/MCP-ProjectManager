@@ -220,20 +220,9 @@ graph TD
 - `debug_tables.py`
 - `debug_test_db.py`
 - `enums.py`
-- `fix_all_indentation.py`
-- `fix_comprehensive_flake8.py`
-- `fix_conftest.py`
-- `fix_flake8.py`
-- `fix_indentation.py`
-- `fix_line.py`
-- `fix_mcp_indentation.py`
-- `fix_project_indentation.py`
-- `flake8_output.txt`
-- `fresh_flake8_output.txt`
 - `init_db.py`
 - `main.py`
 - `middleware.py`
-- `post_fix_flake8.txt`
 - `pytest.ini`
 - `quick_fix_project_service.py`
 - `quick_indent_fix.py`
@@ -249,6 +238,7 @@ graph TD
 - `validation.py`
 
 <!-- File List End -->
+
 
 ## FastAPI-MCP Documentation
 Local reference docs for [FastAPI-MCP](https://github.com/tadata-org/fastapi_mcp) are available in `docs/fastapi_mcp/`.
