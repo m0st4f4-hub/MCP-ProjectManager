@@ -100,7 +100,7 @@ React Components (UI)
 
 #### **Backend Development Tools**
 - ✅ **Database Initialization**: `init_db.py` - Complete setup with seed data
-- ✅ **Development Server**: `dev_start.py` - Automated environment setup
+- ✅ **Development Server**: `run_backend.py` - Automated environment setup
 - ✅ **Migration System**: Alembic fully configured with initial schema
 - ✅ **Service Layer**: All business logic properly abstracted
 - ✅ **CRUD Operations**: Complete data access layer
@@ -186,8 +186,7 @@ python start_system.py       # Start complete system
 ### **Individual Component Startup**
 ```bash
 # Backend Only
-cd backend
-python dev_start.py
+python run_backend.py
 
 # Frontend Only  
 cd frontend
