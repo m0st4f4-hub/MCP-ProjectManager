@@ -3,6 +3,8 @@ import {
   ProjectCreateData,
   ProjectUpdateData,
   ProjectFilters,
+  ProjectMember,
+  ProjectMemberCreateData,
 } from "@/types";
 import { request } from "./request";
 import { buildApiUrl, API_CONFIG } from "./config";
@@ -160,24 +162,13 @@ export const unarchiveProject = async (projectId: string): Promise<Project> => {
   } as Project;
 };
 
-export interface ProjectMember {
-  user_id: string;
-  role: string;
-  // Potentially add user details here if the backend relation includes them
-}
-
-export interface AddProjectMemberData {
-  user_id: string;
-  role: string;
-}
-
 export const getProjectMembers = async (projectId: string): Promise<ProjectMember[]> => {
   return request<ProjectMember[]>(buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/members`));
 };
 
 export const addMemberToProject = async (
   projectId: string,
-  data: AddProjectMemberData,
+  data: ProjectMemberCreateData,
 ): Promise<ProjectMember> => {
   return request<ProjectMember>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/members`),

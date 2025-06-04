@@ -18,11 +18,11 @@ depends_on = None
 
 
 def upgrade():
- # This is a metadata-only change to fix the TaskStatusEnum handling
- # No schema changes are needed since we're just fixing the way the enum is handled
- pass
+    # This is a metadata-only change to fix the TaskStatusEnum handling
+    # No schema changes are needed since we're just fixing the way the enum is handled
+    pass
 
 
 def downgrade():
- # No downgrade needed for this migration
- pass
+    # No downgrade needed for this migration
+    pass

@@ -5,7 +5,7 @@
 # Timestamp: <timestamp>
 
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional, List
+from typing import Optional, List, datetime
 
 # Import UserRoleEnum
 from ..enums import UserRoleEnum
@@ -35,9 +35,9 @@ class UserRoleCreate(UserRoleBase):
 class UserBase(BaseModel):
  """Base schema for user attributes."""
  username: str = Field(..., description="The unique username of the user.")
- email: Optional[str] = Field(None, description="The user's email address.")
+ email: str = Field(..., description="The user's email address.")
  full_name: Optional[str] = Field(None, description="The user's full name.")
- disabled: Optional[bool] = Field(None, description="Whether the user account is disabled.")
+ disabled: bool = Field(False, description="Whether the user account is disabled.")
 
 class UserCreate(UserBase):
  """Schema for creating a new user."""
@@ -56,6 +56,9 @@ class User(UserBase):
  """Schema for representing a user in API responses (read operations)."""
  id: str = Field(..., description="Unique identifier for the user.")
  user_roles: List["UserRole"] = [] # Forward reference to UserRole
+ # Add created_at and updated_at
+ created_at: datetime = Field(..., description="Timestamp when the user was created.")
+ updated_at: Optional[datetime] = Field(None, description="Timestamp when the user was last updated.")
  # comments: List[Comment] = [] # Example, if Comment relationship is needed
  # project_memberships: List[ProjectMember] = [] # Example
 

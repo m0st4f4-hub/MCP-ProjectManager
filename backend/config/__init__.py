@@ -2,7 +2,6 @@
 Configuration package initialization.
 """
 
-from .logging_config import configure_logging
 from .app_config import Settings
 
 settings = Settings()

@@ -1,6 +1,21 @@
-import { TaskFilters, Task, TaskCreateData, TaskUpdateData, TaskFileAssociation, TaskFileAssociationCreateData, TaskDependency, TaskDependencyCreateData, TaskSortOptions } from "@/types";
+import { TaskFilters, Task, TaskCreateData, TaskUpdateData, TaskFileAssociation, TaskFileAssociationCreateData, TaskDependency, TaskDependencyCreateData, TaskSortOptions, TaskStatus } from "@/types";
 import { request, normalizeToStatusID } from "./request";
 import { buildApiUrl, API_CONFIG } from "./config";
+import { StatusID } from "@/lib/statusUtils";
+
+// Convert StatusID to TaskStatus enum (now simplified since formats match)
+const convertStatusIDToTaskStatus = (statusId: StatusID): TaskStatus => {
+  // Direct mapping since both use the same format
+  switch (statusId) {
+    case "To Do": return TaskStatus.TO_DO;
+    case "In Progress": return TaskStatus.IN_PROGRESS;
+    case "In Review": return TaskStatus.IN_REVIEW;
+    case "Completed": return TaskStatus.COMPLETED;
+    case "Blocked": return TaskStatus.BLOCKED;
+    case "Cancelled": return TaskStatus.CANCELLED;
+    default: return TaskStatus.TO_DO;
+  }
+};
 
 // Intermediate raw type for tasks from backend
 interface RawTask {
@@ -169,7 +184,7 @@ export const getTasks = async (projectId: string, filters?: TaskFilters, sortOpt
       task_number: Number(rawTask.task_number),
       title: String(rawTask.title || ""),
       description: rawTask.description ? String(rawTask.description) : null,
-      status: statusId,
+      status: convertStatusIDToTaskStatus(statusId),
       agent_id: rawTask.agent_id ? String(rawTask.agent_id) : null,
       agent_name: rawTask.agent_name ? String(rawTask.agent_name) : null,
       agent_status: rawTask.agent_status ? String(rawTask.agent_status) : undefined,
@@ -209,7 +224,7 @@ export const getAllTasks = async (filters?: TaskFilters, sortOptions?: TaskSortO
       task_number: Number(rawTask.task_number),
       title: String(rawTask.title || ""),
       description: rawTask.description ? String(rawTask.description) : null,
-      status: statusId,
+      status: convertStatusIDToTaskStatus(statusId),
       agent_id: rawTask.agent_id ? String(rawTask.agent_id) : null,
       agent_name: rawTask.agent_name ? String(rawTask.agent_name) : null,
       agent_status: rawTask.agent_status ? String(rawTask.agent_status) : undefined,

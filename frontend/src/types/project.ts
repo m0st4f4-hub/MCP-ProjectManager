@@ -2,17 +2,24 @@ import { z } from "zod";
 import { Task } from "./task";
 import { SortDirection } from "./index";
 
+// Project Member Role Enum matching backend ProjectMemberRole
+export enum ProjectMemberRole {
+  OWNER = "owner",
+  MEMBER = "member", 
+  VIEWER = "viewer"
+}
+
 // Base Project schema for validation
 export const projectSchema = z.object({
   id: z.string(),
   name: z.string().min(1, "Name is required"),
   description: z.string().nullable().optional(),
+  created_by: z.string().nullable().optional(),
+  task_count: z.number().optional(),
   created_at: z.string(),
   updated_at: z.string().optional(),
-  task_count: z.number().optional(),
-  completed_task_count: z.number().optional(),
   is_archived: z.boolean().optional(),
-  progress: z.number().optional(),
+  completed_task_count: z.number().optional(),
 });
 
 // Runtime type for Project
@@ -24,6 +31,10 @@ export const projectCreateSchema = projectSchema.omit({
   created_at: true,
   updated_at: true,
   task_count: true,
+  completed_task_count: true,
+  created_by: true,
+}).extend({
+  template_id: z.string().optional(),
 });
 
 export type ProjectCreateData = z.infer<typeof projectCreateSchema>;
@@ -43,6 +54,7 @@ export interface ProjectWithMeta extends Project {
   tasks?: Task[];
   taskCount?: number;
   completedTaskCount?: number;
+  completed_task_count?: number; // Backend compatibility
   progress?: number;
   status?: "not_started" | "in_progress" | "completed";
 }
@@ -84,3 +96,28 @@ export interface ProjectListResponse {
   pageSize: number;
   error?: ProjectError;
 }
+
+// --- Project Member Schemas ---
+export const projectMemberBaseSchema = z.object({
+  project_id: z.string(),
+  user_id: z.string(),
+  role: z.nativeEnum(ProjectMemberRole),
+});
+
+export const projectMemberCreateSchema = projectMemberBaseSchema;
+
+export type ProjectMemberCreateData = z.infer<typeof projectMemberCreateSchema>;
+
+export const projectMemberUpdateSchema = z.object({
+  role: z.nativeEnum(ProjectMemberRole).optional(),
+});
+
+export type ProjectMemberUpdateData = z.infer<typeof projectMemberUpdateSchema>;
+
+export const projectMemberSchema = projectMemberBaseSchema.extend({
+  id: z.string(),
+  created_at: z.string(),
+  updated_at: z.string().optional(),
+});
+
+export type ProjectMember = z.infer<typeof projectMemberSchema>;

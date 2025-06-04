@@ -1,61 +1,107 @@
 """
-Consolidated models package.
-All models imported here for easy access and to avoid circular imports.
+Consolidated models package with all models and utilities available.
 """
 
 # Import base utilities first
+try:
+    from ..database import Base
+except ImportError:
+    from database import Base
+
+# Import essential base utilities and make them available
 from .base import (
- Base, BaseModel
+    BaseModel, 
+    JSONText, 
+    generate_uuid, 
+    generate_uuid_with_hyphens,
+    ArchivedMixin,
+    ProjectMemberRole
 )
 
-# Import foundational models
+# Import user and audit models
 from .user import User, UserRole
+from .audit import AuditLog
 
-# Import models that depend on foundational ones (or are core)
-from .agent import Agent, AgentRule, AgentRole
-from .comment import Comment
+# Import memory models
 from .memory import MemoryEntity, MemoryObservation, MemoryRelation
+
+# Import core project models
 from .project import Project, ProjectMember, ProjectFileAssociation
-from .project_template import ProjectTemplate
+
+# Import task models
 from .task import Task, TaskStatus
-from .task_relations import TaskDependency, TaskFileAssociation
+
+# Import agent models  
+from .agent import Agent, AgentRule, AgentRole
+
+# Import additional agent models
+from .agent_capability import AgentCapability
+from .agent_error_protocol import AgentErrorProtocol
+from .agent_forbidden_action import AgentForbiddenAction
+from .agent_handoff_criteria import AgentHandoffCriteria
+from .agent_verification_requirement import AgentVerificationRequirement
+
+# Import task-related models
+from .task_dependency import TaskDependency
+from .task_file_association import TaskFileAssociation
+
+# Import comment model
+from .comment import Comment
+
+# Import additional models
+from .project_template import ProjectTemplate
 from .workflow import Workflow, WorkflowStep, AgentPromptTemplate
-from .audit import AuditLog, AgentRuleViolation, AgentBehaviorLog
 from .universal_mandate import UniversalMandate
 
-# Import agent capabilities and other related models (they exist in individual files)
-from .agent_capability import AgentCapability
-from .agent_forbidden_action import AgentForbiddenAction
-from .agent_verification_requirement import AgentVerificationRequirement
-from .agent_handoff_criteria import AgentHandoffCriteria
-from .agent_error_protocol import AgentErrorProtocol
-
-# Export all models
+# Export all available models and utilities
 __all__ = [
- # Base utilities
- 'Base', 'BaseModel',
- 
- # Foundational models
- 'User', 'UserRole',
- 
- # Core models and those depending on foundational ones
- 'Agent', 'AgentRule', 'AgentRole',
- 'Comment',
- 'MemoryEntity', 'MemoryObservation', 'MemoryRelation',
- 'Project', 'ProjectMember', 'ProjectFileAssociation',
- 'ProjectTemplate',
- 'Task', 'TaskStatus',
- 'TaskDependency', 'TaskFileAssociation',
- 'Workflow', 'WorkflowStep', 'AgentPromptTemplate',
- 'AuditLog', 'AgentRuleViolation', 'AgentBehaviorLog',
- 'UniversalMandate',
- 
- # Agent Capabilities and related models
- 'AgentCapability',
- 'AgentForbiddenAction',
- 'AgentVerificationRequirement',
- 'AgentHandoffCriteria',
- 'AgentErrorProtocol',
+    # Base utilities
+    'Base',
+    'BaseModel', 
+    'JSONText',
+    'generate_uuid',
+    'generate_uuid_with_hyphens',
+    'ArchivedMixin',
+    'ProjectMemberRole',
+    
+    # Core models
+    'User',
+    'UserRole',
+    'Project',
+    'Task',
+    'Agent',
+    'Comment',
+    
+    # Project models
+    'ProjectMember',
+    'ProjectFileAssociation',
+    'ProjectTemplate',
+    
+    # Task models
+    'TaskStatus',
+    'TaskDependency', 
+    'TaskFileAssociation',
+    
+    # Agent models
+    'AgentRule',
+    'AgentRole',
+    'AgentCapability',
+    'AgentErrorProtocol',
+    'AgentForbiddenAction',
+    'AgentHandoffCriteria',
+    'AgentVerificationRequirement',
+    
+    # Memory models
+    'MemoryEntity',
+    'MemoryObservation',
+    'MemoryRelation',
+    
+    # Audit model
+    'AuditLog',
+    
+    # Additional models
+    'Workflow',
+    'WorkflowStep',
+    'AgentPromptTemplate',
+    'UniversalMandate',
 ]
-
-# This makes 'models' a Python package

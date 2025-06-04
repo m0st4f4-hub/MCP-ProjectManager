@@ -1,44 +1,28 @@
 import { StatusID } from "@/lib/statusUtils";
 
-// Helper to normalize status string to a known StatusID
+// Helper to normalize status string to a known StatusID (now simplified since formats match)
 export const normalizeToStatusID = (
   backendStatus: string | null | undefined,
   completedFlag: boolean,
 ): StatusID => {
   if (completedFlag) {
-    return "COMPLETED";
+    return "Completed";
   }
   if (backendStatus) {
-    const lowerStatus = backendStatus.toLowerCase();
-    // Exact matches first for precise StatusIDs
-    if (lowerStatus === "execution_in_progress") return "EXECUTION_IN_PROGRESS";
-    if (lowerStatus === "to do" || lowerStatus === "todo") return "TO_DO";
-    if (lowerStatus === "in progress") return "IN_PROGRESS";
-    if (lowerStatus === "blocked") return "BLOCKED";
-    if (lowerStatus === "completed") return "COMPLETED";
-    if (lowerStatus === "cancelled") return "FAILED"; // Map cancelled to FAILED as closest equivalent
-    if (lowerStatus === "pending_verification") return "PENDING_VERIFICATION";
-    if (lowerStatus === "verification_complete") return "VERIFICATION_COMPLETE";
-    if (lowerStatus === "verification_failed") return "VERIFICATION_FAILED";
-    if (lowerStatus === "failed") return "FAILED";
-    if (lowerStatus === "context_acquired") return "CONTEXT_ACQUIRED";
-    if (lowerStatus === "planning_complete") return "PLANNING_COMPLETE";
-    if (lowerStatus === "completed_awaiting_project_manager")
-      return "COMPLETED_AWAITING_PROJECT_MANAGER";
-    if (lowerStatus.startsWith("completed_handoff_to_"))
-      return "COMPLETED_HANDOFF_TO_...";
-    if (lowerStatus === "in_progress_awaiting_subtask")
-      return "IN_PROGRESS_AWAITING_SUBTASK";
-    if (lowerStatus === "pending_recovery_attempt")
-      return "PENDING_RECOVERY_ATTEMPT";
+    // Direct mapping since frontend and backend now use the same format
+    const validStatuses: StatusID[] = ["To Do", "In Progress", "In Review", "Completed", "Blocked", "Cancelled"];
+    if (validStatuses.includes(backendStatus as StatusID)) {
+      return backendStatus as StatusID;
+    }
+    
     // Fallback for unknown status strings
     console.warn(
-      `Unknown backend status string: "${backendStatus}". Defaulting to "TO_DO".`,
+      `Unknown backend status string: "${backendStatus}". Defaulting to "To Do".`,
     );
-    return "TO_DO";
+    return "To Do";
   }
-  // If backendStatus is null/undefined and not completed, default to 'TO_DO'
-  return "TO_DO";
+  // If backendStatus is null/undefined and not completed, default to 'To Do'
+  return "To Do";
 };
 
 // Helper function to handle API requests

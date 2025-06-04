@@ -1,9 +1,11 @@
 import { z } from "zod";
 // import { SortDirection, TaskSortField, TaskSortOptions } from "./index";
 
+// Task Status Enum matching backend TaskStatusEnum exactly
 export enum TaskStatus {
   TO_DO = "To Do",
   IN_PROGRESS = "In Progress", 
+  IN_REVIEW = "In Review",
   COMPLETED = "Completed",
   BLOCKED = "Blocked",
   CANCELLED = "Cancelled",
@@ -20,19 +22,18 @@ export const taskSchema = z.object({
   project_id: z.string(),
   task_number: z.number(),
   title: z.string().min(1, "Title is required"),
+  project_name: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
-  status: z.string().default("TO_DO"),
-  assignee_id: z.string().nullable().optional(),
+  status: z.nativeEnum(TaskStatus).default(TaskStatus.TO_DO),
+  agent_id: z.string().nullable().optional(),
+  agent_name: z.string().nullable().optional(), // Backend includes this
+  agent_status: z.string().nullable().optional(), // Backend includes this
   created_at: z.string(),
   updated_at: z.string().optional(),
-  agent_id: z.string().nullable().optional(),
-  agent_name: z.string().nullable().optional(),
-  agent_status: z.string().optional(),
   is_archived: z.boolean().optional(),
-  dependencies: z.array(z.object({
-    project_id: z.string(),
-    task_number: z.number(),
-  })).optional(),
+  assigned_to: z.string().nullable().optional(),
+  start_date: z.string().datetime({ message: "Invalid datetime string" }).nullable().optional(),
+  due_date: z.string().datetime({ message: "Invalid datetime string" }).nullable().optional(),
 });
 
 // Runtime type for Task
@@ -46,6 +47,11 @@ export const taskCreateSchema = taskSchema.omit({
   task_number: true,
   created_at: true,
   updated_at: true,
+}).extend({
+  // Add fields from backend TaskCreate if they are to be sent from frontend
+  // assigned_to is already in taskSchema and will be part of taskCreateSchema unless omitted
+  // start_date is already in taskSchema
+  // due_date is already in taskSchema
 });
 
 export type TaskCreateData = z.infer<typeof taskCreateSchema>;
@@ -56,6 +62,10 @@ export const taskUpdateSchema = taskSchema.partial().omit({
   task_number: true,
   created_at: true,
   updated_at: true,
+  // agent_name is already in taskSchema and will be part of taskUpdateSchema due to partial()
+  // assigned_to is already in taskSchema
+  // start_date is already in taskSchema
+  // due_date is already in taskSchema
 });
 
 export type TaskUpdateData = z.infer<typeof taskUpdateSchema>;

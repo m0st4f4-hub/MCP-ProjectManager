@@ -1,14 +1,35 @@
 import { z } from "zod";
 
+// User Role Enum matching backend UserRoleEnum
+export enum UserRole {
+  ADMIN = "admin",
+  MANAGER = "manager", 
+  ENGINEER = "engineer",
+  VIEWER = "viewer",
+  USER = "user",
+  AGENT = "agent"
+}
+
+// Define a schema for the UserRole object returned by the backend
+export const userRoleObjectSchema = z.object({
+  user_id: z.string(),
+  role_name: z.nativeEnum(UserRole), // Matches backend UserRoleEnum values
+});
+
+export type UserRoleObject = z.infer<typeof userRoleObjectSchema>;
+
 // --- User Schemas ---
 export const userBaseSchema = z.object({
   username: z.string(),
+  email: z.string().nullable().optional(),
+  full_name: z.string().nullable().optional(),
+  disabled: z.boolean().default(false),
 });
 
 export const userCreateSchema = userBaseSchema.extend({
   password: z.string(),
   email: z.string().email(),
-  full_name: z.string().optional(),
+  roles: z.array(z.nativeEnum(UserRole)).default([]),
 });
 
 export type UserCreateData = z.infer<typeof userCreateSchema>;
@@ -21,9 +42,9 @@ export type UserUpdateData = z.infer<typeof userUpdateSchema>;
 
 export const userSchema = userBaseSchema.extend({
   id: z.string(),
-  email: z.string().nullable().optional(),
-  full_name: z.string().nullable().optional(),
-  disabled: z.boolean().default(false),
+  user_roles: z.array(userRoleObjectSchema).default([]),
+  created_at: z.string(),
+  updated_at: z.string().optional(),
 });
 
 export type User = z.infer<typeof userSchema>;

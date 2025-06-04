@@ -27,6 +27,7 @@ export const agentSchema = agentBaseSchema.extend({
   status: z.string().optional(),
   tasks: z.array(z.any()).optional(), // Tasks array from backend
   agent_rules: z.array(z.any()).optional(), // Agent rules from backend
+  is_archived: z.boolean().default(false), // Include in main schema
 });
 
 export type Agent = z.infer<typeof agentSchema>;

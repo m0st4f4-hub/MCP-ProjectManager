@@ -1,0 +1,1972 @@
+.\alembic\env.py:19:6: E999 SyntaxError: invalid syntax
+.\alembic\versions\2025_05_24_220718_initial_schema.py:20:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:21:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:22:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:23:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:24:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:25:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:26:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:27:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:28:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:29:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:36:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:37:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:38:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:39:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:40:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:41:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:42:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:47:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:48:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:49:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:50:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:51:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:52:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:53:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:54:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:55:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:60:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:61:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:62:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:63:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:64:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:65:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:66:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:67:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:68:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:72:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:73:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:74:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:75:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:76:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:77:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:78:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:79:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:80:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:83:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:84:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:85:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:86:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:87:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:88:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:89:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:90:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:91:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:95:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:96:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:97:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:98:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:99:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:100:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:101:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:102:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:103:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:104:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:108:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:109:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:110:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:111:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:112:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:113:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:114:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:115:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:116:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:117:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:120:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:121:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:122:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:123:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:124:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:125:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:126:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:127:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:128:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:129:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:130:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:135:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:136:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:137:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:138:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:139:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:140:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:141:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:142:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:143:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:144:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:145:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:146:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:147:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:148:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:149:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:150:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:151:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:154:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:155:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:156:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:157:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:158:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:159:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:160:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:166:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:167:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:168:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:169:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:170:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:171:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:172:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:173:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:174:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:175:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:176:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:180:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:181:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:182:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:183:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:184:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:185:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:186:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:189:89: E501 line too long (90 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:190:89: E501 line too long (128 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:191:89: E501 line too long (91 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:192:5: E128 continuation line under-indented for visual indent
+.\alembic\versions\2025_05_24_220718_initial_schema.py:196:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:197:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:198:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:199:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:200:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:201:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:202:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:203:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:204:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:205:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:206:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:207:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:208:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:212:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:213:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:214:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:215:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:216:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:217:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:218:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:219:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:220:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:221:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:222:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:223:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:223:89: E501 line too long (114 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:224:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:229:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:230:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:231:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:232:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:233:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:234:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:235:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:236:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:237:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:238:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:239:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:240:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:242:89: E501 line too long (109 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:243:89: E501 line too long (91 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:245:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:246:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:247:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:248:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:249:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:250:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:251:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:252:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:253:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:255:89: E501 line too long (99 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:258:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:259:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:260:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:261:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:262:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:263:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:264:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:265:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:266:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:267:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:268:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:269:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:269:89: E501 line too long (102 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:271:89: E501 line too long (93 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:272:89: E501 line too long (115 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:274:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:275:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:276:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:277:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:278:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:279:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:280:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:281:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:282:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:284:89: E501 line too long (149 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:287:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:288:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:289:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:290:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:291:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:292:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:293:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:294:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:295:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:296:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:296:89: E501 line too long (128 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:297:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:297:89: E501 line too long (124 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:298:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:301:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:302:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:303:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:304:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:305:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:306:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:307:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:308:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:309:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:309:89: E501 line too long (114 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:310:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:314:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:315:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:316:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:317:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:318:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:319:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:320:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:321:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:322:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:323:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:326:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:327:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:328:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:329:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:330:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:331:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:332:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:333:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:334:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:335:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:336:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:341:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:342:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:343:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:344:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:345:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:346:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:347:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:348:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:349:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:350:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:351:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:352:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:353:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:354:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:355:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:356:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:356:89: E501 line too long (114 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:357:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:359:89: E501 line too long (115 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:360:89: E501 line too long (99 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:362:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:363:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:364:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:365:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:366:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:367:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:368:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:369:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:370:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:371:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:372:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:373:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:374:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:375:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:376:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:377:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:378:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:379:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:380:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:380:89: E501 line too long (114 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:381:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:383:89: E501 line too long (119 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:384:89: E501 line too long (103 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:386:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:387:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:388:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:389:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:390:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:391:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:392:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:393:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:394:5: E122 continuation line missing indentation or outdented
+.\alembic\versions\2025_05_24_220718_initial_schema.py:396:89: E501 line too long (97 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:400:89: E501 line too long (108 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:404:89: E501 line too long (90 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:405:89: E501 line too long (98 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:409:89: E501 line too long (94 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:418:89: E501 line too long (117 > 88 characters)
+.\alembic\versions\2025_05_24_220718_initial_schema.py:420:89: E501 line too long (91 > 88 characters)
+.\auth.py:4:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\auth.py:10:89: E501 line too long (91 > 88 characters)
+.\auth.py:13:89: E501 line too long (106 > 88 characters)
+.\auth.py:14:89: E501 line too long (108 > 88 characters)
+.\auth.py:18:1: E302 expected 2 blank lines, found 1
+.\auth.py:31:1: E302 expected 2 blank lines, found 1
+.\auth.py:31:89: E501 line too long (114 > 88 characters)
+.\auth.py:42:89: E501 line too long (206 > 88 characters)
+.\auth.py:50:1: E302 expected 2 blank lines, found 1
+.\auth.py:50:89: E501 line too long (100 > 88 characters)
+.\auth.py:54:89: E501 line too long (94 > 88 characters)
+.\auth.py:62:1: E302 expected 2 blank lines, found 0
+.\auth.py:62:89: E501 line too long (96 > 88 characters)
+.\auth.py:63:9: E117 over-indented
+.\auth.py:65:1: E302 expected 2 blank lines, found 1
+.\auth.py:66:9: E117 over-indented
+.\auth.py:66:89: E501 line too long (289 > 88 characters)
+.\auth.py:67:89: E501 line too long (140 > 88 characters)
+.\auth.py:68:89: E501 line too long (143 > 88 characters)
+.\auth.py:76:1: E302 expected 2 blank lines, found 1
+.\auth.py:82:89: E501 line too long (92 > 88 characters)
+.\comprehensive_flake8_fixer.py:16:2: E999 IndentationError: expected an indented block after class definition on line 15
+.\comprehensive_indent_fix.py:9:1: E302 expected 2 blank lines, found 1
+.\comprehensive_indent_fix.py:22:89: E501 line too long (103 > 88 characters)
+.\comprehensive_indent_fix.py:25:89: E501 line too long (99 > 88 characters)
+.\comprehensive_indent_fix.py:44:1: E302 expected 2 blank lines, found 1
+.\comprehensive_indent_fix.py:55:89: E501 line too long (93 > 88 characters)
+.\comprehensive_indent_fix.py:66:1: E305 expected 2 blank lines after class or function definition, found 1
+.\config\__init__.py:13:89: E501 line too long (89 > 88 characters)
+.\config\app_config.py:10:89: E501 line too long (592 > 88 characters)
+.\config\app_config.py:24:89: E501 line too long (141 > 88 characters)
+.\config\app_config.py:29:89: E501 line too long (163 > 88 characters)
+.\config\app_config.py:32:1: E302 expected 2 blank lines, found 1
+.\config\app_config.py:33:9: E117 over-indented
+.\config\app_config.py:39:1: E305 expected 2 blank lines after class or function definition, found 1
+.\config\app_config.py:41:1: E302 expected 2 blank lines, found 1
+.\config\app_config.py:52:89: E501 line too long (555 > 88 characters)
+.\config\router_config.py:18:5: E122 continuation line missing indentation or outdented
+.\config\router_config.py:19:5: E122 continuation line missing indentation or outdented
+.\config\router_config.py:20:5: E122 continuation line missing indentation or outdented
+.\config\router_config.py:21:5: E122 continuation line missing indentation or outdented
+.\config\router_config.py:22:5: E122 continuation line missing indentation or outdented
+.\config\router_config.py:23:5: E122 continuation line missing indentation or outdented
+.\config\router_config.py:24:5: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:1:89: E501 line too long (390 > 88 characters)
+.\crud\__init__.py:4:1: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:5:1: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:6:1: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:7:1: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:8:1: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:9:1: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:10:1: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:11:1: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:12:1: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:13:1: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:14:1: E122 continuation line missing indentation or outdented
+.\crud\__init__.py:15:1: E122 continuation line missing indentation or outdented
+.\crud\agent_rules.py:1:89: E501 line too long (138 > 88 characters)
+.\crud\agent_rules.py:14:89: E501 line too long (107 > 88 characters)
+.\crud\agent_rules.py:22:89: E501 line too long (107 > 88 characters)
+.\crud\agent_rules.py:23:9: E117 over-indented
+.\crud\agent_rules.py:25:5: E122 continuation line missing indentation or outdented
+.\crud\agent_rules.py:26:5: E122 continuation line missing indentation or outdented
+.\crud\agent_rules.py:26:25: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+.\crud\agent_rules.py:27:5: E122 continuation line missing indentation or outdented
+.\crud\agent_rules.py:31:9: E117 over-indented
+.\crud\agent_rules.py:33:9: E122 continuation line missing indentation or outdented
+.\crud\agent_rules.py:34:9: E122 continuation line missing indentation or outdented
+.\crud\agent_rules.py:35:9: E122 continuation line missing indentation or outdented
+.\crud\agent_rules.py:36:9: E122 continuation line missing indentation or outdented
+.\crud\agent_rules.py:44:89: E501 line too long (108 > 88 characters)
+.\crud\agent_rules.py:45:9: E117 over-indented
+.\crud\agent_rules.py:57:17: E117 over-indented
+.\crud\agent_validation.py:5:1: E302 expected 2 blank lines, found 1
+.\crud\agent_validation.py:5:89: E501 line too long (94 > 88 characters)
+.\crud\agents.py:1:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\crud\agents.py:10:1: F401 'sqlalchemy.delete' imported but unused
+.\crud\agents.py:44:89: E501 line too long (94 > 88 characters)
+.\crud\agents.py:50:89: E501 line too long (109 > 88 characters)
+.\crud\agents.py:57:89: E501 line too long (107 > 88 characters)
+.\crud\agents.py:64:1: E302 expected 2 blank lines, found 0
+.\crud\agents.py:65:17: E117 over-indented
+.\crud\audit_logs.py:3:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\crud\audit_logs.py:8:89: E501 line too long (104 > 88 characters)
+.\crud\audit_logs.py:10:1: F401 'sqlalchemy.delete' imported but unused
+.\crud\audit_logs.py:13:89: E501 line too long (89 > 88 characters)
+.\crud\audit_logs.py:16:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:17:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:18:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:18:89: E501 line too long (104 > 88 characters)
+.\crud\audit_logs.py:19:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:19:89: E501 line too long (103 > 88 characters)
+.\crud\audit_logs.py:24:89: E501 line too long (123 > 88 characters)
+.\crud\audit_logs.py:29:89: E501 line too long (142 > 88 characters)
+.\crud\audit_logs.py:30:89: E501 line too long (135 > 88 characters)
+.\crud\audit_logs.py:34:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:35:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:36:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:37:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:38:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:39:89: E501 line too long (110 > 88 characters)
+.\crud\audit_logs.py:41:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:41:89: E501 line too long (137 > 88 characters)
+.\crud\audit_logs.py:42:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:43:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:44:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:46:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:47:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:48:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:50:89: E501 line too long (128 > 88 characters)
+.\crud\audit_logs.py:54:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:55:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:56:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:57:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:58:89: E501 line too long (110 > 88 characters)
+.\crud\audit_logs.py:60:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:60:89: E501 line too long (137 > 88 characters)
+.\crud\audit_logs.py:61:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:62:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:63:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:64:5: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:66:89: E501 line too long (130 > 88 characters)
+.\crud\audit_logs.py:69:89: E501 line too long (177 > 88 characters)
+.\crud\audit_logs.py:70:89: E501 line too long (111 > 88 characters)
+.\crud\audit_logs.py:75:89: E501 line too long (154 > 88 characters)
+.\crud\audit_logs.py:79:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:80:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:81:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:82:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:83:1: E122 continuation line missing indentation or outdented
+.\crud\audit_logs.py:85:89: E501 line too long (117 > 88 characters)
+.\crud\audit_logs.py:92:89: E501 line too long (113 > 88 characters)
+.\crud\audit_logs.py:94:89: E501 line too long (111 > 88 characters)
+.\crud\comment_validation.py:1:89: E501 line too long (126 > 88 characters)
+.\crud\comment_validation.py:2:89: E501 line too long (92 > 88 characters)
+.\crud\comment_validation.py:8:89: E501 line too long (97 > 88 characters)
+.\crud\comment_validation.py:11:89: E501 line too long (106 > 88 characters)
+.\crud\comment_validation.py:15:89: E501 line too long (109 > 88 characters)
+.\crud\comment_validation.py:32:12: E701 multiple statements on one line (colon)
+.\crud\comments.py:13:6: E999 SyntaxError: invalid syntax
+.\crud\memory.py:7:2: E999 SyntaxError: unmatched ')'
+.\crud\project_file_association_validation.py:9:5: E999 IndentationError: unexpected indent
+.\crud\project_file_associations.py:11:5: E999 IndentationError: unexpected indent
+.\crud\project_member_validation.py:1:89: E501 line too long (155 > 88 characters)
+.\crud\project_member_validation.py:9:1: F401 'typing.Optional' imported but unused
+.\crud\project_member_validation.py:33:5: E122 continuation line missing indentation or outdented
+.\crud\project_member_validation.py:34:5: E122 continuation line missing indentation or outdented
+.\crud\project_member_validation.py:35:5: E122 continuation line missing indentation or outdented
+.\crud\project_member_validation.py:36:5: E122 continuation line missing indentation or outdented
+.\crud\project_members.py:1:89: E501 line too long (231 > 88 characters)
+.\crud\project_members.py:2:1: F401 'sqlalchemy.delete' imported but unused
+.\crud\project_members.py:2:1: F401 'sqlalchemy.update' imported but unused
+.\crud\project_members.py:9:89: E501 line too long (132 > 88 characters)
+.\crud\project_members.py:11:89: E501 line too long (106 > 88 characters)
+.\crud\project_members.py:12:89: E501 line too long (155 > 88 characters)
+.\crud\project_members.py:14:1: E302 expected 2 blank lines, found 1
+.\crud\project_members.py:14:89: E501 line too long (105 > 88 characters)
+.\crud\project_members.py:17:5: E122 continuation line missing indentation or outdented
+.\crud\project_members.py:18:5: E122 continuation line missing indentation or outdented
+.\crud\project_members.py:23:1: E302 expected 2 blank lines, found 1
+.\crud\project_members.py:23:89: E501 line too long (121 > 88 characters)
+.\crud\project_members.py:26:5: E122 continuation line missing indentation or outdented
+.\crud\project_members.py:27:5: E122 continuation line missing indentation or outdented
+.\crud\project_members.py:32:1: E302 expected 2 blank lines, found 1
+.\crud\project_members.py:32:89: E501 line too long (116 > 88 characters)
+.\crud\project_members.py:35:5: E122 continuation line missing indentation or outdented
+.\crud\project_members.py:36:5: E122 continuation line missing indentation or outdented
+.\crud\project_members.py:41:1: E302 expected 2 blank lines, found 1
+.\crud\project_members.py:41:89: E501 line too long (101 > 88 characters)
+.\crud\project_members.py:42:89: E501 line too long (155 > 88 characters)
+.\crud\project_members.py:43:89: E501 line too long (102 > 88 characters)
+.\crud\project_members.py:45:89: E501 line too long (94 > 88 characters)
+.\crud\project_members.py:48:5: E122 continuation line missing indentation or outdented
+.\crud\project_members.py:49:5: E122 continuation line missing indentation or outdented
+.\crud\project_members.py:50:5: E122 continuation line missing indentation or outdented
+.\crud\project_members.py:57:1: E302 expected 2 blank lines, found 1
+.\crud\project_members.py:57:89: E501 line too long (152 > 88 characters)
+.\crud\project_members.py:68:1: E302 expected 2 blank lines, found 1
+.\crud\project_members.py:68:89: E501 line too long (89 > 88 characters)
+.\crud\project_members.py:69:13: E117 over-indented
+.\crud\project_templates.py:13:89: E501 line too long (98 > 88 characters)
+.\crud\project_templates.py:16:5: E122 continuation line missing indentation or outdented
+.\crud\project_templates.py:17:5: E122 continuation line missing indentation or outdented
+.\crud\project_templates.py:18:5: E122 continuation line missing indentation or outdented
+.\crud\project_templates.py:26:89: E501 line too long (90 > 88 characters)
+.\crud\project_templates.py:28:89: E501 line too long (96 > 88 characters)
+.\crud\project_templates.py:31:89: E501 line too long (91 > 88 characters)
+.\crud\project_templates.py:33:89: E501 line too long (91 > 88 characters)
+.\crud\project_templates.py:36:89: E501 line too long (102 > 88 characters)
+.\crud\project_templates.py:41:89: E501 line too long (133 > 88 characters)
+.\crud\project_templates.py:54:13: E117 over-indented
+.\crud\project_validation.py:1:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\crud\project_validation.py:3:89: E501 line too long (97 > 88 characters)
+.\crud\project_validation.py:6:89: E501 line too long (109 > 88 characters)
+.\crud\project_validation.py:11:89: E501 line too long (90 > 88 characters)
+.\crud\projects.py:24:25: E127 continuation line over-indented for visual indent
+.\crud\projects.py:66:13: E117 over-indented
+.\crud\projects.py:72:89: E501 line too long (100 > 88 characters)
+.\crud\projects.py:81:89: E501 line too long (103 > 88 characters)
+.\crud\projects.py:120:1: E302 expected 2 blank lines, found 1
+.\crud\projects.py:122:25: E117 over-indented
+.\crud\projects.py:126:89: E501 line too long (90 > 88 characters)
+.\crud\projects.py:145:25: E127 continuation line over-indented for visual indent
+.\crud\projects.py:146:25: E127 continuation line over-indented for visual indent
+.\crud\projects.py:147:33: E117 over-indented
+.\crud\projects.py:158:89: E501 line too long (91 > 88 characters)
+.\crud\projects.py:165:89: E501 line too long (99 > 88 characters)
+.\crud\projects.py:166:89: E501 line too long (102 > 88 characters)
+.\crud\projects.py:169:89: E501 line too long (91 > 88 characters)
+.\crud\projects.py:171:89: E501 line too long (92 > 88 characters)
+.\crud\projects.py:175:89: E501 line too long (90 > 88 characters)
+.\crud\projects.py:176:89: E501 line too long (106 > 88 characters)
+.\crud\projects.py:180:89: E501 line too long (92 > 88 characters)
+.\crud\projects.py:181:89: E501 line too long (111 > 88 characters)
+.\crud\projects.py:183:89: E501 line too long (89 > 88 characters)
+.\crud\projects.py:186:89: E501 line too long (90 > 88 characters)
+.\crud\projects.py:187:89: E501 line too long (104 > 88 characters)
+.\crud\projects.py:198:45: E117 over-indented (comment)
+.\crud\projects.py:199:45: E117 over-indented (comment)
+.\crud\projects.py:199:89: E501 line too long (91 > 88 characters)
+.\crud\projects.py:200:45: E117 over-indented (comment)
+.\crud\projects.py:201:45: E117 over-indented
+.\crud\projects.py:201:89: E501 line too long (106 > 88 characters)
+.\crud\projects.py:204:89: E501 line too long (89 > 88 characters)
+.\crud\projects.py:224:89: E501 line too long (89 > 88 characters)
+.\crud\projects.py:236:27: E127 continuation line over-indented for visual indent
+.\crud\projects.py:237:45: E117 over-indented
+.\crud\projects.py:237:89: E501 line too long (90 > 88 characters)
+.\crud\projects.py:238:89: E501 line too long (92 > 88 characters)
+.\crud\projects.py:243:89: E501 line too long (99 > 88 characters)
+.\crud\projects.py:245:89: E501 line too long (96 > 88 characters)
+.\crud\projects.py:252:89: E501 line too long (99 > 88 characters)
+.\crud\projects.py:261:89: E501 line too long (101 > 88 characters)
+.\crud\projects.py:264:89: E501 line too long (92 > 88 characters)
+.\crud\projects.py:265:89: E501 line too long (91 > 88 characters)
+.\crud\projects.py:266:89: E501 line too long (91 > 88 characters)
+.\crud\projects.py:269:89: E501 line too long (89 > 88 characters)
+.\crud\projects.py:275:57: E117 over-indented
+.\crud\projects.py:275:89: E501 line too long (90 > 88 characters)
+.\crud\projects.py:276:76: E128 continuation line under-indented for visual indent
+.\crud\projects.py:277:76: E128 continuation line under-indented for visual indent
+.\crud\projects.py:277:89: E501 line too long (92 > 88 characters)
+.\crud\projects.py:279:89: E501 line too long (115 > 88 characters)
+.\crud\projects.py:281:89: E501 line too long (106 > 88 characters)
+.\crud\projects.py:282:89: E501 line too long (94 > 88 characters)
+.\crud\projects.py:283:89: E501 line too long (113 > 88 characters)
+.\crud\projects.py:284:89: E501 line too long (104 > 88 characters)
+.\crud\projects.py:287:89: E501 line too long (95 > 88 characters)
+.\crud\projects.py:288:89: E501 line too long (127 > 88 characters)
+.\crud\projects.py:290:89: E501 line too long (119 > 88 characters)
+.\crud\projects.py:291:89: E501 line too long (119 > 88 characters)
+.\crud\projects.py:292:89: E501 line too long (120 > 88 characters)
+.\crud\projects.py:293:89: E501 line too long (100 > 88 characters)
+.\crud\projects.py:294:89: E501 line too long (113 > 88 characters)
+.\crud\projects.py:295:89: E501 line too long (89 > 88 characters)
+.\crud\projects.py:296:89: E501 line too long (98 > 88 characters)
+.\crud\projects.py:299:89: E501 line too long (90 > 88 characters)
+.\crud\projects.py:300:89: E501 line too long (128 > 88 characters)
+.\crud\projects.py:302:89: E501 line too long (93 > 88 characters)
+.\crud\projects.py:304:89: E501 line too long (103 > 88 characters)
+.\crud\projects.py:305:89: E501 line too long (99 > 88 characters)
+.\crud\projects.py:307:89: E501 line too long (89 > 88 characters)
+.\crud\projects.py:312:57: E117 over-indented
+.\crud\projects.py:313:89: E501 line too long (127 > 88 characters)
+.\crud\projects.py:316:89: E501 line too long (91 > 88 characters)
+.\crud\projects.py:321:89: E501 line too long (99 > 88 characters)
+.\crud\projects.py:323:57: E117 over-indented
+.\crud\projects.py:323:89: E501 line too long (99 > 88 characters)
+.\crud\projects.py:324:89: E501 line too long (106 > 88 characters)
+.\crud\projects.py:325:89: E501 line too long (100 > 88 characters)
+.\crud\projects.py:328:89: E501 line too long (106 > 88 characters)
+.\crud\projects.py:331:89: E501 line too long (94 > 88 characters)
+.\crud\projects.py:338:57: E117 over-indented
+.\crud\projects.py:338:89: E501 line too long (145 > 88 characters)
+.\crud\projects.py:340:89: E501 line too long (91 > 88 characters)
+.\crud\projects.py:349:57: E117 over-indented
+.\crud\projects.py:349:89: E501 line too long (127 > 88 characters)
+.\crud\projects.py:355:89: E501 line too long (105 > 88 characters)
+.\crud\projects.py:356:89: E501 line too long (111 > 88 characters)
+.\crud\projects.py:360:89: E501 line too long (108 > 88 characters)
+.\crud\projects.py:361:89: E501 line too long (100 > 88 characters)
+.\crud\projects.py:364:89: E501 line too long (118 > 88 characters)
+.\crud\projects.py:367:89: E501 line too long (91 > 88 characters)
+.\crud\rules.py:6:1: F401 'sqlalchemy.and_' imported but unused
+.\crud\rules.py:6:1: F401 'sqlalchemy.or_' imported but unused
+.\crud\rules.py:14:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:31:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:48:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:69:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:92:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:130:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:152:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:189:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:211:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:248:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:270:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:307:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:329:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:405:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:410:89: E501 line too long (108 > 88 characters)
+.\crud\rules.py:431:1: E302 expected 2 blank lines, found 1
+.\crud\rules.py:436:89: E501 line too long (101 > 88 characters)
+.\crud\rules.py:455:89: E501 line too long (95 > 88 characters)
+.\crud\rules.py:467:89: E501 line too long (93 > 88 characters)
+.\crud\rules.py:468:89: E501 line too long (89 > 88 characters)
+.\crud\task_dependencies.py:1:89: E501 line too long (138 > 88 characters)
+.\crud\task_dependencies.py:8:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\crud\task_dependencies.py:11:89: E501 line too long (95 > 88 characters)
+.\crud\task_dependencies.py:19:89: E501 line too long (106 > 88 characters)
+.\crud\task_dependencies.py:20:1: E128 continuation line under-indented for visual indent
+.\crud\task_dependencies.py:23:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:24:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:25:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:26:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:27:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:33:89: E501 line too long (104 > 88 characters)
+.\crud\task_dependencies.py:34:1: E128 continuation line under-indented for visual indent
+.\crud\task_dependencies.py:37:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:38:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:39:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:45:89: E501 line too long (106 > 88 characters)
+.\crud\task_dependencies.py:46:1: E128 continuation line under-indented for visual indent
+.\crud\task_dependencies.py:49:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:50:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:51:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:57:89: E501 line too long (108 > 88 characters)
+.\crud\task_dependencies.py:58:89: E501 line too long (110 > 88 characters)
+.\crud\task_dependencies.py:59:8: F821 undefined name 'is_self_dependency'
+.\crud\task_dependencies.py:59:89: E501 line too long (106 > 88 characters)
+.\crud\task_dependencies.py:60:5: E128 continuation line under-indented for visual indent
+.\crud\task_dependencies.py:61:89: E501 line too long (124 > 88 characters)
+.\crud\task_dependencies.py:62:89: E501 line too long (120 > 88 characters)
+.\crud\task_dependencies.py:63:5: E128 continuation line under-indented for visual indent
+.\crud\task_dependencies.py:67:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:68:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:69:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:70:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:71:5: E122 continuation line missing indentation or outdented
+.\crud\task_dependencies.py:79:89: E501 line too long (109 > 88 characters)
+.\crud\task_dependencies.py:80:1: E128 continuation line under-indented for visual indent
+.\crud\task_dependencies.py:82:89: E501 line too long (103 > 88 characters)
+.\crud\task_dependencies.py:83:5: E128 continuation line under-indented for visual indent
+.\crud\task_dependency_validation.py:6:1: F401 'typing.Any' imported but unused
+.\crud\task_dependency_validation.py:8:1: F401 'fastapi.HTTPException' imported but unused
+.\crud\task_dependency_validation.py:12:1: E128 continuation line under-indented for visual indent
+.\crud\task_dependency_validation.py:13:1: E128 continuation line under-indented for visual indent
+.\crud\task_dependency_validation.py:14:1: E128 continuation line under-indented for visual indent
+.\crud\task_dependency_validation.py:15:1: E128 continuation line under-indented for visual indent
+.\crud\task_dependency_validation.py:23:1: E302 expected 2 blank lines, found 1
+.\crud\task_dependency_validation.py:24:5: E128 continuation line under-indented for visual indent
+.\crud\task_dependency_validation.py:25:5: E128 continuation line under-indented for visual indent
+.\crud\task_dependency_validation.py:26:5: E128 continuation line under-indented for visual indent
+.\crud\task_dependency_validation.py:27:5: E128 continuation line under-indented for visual indent
+.\crud\task_dependency_validation.py:27:5: E125 continuation line with same indent as next logical line
+.\crud\task_dependency_validation.py:28:9: E117 over-indented
+.\crud\task_dependency_validation.py:38:89: E501 line too long (124 > 88 characters)
+.\crud\task_dependency_validation.py:41:45: F821 undefined name 'get_direct_predecessors'
+.\crud\task_dependency_validation.py:42:13: F821 undefined name 'db'
+.\crud\task_dependency_validation.py:42:13: E122 continuation line missing indentation or outdented
+.\crud\task_dependency_validation.py:43:13: E122 continuation line missing indentation or outdented
+.\crud\task_dependency_validation.py:44:13: E122 continuation line missing indentation or outdented
+.\crud\task_dependency_validation.py:49:17: E122 continuation line missing indentation or outdented
+.\crud\task_dependency_validation.py:50:17: E122 continuation line missing indentation or outdented
+.\crud\task_dependency_validation.py:51:17: E122 continuation line missing indentation or outdented
+.\crud\task_dependency_validation.py:52:17: E122 continuation line missing indentation or outdented
+.\crud\task_dependency_validation.py:53:17: E122 continuation line missing indentation or outdented
+.\crud\task_dependency_validation.py:59:38: F821 undefined name 'successor_project_id'
+.\crud\task_dependency_validation.py:60:9: F821 undefined name 'successor_task_number'
+.\crud\task_dependency_validation.py:60:9: E128 continuation line under-indented for visual indent
+.\crud\task_dependency_validation.py:61:9: F821 undefined name 'predecessor_project_id'
+.\crud\task_dependency_validation.py:61:9: E128 continuation line under-indented for visual indent
+.\crud\task_dependency_validation.py:62:9: F821 undefined name 'predecessor_task_number'
+.\crud\task_dependency_validation.py:62:9: E128 continuation line under-indented for visual indent
+.\crud\task_file_association_validation.py:1:89: E501 line too long (166 > 88 characters)
+.\crud\task_file_association_validation.py:10:89: E501 line too long (97 > 88 characters)
+.\crud\task_file_association_validation.py:17:89: E501 line too long (145 > 88 characters)
+.\crud\task_file_association_validation.py:20:89: E501 line too long (108 > 88 characters)
+.\crud\task_file_association_validation.py:24:89: E501 line too long (103 > 88 characters)
+.\crud\task_file_association_validation.py:25:89: E501 line too long (136 > 88 characters)
+.\crud\task_file_association_validation.py:28:89: E501 line too long (136 > 88 characters)
+.\crud\task_file_association_validation.py:33:1: E122 continuation line missing indentation or outdented
+.\crud\task_file_association_validation.py:34:1: E122 continuation line missing indentation or outdented
+.\crud\task_file_association_validation.py:35:1: E122 continuation line missing indentation or outdented
+.\crud\task_file_association_validation.py:36:1: E122 continuation line missing indentation or outdented
+.\crud\task_file_association_validation.py:37:1: E122 continuation line missing indentation or outdented
+.\crud\task_file_association_validation.py:40:89: E501 line too long (151 > 88 characters)
+.\crud\task_file_association_validation.py:44:89: E501 line too long (97 > 88 characters)
+.\crud\task_file_association_validation.py:50:9: E122 continuation line missing indentation or outdented
+.\crud\task_file_association_validation.py:51:9: E122 continuation line missing indentation or outdented
+.\crud\task_file_association_validation.py:52:9: E122 continuation line missing indentation or outdented
+.\crud\task_file_association_validation.py:53:9: E122 continuation line missing indentation or outdented
+.\crud\task_file_associations.py:7:5: E999 IndentationError: unexpected indent
+.\crud\task_validation.py:4:1: F401 'typing.Optional' imported but unused
+.\crud\task_validation.py:6:1: E302 expected 2 blank lines, found 1
+.\crud\task_validation.py:13:1: E302 expected 2 blank lines, found 1
+.\crud\tasks.py:208:98: E999 SyntaxError: invalid syntax
+.\crud\user_validation.py:1:89: E501 line too long (166 > 88 characters)
+.\crud\users.py:51:14: E999 SyntaxError: invalid syntax
+.\crud\utils\dependency_utils.py:1:89: E501 line too long (166 > 88 characters)
+.\crud\utils\dependency_utils.py:8:1: F401 'typing.Any' imported but unused
+.\crud\utils\dependency_utils.py:9:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\crud\utils\dependency_utils.py:17:5: E128 continuation line under-indented for visual indent
+.\crud\utils\dependency_utils.py:17:5: E125 continuation line with same indent as next logical line
+.\crud\utils\dependency_utils.py:19:89: E501 line too long (91 > 88 characters)
+.\crud\utils\dependency_utils.py:21:89: E501 line too long (110 > 88 characters)
+.\crud\utils\dependency_utils.py:24:89: E501 line too long (131 > 88 characters)
+.\crud\utils\dependency_utils.py:30:5: E122 continuation line missing indentation or outdented
+.\crud\utils\dependency_utils.py:31:5: E122 continuation line missing indentation or outdented
+.\crud\utils\dependency_utils.py:32:5: E122 continuation line missing indentation or outdented
+.\crud\utils\file_association_utils.py:13:5: E999 IndentationError: unexpected indent
+.\crud\utils\task_file_utils.py:1:89: E501 line too long (166 > 88 characters)
+.\crud\utils\task_file_utils.py:9:89: E501 line too long (93 > 88 characters)
+.\crud\utils\task_file_utils.py:25:5: E122 continuation line missing indentation or outdented
+.\crud\utils\task_file_utils.py:26:5: E122 continuation line missing indentation or outdented
+.\crud\utils\task_file_utils.py:27:5: E122 continuation line missing indentation or outdented
+.\crud\utils\task_file_utils.py:28:5: E122 continuation line missing indentation or outdented
+.\crud\utils\task_file_utils.py:29:5: E122 continuation line missing indentation or outdented
+.\crud\utils\user_utils.py:1:89: E501 line too long (166 > 88 characters)
+.\database.py:11:89: E501 line too long (118 > 88 characters)
+.\enums.py:3:1: E302 expected 2 blank lines, found 1
+.\enums.py:11:1: E302 expected 2 blank lines, found 1
+.\fix_conftest.py:17:89: E501 line too long (112 > 88 characters)
+.\fix_conftest.py:20:89: E501 line too long (101 > 88 characters)
+.\fix_conftest.py:21:89: E501 line too long (94 > 88 characters)
+.\fix_conftest.py:35:1: E305 expected 2 blank lines after class or function definition, found 1
+.\fix_flake8.py:43:13: E129 visually indented line with same indent as next logical line
+.\fix_flake8.py:43:89: E501 line too long (113 > 88 characters)
+.\fix_flake8.py:60:89: E501 line too long (101 > 88 characters)
+.\fix_flake8.py:71:89: E501 line too long (191 > 88 characters)
+.\fix_flake8.py:88:89: E501 line too long (91 > 88 characters)
+.\fix_flake8.py:113:89: E501 line too long (105 > 88 characters)
+.\fix_flake8.py:140:89: E501 line too long (99 > 88 characters)
+.\fix_indentation.py:6:1: E302 expected 2 blank lines, found 1
+.\fix_indentation.py:13:89: E501 line too long (145 > 88 characters)
+.\fix_indentation.py:14:89: E501 line too long (95 > 88 characters)
+.\fix_indentation.py:31:1: E302 expected 2 blank lines, found 1
+.\fix_indentation.py:43:1: E305 expected 2 blank lines after class or function definition, found 1
+.\fix_project_indentation.py:6:1: E302 expected 2 blank lines, found 1
+.\fix_project_indentation.py:16:89: E501 line too long (99 > 88 characters)
+.\fix_project_indentation.py:34:89: E501 line too long (96 > 88 characters)
+.\fix_project_indentation.py:35:1: E305 expected 2 blank lines after class or function definition, found 0
+.\init_db.py:13:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\init_db.py:13:1: E402 module level import not at top of file
+.\init_db.py:14:1: E402 module level import not at top of file
+.\init_db.py:15:1: E402 module level import not at top of file
+.\init_db.py:19:1: E302 expected 2 blank lines, found 1
+.\init_db.py:24:20: F821 undefined name 'engine'
+.\init_db.py:25:33: F821 undefined name 'Base'
+.\init_db.py:27:89: E501 line too long (102 > 88 characters)
+.\init_db.py:28:20: F821 undefined name 'engine'
+.\init_db.py:29:89: E501 line too long (98 > 88 characters)
+.\init_db.py:43:1: E302 expected 2 blank lines, found 1
+.\init_db.py:48:40: F821 undefined name 'engine'
+.\init_db.py:62:89: E501 line too long (107 > 88 characters)
+.\init_db.py:86:89: E501 line too long (103 > 88 characters)
+.\init_db.py:87:89: E501 line too long (117 > 88 characters)
+.\init_db.py:88:89: E501 line too long (105 > 88 characters)
+.\init_db.py:89:89: E501 line too long (108 > 88 characters)
+.\init_db.py:90:89: E501 line too long (108 > 88 characters)
+.\init_db.py:104:1: E302 expected 2 blank lines, found 1
+.\init_db.py:109:40: F821 undefined name 'engine'
+.\init_db.py:122:25: F541 f-string is missing placeholders
+.\init_db.py:133:1: E302 expected 2 blank lines, found 1
+.\main.py:229:2: E999 IndentationError: expected an indented block after 'else' statement on line 228
+.\mcp_tools\memory_tools.py:28:6: E999 IndentationError: expected an indented block after 'try' statement on line 27
+.\mcp_tools\project_tools.py:24:6: E999 IndentationError: expected an indented block after 'try' statement on line 23
+.\mcp_tools\task_tools.py:24:6: E999 IndentationError: expected an indented block after 'try' statement on line 23
+.\middleware\__init__.py:8:1: E302 expected 2 blank lines, found 1
+.\middleware\error_handlers.py:22:1: E302 expected 2 blank lines, found 1
+.\middleware\error_handlers.py:52:1: E302 expected 2 blank lines, found 1
+.\middleware\error_handlers.py:70:1: E302 expected 2 blank lines, found 1
+.\middleware\error_handlers.py:87:1: E302 expected 2 blank lines, found 1
+.\middleware\error_handlers.py:107:1: E302 expected 2 blank lines, found 1
+.\middleware\request_middleware.py:13:1: E302 expected 2 blank lines, found 1
+.\middleware\request_middleware.py:18:1: E302 expected 2 blank lines, found 1
+.\middleware\request_middleware.py:18:35: F821 undefined name 'Request'
+.\middleware\request_middleware.py:19:9: E117 over-indented
+.\middleware\request_middleware.py:30:89: E501 line too long (90 > 88 characters)
+.\middleware\request_middleware.py:42:1: E302 expected 2 blank lines, found 1
+.\middleware\request_middleware.py:47:1: F811 redefinition of unused 'dispatch' from line 18
+.\middleware\request_middleware.py:47:1: E302 expected 2 blank lines, found 1
+.\middleware\request_middleware.py:47:35: F821 undefined name 'Request'
+.\middleware\request_middleware.py:48:9: E117 over-indented
+.\middleware\request_middleware.py:53:89: E501 line too long (170 > 88 characters)
+.\middleware\request_middleware.py:55:89: E501 line too long (242 > 88 characters)
+.\middleware\request_middleware.py:59:1: E302 expected 2 blank lines, found 1
+.\models\__init__.py:5:5: E999 IndentationError: unexpected indent
+.\models\agent.py:16:89: E501 line too long (100 > 88 characters)
+.\models\agent.py:19:24: F821 undefined name 'Task'
+.\models\agent.py:48:31: F821 undefined name 'AgentCapability'
+.\models\agent.py:50:36: F821 undefined name 'AgentForbiddenAction'
+.\models\agent.py:52:44: F821 undefined name 'AgentVerificationRequirement'
+.\models\agent.py:52:89: E501 line too long (91 > 88 characters)
+.\models\agent.py:54:35: F821 undefined name 'AgentHandoffCriteria'
+.\models\agent.py:56:34: F821 undefined name 'AgentErrorProtocol'
+.\models\agent.py:58:33: F821 undefined name 'WorkflowStep'
+.\models\agent.py:58:89: E501 line too long (92 > 88 characters)
+.\models\agent.py:59:35: F821 undefined name 'AgentPromptTemplate'
+.\models\agent.py:59:89: E501 line too long (101 > 88 characters)
+.\models\agent_capability.py:1:89: E501 line too long (136 > 88 characters)
+.\models\agent_capability.py:11:1: E302 expected 2 blank lines, found 1
+.\models\agent_capability.py:15:89: E501 line too long (117 > 88 characters)
+.\models\agent_capability.py:16:89: E501 line too long (104 > 88 characters)
+.\models\agent_capability.py:20:89: E501 line too long (102 > 88 characters)
+.\models\agent_capability.py:22:24: F821 undefined name 'AgentRole'
+.\models\agent_error_protocol.py:1:89: E501 line too long (136 > 88 characters)
+.\models\agent_error_protocol.py:10:1: E302 expected 2 blank lines, found 1
+.\models\agent_error_protocol.py:14:89: E501 line too long (117 > 88 characters)
+.\models\agent_error_protocol.py:15:89: E501 line too long (104 > 88 characters)
+.\models\agent_error_protocol.py:20:89: E501 line too long (102 > 88 characters)
+.\models\agent_error_protocol.py:22:24: F821 undefined name 'AgentRole'
+.\models\agent_forbidden_action.py:1:89: E501 line too long (136 > 88 characters)
+.\models\agent_forbidden_action.py:11:1: E302 expected 2 blank lines, found 1
+.\models\agent_forbidden_action.py:15:89: E501 line too long (117 > 88 characters)
+.\models\agent_forbidden_action.py:16:89: E501 line too long (104 > 88 characters)
+.\models\agent_forbidden_action.py:20:89: E501 line too long (102 > 88 characters)
+.\models\agent_forbidden_action.py:22:24: F821 undefined name 'AgentRole'
+.\models\agent_handoff_criteria.py:1:89: E501 line too long (136 > 88 characters)
+.\models\agent_handoff_criteria.py:11:1: E302 expected 2 blank lines, found 1
+.\models\agent_handoff_criteria.py:15:89: E501 line too long (117 > 88 characters)
+.\models\agent_handoff_criteria.py:16:89: E501 line too long (104 > 88 characters)
+.\models\agent_handoff_criteria.py:21:89: E501 line too long (102 > 88 characters)
+.\models\agent_handoff_criteria.py:23:24: F821 undefined name 'AgentRole'
+.\models\agent_verification_requirement.py:1:89: E501 line too long (136 > 88 characters)
+.\models\agent_verification_requirement.py:10:1: E302 expected 2 blank lines, found 1
+.\models\agent_verification_requirement.py:14:37: F821 undefined name 'String'
+.\models\agent_verification_requirement.py:14:89: E501 line too long (117 > 88 characters)
+.\models\agent_verification_requirement.py:15:48: F821 undefined name 'String'
+.\models\agent_verification_requirement.py:15:60: F821 undefined name 'ForeignKey'
+.\models\agent_verification_requirement.py:15:89: E501 line too long (104 > 88 characters)
+.\models\agent_verification_requirement.py:16:46: F821 undefined name 'String'
+.\models\agent_verification_requirement.py:17:56: F821 undefined name 'Text'
+.\models\agent_verification_requirement.py:18:48: F821 undefined name 'Boolean'
+.\models\agent_verification_requirement.py:19:50: F821 undefined name 'DateTime'
+.\models\agent_verification_requirement.py:19:89: E501 line too long (102 > 88 characters)
+.\models\agent_verification_requirement.py:21:24: F821 undefined name 'AgentRole'
+.\models\agent_verification_requirement.py:21:89: E501 line too long (94 > 88 characters)
+.\models\audit.py:5:1: F401 'sqlalchemy.func' imported but unused
+.\models\audit.py:8:1: F401 'typing.List' imported but unused
+.\models\audit.py:17:89: E501 line too long (113 > 88 characters)
+.\models\audit.py:18:89: E501 line too long (101 > 88 characters)
+.\models\audit.py:21:89: E501 line too long (101 > 88 characters)
+.\models\audit.py:24:27: F821 undefined name 'User'
+.\models\audit.py:31:89: E501 line too long (100 > 88 characters)
+.\models\audit.py:33:89: E501 line too long (113 > 88 characters)
+.\models\audit.py:36:89: E501 line too long (117 > 88 characters)
+.\models\audit.py:37:89: E501 line too long (116 > 88 characters)
+.\models\audit.py:43:33: F821 undefined name 'AgentRole'
+.\models\audit.py:44:27: F821 undefined name 'Task'
+.\models\audit.py:45:5: E122 continuation line missing indentation or outdented
+.\models\audit.py:46:5: E122 continuation line missing indentation or outdented
+.\models\audit.py:47:5: E122 continuation line missing indentation or outdented
+.\models\audit.py:58:89: E501 line too long (113 > 88 characters)
+.\models\audit.py:68:89: E501 line too long (117 > 88 characters)
+.\models\audit.py:69:89: E501 line too long (116 > 88 characters)
+.\models\audit.py:71:33: F821 undefined name 'AgentRole'
+.\models\audit.py:72:27: F821 undefined name 'Task'
+.\models\audit.py:73:5: E122 continuation line missing indentation or outdented
+.\models\audit.py:74:5: E122 continuation line missing indentation or outdented
+.\models\audit.py:75:5: E122 continuation line missing indentation or outdented
+.\models\base.py:35:34: E999 IndentationError: unindent does not match any outer indentation level
+.\models\comment.py:16:5: E122 continuation line missing indentation or outdented
+.\models\comment.py:17:5: E122 continuation line missing indentation or outdented
+.\models\comment.py:18:5: E122 continuation line missing indentation or outdented
+.\models\comment.py:20:5: E122 continuation line missing indentation or outdented
+.\models\comment.py:24:5: E122 continuation line missing indentation or outdented
+.\models\comment.py:26:5: E122 continuation line missing indentation or outdented
+.\models\comment.py:28:5: E122 continuation line missing indentation or outdented
+.\models\comment.py:30:5: E122 continuation line missing indentation or outdented
+.\models\comment.py:34:27: F821 undefined name 'Task'
+.\models\comment.py:35:5: E122 continuation line missing indentation or outdented
+.\models\comment.py:36:5: E122 continuation line missing indentation or outdented
+.\models\comment.py:38:30: F821 undefined name 'Project'
+.\models\comment.py:39:5: E122 continuation line missing indentation or outdented
+.\models\comment.py:40:20: F821 undefined name 'User'
+.\models\core.py:5:5: E999 IndentationError: unexpected indent
+.\models\memory.py:52:13: E999 IndentationError: unexpected indent
+.\models\project.py:9:5: E999 IndentationError: unexpected indent
+.\models\project_member.py:7:5: E999 IndentationError: unexpected indent
+.\models\project_template.py:4:89: E501 line too long (124 > 88 characters)
+.\models\project_template.py:5:1: F401 'typing.Dict' imported but unused
+.\models\project_template.py:5:1: F401 'typing.Any' imported but unused
+.\models\project_template.py:11:1: E302 expected 2 blank lines, found 1
+.\models\project_template.py:14:89: E501 line too long (101 > 88 characters)
+.\models\project_template.py:16:89: E501 line too long (337 > 88 characters)
+.\models\project_template.py:18:89: E501 line too long (103 > 88 characters)
+.\models\project_template.py:19:89: E501 line too long (140 > 88 characters)
+.\models\project_template.py:21:1: E302 expected 2 blank lines, found 1
+.\models\project_template.py:22:9: E117 over-indented
+.\models\project_template.py:22:89: E501 line too long (268 > 88 characters)
+.\models\project_template.py:23:1: E305 expected 2 blank lines after class or function definition, found 0
+.\models\task.py:5:5: E999 IndentationError: unexpected indent
+.\models\task_dependency.py:3:5: E999 IndentationError: unexpected indent
+.\models\task_file_association.py:1:89: E501 line too long (136 > 88 characters)
+.\models\task_file_association.py:8:1: E302 expected 2 blank lines, found 1
+.\models\task_file_association.py:10:89: E501 line too long (108 > 88 characters)
+.\models\task_file_association.py:13:5: E122 continuation line missing indentation or outdented
+.\models\task_file_association.py:15:5: E122 continuation line missing indentation or outdented
+.\models\task_file_association.py:16:89: E501 line too long (109 > 88 characters)
+.\models\task_file_association.py:18:18: F821 undefined name 'Task'
+.\models\task_file_association.py:19:5: E122 continuation line missing indentation or outdented
+.\models\task_file_association.py:20:5: E122 continuation line missing indentation or outdented
+.\models\task_file_association.py:22:5: E122 continuation line missing indentation or outdented
+.\models\task_file_association.py:23:5: E122 continuation line missing indentation or outdented
+.\models\task_file_association.py:25:25: F821 undefined name 'MemoryEntity'
+.\models\task_relations.py:7:1: F401 'typing.Optional' imported but unused
+.\models\task_relations.py:16:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:17:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:18:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:20:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:21:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:22:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:26:89: E501 line too long (101 > 88 characters)
+.\models\task_relations.py:33:25: F821 undefined name 'Task'
+.\models\task_relations.py:34:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:35:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:36:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:38:23: F821 undefined name 'Task'
+.\models\task_relations.py:39:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:40:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:41:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:49:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:50:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:51:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:55:89: E501 line too long (101 > 88 characters)
+.\models\task_relations.py:57:89: E501 line too long (398 > 88 characters)
+.\models\task_relations.py:58:89: E501 line too long (109 > 88 characters)
+.\models\task_relations.py:60:18: F821 undefined name 'Task'
+.\models\task_relations.py:61:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:62:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:63:5: E122 continuation line missing indentation or outdented
+.\models\task_relations.py:65:25: F821 undefined name 'MemoryEntity'
+.\models\task_status.py:1:89: E501 line too long (157 > 88 characters)
+.\models\task_status.py:25:89: E501 line too long (93 > 88 characters)
+.\models\task_status.py:32:37: F821 undefined name 'Integer'
+.\models\task_status.py:33:39: F821 undefined name 'String'
+.\models\task_status.py:34:56: F821 undefined name 'String'
+.\models\task_status.py:35:46: F821 undefined name 'Boolean'
+.\models\task_status.py:36:48: F821 undefined name 'Boolean'
+.\models\task_status.py:38:5: F821 undefined name 'DateTime'
+.\models\task_status.py:38:5: E122 continuation line missing indentation or outdented
+.\models\task_status.py:40:5: F821 undefined name 'DateTime'
+.\models\task_status.py:40:5: E122 continuation line missing indentation or outdented
+.\models\task_status.py:41:5: E122 continuation line missing indentation or outdented
+.\models\task_status.py:42:5: E122 continuation line missing indentation or outdented
+.\models\task_status.py:43:5: E122 continuation line missing indentation or outdented
+.\models\task_status.py:44:36: F821 undefined name 'Task'
+.\models\task_status.py:45:5: E122 continuation line missing indentation or outdented
+.\models\task_status.py:46:5: E122 continuation line missing indentation or outdented
+.\models\task_status.py:47:5: E122 continuation line missing indentation or outdented
+.\models\types.py:1:89: E501 line too long (136 > 88 characters)
+.\models\types.py:3:1: F401 'typing.Dict' imported but unused
+.\models\types.py:3:1: F401 'typing.Any' imported but unused
+.\models\types.py:4:1: W391 blank line at end of file
+.\models\universal_mandate.py:1:89: E501 line too long (136 > 88 characters)
+.\models\universal_mandate.py:9:1: E302 expected 2 blank lines, found 1
+.\models\universal_mandate.py:13:37: F821 undefined name 'String'
+.\models\universal_mandate.py:13:89: E501 line too long (117 > 88 characters)
+.\models\universal_mandate.py:14:40: F821 undefined name 'String'
+.\models\universal_mandate.py:15:46: F821 undefined name 'Text'
+.\models\universal_mandate.py:16:43: F821 undefined name 'Integer'
+.\models\universal_mandate.py:16:89: E501 line too long (91 > 88 characters)
+.\models\universal_mandate.py:17:45: F821 undefined name 'Boolean'
+.\models\universal_mandate.py:18:50: F821 undefined name 'DateTime'
+.\models\universal_mandate.py:18:89: E501 line too long (102 > 88 characters)
+.\models\universal_mandate.py:19:50: F821 undefined name 'DateTime'
+.\models\universal_mandate.py:19:89: E501 line too long (147 > 88 characters)
+.\models\user.py:28:27: F821 undefined name 'Comment'
+.\models\user.py:30:38: F821 undefined name 'ProjectMember'
+.\models\user.py:32:29: F821 undefined name 'AuditLog'
+.\models\user_role.py:1:89: E501 line too long (136 > 88 characters)
+.\models\user_role.py:10:23: F821 undefined name 'PrimaryKeyConstraint'
+.\models\user_role.py:12:42: F821 undefined name 'String'
+.\models\user_role.py:12:54: F821 undefined name 'ForeignKey'
+.\models\user_role.py:14:5: F821 undefined name 'String'
+.\models\user_role.py:14:5: E122 continuation line missing indentation or outdented
+.\models\user_role.py:16:18: F821 undefined name 'User'
+.\models\workflow.py:25:5: E128 continuation line under-indented for visual indent
+.\models\workflow.py:33:89: E501 line too long (100 > 88 characters)
+.\models\workflow.py:34:89: E501 line too long (104 > 88 characters)
+.\models\workflow.py:41:89: E501 line too long (93 > 88 characters)
+.\models\workflow.py:45:24: F821 undefined name 'AgentRole'
+.\models\workflow.py:53:89: E501 line too long (104 > 88 characters)
+.\models\workflow.py:60:24: F821 undefined name 'AgentRole'
+.\routers\__init__.py:1:89: E501 line too long (216 > 88 characters)
+.\routers\agents\core.py:1:1: F401 'fastapi.Path' imported but unused
+.\routers\agents\core.py:9:1: E302 expected 2 blank lines, found 1
+.\routers\agents\core.py:13:1: E305 expected 2 blank lines after class or function definition, found 1
+.\routers\agents\core.py:18:1: E302 expected 2 blank lines, found 1
+.\routers\agents\core.py:18:89: E501 line too long (92 > 88 characters)
+.\routers\agents\core.py:21:1: E304 blank lines found after function decorator
+.\routers\agents\core.py:33:1: E302 expected 2 blank lines, found 1
+.\routers\agents\core.py:33:89: E501 line too long (93 > 88 characters)
+.\routers\agents\core.py:36:1: E304 blank lines found after function decorator
+.\routers\agents\core.py:37:89: E501 line too long (130 > 88 characters)
+.\routers\agents\core.py:41:13: E131 continuation line unaligned for hanging indent
+.\routers\agents\core.py:44:89: E501 line too long (100 > 88 characters)
+.\routers\agents\core.py:50:1: E302 expected 2 blank lines, found 1
+.\routers\agents\core.py:50:89: E501 line too long (130 > 88 characters)
+.\routers\agents\core.py:53:1: E304 blank lines found after function decorator
+.\routers\agents\core.py:61:1: E302 expected 2 blank lines, found 1
+.\routers\agents\core.py:61:89: E501 line too long (127 > 88 characters)
+.\routers\agents\core.py:64:1: E304 blank lines found after function decorator
+.\routers\agents\core.py:64:89: E501 line too long (103 > 88 characters)
+.\routers\agents\core.py:71:1: E302 expected 2 blank lines, found 1
+.\routers\agents\core.py:71:89: E501 line too long (124 > 88 characters)
+.\routers\agents\core.py:74:1: E304 blank lines found after function decorator
+.\routers\agents\core.py:74:89: E501 line too long (118 > 88 characters)
+.\routers\agents\core.py:87:1: E302 expected 2 blank lines, found 1
+.\routers\agents\core.py:87:89: E501 line too long (127 > 88 characters)
+.\routers\agents\core.py:90:1: E304 blank lines found after function decorator
+.\routers\agents\core.py:90:89: E501 line too long (91 > 88 characters)
+.\routers\agents\core.py:97:1: E302 expected 2 blank lines, found 1
+.\routers\agents\core.py:97:89: E501 line too long (129 > 88 characters)
+.\routers\agents\core.py:100:1: E304 blank lines found after function decorator
+.\routers\agents\core.py:100:89: E501 line too long (101 > 88 characters)
+.\routers\agents\core.py:114:1: E302 expected 2 blank lines, found 1
+.\routers\agents\core.py:114:89: E501 line too long (135 > 88 characters)
+.\routers\agents\core.py:117:1: E304 blank lines found after function decorator
+.\routers\agents\core.py:117:89: E501 line too long (103 > 88 characters)
+.\routers\audit_logs\audit_logs.py:1:89: E501 line too long (137 > 88 characters)
+.\routers\audit_logs\audit_logs.py:5:1: F401 'typing.Optional' imported but unused
+.\routers\audit_logs\audit_logs.py:31:1: E304 blank lines found after function decorator
+.\routers\audit_logs\audit_logs.py:35:89: E501 line too long (285 > 88 characters)
+.\routers\audit_logs\audit_logs.py:59:1: E304 blank lines found after function decorator
+.\routers\audit_logs\audit_logs.py:61:9: E128 continuation line under-indented for visual indent
+.\routers\audit_logs\audit_logs.py:81:1: E304 blank lines found after function decorator
+.\routers\audit_logs\audit_logs.py:83:9: E128 continuation line under-indented for visual indent
+.\routers\audit_logs\audit_logs.py:104:1: E304 blank lines found after function decorator
+.\routers\audit_logs\audit_logs.py:115:1: W391 blank line at end of file
+.\routers\comments\comments.py:3:1: F401 'typing.List' imported but unused
+.\routers\comments\comments.py:3:1: F401 'typing.Optional' imported but unused
+.\routers\comments\comments.py:13:89: E501 line too long (92 > 88 characters)
+.\routers\comments\comments.py:28:34: F821 undefined name 'DataResponse'
+.\routers\comments\comments.py:28:89: E501 line too long (112 > 88 characters)
+.\routers\comments\comments.py:31:1: E304 blank lines found after function decorator
+.\routers\comments\comments.py:38:16: F821 undefined name 'DataResponse'
+.\routers\comments\comments.py:46:45: F821 undefined name 'DataResponse'
+.\routers\comments\comments.py:46:89: E501 line too long (129 > 88 characters)
+.\routers\comments\comments.py:49:1: E304 blank lines found after function decorator
+.\routers\comments\comments.py:57:12: F821 undefined name 'DataResponse'
+.\routers\comments\comments.py:62:1: E302 expected 2 blank lines, found 1
+.\routers\comments\comments.py:62:74: F821 undefined name 'ListResponse'
+.\routers\comments\comments.py:62:89: E501 line too long (164 > 88 characters)
+.\routers\comments\comments.py:65:1: E304 blank lines found after function decorator
+.\routers\comments\comments.py:73:89: E501 line too long (216 > 88 characters)
+.\routers\comments\comments.py:74:12: F821 undefined name 'ListResponse'
+.\routers\comments\comments.py:81:13: E131 continuation line unaligned for hanging indent
+.\routers\comments\comments.py:84:1: E302 expected 2 blank lines, found 1
+.\routers\comments\comments.py:84:45: F821 undefined name 'DataResponse'
+.\routers\comments\comments.py:84:89: E501 line too long (123 > 88 characters)
+.\routers\comments\comments.py:87:1: E304 blank lines found after function decorator
+.\routers\comments\comments.py:93:89: E501 line too long (95 > 88 characters)
+.\routers\comments\comments.py:96:12: F821 undefined name 'DataResponse'
+.\routers\comments\comments.py:101:1: E302 expected 2 blank lines, found 1
+.\routers\comments\comments.py:101:48: F821 undefined name 'DataResponse'
+.\routers\comments\comments.py:101:89: E501 line too long (123 > 88 characters)
+.\routers\comments\comments.py:104:1: E304 blank lines found after function decorator
+.\routers\comments\comments.py:112:12: F821 undefined name 'DataResponse'
+.\routers\mcp\core.py:36:6: E999 IndentationError: expected an indented block after 'try' statement on line 35
+.\routers\memory\core\core.py:1:89: E501 line too long (137 > 88 characters)
+.\routers\memory\core\core.py:24:1: E302 expected 2 blank lines, found 1
+.\routers\memory\core\core.py:26:1: E302 expected 2 blank lines, found 0
+.\routers\memory\core\core.py:29:1: E304 blank lines found after function decorator
+.\routers\memory\core\core.py:45:1: E302 expected 2 blank lines, found 0
+.\routers\memory\core\core.py:48:1: E304 blank lines found after function decorator
+.\routers\memory\core\core.py:65:1: E302 expected 2 blank lines, found 0
+.\routers\memory\core\core.py:68:1: E304 blank lines found after function decorator
+.\routers\memory\core\core.py:70:89: E501 line too long (104 > 88 characters)
+.\routers\memory\core\core.py:72:9: E128 continuation line under-indented for visual indent
+.\routers\memory\core\core.py:84:1: E302 expected 2 blank lines, found 0
+.\routers\memory\core\core.py:87:1: E304 blank lines found after function decorator
+.\routers\memory\core\core.py:91:9: E128 continuation line under-indented for visual indent
+.\routers\memory\core\core.py:96:89: E501 line too long (99 > 88 characters)
+.\routers\memory\core\core.py:102:1: E302 expected 2 blank lines, found 0
+.\routers\memory\core\core.py:105:1: E304 blank lines found after function decorator
+.\routers\memory\core\core.py:123:1: E302 expected 2 blank lines, found 0
+.\routers\memory\core\core.py:126:1: E304 blank lines found after function decorator
+.\routers\memory\core\core.py:144:1: E302 expected 2 blank lines, found 1
+.\routers\memory\core\core.py:147:1: E302 expected 2 blank lines, found 1
+.\routers\memory\core\core.py:147:89: E501 line too long (94 > 88 characters)
+.\routers\memory\core\core.py:150:1: E304 blank lines found after function decorator
+.\routers\memory\core\core.py:151:89: E501 line too long (92 > 88 characters)
+.\routers\memory\core\core.py:161:89: E501 line too long (105 > 88 characters)
+.\routers\memory\core\core.py:163:89: E501 line too long (107 > 88 characters)
+.\routers\memory\core\core.py:164:89: E501 line too long (272 > 88 characters)
+.\routers\memory\observations\observations.py:21:6: E999 SyntaxError: parameter without a default follows parameter with a default
+.\routers\memory\relations\relations.py:24:6: E999 IndentationError: expected an indented block after 'try' statement on line 23
+.\routers\project_templates\project_templates.py:1:89: E501 line too long (137 > 88 characters)
+.\routers\project_templates\project_templates.py:3:1: F401 'fastapi.Query' imported but unused
+.\routers\project_templates\project_templates.py:3:1: F401 'fastapi.Path' imported but unused
+.\routers\project_templates\project_templates.py:5:1: F401 'typing.Optional' imported but unused
+.\routers\project_templates\project_templates.py:18:89: E501 line too long (95 > 88 characters)
+.\routers\project_templates\project_templates.py:19:27: F821 undefined name 'get_current_active_user'
+.\routers\project_templates\project_templates.py:19:89: E501 line too long (105 > 88 characters)
+.\routers\project_templates\project_templates.py:22:1: E302 expected 2 blank lines, found 1
+.\routers\project_templates\project_templates.py:22:89: E501 line too long (90 > 88 characters)
+.\routers\project_templates\project_templates.py:25:1: E302 expected 2 blank lines, found 1
+.\routers\project_templates\project_templates.py:28:1: E304 blank lines found after function decorator
+.\routers\project_templates\project_templates.py:30:89: E501 line too long (93 > 88 characters)
+.\routers\project_templates\project_templates.py:31:39: F821 undefined name 'get_current_active_user'
+.\routers\project_templates\project_templates.py:31:89: E501 line too long (97 > 88 characters)
+.\routers\project_templates\project_templates.py:36:89: E501 line too long (135 > 88 characters)
+.\routers\project_templates\project_templates.py:40:89: E501 line too long (91 > 88 characters)
+.\routers\project_templates\project_templates.py:44:1: E302 expected 2 blank lines, found 1
+.\routers\project_templates\project_templates.py:47:1: E304 blank lines found after function decorator
+.\routers\project_templates\project_templates.py:50:89: E501 line too long (92 > 88 characters)
+.\routers\project_templates\project_templates.py:58:1: E302 expected 2 blank lines, found 1
+.\routers\project_templates\project_templates.py:61:1: E304 blank lines found after function decorator
+.\routers\project_templates\project_templates.py:63:89: E501 line too long (92 > 88 characters)
+.\routers\project_templates\project_templates.py:74:1: E302 expected 2 blank lines, found 1
+.\routers\project_templates\project_templates.py:77:1: E304 blank lines found after function decorator
+.\routers\project_templates\project_templates.py:80:89: E501 line too long (93 > 88 characters)
+.\routers\project_templates\project_templates.py:81:39: F821 undefined name 'get_current_active_user'
+.\routers\project_templates\project_templates.py:81:89: E501 line too long (97 > 88 characters)
+.\routers\project_templates\project_templates.py:92:1: E302 expected 2 blank lines, found 1
+.\routers\project_templates\project_templates.py:95:1: E304 blank lines found after function decorator
+.\routers\project_templates\project_templates.py:97:89: E501 line too long (93 > 88 characters)
+.\routers\project_templates\project_templates.py:98:39: F821 undefined name 'get_current_active_user'
+.\routers\project_templates\project_templates.py:98:89: E501 line too long (97 > 88 characters)
+.\routers\projects\core.py:12:5: E999 IndentationError: unexpected indent
+.\routers\projects\files.py:9:89: E501 line too long (115 > 88 characters)
+.\routers\projects\files.py:28:89: E501 line too long (105 > 88 characters)
+.\routers\projects\files.py:36:89: E501 line too long (139 > 88 characters)
+.\routers\projects\files.py:39:1: E304 blank lines found after function decorator
+.\routers\projects\files.py:41:89: E501 line too long (103 > 88 characters)
+.\routers\projects\files.py:45:89: E501 line too long (104 > 88 characters)
+.\routers\projects\files.py:58:89: E501 line too long (105 > 88 characters)
+.\routers\projects\files.py:61:89: E501 line too long (155 > 88 characters)
+.\routers\projects\files.py:64:1: E304 blank lines found after function decorator
+.\routers\projects\files.py:67:89: E501 line too long (104 > 88 characters)
+.\routers\projects\files.py:72:89: E501 line too long (106 > 88 characters)
+.\routers\projects\files.py:76:89: E501 line too long (182 > 88 characters)
+.\routers\projects\files.py:77:89: E501 line too long (107 > 88 characters)
+.\routers\projects\files.py:85:89: E501 line too long (94 > 88 characters)
+.\routers\projects\files.py:95:89: E501 line too long (105 > 88 characters)
+.\routers\projects\files.py:98:89: E501 line too long (147 > 88 characters)
+.\routers\projects\files.py:101:1: E304 blank lines found after function decorator
+.\routers\projects\files.py:104:89: E501 line too long (104 > 88 characters)
+.\routers\projects\files.py:117:89: E501 line too long (142 > 88 characters)
+.\routers\projects\files.py:121:89: E501 line too long (94 > 88 characters)
+.\routers\projects\files.py:131:89: E501 line too long (105 > 88 characters)
+.\routers\projects\members.py:3:1: F401 'typing.List' imported but unused
+.\routers\projects\members.py:11:89: E501 line too long (115 > 88 characters)
+.\routers\projects\members.py:29:89: E501 line too long (134 > 88 characters)
+.\routers\projects\members.py:32:1: E304 blank lines found after function decorator
+.\routers\projects\members.py:38:89: E501 line too long (110 > 88 characters)
+.\routers\projects\members.py:50:89: E501 line too long (105 > 88 characters)
+.\routers\projects\members.py:53:89: E501 line too long (133 > 88 characters)
+.\routers\projects\members.py:56:1: E304 blank lines found after function decorator
+.\routers\projects\members.py:69:89: E501 line too long (102 > 88 characters)
+.\routers\projects\members.py:86:89: E501 line too long (105 > 88 characters)
+.\routers\projects\members.py:89:89: E501 line too long (134 > 88 characters)
+.\routers\projects\members.py:92:1: E304 blank lines found after function decorator
+.\routers\projects\members.py:106:89: E501 line too long (127 > 88 characters)
+.\routers\projects\members.py:119:89: E501 line too long (105 > 88 characters)
+.\routers\projects\planning.py:7:89: E501 line too long (115 > 88 characters)
+.\routers\projects\planning.py:21:89: E501 line too long (129 > 88 characters)
+.\routers\projects\planning.py:24:1: E304 blank lines found after function decorator
+.\routers\projects\planning.py:34:89: E501 line too long (143 > 88 characters)
+.\routers\projects\planning.py:35:89: E501 line too long (1484 > 88 characters)
+.\routers\projects\planning.py:51:89: E501 line too long (105 > 88 characters)
+.\routers\rules\logs\logs.py:10:1: E302 expected 2 blank lines, found 0
+.\routers\rules\logs\logs.py:13:1: E304 blank lines found after function decorator
+.\routers\rules\logs\logs.py:21:89: E501 line too long (98 > 88 characters)
+.\routers\rules\logs\logs.py:23:1: E302 expected 2 blank lines, found 1
+.\routers\rules\logs\logs.py:26:1: E304 blank lines found after function decorator
+.\routers\rules\mandates\mandates.py:45:6: E999 IndentationError: expected an indented block after 'if' statement on line 44
+.\routers\rules\roles\capabilities.py:31:6: E999 IndentationError: expected an indented block after 'if' statement on line 30
+.\routers\rules\roles\forbidden_actions.py:31:6: E999 IndentationError: expected an indented block after 'if' statement on line 30
+.\routers\rules\roles\roles.py:30:6: E999 IndentationError: expected an indented block after 'if' statement on line 29
+.\routers\rules\templates\templates.py:25:6: E999 IndentationError: expected an indented block after 'if' statement on line 24
+.\routers\rules\utils\validation_and_prompt.py:1:1: F401 'fastapi.HTTPException' imported but unused
+.\routers\rules\utils\validation_and_prompt.py:9:1: E302 expected 2 blank lines, found 0
+.\routers\rules\utils\validation_and_prompt.py:12:1: E304 blank lines found after function decorator
+.\routers\rules\utils\validation_and_prompt.py:20:5: E122 continuation line missing indentation or outdented
+.\routers\rules\utils\validation_and_prompt.py:21:5: E122 continuation line missing indentation or outdented
+.\routers\rules\utils\validation_and_prompt.py:22:5: E122 continuation line missing indentation or outdented
+.\routers\rules\utils\validation_and_prompt.py:25:1: E302 expected 2 blank lines, found 1
+.\routers\rules\utils\validation_and_prompt.py:28:1: E304 blank lines found after function decorator
+.\routers\rules\utils\validation_and_prompt.py:35:5: E122 continuation line missing indentation or outdented
+.\routers\rules\utils\validation_and_prompt.py:36:5: E122 continuation line missing indentation or outdented
+.\routers\rules\violations\violations.py:42:6: E999 IndentationError: expected an indented block after 'if' statement on line 41
+.\routers\rules\workflows\workflows.py:31:6: E999 IndentationError: expected an indented block after 'if' statement on line 30
+.\routers\tasks\all_tasks\all_tasks.py:68:6: E999 IndentationError: expected an indented block after 'try' statement on line 67
+.\routers\tasks\comments\comments.py:39:6: E999 IndentationError: expected an indented block after 'try' statement on line 38
+.\routers\tasks\core\core.py:123:6: E999 IndentationError: expected an indented block after 'try' statement on line 122
+.\routers\tasks\dependencies\dependencies.py:3:1: F401 'typing.List' imported but unused
+.\routers\tasks\dependencies\dependencies.py:15:1: E302 expected 2 blank lines, found 1
+.\routers\tasks\dependencies\dependencies.py:18:1: E302 expected 2 blank lines, found 1
+.\routers\tasks\dependencies\dependencies.py:27:1: E304 blank lines found after function decorator
+.\routers\tasks\dependencies\dependencies.py:31:89: E501 line too long (90 > 88 characters)
+.\routers\tasks\dependencies\dependencies.py:56:1: E302 expected 2 blank lines, found 1
+.\routers\tasks\dependencies\dependencies.py:65:1: E304 blank lines found after function decorator
+.\routers\tasks\dependencies\dependencies.py:70:13: E131 continuation line unaligned for hanging indent
+.\routers\tasks\dependencies\dependencies.py:74:89: E501 line too long (128 > 88 characters)
+.\routers\tasks\dependencies\dependencies.py:75:89: E501 line too long (89 > 88 characters)
+.\routers\tasks\dependencies\dependencies.py:93:17: E131 continuation line unaligned for hanging indent
+.\routers\tasks\dependencies\dependencies.py:103:1: E302 expected 2 blank lines, found 1
+.\routers\tasks\dependencies\dependencies.py:112:1: E304 blank lines found after function decorator
+.\routers\tasks\dependencies\dependencies.py:121:89: E501 line too long (89 > 88 characters)
+.\routers\tasks\dependencies\dependencies.py:139:17: E131 continuation line unaligned for hanging indent
+.\routers\tasks\dependencies\dependencies.py:149:1: E302 expected 2 blank lines, found 1
+.\routers\tasks\dependencies\dependencies.py:158:1: E304 blank lines found after function decorator
+.\routers\tasks\dependencies\dependencies.py:167:89: E501 line too long (89 > 88 characters)
+.\routers\tasks\dependencies\dependencies.py:194:1: E302 expected 2 blank lines, found 1
+.\routers\tasks\dependencies\dependencies.py:195:89: E501 line too long (104 > 88 characters)
+.\routers\tasks\dependencies\dependencies.py:203:1: E304 blank lines found after function decorator
+.\routers\tasks\dependencies\dependencies.py:207:9: E128 continuation line under-indented for visual indent
+.\routers\tasks\dependencies\dependencies.py:210:89: E501 line too long (90 > 88 characters)
+.\routers\tasks\files\files.py:36:6: E999 IndentationError: expected an indented block after 'try' statement on line 35
+.\routers\users\auth\auth.py:1:89: E501 line too long (137 > 88 characters)
+.\routers\users\auth\auth.py:10:89: E501 line too long (113 > 88 characters)
+.\routers\users\auth\auth.py:11:89: E501 line too long (258 > 88 characters)
+.\routers\users\auth\auth.py:19:1: E302 expected 2 blank lines, found 1
+.\routers\users\auth\auth.py:26:1: E302 expected 2 blank lines, found 1
+.\routers\users\auth\auth.py:34:1: E304 blank lines found after function decorator
+.\routers\users\auth\auth.py:37:89: E501 line too long (97 > 88 characters)
+.\routers\users\auth\auth.py:47:89: E501 line too long (96 > 88 characters)
+.\routers\users\core\core.py:42:89: E501 line too long (97 > 88 characters)
+.\routers\users\core\core.py:67:1: E302 expected 2 blank lines, found 1
+.\routers\users\core\core.py:77:21: F541 f-string is missing placeholders
+.\routers\users\core\core.py:87:1: E302 expected 2 blank lines, found 1
+.\routers\users\core\core.py:100:89: E501 line too long (102 > 88 characters)
+.\routers\users\core\core.py:115:1: E302 expected 2 blank lines, found 1
+.\routers\users\core\core.py:133:1: E302 expected 2 blank lines, found 1
+.\routers\users\core\core.py:134:5: E128 continuation line under-indented for visual indent
+.\routers\users\core\core.py:147:89: E501 line too long (111 > 88 characters)
+.\schemas\__init__.py:6:89: E501 line too long (225 > 88 characters)
+.\schemas\__init__.py:9:89: E501 line too long (148 > 88 characters)
+.\schemas\__init__.py:11:89: E501 line too long (140 > 88 characters)
+.\schemas\_schema_init.py:45:89: E501 line too long (90 > 88 characters)
+.\schemas\_schema_init.py:46:89: E501 line too long (92 > 88 characters)
+.\schemas\memory.py:1:89: E501 line too long (137 > 88 characters)
+.\schemas\memory.py:4:1: F401 'typing.List' imported but unused
+.\schemas\memory.py:10:1: E302 expected 2 blank lines, found 1
+.\schemas\memory.py:12:89: E501 line too long (109 > 88 characters)
+.\schemas\memory.py:14:89: E501 line too long (112 > 88 characters)
+.\schemas\memory.py:15:89: E501 line too long (121 > 88 characters)
+.\schemas\memory.py:16:89: E501 line too long (101 > 88 characters)
+.\schemas\memory.py:17:89: E501 line too long (124 > 88 characters)
+.\schemas\memory.py:19:1: E302 expected 2 blank lines, found 1
+.\schemas\memory.py:23:1: E302 expected 2 blank lines, found 1
+.\schemas\memory.py:27:89: E501 line too long (91 > 88 characters)
+.\schemas\memory.py:29:89: E501 line too long (98 > 88 characters)
+.\schemas\memory.py:30:89: E501 line too long (90 > 88 characters)
+.\schemas\memory.py:32:1: F811 redefinition of unused 'MemoryEntity' from line 8
+.\schemas\memory.py:32:1: E302 expected 2 blank lines, found 1
+.\schemas\memory.py:35:89: E501 line too long (91 > 88 characters)
+.\schemas\memory.py:36:89: E501 line too long (107 > 88 characters)
+.\schemas\memory.py:38:89: E501 line too long (464 > 88 characters)
+.\schemas\memory.py:40:1: E302 expected 2 blank lines, found 1
+.\schemas\memory.py:43:89: E501 line too long (118 > 88 characters)
+.\schemas\memory.py:45:1: E302 expected 2 blank lines, found 1
+.\schemas\memory.py:47:89: E501 line too long (103 > 88 characters)
+.\schemas\memory.py:49:1: F811 redefinition of unused 'MemoryObservation' from line 6
+.\schemas\memory.py:49:1: E302 expected 2 blank lines, found 1
+.\schemas\memory.py:50:89: E501 line too long (97 > 88 characters)
+.\schemas\memory.py:52:89: E501 line too long (103 > 88 characters)
+.\schemas\memory.py:53:89: E501 line too long (113 > 88 characters)
+.\schemas\memory.py:54:89: E501 line too long (103 > 88 characters)
+.\schemas\memory.py:58:1: E302 expected 2 blank lines, found 1
+.\schemas\memory.py:62:89: E501 line too long (115 > 88 characters)
+.\schemas\memory.py:63:89: E501 line too long (115 > 88 characters)
+.\schemas\memory.py:65:1: E302 expected 2 blank lines, found 1
+.\schemas\memory.py:68:1: F811 redefinition of unused 'MemoryRelation' from line 7
+.\schemas\memory.py:68:1: E302 expected 2 blank lines, found 1
+.\schemas\memory.py:69:89: E501 line too long (94 > 88 characters)
+.\schemas\memory.py:71:89: E501 line too long (93 > 88 characters)
+.\schemas\memory.py:72:89: E501 line too long (126 > 88 characters)
+.\schemas\memory.py:73:89: E501 line too long (94 > 88 characters)
+.\schemas\memory.py:74:89: E501 line too long (92 > 88 characters)
+.\schemas\project.py:1:89: E501 line too long (137 > 88 characters)
+.\schemas\project.py:4:1: F401 'typing.List' imported but unused
+.\schemas\project.py:4:1: F401 'typing.Union' imported but unused
+.\schemas\project.py:4:1: F401 'typing.Any' imported but unused
+.\schemas\project.py:4:1: F401 'typing.Dict' imported but unused
+.\schemas\project.py:17:1: E302 expected 2 blank lines, found 1
+.\schemas\project.py:19:89: E501 line too long (156 > 88 characters)
+.\schemas\project.py:30:1: E302 expected 2 blank lines, found 1
+.\schemas\project.py:34:33: E128 continuation line under-indented for visual indent
+.\schemas\project.py:38:89: E501 line too long (116 > 88 characters)
+.\schemas\project.py:39:89: E501 line too long (111 > 88 characters)
+.\schemas\project.py:45:89: E501 line too long (102 > 88 characters)
+.\schemas\project.py:47:1: E302 expected 2 blank lines, found 1
+.\schemas\project.py:50:1: E302 expected 2 blank lines, found 1
+.\schemas\project.py:58:5: E122 continuation line missing indentation or outdented
+.\schemas\project.py:60:1: E302 expected 2 blank lines, found 1
+.\schemas\project.py:63:1: E302 expected 2 blank lines, found 1
+.\schemas\project.py:66:89: E501 line too long (93 > 88 characters)
+.\schemas\project.py:68:1: E302 expected 2 blank lines, found 1
+.\schemas\project.py:80:9: E128 continuation line under-indented for visual indent
+.\schemas\project.py:82:1: E302 expected 2 blank lines, found 1
+.\schemas\project.py:85:1: E302 expected 2 blank lines, found 1
+.\schemas\project.py:87:89: E501 line too long (93 > 88 characters)
+.\schemas\project.py:89:1: E302 expected 2 blank lines, found 1
+.\schemas\project.py:91:89: E501 line too long (95 > 88 characters)
+.\schemas\project.py:92:89: E501 line too long (111 > 88 characters)
+.\schemas\project.py:93:89: E501 line too long (95 > 88 characters)
+.\schemas\project.py:94:89: E501 line too long (122 > 88 characters)
+.\schemas\project.py:96:89: E501 line too long (165 > 88 characters)
+.\schemas\project_template.py:1:89: E501 line too long (136 > 88 characters)
+.\schemas\project_template.py:9:1: E302 expected 2 blank lines, found 1
+.\schemas\project_template.py:12:89: E501 line too long (96 > 88 characters)
+.\schemas\project_template.py:13:89: E501 line too long (129 > 88 characters)
+.\schemas\project_template.py:15:1: E302 expected 2 blank lines, found 1
+.\schemas\project_template.py:19:1: E302 expected 2 blank lines, found 1
+.\schemas\project_template.py:22:89: E501 line too long (101 > 88 characters)
+.\schemas\project_template.py:23:89: E501 line too long (111 > 88 characters)
+.\schemas\project_template.py:25:1: E302 expected 2 blank lines, found 1
+.\schemas\task.py:10:2: E999 IndentationError: expected an indented block after 'if' statement on line 7
+.\schemas\task_dependency.py:1:89: E501 line too long (137 > 88 characters)
+.\schemas\task_dependency.py:11:5: E122 continuation line missing indentation or outdented
+.\schemas\task_dependency.py:13:5: E122 continuation line missing indentation or outdented
+.\schemas\task_dependency.py:15:5: E122 continuation line missing indentation or outdented
+.\schemas\task_dependency.py:17:5: E122 continuation line missing indentation or outdented
+.\schemas\task_dependency.py:19:5: E122 continuation line missing indentation or outdented
+.\schemas\task_dependency.py:21:1: E302 expected 2 blank lines, found 1
+.\schemas\task_dependency.py:25:1: E302 expected 2 blank lines, found 1
+.\schemas\task_dependency.py:26:89: E501 line too long (244 > 88 characters)
+.\schemas\task_dependency.py:27:89: E501 line too long (103 > 88 characters)
+.\schemas\task_dependency.py:28:89: E501 line too long (99 > 88 characters)
+.\schemas\task_dependency.py:30:89: E501 line too long (126 > 88 characters)
+.\schemas\task_status.py:1:89: E501 line too long (137 > 88 characters)
+.\schemas\task_status.py:12:9: E128 continuation line under-indented for visual indent
+.\schemas\task_status.py:14:5: E122 continuation line missing indentation or outdented
+.\schemas\task_status.py:15:89: E501 line too long (100 > 88 characters)
+.\schemas\task_status.py:16:89: E501 line too long (99 > 88 characters)
+.\schemas\task_status.py:18:1: E302 expected 2 blank lines, found 1
+.\schemas\task_status.py:22:1: E302 expected 2 blank lines, found 1
+.\schemas\task_status.py:25:89: E501 line too long (91 > 88 characters)
+.\schemas\task_status.py:29:1: E302 expected 2 blank lines, found 1
+.\schemas\task_status.py:30:89: E501 line too long (107 > 88 characters)
+.\schemas\task_status.py:31:89: E501 line too long (91 > 88 characters)
+.\schemas\task_status.py:32:89: E501 line too long (107 > 88 characters)
+.\schemas\task_status.py:33:89: E501 line too long (105 > 88 characters)
+.\schemas\task_status.py:35:89: E501 line too long (126 > 88 characters)
+.\schemas\universal_mandate.py:1:89: E501 line too long (136 > 88 characters)
+.\schemas\universal_mandate.py:15:1: E302 expected 2 blank lines, found 1
+.\schemas\universal_mandate.py:19:1: E302 expected 2 blank lines, found 1
+.\schemas\universal_mandate.py:22:89: E501 line too long (95 > 88 characters)
+.\schemas\universal_mandate.py:26:1: E302 expected 2 blank lines, found 1
+.\schemas\universal_mandate.py:29:89: E501 line too long (92 > 88 characters)
+.\schemas\universal_mandate.py:30:89: E501 line too long (97 > 88 characters)
+.\schemas\user.py:1:89: E501 line too long (137 > 88 characters)
+.\schemas\user.py:5:89: E501 line too long (241 > 88 characters)
+.\schemas\user.py:10:89: E501 line too long (98 > 88 characters)
+.\schemas\user.py:12:5: E122 continuation line missing indentation or outdented
+.\schemas\user.py:15:1: E302 expected 2 blank lines, found 1
+.\schemas\user.py:19:1: E302 expected 2 blank lines, found 1
+.\schemas\user.py:29:89: E501 line too long (95 > 88 characters)
+.\schemas\user.py:31:1: E302 expected 2 blank lines, found 1
+.\schemas\user.py:34:89: E501 line too long (111 > 88 characters)
+.\schemas\user.py:36:1: E302 expected 2 blank lines, found 1
+.\schemas\user.py:42:89: E501 line too long (94 > 88 characters)
+.\schemas\user.py:44:1: E302 expected 2 blank lines, found 1
+.\schemas\user.py:47:89: E501 line too long (208 > 88 characters)
+.\schemas\user.py:51:1: E302 expected 2 blank lines, found 1
+.\schemas\user.py:53:89: E501 line too long (153 > 88 characters)
+.\schemas\workflow.py:1:89: E501 line too long (136 > 88 characters)
+.\schemas\workflow.py:13:89: E501 line too long (95 > 88 characters)
+.\schemas\workflow.py:14:89: E501 line too long (99 > 88 characters)
+.\schemas\workflow.py:17:1: E302 expected 2 blank lines, found 1
+.\schemas\workflow.py:21:1: E302 expected 2 blank lines, found 1
+.\schemas\workflow.py:27:89: E501 line too long (90 > 88 characters)
+.\schemas\workflow.py:30:1: E302 expected 2 blank lines, found 1
+.\schemas\workflow.py:33:89: E501 line too long (93 > 88 characters)
+.\schemas\workflow.py:34:89: E501 line too long (98 > 88 characters)
+.\schemas\workflow_step.py:1:89: E501 line too long (168 > 88 characters)
+.\schemas\workflow_step.py:10:89: E501 line too long (93 > 88 characters)
+.\schemas\workflow_step.py:11:89: E501 line too long (102 > 88 characters)
+.\schemas\workflow_step.py:12:89: E501 line too long (91 > 88 characters)
+.\schemas\workflow_step.py:14:89: E501 line too long (93 > 88 characters)
+.\schemas\workflow_step.py:15:89: E501 line too long (90 > 88 characters)
+.\schemas\workflow_step.py:16:89: E501 line too long (95 > 88 characters)
+.\schemas\workflow_step.py:17:89: E501 line too long (101 > 88 characters)
+.\schemas\workflow_step.py:18:89: E501 line too long (105 > 88 characters)
+.\schemas\workflow_step.py:21:1: E302 expected 2 blank lines, found 1
+.\schemas\workflow_step.py:25:1: E302 expected 2 blank lines, found 1
+.\schemas\workflow_step.py:27:89: E501 line too long (104 > 88 characters)
+.\schemas\workflow_step.py:28:89: E501 line too long (113 > 88 characters)
+.\schemas\workflow_step.py:29:89: E501 line too long (102 > 88 characters)
+.\schemas\workflow_step.py:30:89: E501 line too long (89 > 88 characters)
+.\schemas\workflow_step.py:33:89: E501 line too long (90 > 88 characters)
+.\schemas\workflow_step.py:34:89: E501 line too long (96 > 88 characters)
+.\schemas\workflow_step.py:35:89: E501 line too long (113 > 88 characters)
+.\schemas\workflow_step.py:38:1: E302 expected 2 blank lines, found 1
+.\schemas\workflow_step.py:41:89: E501 line too long (98 > 88 characters)
+.\schemas\workflow_step.py:42:89: E501 line too long (103 > 88 characters)
+.\services\agent_service.py:25:2: E999 IndentationError: expected an indented block after class definition on line 24
+.\services\audit_log_service.py:17:2: E999 IndentationError: expected an indented block after class definition on line 16
+.\services\comment_service.py:16:2: E999 IndentationError: expected an indented block after class definition on line 15
+.\services\exceptions.py:6:1: E302 expected 2 blank lines, found 1
+.\services\exceptions.py:10:1: E302 expected 2 blank lines, found 1
+.\services\exceptions.py:12:1: E302 expected 2 blank lines, found 0
+.\services\exceptions.py:13:9: E117 over-indented
+.\services\exceptions.py:18:1: E302 expected 2 blank lines, found 1
+.\services\exceptions.py:20:1: F811 redefinition of unused '__init__' from line 12
+.\services\exceptions.py:20:1: E302 expected 2 blank lines, found 0
+.\services\exceptions.py:21:9: E117 over-indented
+.\services\exceptions.py:24:1: E302 expected 2 blank lines, found 1
+.\services\exceptions.py:26:1: F811 redefinition of unused '__init__' from line 20
+.\services\exceptions.py:26:1: E302 expected 2 blank lines, found 0
+.\services\exceptions.py:27:9: E117 over-indented
+.\services\exceptions.py:32:1: E302 expected 2 blank lines, found 1
+.\services\exceptions.py:34:1: F811 redefinition of unused '__init__' from line 26
+.\services\exceptions.py:34:1: E302 expected 2 blank lines, found 0
+.\services\exceptions.py:35:9: E117 over-indented
+.\services\exceptions.py:38:1: E302 expected 2 blank lines, found 1
+.\services\exceptions.py:40:1: F811 redefinition of unused '__init__' from line 34
+.\services\exceptions.py:40:1: E302 expected 2 blank lines, found 0
+.\services\exceptions.py:41:9: E117 over-indented
+.\services\memory_service.py:21:5: E999 IndentationError: unexpected indent
+.\services\project_file_association_service.py:14:2: E999 IndentationError: expected an indented block after class definition on line 13
+.\services\project_member_service.py:15:2: E999 IndentationError: expected an indented block after class definition on line 14
+.\services\project_service.py:52:2: E999 IndentationError: expected an indented block after class definition on line 51
+.\services\project_template_service.py:11:2: E999 IndentationError: expected an indented block after class definition on line 10
+.\services\rules_service.py:1:89: E501 line too long (174 > 88 characters)
+.\services\rules_service.py:13:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:16:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:17:9: E117 over-indented
+.\services\rules_service.py:19:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:19:89: E501 line too long (134 > 88 characters)
+.\services\rules_service.py:20:9: E117 over-indented
+.\services\rules_service.py:21:89: E501 line too long (110 > 88 characters)
+.\services\rules_service.py:23:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:23:89: E501 line too long (92 > 88 characters)
+.\services\rules_service.py:24:9: E117 over-indented
+.\services\rules_service.py:25:89: E501 line too long (102 > 88 characters)
+.\services\rules_service.py:35:89: E501 line too long (90 > 88 characters)
+.\services\rules_service.py:36:89: E501 line too long (95 > 88 characters)
+.\services\rules_service.py:37:89: E501 line too long (99 > 88 characters)
+.\services\rules_service.py:50:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:50:89: E501 line too long (93 > 88 characters)
+.\services\rules_service.py:51:25: E127 continuation line over-indented for visual indent
+.\services\rules_service.py:51:89: E501 line too long (154 > 88 characters)
+.\services\rules_service.py:52:25: E127 continuation line over-indented for visual indent
+.\services\rules_service.py:52:89: E501 line too long (120 > 88 characters)
+.\services\rules_service.py:52:104: F821 undefined name 'AgentBehaviorLog'
+.\services\rules_service.py:53:9: E117 over-indented
+.\services\rules_service.py:80:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:81:29: E127 continuation line over-indented for visual indent
+.\services\rules_service.py:82:29: E127 continuation line over-indented for visual indent
+.\services\rules_service.py:82:89: E501 line too long (158 > 88 characters)
+.\services\rules_service.py:82:140: F821 undefined name 'AgentRuleViolation'
+.\services\rules_service.py:83:9: E117 over-indented
+.\services\rules_service.py:83:89: E501 line too long (111 > 88 characters)
+.\services\rules_service.py:109:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:109:89: E501 line too long (104 > 88 characters)
+.\services\rules_service.py:110:9: E117 over-indented
+.\services\rules_service.py:119:89: E501 line too long (101 > 88 characters)
+.\services\rules_service.py:120:89: E501 line too long (106 > 88 characters)
+.\services\rules_service.py:128:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:128:89: E501 line too long (104 > 88 characters)
+.\services\rules_service.py:129:9: E117 over-indented
+.\services\rules_service.py:136:89: E501 line too long (94 > 88 characters)
+.\services\rules_service.py:141:89: E501 line too long (97 > 88 characters)
+.\services\rules_service.py:146:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:146:89: E501 line too long (109 > 88 characters)
+.\services\rules_service.py:147:9: E117 over-indented
+.\services\rules_service.py:171:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:172:9: E117 over-indented
+.\services\rules_service.py:179:89: E501 line too long (93 > 88 characters)
+.\services\rules_service.py:180:89: E501 line too long (104 > 88 characters)
+.\services\rules_service.py:186:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:187:9: E117 over-indented
+.\services\rules_service.py:191:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:192:9: E117 over-indented
+.\services\rules_service.py:196:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:197:9: E117 over-indented
+.\services\rules_service.py:203:89: E501 line too long (192 > 88 characters)
+.\services\rules_service.py:208:89: E501 line too long (194 > 88 characters)
+.\services\rules_service.py:213:89: E501 line too long (141 > 88 characters)
+.\services\rules_service.py:218:89: E501 line too long (137 > 88 characters)
+.\services\rules_service.py:223:89: E501 line too long (131 > 88 characters)
+.\services\rules_service.py:237:1: E302 expected 2 blank lines, found 1
+.\services\rules_service.py:238:9: E117 over-indented
+.\services\rules_service.py:245:89: E501 line too long (126 > 88 characters)
+.\services\rules_service.py:260:89: E501 line too long (147 > 88 characters)
+.\services\rules_service.py:275:89: E501 line too long (147 > 88 characters)
+.\services\rules_service.py:299:89: E501 line too long (89 > 88 characters)
+.\services\rules_service.py:301:89: E501 line too long (109 > 88 characters)
+.\services\task_dependency_service.py:19:2: E999 IndentationError: expected an indented block after class definition on line 18
+.\services\task_file_association_service.py:15:2: E999 IndentationError: expected an indented block after class definition on line 14
+.\services\task_service.py:32:2: E999 IndentationError: expected an indented block after class definition on line 31
+.\services\user_role_service.py:7:2: E999 IndentationError: expected an indented block after class definition on line 6
+.\services\user_service.py:32:2: E999 IndentationError: expected an indented block after class definition on line 31
+.\services\utils.py:18:1: E302 expected 2 blank lines, found 1
+.\services\utils.py:18:2: F821 undefined name 'asynccontextmanager'
+.\services\utils.py:21:1: E304 blank lines found after function decorator
+.\services\utils.py:23:89: E501 line too long (204 > 88 characters)
+.\services\utils.py:27:89: E501 line too long (333 > 88 characters)
+.\services\utils.py:29:89: E501 line too long (136 > 88 characters)
+.\services\utils.py:30:89: E501 line too long (98 > 88 characters)
+.\services\utils.py:32:89: E501 line too long (236 > 88 characters)
+.\services\utils.py:34:5: F841 local variable 'e' is assigned to but never used
+.\services\utils.py:34:89: E501 line too long (150 > 88 characters)
+.\services\utils.py:38:89: E501 line too long (142 > 88 characters)
+.\tests\conftest.py:59:20: E999 IndentationError: unindent does not match any outer indentation level
+.\tests\integration\test_project_task_flow.py:21:2: E999 IndentationError: expected an indented block after class definition on line 20
+.\tests\test_aerospace_suite.py:42:1: E999 IndentationError: unexpected unindent
+.\tests\test_agents_crud.py:3:1: F401 'pytest' imported but unused
+.\tests\test_agents_crud.py:4:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\tests\test_agents_crud.py:5:89: E501 line too long (127 > 88 characters)
+.\tests\test_agents_crud.py:6:89: E501 line too long (119 > 88 characters)
+.\tests\test_agents_crud.py:7:1: F811 redefinition of unused 'AgentCreate' from line 6
+.\tests\test_agents_crud.py:7:1: F811 redefinition of unused 'AgentUpdate' from line 6
+.\tests\test_agents_crud.py:9:89: E501 line too long (93 > 88 characters)
+.\tests\test_agents_crud.py:11:89: E501 line too long (393 > 88 characters)
+.\tests\test_agents_crud.py:21:89: E501 line too long (92 > 88 characters)
+.\tests\test_agents_crud.py:26:5: E122 continuation line missing indentation or outdented
+.\tests\test_agents_crud.py:31:89: E501 line too long (100 > 88 characters)
+.\tests\test_agents_crud.py:32:9: E117 over-indented
+.\tests\test_agents_crud.py:32:89: E501 line too long (121 > 88 characters)
+.\tests\test_agents_crud.py:34:9: E122 continuation line missing indentation or outdented
+.\tests\test_agents_crud.py:36:89: E501 line too long (90 > 88 characters)
+.\tests\test_agents_crud.py:40:13: E117 over-indented
+.\tests\test_agents_crud.py:40:89: E501 line too long (414 > 88 characters)
+.\tests\test_agents_crud.py:50:89: E501 line too long (176 > 88 characters)
+.\tests\test_agents_crud.py:51:17: E117 over-indented
+.\tests\test_agents_crud.py:52:89: E501 line too long (102 > 88 characters)
+.\tests\test_agents_crud.py:54:89: E501 line too long (91 > 88 characters)
+.\tests\test_agents_crud.py:56:17: E122 continuation line missing indentation or outdented
+.\tests\test_agents_crud.py:61:89: E501 line too long (172 > 88 characters)
+.\tests\test_agents_crud.py:62:21: E117 over-indented
+.\tests\test_agents_crud.py:63:89: E501 line too long (106 > 88 characters)
+.\tests\test_agents_crud.py:66:89: E501 line too long (106 > 88 characters)
+.\tests\test_agents_crud.py:69:89: E501 line too long (134 > 88 characters)
+.\tests\test_async_example.py:22:1: E999 IndentationError: unexpected unindent
+.\tests\test_audit_logs_crud.py:1:89: E501 line too long (152 > 88 characters)
+.\tests\test_audit_logs_crud.py:11:89: E501 line too long (100 > 88 characters)
+.\tests\test_audit_logs_crud.py:13:89: E501 line too long (119 > 88 characters)
+.\tests\test_audit_logs_crud.py:18:89: E501 line too long (100 > 88 characters)
+.\tests\test_audit_logs_crud.py:25:5: F841 local variable 'log_time' is assigned to but never used
+.\tests\test_audit_logs_crud.py:27:5: E122 continuation line missing indentation or outdented
+.\tests\test_audit_logs_crud.py:28:5: E122 continuation line missing indentation or outdented
+.\tests\test_audit_logs_crud.py:29:5: E122 continuation line missing indentation or outdented
+.\tests\test_audit_logs_crud.py:39:89: E501 line too long (97 > 88 characters)
+.\tests\test_audit_logs_crud.py:45:9: E117 over-indented
+.\tests\test_audit_logs_crud.py:45:89: E501 line too long (96 > 88 characters)
+.\tests\test_audit_logs_crud.py:49:13: E117 over-indented
+.\tests\test_audit_logs_crud.py:50:89: E501 line too long (111 > 88 characters)
+.\tests\test_audit_logs_crud.py:51:89: E501 line too long (94 > 88 characters)
+.\tests\test_audit_logs_crud.py:52:89: E501 line too long (94 > 88 characters)
+.\tests\test_audit_logs_crud.py:53:89: E501 line too long (90 > 88 characters)
+.\tests\test_audit_logs_crud.py:54:89: E501 line too long (116 > 88 characters)
+.\tests\test_audit_logs_crud.py:55:89: E501 line too long (94 > 88 characters)
+.\tests\test_audit_logs_crud.py:56:89: E501 line too long (160 > 88 characters)
+.\tests\test_audit_logs_crud.py:63:89: E501 line too long (100 > 88 characters)
+.\tests\test_audit_logs_crud.py:69:89: E501 line too long (113 > 88 characters)
+.\tests\test_audit_logs_crud.py:74:89: E501 line too long (110 > 88 characters)
+.\tests\test_audit_logs_crud.py:79:17: E117 over-indented
+.\tests\test_audit_logs_crud.py:80:17: F841 local variable 'log_time' is assigned to but never used
+.\tests\test_audit_logs_crud.py:82:17: E122 continuation line missing indentation or outdented
+.\tests\test_audit_logs_crud.py:83:17: E122 continuation line missing indentation or outdented
+.\tests\test_audit_logs_crud.py:84:17: E122 continuation line missing indentation or outdented
+.\tests\test_audit_logs_crud.py:86:89: E501 line too long (107 > 88 characters)
+.\tests\test_audit_logs_crud.py:89:89: E501 line too long (97 > 88 characters)
+.\tests\test_audit_logs_crud.py:91:89: E501 line too long (140 > 88 characters)
+.\tests\test_audit_logs_crud.py:92:89: E501 line too long (106 > 88 characters)
+.\tests\test_comments_crud.py:3:1: F401 'pytest' imported but unused
+.\tests\test_comments_crud.py:4:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\tests\test_comments_crud.py:18:89: E501 line too long (116 > 88 characters)
+.\tests\test_comments_crud.py:23:5: E122 continuation line missing indentation or outdented
+.\tests\test_comments_crud.py:24:89: E501 line too long (133 > 88 characters)
+.\tests\test_comments_crud.py:27:89: E501 line too long (102 > 88 characters)
+.\tests\test_comments_crud.py:29:89: E501 line too long (145 > 88 characters)
+.\tests\test_comments_crud.py:34:89: E501 line too long (98 > 88 characters)
+.\tests\test_comments_crud.py:36:1: E302 expected 2 blank lines, found 1
+.\tests\test_comments_crud.py:38:89: E501 line too long (89 > 88 characters)
+.\tests\test_comments_crud.py:42:5: E122 continuation line missing indentation or outdented
+.\tests\test_comments_crud.py:43:5: E122 continuation line missing indentation or outdented
+.\tests\test_comments_crud.py:44:5: E122 continuation line missing indentation or outdented
+.\tests\test_comments_crud.py:45:5: E122 continuation line missing indentation or outdented
+.\tests\test_comments_crud.py:55:89: E501 line too long (99 > 88 characters)
+.\tests\test_comments_crud.py:62:9: E117 over-indented
+.\tests\test_comments_crud.py:62:89: E501 line too long (90 > 88 characters)
+.\tests\test_comments_crud.py:66:13: E117 over-indented
+.\tests\test_comments_crud.py:66:89: E501 line too long (98 > 88 characters)
+.\tests\test_comments_crud.py:67:89: E501 line too long (100 > 88 characters)
+.\tests\test_comments_crud.py:68:89: E501 line too long (103 > 88 characters)
+.\tests\test_comments_crud.py:69:89: E501 line too long (110 > 88 characters)
+.\tests\test_comments_crud.py:70:89: E501 line too long (164 > 88 characters)
+.\tests\test_comments_crud.py:71:89: E501 line too long (164 > 88 characters)
+.\tests\test_comments_crud.py:73:89: E501 line too long (107 > 88 characters)
+.\tests\test_comments_crud.py:74:89: E501 line too long (157 > 88 characters)
+.\tests\test_comments_crud.py:76:89: E501 line too long (174 > 88 characters)
+.\tests\test_comments_crud.py:77:89: E501 line too long (157 > 88 characters)
+.\tests\test_comments_crud.py:79:89: E501 line too long (152 > 88 characters)
+.\tests\test_comments_crud.py:84:17: E117 over-indented
+.\tests\test_comments_crud.py:84:89: E501 line too long (100 > 88 characters)
+.\tests\test_comments_crud.py:85:89: E501 line too long (107 > 88 characters)
+.\tests\test_comments_crud.py:88:89: E501 line too long (161 > 88 characters)
+.\tests\test_comments_crud.py:89:89: E501 line too long (95 > 88 characters)
+.\tests\test_comments_crud.py:93:89: E501 line too long (137 > 88 characters)
+.\tests\test_comments_crud.py:96:89: E501 line too long (90 > 88 characters)
+.\tests\test_comments_crud.py:97:89: E501 line too long (108 > 88 characters)
+.\tests\test_comments_crud.py:98:89: E501 line too long (109 > 88 characters)
+.\tests\test_comments_crud.py:99:89: E501 line too long (137 > 88 characters)
+.\tests\test_comments_crud.py:104:21: E117 over-indented
+.\tests\test_comments_crud.py:104:89: E501 line too long (104 > 88 characters)
+.\tests\test_comments_crud.py:105:89: E501 line too long (111 > 88 characters)
+.\tests\test_comments_crud.py:106:89: E501 line too long (91 > 88 characters)
+.\tests\test_comments_crud.py:108:89: E501 line too long (170 > 88 characters)
+.\tests\test_comments_crud.py:109:89: E501 line too long (99 > 88 characters)
+.\tests\test_comments_crud.py:112:89: E501 line too long (105 > 88 characters)
+.\tests\test_comments_crud.py:114:89: E501 line too long (146 > 88 characters)
+.\tests\test_comments_crud.py:115:89: E501 line too long (110 > 88 characters)
+.\tests\test_crud.py:12:6: E999 SyntaxError: invalid syntax
+.\tests\test_diagnostic.py:7:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\tests\test_diagnostic.py:9:89: E501 line too long (110 > 88 characters)
+.\tests\test_diagnostic.py:10:1: E402 module level import not at top of file
+.\tests\test_diagnostic.py:11:1: E402 module level import not at top of file
+.\tests\test_diagnostic.py:13:1: E302 expected 2 blank lines, found 1
+.\tests\test_diagnostic.py:16:5: E122 continuation line missing indentation or outdented
+.\tests\test_diagnostic.py:19:89: E501 line too long (96 > 88 characters)
+.\tests\test_diagnostic.py:22:89: E501 line too long (111 > 88 characters)
+.\tests\test_diagnostic.py:30:5: E122 continuation line missing indentation or outdented
+.\tests\test_integration.py:15:2: E999 IndentationError: expected an indented block after class definition on line 14
+.\tests\test_main_api.py:1:89: E501 line too long (146 > 88 characters)
+.\tests\test_main_api.py:6:1: F401 'pytest_asyncio' imported but unused
+.\tests\test_main_api.py:8:1: F401 'sqlalchemy.ext.asyncio.AsyncSession' imported but unused
+.\tests\test_main_api.py:19:1: E303 too many blank lines (6)
+.\tests\test_main_api.py:27:89: E501 line too long (164 > 88 characters)
+.\tests\test_main_api.py:30:89: E501 line too long (94 > 88 characters)
+.\tests\test_main_api.py:33:89: E501 line too long (197 > 88 characters)
+.\tests\test_main_api.py:38:89: E501 line too long (152 > 88 characters)
+.\tests\test_main_api.py:39:89: E501 line too long (140 > 88 characters)
+.\tests\test_main_api.py:40:89: E501 line too long (433 > 88 characters)
+.\tests\test_main_api.py:42:89: E501 line too long (280 > 88 characters)
+.\tests\test_main_api.py:43:89: E501 line too long (121 > 88 characters)
+.\tests\test_main_api.py:44:89: E501 line too long (157 > 88 characters)
+.\tests\test_main_api.py:45:89: E501 line too long (145 > 88 characters)
+.\tests\test_main_api.py:47:89: E501 line too long (200 > 88 characters)
+.\tests\test_main_api.py:50:89: E501 line too long (92 > 88 characters)
+.\tests\test_main_api.py:51:89: E501 line too long (143 > 88 characters)
+.\tests\test_project_file_associations_crud.py:3:89: E501 line too long (89 > 88 characters)
+.\tests\test_project_file_associations_crud.py:5:89: E501 line too long (125 > 88 characters)
+.\tests\test_project_file_associations_crud.py:8:89: E501 line too long (130 > 88 characters)
+.\tests\test_project_file_associations_crud.py:11:89: E501 line too long (143 > 88 characters)
+.\tests\test_project_file_associations_crud.py:12:89: E501 line too long (106 > 88 characters)
+.\tests\test_project_file_associations_crud.py:18:89: E501 line too long (123 > 88 characters)
+.\tests\test_project_file_associations_crud.py:20:1: E302 expected 2 blank lines, found 1
+.\tests\test_project_file_associations_crud.py:20:89: E501 line too long (132 > 88 characters)
+.\tests\test_project_file_associations_crud.py:21:89: E501 line too long (153 > 88 characters)
+.\tests\test_project_file_associations_crud.py:24:89: E501 line too long (214 > 88 characters)
+.\tests\test_project_file_associations_crud.py:25:89: E501 line too long (315 > 88 characters)
+.\tests\test_project_file_associations_crud.py:26:89: E501 line too long (167 > 88 characters)
+.\tests\test_project_file_associations_crud.py:27:89: E501 line too long (92 > 88 characters)
+.\tests\test_project_file_associations_crud.py:28:5: E122 continuation line missing indentation or outdented
+.\tests\test_project_file_associations_crud.py:28:89: E501 line too long (202 > 88 characters)
+.\tests\test_project_file_associations_crud.py:31:89: E501 line too long (114 > 88 characters)
+.\tests\test_project_file_associations_crud.py:32:89: E501 line too long (167 > 88 characters)
+.\tests\test_project_file_associations_crud.py:33:89: E501 line too long (92 > 88 characters)
+.\tests\test_project_file_associations_crud.py:34:5: E122 continuation line missing indentation or outdented
+.\tests\test_project_file_associations_crud.py:34:89: E501 line too long (89 > 88 characters)
+.\tests\test_project_file_associations_crud.py:37:89: E501 line too long (149 > 88 characters)
+.\tests\test_project_file_associations_crud.py:38:89: E501 line too long (94 > 88 characters)
+.\tests\test_project_file_associations_crud.py:39:89: E501 line too long (89 > 88 characters)
+.\tests\test_project_file_associations_crud.py:46:89: E501 line too long (212 > 88 characters)
+.\tests\test_project_file_associations_crud.py:48:89: E501 line too long (91 > 88 characters)
+.\tests\test_project_file_associations_crud.py:51:89: E501 line too long (114 > 88 characters)
+.\tests\test_project_file_associations_crud.py:52:89: E501 line too long (161 > 88 characters)
+.\tests\test_project_file_associations_crud.py:56:89: E501 line too long (214 > 88 characters)
+.\tests\test_project_file_associations_crud.py:57:89: E501 line too long (214 > 88 characters)
+.\tests\test_project_file_associations_crud.py:58:89: E501 line too long (299 > 88 characters)
+.\tests\test_project_file_associations_crud.py:60:89: E501 line too long (89 > 88 characters)
+.\tests\test_project_file_associations_crud.py:62:89: E501 line too long (166 > 88 characters)
+.\tests\test_project_file_associations_crud.py:63:89: E501 line too long (95 > 88 characters)
+.\tests\test_project_file_associations_crud.py:65:89: E501 line too long (153 > 88 characters)
+.\tests\test_project_file_associations_crud.py:69:89: E501 line too long (114 > 88 characters)
+.\tests\test_project_file_associations_crud.py:71:89: E501 line too long (129 > 88 characters)
+.\tests\test_project_file_associations_crud.py:75:89: E501 line too long (140 > 88 characters)
+.\tests\test_project_file_associations_crud.py:81:89: E501 line too long (123 > 88 characters)
+.\tests\test_project_file_associations_crud.py:82:89: E501 line too long (160 > 88 characters)
+.\tests\test_project_file_associations_crud.py:85:89: E501 line too long (242 > 88 characters)
+.\tests\test_project_file_associations_crud.py:86:89: E501 line too long (283 > 88 characters)
+.\tests\test_project_file_associations_crud.py:88:89: E501 line too long (103 > 88 characters)
+.\tests\test_project_file_associations_crud.py:90:89: E501 line too long (109 > 88 characters)
+.\tests\test_project_file_associations_crud.py:92:89: E501 line too long (165 > 88 characters)
+.\tests\test_project_file_associations_crud.py:96:89: E501 line too long (196 > 88 characters)
+.\tests\test_project_file_associations_crud.py:98:89: E501 line too long (109 > 88 characters)
+.\tests\test_project_file_associations_crud.py:103:89: E501 line too long (150 > 88 characters)
+.\tests\test_project_file_associations_crud.py:105:89: E501 line too long (109 > 88 characters)
+.\tests\test_project_file_associations_crud.py:106:89: E501 line too long (89 > 88 characters)
+.\tests\test_project_file_associations_crud.py:107:89: E501 line too long (89 > 88 characters)
+.\tests\test_project_file_associations_crud.py:108:89: E501 line too long (101 > 88 characters)
+.\tests\test_project_file_associations_crud.py:109:89: E501 line too long (99 > 88 characters)
+.\tests\test_project_file_associations_crud.py:112:89: E501 line too long (106 > 88 characters)
+.\tests\test_project_file_associations_crud.py:113:89: E501 line too long (103 > 88 characters)
+.\tests\test_project_file_associations_crud.py:114:89: E501 line too long (116 > 88 characters)
+.\tests\test_project_file_associations_crud.py:115:89: E501 line too long (139 > 88 characters)
+.\tests\test_project_file_associations_crud.py:116:89: E501 line too long (100 > 88 characters)
+.\tests\test_project_file_associations_crud.py:118:89: E501 line too long (96 > 88 characters)
+.\tests\test_project_members_crud.py:3:89: E501 line too long (89 > 88 characters)
+.\tests\test_project_members_crud.py:5:89: E501 line too long (108 > 88 characters)
+.\tests\test_project_members_crud.py:11:89: E501 line too long (139 > 88 characters)
+.\tests\test_project_members_crud.py:12:89: E501 line too long (106 > 88 characters)
+.\tests\test_project_members_crud.py:18:89: E501 line too long (113 > 88 characters)
+.\tests\test_project_members_crud.py:21:89: E501 line too long (111 > 88 characters)
+.\tests\test_project_members_crud.py:22:89: E501 line too long (209 > 88 characters)
+.\tests\test_project_members_crud.py:24:89: E501 line too long (95 > 88 characters)
+.\tests\test_project_members_crud.py:39:89: E501 line too long (112 > 88 characters)
+.\tests\test_project_members_crud.py:40:89: E501 line too long (89 > 88 characters)
+.\tests\test_project_members_crud.py:41:89: E501 line too long (89 > 88 characters)
+.\tests\test_project_members_crud.py:52:89: E501 line too long (108 > 88 characters)
+.\tests\test_project_members_crud.py:56:89: E501 line too long (108 > 88 characters)
+.\tests\test_project_members_crud.py:62:89: E501 line too long (97 > 88 characters)
+.\tests\test_project_members_crud.py:69:89: E501 line too long (103 > 88 characters)
+.\tests\test_project_members_crud.py:72:89: E501 line too long (105 > 88 characters)
+.\tests\test_project_members_crud.py:73:89: E501 line too long (95 > 88 characters)
+.\tests\test_project_members_crud.py:75:89: E501 line too long (132 > 88 characters)
+.\tests\test_project_members_crud.py:80:89: E501 line too long (145 > 88 characters)
+.\tests\test_project_members_crud.py:86:89: E501 line too long (108 > 88 characters)
+.\tests\test_project_members_crud.py:88:89: E501 line too long (104 > 88 characters)
+.\tests\test_project_members_crud.py:96:89: E501 line too long (97 > 88 characters)
+.\tests\test_project_members_crud.py:104:89: E501 line too long (126 > 88 characters)
+.\tests\test_project_members_crud.py:108:89: E501 line too long (109 > 88 characters)
+.\tests\test_projects_crud.py:133:9: E999 IndentationError: unexpected indent
+.\tests\test_simple.py:47:36: E999 IndentationError: unindent does not match any outer indentation level
+.\tests\test_task_dependencies_crud.py:4:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\tests\test_task_dependencies_crud.py:9:89: E501 line too long (112 > 88 characters)
+.\tests\test_task_dependencies_crud.py:12:89: E501 line too long (96 > 88 characters)
+.\tests\test_task_dependencies_crud.py:13:89: E501 line too long (133 > 88 characters)
+.\tests\test_task_dependencies_crud.py:17:22: F821 undefined name 'ProjectCreate'
+.\tests\test_task_dependencies_crud.py:18:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:19:89: E501 line too long (137 > 88 characters)
+.\tests\test_task_dependencies_crud.py:22:89: E501 line too long (102 > 88 characters)
+.\tests\test_task_dependencies_crud.py:23:26: F821 undefined name 'TaskCreate'
+.\tests\test_task_dependencies_crud.py:24:89: E501 line too long (118 > 88 characters)
+.\tests\test_task_dependencies_crud.py:26:1: E302 expected 2 blank lines, found 1
+.\tests\test_task_dependencies_crud.py:27:89: E501 line too long (126 > 88 characters)
+.\tests\test_task_dependencies_crud.py:29:89: E501 line too long (124 > 88 characters)
+.\tests\test_task_dependencies_crud.py:31:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:32:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:33:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:34:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:35:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:36:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:37:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:40:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:41:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:47:89: E501 line too long (100 > 88 characters)
+.\tests\test_task_dependencies_crud.py:49:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:50:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:51:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:52:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:53:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:62:89: E501 line too long (108 > 88 characters)
+.\tests\test_task_dependencies_crud.py:63:9: E117 over-indented
+.\tests\test_task_dependencies_crud.py:64:9: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:65:9: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:66:9: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:67:9: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:68:9: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:73:13: E117 over-indented
+.\tests\test_task_dependencies_crud.py:73:89: E501 line too long (99 > 88 characters)
+.\tests\test_task_dependencies_crud.py:74:89: E501 line too long (103 > 88 characters)
+.\tests\test_task_dependencies_crud.py:75:89: E501 line too long (132 > 88 characters)
+.\tests\test_task_dependencies_crud.py:77:13: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:78:13: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:79:13: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:80:13: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:81:13: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:82:13: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:83:13: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:86:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:87:13: E124 closing bracket does not match visual indentation
+.\tests\test_task_dependencies_crud.py:89:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:90:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:91:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:92:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:92:89: E501 line too long (100 > 88 characters)
+.\tests\test_task_dependencies_crud.py:93:89: E501 line too long (91 > 88 characters)
+.\tests\test_task_dependencies_crud.py:94:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:95:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:96:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:97:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:100:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:101:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:102:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:103:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:103:89: E501 line too long (113 > 88 characters)
+.\tests\test_task_dependencies_crud.py:104:89: E501 line too long (101 > 88 characters)
+.\tests\test_task_dependencies_crud.py:105:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:106:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:107:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:108:13: E128 continuation line under-indented for visual indent
+.\tests\test_task_dependencies_crud.py:113:17: E117 over-indented
+.\tests\test_task_dependencies_crud.py:114:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:115:89: E501 line too long (105 > 88 characters)
+.\tests\test_task_dependencies_crud.py:116:89: E501 line too long (105 > 88 characters)
+.\tests\test_task_dependencies_crud.py:117:17: F841 local variable 'task3' is assigned to but never used
+.\tests\test_task_dependencies_crud.py:117:89: E501 line too long (183 > 88 characters)
+.\tests\test_task_dependencies_crud.py:119:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:120:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:121:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:122:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:123:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:124:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:125:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:129:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:130:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:131:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:132:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:133:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:134:89: E501 line too long (148 > 88 characters)
+.\tests\test_task_dependencies_crud.py:136:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:137:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:138:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:139:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:140:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:141:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:142:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:146:21: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:146:89: E501 line too long (91 > 88 characters)
+.\tests\test_task_dependencies_crud.py:147:21: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:148:21: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:149:21: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:150:21: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:153:89: E501 line too long (1885 > 88 characters)
+.\tests\test_task_dependencies_crud.py:157:25: E117 over-indented
+.\tests\test_task_dependencies_crud.py:157:89: E501 line too long (109 > 88 characters)
+.\tests\test_task_dependencies_crud.py:158:89: E501 line too long (196 > 88 characters)
+.\tests\test_task_dependencies_crud.py:160:25: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:161:25: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:162:25: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:163:25: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:164:25: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:165:25: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:166:25: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:171:29: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:171:89: E501 line too long (95 > 88 characters)
+.\tests\test_task_dependencies_crud.py:172:29: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:172:89: E501 line too long (92 > 88 characters)
+.\tests\test_task_dependencies_crud.py:173:29: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:173:89: E501 line too long (91 > 88 characters)
+.\tests\test_task_dependencies_crud.py:174:29: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:175:29: E122 continuation line missing indentation or outdented
+.\tests\test_task_dependencies_crud.py:178:89: E501 line too long (144 > 88 characters)
+.\tests\test_task_dependency_validation.py:8:6: E999 SyntaxError: invalid syntax
+.\tests\test_task_file_associations_crud.py:3:1: F401 'pytest' imported but unused
+.\tests\test_task_file_associations_crud.py:4:1: F401 'sqlalchemy.orm.Session' imported but unused
+.\tests\test_task_file_associations_crud.py:10:89: E501 line too long (90 > 88 characters)
+.\tests\test_task_file_associations_crud.py:11:89: E501 line too long (143 > 88 characters)
+.\tests\test_task_file_associations_crud.py:15:89: E501 line too long (134 > 88 characters)
+.\tests\test_task_file_associations_crud.py:20:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:21:89: E501 line too long (142 > 88 characters)
+.\tests\test_task_file_associations_crud.py:24:89: E501 line too long (102 > 88 characters)
+.\tests\test_task_file_associations_crud.py:25:89: E501 line too long (95 > 88 characters)
+.\tests\test_task_file_associations_crud.py:26:89: E501 line too long (124 > 88 characters)
+.\tests\test_task_file_associations_crud.py:28:1: E302 expected 2 blank lines, found 1
+.\tests\test_task_file_associations_crud.py:29:89: E501 line too long (89 > 88 characters)
+.\tests\test_task_file_associations_crud.py:30:89: E501 line too long (168 > 88 characters)
+.\tests\test_task_file_associations_crud.py:32:89: E501 line too long (123 > 88 characters)
+.\tests\test_task_file_associations_crud.py:33:89: E501 line too long (249 > 88 characters)
+.\tests\test_task_file_associations_crud.py:34:89: E501 line too long (269 > 88 characters)
+.\tests\test_task_file_associations_crud.py:36:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:37:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:38:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:41:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:44:89: E501 line too long (117 > 88 characters)
+.\tests\test_task_file_associations_crud.py:45:89: E501 line too long (90 > 88 characters)
+.\tests\test_task_file_associations_crud.py:47:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:48:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:49:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:52:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:55:89: E501 line too long (117 > 88 characters)
+.\tests\test_task_file_associations_crud.py:56:89: E501 line too long (163 > 88 characters)
+.\tests\test_task_file_associations_crud.py:58:5: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:58:89: E501 line too long (125 > 88 characters)
+.\tests\test_task_file_associations_crud.py:61:89: E501 line too long (122 > 88 characters)
+.\tests\test_task_file_associations_crud.py:65:89: E501 line too long (190 > 88 characters)
+.\tests\test_task_file_associations_crud.py:66:9: E117 over-indented
+.\tests\test_task_file_associations_crud.py:67:9: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:67:89: E501 line too long (113 > 88 characters)
+.\tests\test_task_file_associations_crud.py:71:13: E117 over-indented
+.\tests\test_task_file_associations_crud.py:71:89: E501 line too long (92 > 88 characters)
+.\tests\test_task_file_associations_crud.py:72:89: E501 line too long (101 > 88 characters)
+.\tests\test_task_file_associations_crud.py:74:89: E501 line too long (92 > 88 characters)
+.\tests\test_task_file_associations_crud.py:75:89: E501 line too long (143 > 88 characters)
+.\tests\test_task_file_associations_crud.py:78:89: E501 line too long (97 > 88 characters)
+.\tests\test_task_file_associations_crud.py:79:89: E501 line too long (257 > 88 characters)
+.\tests\test_task_file_associations_crud.py:80:89: E501 line too long (257 > 88 characters)
+.\tests\test_task_file_associations_crud.py:81:89: E501 line too long (288 > 88 characters)
+.\tests\test_task_file_associations_crud.py:83:13: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:83:89: E501 line too long (140 > 88 characters)
+.\tests\test_task_file_associations_crud.py:85:13: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:85:89: E501 line too long (172 > 88 characters)
+.\tests\test_task_file_associations_crud.py:87:13: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:87:89: E501 line too long (164 > 88 characters)
+.\tests\test_task_file_associations_crud.py:88:89: E501 line too long (166 > 88 characters)
+.\tests\test_task_file_associations_crud.py:90:89: E501 line too long (97 > 88 characters)
+.\tests\test_task_file_associations_crud.py:91:89: E501 line too long (121 > 88 characters)
+.\tests\test_task_file_associations_crud.py:92:89: E501 line too long (166 > 88 characters)
+.\tests\test_task_file_associations_crud.py:94:89: E501 line too long (135 > 88 characters)
+.\tests\test_task_file_associations_crud.py:95:89: E501 line too long (91 > 88 characters)
+.\tests\test_task_file_associations_crud.py:96:89: E501 line too long (96 > 88 characters)
+.\tests\test_task_file_associations_crud.py:98:89: E501 line too long (161 > 88 characters)
+.\tests\test_task_file_associations_crud.py:103:17: E117 over-indented
+.\tests\test_task_file_associations_crud.py:103:89: E501 line too long (100 > 88 characters)
+.\tests\test_task_file_associations_crud.py:104:89: E501 line too long (102 > 88 characters)
+.\tests\test_task_file_associations_crud.py:107:89: E501 line too long (101 > 88 characters)
+.\tests\test_task_file_associations_crud.py:108:89: E501 line too long (261 > 88 characters)
+.\tests\test_task_file_associations_crud.py:109:89: E501 line too long (280 > 88 characters)
+.\tests\test_task_file_associations_crud.py:110:89: E501 line too long (201 > 88 characters)
+.\tests\test_task_file_associations_crud.py:111:89: E501 line too long (241 > 88 characters)
+.\tests\test_task_file_associations_crud.py:112:89: E501 line too long (170 > 88 characters)
+.\tests\test_task_file_associations_crud.py:114:89: E501 line too long (94 > 88 characters)
+.\tests\test_task_file_associations_crud.py:115:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:116:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:117:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:118:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:120:89: E501 line too long (97 > 88 characters)
+.\tests\test_task_file_associations_crud.py:121:89: E501 line too long (172 > 88 characters)
+.\tests\test_task_file_associations_crud.py:123:89: E501 line too long (126 > 88 characters)
+.\tests\test_task_file_associations_crud.py:124:89: E501 line too long (100 > 88 characters)
+.\tests\test_task_file_associations_crud.py:125:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:126:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:127:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:128:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:131:89: E501 line too long (101 > 88 characters)
+.\tests\test_task_file_associations_crud.py:132:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:133:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:134:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:135:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:137:89: E501 line too long (93 > 88 characters)
+.\tests\test_task_file_associations_crud.py:138:89: E501 line too long (168 > 88 characters)
+.\tests\test_task_file_associations_crud.py:139:89: E501 line too long (108 > 88 characters)
+.\tests\test_task_file_associations_crud.py:140:89: E501 line too long (107 > 88 characters)
+.\tests\test_task_file_associations_crud.py:141:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:142:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:143:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:144:17: E122 continuation line missing indentation or outdented
+.\tests\test_task_file_associations_crud.py:146:89: E501 line too long (106 > 88 characters)
+.\tests\test_tasks_crud.py:10:89: E501 line too long (161 > 88 characters)
+.\tests\test_tasks_crud.py:23:1: E304 blank lines found after function decorator
+.\tests\test_tasks_crud.py:23:89: E501 line too long (122 > 88 characters)
+.\tests\test_tasks_crud.py:24:15: F821 undefined name 'Project'
+.\tests\test_tasks_crud.py:25:13: F821 undefined name 'Agent'
+.\tests\test_tasks_crud.py:63:1: E304 blank lines found after function decorator
+.\tests\test_tasks_crud.py:63:89: E501 line too long (102 > 88 characters)
+.\tests\test_tasks_crud.py:75:1: E304 blank lines found after function decorator
+.\tests\test_tasks_crud.py:75:89: E501 line too long (116 > 88 characters)
+.\tests\test_tasks_crud.py:76:15: F821 undefined name 'Project'
+.\tests\test_tasks_crud.py:76:89: E501 line too long (90 > 88 characters)
+.\tests\test_tasks_crud.py:79:89: E501 line too long (92 > 88 characters)
+.\tests\test_tasks_crud.py:80:5: F841 local variable 'task1' is assigned to but never used
+.\tests\test_tasks_crud.py:90:5: F841 local variable 'task2' is assigned to but never used
+.\tests\test_tasks_crud.py:110:89: E501 line too long (114 > 88 characters)
+.\tests\test_tasks_crud.py:119:89: E501 line too long (278 > 88 characters)
+.\tests\test_tasks_crud.py:125:1: E304 blank lines found after function decorator
+.\tests\test_tasks_crud.py:126:15: F821 undefined name 'Project'
+.\tests\test_tasks_crud.py:126:89: E501 line too long (90 > 88 characters)
+.\tests\test_tasks_crud.py:164:1: E304 blank lines found after function decorator
+.\tests\test_tasks_crud.py:165:15: F821 undefined name 'Project'
+.\tests\test_tasks_crud.py:165:89: E501 line too long (90 > 88 characters)
+.\tests\unit\crud\test_projects.py:69:1: E999 IndentationError: unexpected unindent
+.\tests\unit\routes\test_project_routes.py:30:6: E999 SyntaxError: invalid syntax
+.\tests\unit\services\test_project_service.py:66:1: E999 IndentationError: unexpected unindent

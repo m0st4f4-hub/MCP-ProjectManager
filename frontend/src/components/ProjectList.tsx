@@ -54,6 +54,10 @@ import {
   TaskWithMeta,
   Task,
   ProjectUpdateData,
+  ProjectFilters,
+  ProjectSortOptions,
+  ProjectSortField,
+  TaskStatus,
 } from "@/types";
 import {
   /* Eye, */ Edit3,
@@ -370,7 +374,7 @@ const ProjectList: React.FC = () => {
     const projectTasks: TaskWithMeta[] = (project.tasks || []).map(
       (task: Task) => ({
         ...task,
-        completed: task.status === "COMPLETED",
+        completed: task.status === TaskStatus.COMPLETED,
       }),
     );
     const totalTasksInProject = projectTasks.length;

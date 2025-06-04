@@ -145,7 +145,14 @@ const ProjectDetail: React.FC = () => {
       ) : (
         <div>
           {tasks.map((task) => (
-            <TaskItem key={task.id} task={task} projectName={project.name} />
+            <TaskItem
+              key={task.id}
+              task={task}
+              projectName={project.name}
+              onDeleteInitiate={() => {}}
+              onAssignAgent={() => {}}
+              onCopyGetCommand={() => {}}
+            />
           ))}
         </div>
       )}

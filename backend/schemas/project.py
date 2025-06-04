@@ -1,112 +1,113 @@
-# Task ID: <taskId>
-# Agent Role: ImplementationSpecialist
-# Request ID: <requestId>
-# Project: task-manager
-# Timestamp: <timestamp>
+# Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional, List, Union, Any, Dict
 from datetime import datetime
-from .user import User # Import User directly
+from .user import User  # Import User directly  # Import related schemas
+from ..validation import ValidationMixin
+from ..models.base import ProjectMemberRole  # Import the enum
 
-# Import related schemas
-import uuid
 
-# Forward references for relationships
-# User = "User" # Remove string forward reference
-# Project is defined within this file
-
-# --- Project Schemas ---
-class ProjectBase(BaseModel):
- """Base schema for project attributes."""
- name: str = Field(..., description="The unique name of the project.")
- description: Optional[str] = Field(
- None, description="Optional text description of the project.")
- is_archived: bool = Field(
- False, description="Whether the project is archived.")
-
+class ProjectBase(BaseModel, ValidationMixin):
+    """Base schema for project attributes."""
+    name: str = Field(..., description="The unique name of the project.")
+    description: Optional[str] = Field(
+        None, description="Optional text description of the project.")
+    is_archived: bool = Field(
+        False, description="Whether the project is archived.")
+    
+    @field_validator('name')
+    @classmethod
+    def validate_name(cls, v):
+        if not v or not v.strip():
+            raise ValueError("Project name cannot be empty")
+        return cls.validate_safe_string(v, max_length=100)
+    
+    @field_validator('description')
+    @classmethod
+    def validate_description(cls, v):
+        if v:
+            return cls.validate_safe_string(v, max_length=500)
+        return v
 class ProjectCreate(ProjectBase):
- """Schema used for creating a new project."""
- # Add optional template_id field
- template_id: Optional[str] = Field(None, description="Optional ID of a project template to use.")
+    """Schema used for creating a new project."""  # Add optional template_id field
+    template_id: Optional[str] = Field(None, description="Optional ID of a project template to use.")  # Schema for updating a project (all fields optional)
 
-# Schema for updating a project (all fields optional)
+
 class ProjectUpdate(BaseModel):
- """Schema for updating an existing project. All fields are optional."""
- name: Optional[str] = Field(None, description="New name for the project.")
- description: Optional[str] = Field(
- None, description="New description for the project.")
- is_archived: Optional[bool] = Field(
- None, description="Set the archived status of the project.")
+    """Schema for updating an existing project. All fields are optional."""
+    name: Optional[str] = Field(None, description="New name for the project.")
+    description: Optional[str] = Field(
+        None, description="New description for the project.")
+    is_archived: Optional[bool] = Field(
+        None, description="Set the archived status of the project.")
 
 class Project(ProjectBase):
- """Schema for representing a project in API responses."""
- id: str = Field(..., description="Unique identifier for the project.")
- created_at: datetime = Field(...,
- description="Timestamp when the project was created.")
- updated_at: Optional[datetime] = Field(
- None, description="Timestamp when the project was last updated.")
- task_count: int = Field(
- 0, description="Number of tasks associated with this project.")
- # is_archived is inherited from ProjectBase
- model_config = ConfigDict(from_attributes=True, extra='ignore')
+    """Schema for representing a project in API responses."""
+    id: str = Field(..., description="Unique identifier for the project.")
+    created_at: datetime = Field(...,
+                                description="Timestamp when the project was created.")
+    updated_at: Optional[datetime] = Field(
+        None, description="Timestamp when the project was last updated.")
+    task_count: int = Field(
+        0, description="Number of tasks associated with this project.")
+    completed_task_count: int = Field(0, description="Number of completed tasks in this project.")
+    created_by: Optional[str] = Field(None, description="ID of the user who created the project.")
+    # is_archived is inherited from ProjectBase
+    model_config = ConfigDict(from_attributes=True, extra='ignore')  # --- Project File Association Schemas ---
 
-# --- Project File Association Schemas ---
+
 class ProjectFileAssociationBase(BaseModel):
- """Base schema for project-file association attributes."""
- project_id: str = Field(..., description="The ID of the associated project.")
- file_memory_entity_id: int = Field(..., description="The ID of the associated file MemoryEntity.")
+    """Base schema for project-file association attributes."""
+    project_id: str = Field(..., description="The ID of the associated project.")
+    file_memory_entity_id: int = Field(..., description="The ID of the associated file MemoryEntity.")
 
 class ProjectFileAssociationCreate(ProjectFileAssociationBase):
- pass
+    pass
 
 class ProjectFileAssociation(ProjectFileAssociationBase):
- model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)  # --- Project Template Schemas ---
 
-# --- Project Template Schemas ---
+
 class ProjectTemplateBase(BaseModel):
- """Base schema for project template attributes."""
- name: str = Field(..., description="The unique name of the project template.")
- description: Optional[str] = Field(
- None, description="Optional description of the template.")
+    """Base schema for project template attributes."""
+    name: str = Field(..., description="The unique name of the project template.")
+    description: Optional[str] = Field(
+    None, description="Optional description of the template.")
 
 class ProjectTemplateCreate(ProjectTemplateBase):
- pass
+    pass
 
 class ProjectTemplateUpdate(BaseModel):
- """Schema for updating an existing project template. All fields are optional."""
- name: Optional[str] = Field(None, description="New name for the project template.")
- description: Optional[str] = Field(None, description="New description for the template.")
+    """Schema for updating an existing project template. All fields are optional."""
+    name: Optional[str] = Field(None, description="New name for the project template.")
+    description: Optional[str] = Field(None, description="New description for the template.")
 
 class ProjectTemplate(ProjectTemplateBase):
- """Schema for representing a project template."""
- id: str = Field(..., description="Unique identifier for the project template.")
+    """Schema for representing a project template."""
+    id: str = Field(..., description="Unique identifier for the project template.")
 
- model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)  # --- Project Member Schemas ---
 
-# --- Project Member Schemas ---
+
 class ProjectMemberBase(BaseModel):
- """Base schema for project member attributes."""
- project_id: str = Field(..., description="ID of the project.")
- user_id: str = Field(..., description="ID of the user.")
- role: str = Field(..., description="Role of the user in the project (e.g., owner, collaborator, viewer).")
+    """Base schema for project member attributes."""
+    project_id: str = Field(..., description="ID of the project.")
+    user_id: str = Field(..., description="ID of the user.")
+    role: ProjectMemberRole = Field(..., description="Role of the user in the project (owner, member, or viewer).")
 
 class ProjectMemberCreate(ProjectMemberBase):
- pass
+    pass
 
 class ProjectMemberUpdate(BaseModel):
- """Schema for updating an existing project member."""
- role: Optional[str] = Field(None, description="Updated role of the user in the project.")
+    """Schema for updating an existing project member."""
+    role: Optional[ProjectMemberRole] = Field(None, description="Updated role of the user in the project.")
 
 class ProjectMember(ProjectMemberBase):
- """Schema for representing a project member in API responses."""
- created_at: datetime = Field(..., description="Timestamp when the membership was created.")
- updated_at: Optional[datetime] = Field(None, description="Timestamp when the membership was last updated.")
- project: Optional[Project] = Field(None, description="The project this membership is for.")
- user: Optional[User] = Field(None, description="The user this membership is for.") # Should now use the imported User
+    """Schema for representing a project member in API responses."""
+    created_at: datetime = Field(..., description="Timestamp when the membership was created.")
+    updated_at: Optional[datetime] = Field(None, description="Timestamp when the membership was last updated.")
+    project: Optional[Project] = Field(None, description="The project this membership is for.")
+    user: Optional[User] = Field(None, description="The user this membership is for.")  # Should now use the imported User
 
- model_config = ConfigDict(from_attributes=True)
-
-# Add other schemas here if necessary
-
-# Note: model_rebuild() is called in main.py after all schemas are loaded 
+    model_config = ConfigDict(from_attributes=True)  # Add other schemas here if necessary  # Note: model_rebuild() is called in main.py after all schemas are loaded

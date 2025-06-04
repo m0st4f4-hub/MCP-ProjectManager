@@ -34,100 +34,29 @@ import type { ElementType } from "react";
 
 /**
  * Defines the raw string identifiers for all canonical task statuses.
- * These include both static statuses and base strings for statuses that might
- * incorporate dynamic information (e.g., 'COMPLETED_HANDOFF_TO_...').
+ * These match the backend TaskStatusEnum values exactly.
  */
 export type StatusID =
-  | "TO_DO"
-  | "IN_PROGRESS"
-  | "BLOCKED"
-  | "COMPLETED"
-  | "CONTEXT_ACQUIRED"
-  | "PLANNING_COMPLETE"
-  | "EXECUTION_IN_PROGRESS"
-  | "PENDING_VERIFICATION"
-  | "VERIFICATION_COMPLETE"
-  | "VERIFICATION_FAILED"
-  | "COMPLETED_AWAITING_PROJECT_MANAGER"
-  | "COMPLETED_HANDOFF_TO_..." // Base for dynamic status, full string includes IDs
-  | "FAILED"
-  | "IN_PROGRESS_AWAITING_SUBTASK"
-  | "PENDING_RECOVERY_ATTEMPT";
+  | "To Do"
+  | "In Progress"
+  | "In Review"
+  | "Completed"
+  | "Blocked"
+  | "Cancelled";
 
 /**
  * Represents the full set of attributes for a canonical task status.
  * This interface defines the shape of objects stored in `STATUS_MAP`.
  */
 export interface StatusAttributeObject {
-  /**
-   * The raw string identifier for the status.
-   * Matches one of the `StatusID` types.
-   */
   id: StatusID;
-  /**
-   * User-friendly name for display in the UI (e.g., table cells, badges, tooltips).
-   * For dynamic statuses, this might be a template string.
-   */
   displayName: string;
-  /**
-   * Broad category for filtering, grouping, or applying consistent styling/logic.
-   * (e.g., 'todo', 'inProgress', 'completed', 'failed', 'blocked', 'pendingInput').
-   */
-  category:
-    | "todo"
-    | "inProgress"
-    | "pendingInput"
-    | "completed"
-    | "failed"
-    | "blocked";
-  /**
-   * A brief explanation of what the status means.
-   * Useful for tooltips or more detailed views.
-   */
+  category: "todo" | "inProgress" | "pendingInput" | "completed" | "failed" | "blocked";
   description: string;
-  /**
-   * Suggested Chakra UI color scheme (e.g., 'blue', 'green', 'red').
-   * This is used to consistently color UI elements associated with the status.
-   * See Chakra UI documentation for available color schemes.
-   */
   colorScheme: string;
-  /**
-   * Suggested icon to visually represent the status.
-   * Can be a string (e.g., a key for an icon map, or a placeholder like 'EditIcon')
-   * or a Chakra UI `As` type if icons are directly imported and passed.
-   * @see As (Chakra UI)
-   * @example 'CheckCircleIcon' // Placeholder name
-   * @example CheckCircleIcon // Actual imported component (if As type is used)
-   */
   icon?: ElementType | string;
-  /**
-   * Indicates if the task is considered finished from an agent's perspective
-   * and no further automated work or standard progression is expected for this specific task.
-   * `true` if the status represents a final state for the task's lifecycle (e.g., Completed, Failed).
-   * `false` if the task is still active or pending.
-   */
   isTerminal: boolean;
-  /**
-   * Indicates if the status string itself (when used in a task object)
-   * is expected to contain dynamic parts (e.g., task IDs, agent names).
-   * For example, 'COMPLETED_HANDOFF_TO_task123,task456'.
-   * If `true`, `dynamicPartsExtractor` and `dynamicDisplayNamePattern` are typically used.
-   */
   isDynamic: boolean;
-  /**
-   * A string representation of a RegExp or a RegExp object used to extract dynamic
-   * information from a full status string if `isDynamic` is true.
-   * The first capture group of the regex should typically capture the relevant dynamic value.
-   * @example /^COMPLETED_HANDOFF_TO_(([a-zA-Z0-9-]+(?:\\s*,\\s*[a-zA-Z0-9-]+)*))$/
-   */
-  dynamicPartsExtractor?: string | RegExp;
-  /**
-   * A template string for generating a `displayName` when `isDynamic` is true.
-   * It should include a placeholder like `{value}` or `{extractedValue}` which will be
-   * replaced by the value extracted by `dynamicPartsExtractor`.
-   * @example 'Handoff to: {value}'
-   */
-  dynamicDisplayNamePattern?: string;
 }
 
 /**
@@ -143,165 +72,64 @@ export interface StatusAttributeObject {
  * component itself (e.g., `icon: EditIcon`).
  */
 const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
-  TO_DO: {
-    id: "TO_DO",
+  "To Do": {
+    id: "To Do",
     displayName: "To Do",
     category: "todo",
     description: "Task is pending and has not yet been started.",
     colorScheme: "gray",
-    icon: "EditIcon", // Placeholder for an icon like Chakra UI's EditIcon or similar
+    icon: "EditIcon",
     isTerminal: false,
     isDynamic: false,
   },
-  IN_PROGRESS: {
-    id: "IN_PROGRESS",
+  "In Progress": {
+    id: "In Progress",
     displayName: "In Progress",
     category: "inProgress",
     description: "Task is actively being worked on.",
     colorScheme: "blue",
-    icon: "TimeIcon", // Placeholder for an icon indicating activity or time
+    icon: "TimeIcon",
     isTerminal: false,
     isDynamic: false,
   },
-  BLOCKED: {
-    id: "BLOCKED",
+  "In Review": {
+    id: "In Review",
+    displayName: "In Review",
+    category: "inProgress",
+    description: "Task is under review.",
+    colorScheme: "purple",
+    icon: "ViewIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  Blocked: {
+    id: "Blocked",
     displayName: "Blocked",
     category: "blocked",
     description: "Task cannot proceed due to a dependency or issue.",
     colorScheme: "orange",
-    icon: "WarningTwoIcon", // Placeholder for an icon indicating a warning or blockage
+    icon: "WarningTwoIcon",
     isTerminal: false,
     isDynamic: false,
   },
-  COMPLETED: {
-    id: "COMPLETED",
+  Completed: {
+    id: "Completed",
     displayName: "Completed",
     category: "completed",
     description: "Task has been finished successfully.",
     colorScheme: "green",
-    icon: "CheckCircleIcon", // Placeholder for an icon indicating success
+    icon: "CheckCircleIcon",
     isTerminal: true,
     isDynamic: false,
   },
-  CONTEXT_ACQUIRED: {
-    id: "CONTEXT_ACQUIRED",
-    displayName: "Context Acquired",
-    category: "inProgress",
-    description: "Agent has fetched and understood the task details.",
-    colorScheme: "cyan",
-    icon: "InfoOutlineIcon", // Placeholder for an informational icon
-    isTerminal: false,
-    isDynamic: false,
-  },
-  PLANNING_COMPLETE: {
-    id: "PLANNING_COMPLETE",
-    displayName: "Planning Complete",
-    category: "inProgress",
-    description: "Agent has finalized its plan of action for the task.",
-    colorScheme: "teal",
-    icon: "ListOrderedIcon", // Placeholder, e.g. RiListOrdered or similar
-    isTerminal: false,
-    isDynamic: false,
-  },
-  EXECUTION_IN_PROGRESS: {
-    id: "EXECUTION_IN_PROGRESS",
-    displayName: "Execution In Progress",
-    category: "inProgress",
-    description: "Agent is currently executing the core work of the task.",
-    colorScheme: "blue",
-    icon: "RepeatClockIcon", // Placeholder, e.g. MdOutlineSettingsBackupRestore or similar for ongoing work
-    isTerminal: false,
-    isDynamic: false,
-  },
-  PENDING_VERIFICATION: {
-    id: "PENDING_VERIFICATION",
-    displayName: "Pending Verification",
-    category: "inProgress", // Still active, but a specific sub-state
-    description:
-      "Agent has completed the execution and is awaiting verification of the results.",
-    colorScheme: "yellow",
-    icon: "QuestionOutlineIcon", // Placeholder for a query or pending state
-    isTerminal: false,
-    isDynamic: false,
-  },
-  VERIFICATION_COMPLETE: {
-    id: "VERIFICATION_COMPLETE",
-    displayName: "Verification Complete",
-    category: "inProgress", // Part of the active flow, leading to a terminal state
-    description:
-      "Agent has successfully verified the results of its execution.",
-    colorScheme: "green",
-    icon: "CheckIcon", // Placeholder for a simple checkmark
-    isTerminal: false, // Typically followed by a handoff or PM review status
-    isDynamic: false,
-  },
-  VERIFICATION_FAILED: {
-    id: "VERIFICATION_FAILED",
-    displayName: "Verification Failed",
+  Cancelled: {
+    id: "Cancelled",
+    displayName: "Cancelled",
     category: "failed",
-    description:
-      "Agent's verification of the task's execution failed. Requires attention.",
+    description: "Task was cancelled and will not be completed.",
     colorScheme: "red",
-    icon: "NotAllowedIcon", // Placeholder for failure or error
-    isTerminal: false, // Not truly terminal as it usually requires rework or PM intervention
-    isDynamic: false,
-  },
-  COMPLETED_AWAITING_PROJECT_MANAGER: {
-    id: "COMPLETED_AWAITING_PROJECT_MANAGER",
-    displayName: "Completed (Awaiting PM Review)",
-    category: "completed",
-    description:
-      "Task is completed by the agent and awaits review or next steps from the Project Manager.",
-    colorScheme: "purple",
-    icon: "EmailIcon", // Placeholder, suggesting communication or review needed
+    icon: "CloseIcon",
     isTerminal: true,
-    isDynamic: false,
-  },
-  "COMPLETED_HANDOFF_TO_...": {
-    id: "COMPLETED_HANDOFF_TO_...",
-    displayName: "Handoff to: {value}", // Default dynamic pattern
-    category: "completed",
-    description:
-      "Task is completed, and follow-up tasks have been created and assigned. The dynamic part holds the new Task IDs or relevant handoff information.",
-    colorScheme: "purple",
-    icon: "ArrowForwardIcon", // Placeholder for handoff or continuation
-    isTerminal: true,
-    isDynamic: true,
-    dynamicPartsExtractor:
-      /^COMPLETED_HANDOFF_TO_((?:[a-zA-Z0-9-]+|\b\w+\b)(?:\\s*,\\s*(?:[a-zA-Z0-9-]+|\b\w+\b))*)$/i,
-    dynamicDisplayNamePattern: "Handoff to: {value}",
-  },
-  FAILED: {
-    id: "FAILED",
-    displayName: "Failed",
-    category: "failed",
-    description:
-      "Task could not be completed due to an unrecoverable error or failure.",
-    colorScheme: "red",
-    icon: "WarningIcon", // Placeholder for a general warning/failure icon
-    isTerminal: true,
-    isDynamic: false,
-  },
-  IN_PROGRESS_AWAITING_SUBTASK: {
-    id: "IN_PROGRESS_AWAITING_SUBTASK",
-    displayName: "Awaiting Subtask(s)",
-    category: "blocked", // Considered blocked as it cannot proceed
-    description:
-      "Task is paused, waiting for one or more subtasks to be completed.",
-    colorScheme: "orange",
-    icon: "TimeIcon", // Placeholder, can indicate waiting
-    isTerminal: false,
-    isDynamic: false,
-  },
-  PENDING_RECOVERY_ATTEMPT: {
-    id: "PENDING_RECOVERY_ATTEMPT",
-    displayName: "Pending Recovery",
-    category: "inProgress", // Actively trying to recover
-    description:
-      "Agent encountered an issue and is planning or attempting a recovery action.",
-    colorScheme: "yellow",
-    icon: "RepeatIcon", // Placeholder, indicating a retry or recovery process
-    isTerminal: false,
     isDynamic: false,
   },
 };

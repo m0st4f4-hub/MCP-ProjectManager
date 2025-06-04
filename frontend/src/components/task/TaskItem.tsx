@@ -29,6 +29,7 @@ import { getStatusAccentColor } from "./TaskItem.utils";
 import { useTaskItemStyles } from "../useTaskItemStyles";
 import TaskItemMainSection from "./TaskItemMainSection";
 import TaskItemModals from "../TaskItemModals";
+import { TaskStatus } from "@/types/task";
 
 // Define the iconMap
 const iconMap: Record<string, React.ElementType> = {
@@ -95,7 +96,7 @@ const TaskItem: React.FC<TaskItemProps> = memo(
     // It optimistically updates the UI and then calls the store action.
     const handleToggleCompletion = useCallback(async () => {
       // Determine the new status based on the current status.
-      const newStatus = task.status !== "COMPLETED" ? "COMPLETED" : "TO_DO";
+      const newStatus = task.status !== TaskStatus.COMPLETED ? TaskStatus.COMPLETED : TaskStatus.TO_DO;
       try {
         // Attempt to update the task in the store.
         await editTaskInStore(task.project_id, task.task_number, { status: newStatus });

@@ -31,7 +31,7 @@ from .schemas import (
 # Local imports
 from .database import get_db, Base, engine
 # Import middleware initialization
-from .middleware import init_middleware
+from .middleware import RateLimitMiddleware, SecurityHeadersMiddleware, init_middleware
 
 # Explicitly import models to ensure they are loaded early
 from . import models
@@ -87,25 +87,96 @@ logger = logging.getLogger(__name__)
 # Function to include routers dynamically
 def include_app_routers(application: FastAPI):
     """Include all application routers."""
-    from .routers import (
-        users, projects, tasks, comments, 
-        agents, memory, mcp, rules, 
-        project_templates, audit_logs
-    )
+    # Import available routers
+    try:
+        from .routers import users
+        application.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+        logger.info("Users router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import users router: {e}")
     
-    # Include all routers with their prefixes
-    application.include_router(users.router, prefix="/api/users", tags=["users"])
-    application.include_router(projects.router, prefix="/api/projects", tags=["projects"])
-    application.include_router(tasks.router, prefix="/api/tasks", tags=["tasks"])
-    application.include_router(comments.router, prefix="/api/comments", tags=["comments"])
-    application.include_router(agents.router, prefix="/api/agents", tags=["agents"])
-    application.include_router(memory.router, prefix="/api/memory", tags=["memory"])
-    application.include_router(mcp.router, prefix="/api/mcp", tags=["mcp"])
-    application.include_router(rules.router, prefix="/api/rules", tags=["rules"])
-    application.include_router(project_templates.router, prefix="/api/templates", tags=["templates"])
-    application.include_router(audit_logs.router, prefix="/api/audit-logs", tags=["audit-logs"])
+    # Include admin router
+    try:
+        from .routers.admin import router as admin_router
+        application.include_router(admin_router, prefix="/api/v1", tags=["admin"])
+        logger.info("Admin router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import admin router: {e}")
     
-    logger.info("All routers included successfully")
+    # Include auth router separately for /api/v1/auth endpoints
+    try:
+        from .routers.users.auth.auth import router as auth_router
+        application.include_router(auth_router, prefix="/api/v1", tags=["auth"])
+        logger.info("Auth router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import auth router: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error with auth router: {e}")
+    
+    try:
+        from .routers import projects
+        application.include_router(projects.router, prefix="/api/v1/projects", tags=["projects"])
+        logger.info("Projects router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import projects router: {e}")
+    
+    try:
+        from .routers import tasks
+        application.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
+        logger.info("Tasks router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import tasks router: {e}")
+    
+    try:
+        from .routers import comments
+        application.include_router(comments.router, prefix="/api/comments", tags=["comments"])
+        logger.info("Comments router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import comments router: {e}")
+    
+    try:
+        from .routers import agents
+        application.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])
+        logger.info("Agents router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import agents router: {e}")
+    
+    try:
+        from .routers import memory
+        application.include_router(memory.router, prefix="/api/memory", tags=["memory"])
+        logger.info("Memory router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import memory router: {e}")
+    
+    try:
+        from .routers import mcp
+        application.include_router(mcp.router, prefix="/api/mcp", tags=["mcp"])
+        logger.info("MCP router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import mcp router: {e}")
+    
+    try:
+        from .routers import rules
+        application.include_router(rules.router, prefix="/api/rules", tags=["rules"])
+        logger.info("Rules router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import rules router: {e}")
+    
+    try:
+        from .routers import project_templates
+        application.include_router(project_templates.router, prefix="/api/templates", tags=["templates"])
+        logger.info("Project templates router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import project_templates router: {e}")
+    
+    try:
+        from .routers import audit_logs
+        application.include_router(audit_logs.router, prefix="/api/audit-logs", tags=["audit-logs"])
+        logger.info("Audit logs router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import audit_logs router: {e}")
+    
+    logger.info("Router inclusion completed")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

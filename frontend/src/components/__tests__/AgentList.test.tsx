@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { TestWrapper } from '@/__tests__/utils/test-utils';
+import { render } from '@testing-library/react';
 import AgentList from '../AgentList';
 
 vi.mock('@chakra-ui/react', async () => {
@@ -21,11 +21,7 @@ describe('AgentList', () => {
   });
 
   it('should render without crashing', () => {
-    render(
-      <TestWrapper>
-        <AgentList />
-      </TestWrapper>
-    );
+    render(<AgentList />);
     expect(document.body).toBeInTheDocument();
   });
 
@@ -35,22 +31,14 @@ describe('AgentList', () => {
       'data-testid': 'test-component'
     };
     
-    render(
-      <TestWrapper>
-        <AgentList {...props} />
-      </TestWrapper>
-    );
+    render(<AgentList {...props} />);
     
     const component = screen.queryByTestId('test-component');
     expect(component || document.body).toBeInTheDocument();
   });
 
   it('should handle user interactions', async () => {
-    render(
-      <TestWrapper>
-        <AgentList />
-      </TestWrapper>
-    );
+    render(<AgentList />);
     
     const buttons = screen.queryAllByRole('button');
     const inputs = screen.queryAllByRole('textbox');

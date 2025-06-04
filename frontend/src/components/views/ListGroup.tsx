@@ -22,7 +22,7 @@ interface ListGroupProps {
   handleAssignAgent: (task: Task) => void;
   handleDeleteInitiate: (task: Task) => void;
   setSelectedTask: (task: Task) => void;
-  handleCopyTaskGetCommand: (taskId: string) => void;
+  handleCopyTaskGetCommand: (task: Task) => void;
   isMobile?: boolean;
 }
 

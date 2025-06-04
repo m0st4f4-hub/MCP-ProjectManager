@@ -1,1 +1,1 @@
-# This makes 'routers' a Python package 
+# Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>  # This makes 'routers' a Python package  # Import and include modular routers

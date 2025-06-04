@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Project } from "@/types/project";
+import { Project, ProjectWithMeta } from "@/types/project";
 import { ProjectState } from "@/store/projectStore";
 import { TaskState } from "@/store/taskStore"; // For task-based project filtering
 
@@ -17,7 +17,7 @@ export const useFilteredProjects = (
   projects: Project[],
   projectStoreFilters: ProjectFilters,
   taskViewProjectIdFilter?: TaskViewProjectFilter,
-): Project[] => {
+): ProjectWithMeta[] => {
   return useMemo(() => {
     if (!projectStoreFilters && !taskViewProjectIdFilter) {
       return projects.filter((project) => !project.is_archived);

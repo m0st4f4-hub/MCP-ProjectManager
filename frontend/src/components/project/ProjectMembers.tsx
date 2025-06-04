@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { getProjectMembers, addMemberToProject, removeMemberFromProject, ProjectMember } from '@/services/api/projects';
+import { getProjectMembers, addMemberToProject, removeMemberFromProject } from '@/services/api/projects';
+import { ProjectMember, ProjectMemberRole } from '@/types/project';
 
 interface ProjectMembersProps {
   projectId: string;
@@ -12,7 +13,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newMemberUserId, setNewMemberUserId] = useState('');
-  const [newMemberRole, setNewMemberRole] = useState('');
+  const [newMemberRole, setNewMemberRole] = useState<ProjectMemberRole | ''>( '');
 
   const fetchMembers = async () => {
     try {
@@ -35,7 +36,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
     if (!newMemberUserId || !newMemberRole) return;
 
     try {
-      await addMemberToProject(projectId, { user_id: newMemberUserId, role: newMemberRole });
+      await addMemberToProject(projectId, { project_id: projectId, user_id: newMemberUserId, role: newMemberRole as ProjectMemberRole });
       setNewMemberUserId('');
       setNewMemberRole('');
       fetchMembers(); // Refresh the list
@@ -94,12 +95,18 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
         </div>
         <div>
           <label htmlFor="role">Role:</label>
-          <input
+          <select
             id="role"
-            type="text"
             value={newMemberRole}
-            onChange={(e) => setNewMemberRole(e.target.value)}
-          />
+            onChange={(e) => setNewMemberRole(e.target.value as ProjectMemberRole)}
+          >
+            <option value="">Select Role</option>
+            {Object.values(ProjectMemberRole).map((role) => (
+              <option key={role} value={role}>
+                {role}
+              </option>
+            ))}
+          </select>
         </div>
         <button type="submit">Add Member</button>
       </form>

@@ -5,16 +5,18 @@ import { Task } from "@/types";
 
 interface ListTaskItemProps {
   task: Task;
+  projectName: string;
   selectedTaskIds: string[];
   toggleTaskSelection: (taskId: string) => void;
   handleAssignAgent: (task: Task) => void;
   handleDeleteInitiate: (task: Task) => void;
   setSelectedTask: (task: Task) => void;
-  handleCopyTaskGetCommand: (taskId: string) => void;
+  handleCopyTaskGetCommand: (task: Task) => void;
 }
 
 const ListTaskItem: React.FC<ListTaskItemProps> = ({
   task,
+  projectName,
   selectedTaskIds,
   toggleTaskSelection,
   handleAssignAgent,
@@ -24,36 +26,31 @@ const ListTaskItem: React.FC<ListTaskItemProps> = ({
 }) => {
   return (
     <ListItem
-      key={task.id}
+      key={`${task.project_id}-${task.task_number}`}
       display="flex"
       alignItems="center"
-      pl="10"
-      pr="2"
-      py="1"
+      py="2"
+      px="2"
       borderBottomWidth="DEFAULT"
       borderBottomStyle="solid"
       borderColor="borderDecorative"
-      bg={
-        selectedTaskIds.includes(task.id)
-          ? "surfaceElevated"
-          : "transparent"
-      }
-      _hover={{ bg: "gray.100", _dark: { bg: "gray.600" } }}
+      bg={selectedTaskIds.includes(`${task.project_id}-${task.task_number}`) ? "surfaceElevated" : "transparent"}
     >
       <Checkbox
-        isChecked={selectedTaskIds.includes(task.id)}
-        onChange={() => toggleTaskSelection(task.id)}
+        isChecked={selectedTaskIds.includes(`${task.project_id}-${task.task_number}`)}
+        onChange={() => toggleTaskSelection(`${task.project_id}-${task.task_number}`)}
         mr="3"
-        aria-label={`Select task ${task.title}`}
         colorScheme="blue"
+        aria-label={`Select task ${task.title}`}
       />
       <Box flex={1}>
         <TaskItem
           task={task}
+          projectName={projectName}
           onAssignAgent={() => handleAssignAgent(task)}
           onDeleteInitiate={() => handleDeleteInitiate(task)}
           onClick={() => setSelectedTask(task)}
-          onCopyGetCommand={() => handleCopyTaskGetCommand(task.id)}
+          onCopyGetCommand={() => handleCopyTaskGetCommand(task)}
         />
       </Box>
     </ListItem>

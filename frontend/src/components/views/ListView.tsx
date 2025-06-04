@@ -153,8 +153,8 @@ const ListView: React.FC<ListViewProps> = ({
     }
   };
 
-  const handleCopyTaskGetCommand = async (project_id: string, task_number: number) => {
-    const command = `mcp task get --id ${project_id}-${task_number}`;
+  const handleCopyTaskGetCommand = async (task: Task) => {
+    const command = `mcp task get --id ${task.project_id}-${task.task_number}`;
     try {
       await navigator.clipboard.writeText(command);
       toast({
@@ -202,7 +202,7 @@ const ListView: React.FC<ListViewProps> = ({
               onAssignAgent={handleAssignAgent}
               onDeleteInitiate={handleDeleteInitiateInListView}
               onClick={() => setSelectedTask(task)}
-              onCopyGetCommand={() => handleCopyTaskGetCommand(task.project_id, task.task_number)}
+              onCopyGetCommand={() => handleCopyTaskGetCommand(task)}
             />
             );
           })}
@@ -225,7 +225,7 @@ const ListView: React.FC<ListViewProps> = ({
             handleAssignAgent={handleAssignAgent}
             handleDeleteInitiate={handleDeleteInitiateInListView}
             setSelectedTask={setSelectedTask}
-            handleCopyTaskGetCommand={(task) => handleCopyTaskGetCommand(task.project_id, task.task_number)}
+            handleCopyTaskGetCommand={(task) => handleCopyTaskGetCommand(task)}
           />
         ))}
       </Box>
@@ -233,7 +233,8 @@ const ListView: React.FC<ListViewProps> = ({
         <TaskDetailsModal
           isOpen={!!selectedTask}
           onClose={() => setSelectedTask(null)}
-          taskId={`${selectedTask.project_id}-${selectedTask.task_number}`}
+          project_id={selectedTask.project_id}
+          task_number={selectedTask.task_number}
         />
       )}
       {editTask && (
