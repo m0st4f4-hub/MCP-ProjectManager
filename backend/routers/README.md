@@ -39,3 +39,11 @@ This directory contains the FastAPI routers that define the API endpoints for th
     *   `core/`: Core user management operations.
 
 Interactive API documentation is available at `/docs` and `/redoc` when the backend server is running. 
+
+<!-- File List Start -->
+## File List
+
+- `__init__.py`
+- `admin.py`
+
+<!-- File List End -->

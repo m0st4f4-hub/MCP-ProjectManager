@@ -7,3 +7,12 @@ Key files:
 *   `request_middleware.py`: Contains middleware for processing incoming requests.
 *   `error_handlers.py`: Defines custom exception handlers for the application.
 *   `__init__.py`: Initializes the middleware package. 
+
+<!-- File List Start -->
+## File List
+
+- `__init__.py`
+- `error_handlers.py`
+- `request_middleware.py`
+
+<!-- File List End -->

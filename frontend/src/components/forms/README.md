@@ -39,3 +39,14 @@ Key files:
 *   `EditAgentForm.tsx`: Form for editing existing agent details.
 *   `AddAgentForm.tsx`: Form for adding new agents.
 *   `AddTaskForm.tsx`: Form for adding new tasks (likely a specific implementation using `TaskForm.tsx`).
+
+<!-- File List Start -->
+## File List
+
+- `AddAgentForm.tsx`
+- `AddProjectForm.tsx`
+- `AddTaskForm.tsx`
+- `EditAgentForm.tsx`
+- `TaskForm.tsx`
+
+<!-- File List End -->

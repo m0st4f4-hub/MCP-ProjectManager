@@ -21,3 +21,10 @@ This directory stores configurations and templates specific to the project's Git
         -   The badge at the top of the main `README.md` ( [![CI - Main](...ci.yml/badge.svg...)](...ci.yml) ) usually reflects the status of this CI workflow.
 
 These configurations are standard for GitHub-hosted projects and aim to improve collaboration, code quality, and automation. 
+
+<!-- File List Start -->
+## File List
+
+- `PULL_REQUEST_TEMPLATE.md`
+
+<!-- File List End -->

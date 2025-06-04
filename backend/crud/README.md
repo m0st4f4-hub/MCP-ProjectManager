@@ -18,3 +18,33 @@ Key CRUD and validation files include:
 *   `project_templates.py`: CRUD operations for project templates.
 *   `project_file_associations.py`: CRUD operations for project file associations.
 *   `task_validation.py`, `task_dependency_validation.py`, `task_file_association_validation.py`, `project_validation.py`, `project_member_validation.py`, `comment_validation.py`, `agent_validation.py`, `project_file_association_validation.py`, `user_validation.py`: Files containing validation logic used by CRUD functions. 
+
+<!-- File List Start -->
+## File List
+
+- `__init__.py`
+- `agent_rules.py`
+- `agent_validation.py`
+- `agents.py`
+- `audit_logs.py`
+- `comment_validation.py`
+- `comments.py`
+- `memory.py`
+- `project_file_association_validation.py`
+- `project_file_associations.py`
+- `project_member_validation.py`
+- `project_members.py`
+- `project_templates.py`
+- `project_validation.py`
+- `projects.py`
+- `rules.py`
+- `task_dependencies.py`
+- `task_dependency_validation.py`
+- `task_file_association_validation.py`
+- `task_file_associations.py`
+- `task_validation.py`
+- `tasks.py`
+- `user_validation.py`
+- `users.py`
+
+<!-- File List End -->

@@ -8,3 +8,13 @@ Key files:
 *   `router_config.py`: Configures API routers and their dependencies.
 *   `logging_config.py`: Sets up logging for the application.
 *   `__init__.py`: Initializes the config package. 
+
+<!-- File List Start -->
+## File List
+
+- `__init__.py`
+- `app_config.py`
+- `logging_config.py`
+- `router_config.py`
+
+<!-- File List End -->

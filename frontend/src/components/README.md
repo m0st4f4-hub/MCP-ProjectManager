@@ -145,3 +145,30 @@ Key files and directories:
 *   `task/`: Components for displaying and interacting with individual tasks.
 *   `views/`: Components defining larger view structures or layouts.
 *   Individual component files like `TaskList.tsx`, `ProjectList.tsx`, `AgentList.tsx`, `AddTaskForm.tsx`, etc.
+
+<!-- File List Start -->
+## File List
+
+- `AgentList.tsx`
+- `ClientOnly.tsx`
+- `Dashboard.tsx`
+- `LoadingSkeleton.tsx`
+- `MCPDevTools.tsx`
+- `NoTasks.tsx`
+- `ProjectList.tsx`
+- `SettingsContent.tsx`
+- `TaskAgentTag.tsx`
+- `TaskControls.tsx`
+- `TaskError.tsx`
+- `TaskItemModals.tsx`
+- `TaskList.tsx`
+- `TaskList.utils.ts`
+- `TaskLoading.tsx`
+- `TaskProjectTag.tsx`
+- `TaskStatusTag.tsx`
+- `ThemeToggleButton.tsx`
+- `VirtualizedList.tsx`
+- `useTaskItemStyles.ts`
+- `useTaskListState.ts`
+
+<!-- File List End -->

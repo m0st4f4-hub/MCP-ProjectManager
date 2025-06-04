@@ -192,3 +192,48 @@ Key files and directories:
 *   `database.py`: Database connection and session setup.
 *   `requirements.txt`: Python project dependencies.
 *   `auth.py`: Authentication related code.
+
+<!-- File List Start -->
+## File List
+
+- `.env`
+- `.flake8`
+- `__init__.py`
+- `alembic.ini`
+- `auth.py`
+- `check_routes.py`
+- `comprehensive_flake8_fixer.py`
+- `comprehensive_indent_fix.py`
+- `database.py`
+- `debug_tables.py`
+- `debug_test_db.py`
+- `enums.py`
+- `fix_all_indentation.py`
+- `fix_comprehensive_flake8.py`
+- `fix_conftest.py`
+- `fix_flake8.py`
+- `fix_indentation.py`
+- `fix_line.py`
+- `fix_mcp_indentation.py`
+- `fix_project_indentation.py`
+- `flake8_output.txt`
+- `fresh_flake8_output.txt`
+- `init_db.py`
+- `main.py`
+- `middleware.py`
+- `post_fix_flake8.txt`
+- `pytest.ini`
+- `quick_fix_project_service.py`
+- `quick_indent_fix.py`
+- `requirements.txt`
+- `security.py`
+- `test_app_import.py`
+- `test_basic_imports.py`
+- `test_endpoints.py`
+- `test_individual_models.py`
+- `test_lazy_imports.py`
+- `test_openapi.json`
+- `test_router_imports.py`
+- `validation.py`
+
+<!-- File List End -->
