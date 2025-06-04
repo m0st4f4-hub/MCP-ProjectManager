@@ -341,9 +341,6 @@ graph TD
 - `package-lock.json`
 - `package.json`
 - `run_backend.py`
-- `run_core_backend.py`
-- `run_minimal_backend.py`
-- `run_production_backend.py`
 - `sql_app.db`
 - `start_system.py`
 - `test_openapi.py`
