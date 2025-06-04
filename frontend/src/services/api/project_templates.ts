@@ -8,9 +8,7 @@ import {
 
 /**
  * Thin REST wrapper for /project-templates endpoints.
- * All methods return fully-typed promises and encapsulate the fetch boilerplate.
- * Keep this file pure-client (no React hooks) for maximum portability
- * across Node/Edge/runtime environments.
+ * Fully typed, portable, and encapsulated logic.
  */
 export const projectTemplatesApi = {
   /** Create a new project template */

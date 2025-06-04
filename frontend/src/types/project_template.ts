@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 /**
- * Base (shared) schema — used by create/update operations.
- * - `name` must be non-empty.
- * - `description` is optional and nullable.
- * - `template_data` is an arbitrary key/value record.
+ * Base schema shared across all operations (create/update/read).
+ * - `name`: required, non-empty string
+ * - `description`: optional, nullable string
+ * - `template_data`: flexible key-value JSON
  */
 export const projectTemplateBaseSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -13,18 +13,18 @@ export const projectTemplateBaseSchema = z.object({
 });
 
 /* ────────────────────────────────────────────────────────────── */
-/* CRUD-specific schemas & types                                 */
+/* CRUD-Specific Schemas                                          */
 /* ────────────────────────────────────────────────────────────── */
 
-/** Schema for POST /project-templates (create) */
+/** Schema for POST /project-templates */
 export const projectTemplateCreateSchema = projectTemplateBaseSchema;
 export type ProjectTemplateCreateData = z.infer<typeof projectTemplateCreateSchema>;
 
-/** Schema for PATCH/PUT /project-templates/:id (update) */
+/** Schema for PUT/PATCH /project-templates/:id */
 export const projectTemplateUpdateSchema = projectTemplateBaseSchema.partial();
 export type ProjectTemplateUpdateData = z.infer<typeof projectTemplateUpdateSchema>;
 
-/** Schema for objects returned by the API */
+/** Schema for objects returned from the API */
 export const projectTemplateSchema = projectTemplateBaseSchema.extend({
   id: z.string(),
   created_at: z.string(),
