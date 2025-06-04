@@ -18,7 +18,9 @@
     "build:all": "cd frontend && npm run build && cd .. && backend\\.venv\\Scripts\\python.exe -m pip install -r backend\\requirements.txt",
     "type-check": "npx tsc --noEmit",
     "fix": "cd frontend && npm run fix",
-    "format": "cd frontend && npm run format"
+    "format": "cd frontend && npm run format",
+    "prettier:check": "prettier --check .",
+    "prettier:write": "prettier --write ."
   },
   "keywords": [
     "project-management",
