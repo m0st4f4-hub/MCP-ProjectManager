@@ -28,6 +28,7 @@ powershell dev_launcher.ps1   # PowerShell (Windows)
 ```
 
 See [`DEV_LAUNCHER_GUIDE.md`](./DEV_LAUNCHER_GUIDE.md) for complete setup instructions.
+If you're interested in contributing, please read our [CONTRIBUTING.md](./CONTRIBUTING.md) guide.
 
 ## Tech Stack
 
