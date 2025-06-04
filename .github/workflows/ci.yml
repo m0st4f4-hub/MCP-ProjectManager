@@ -44,3 +44,7 @@ jobs:
         run: |
           cd frontend
           npm test
+      - name: Audit packages
+        run: |
+          cd frontend
+          npm audit --audit-level=high
