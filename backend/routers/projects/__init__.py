@@ -8,7 +8,7 @@ from fastapi import APIRouter
 # Import individual routers
 try:
     from .core import router as core_router, get_project_service, get_audit_log_service
-    from ...auth import get_current_active_user
+    from ....auth import get_current_active_user
 except ImportError:
     print("Warning: Could not import projects core router")
     core_router = APIRouter()

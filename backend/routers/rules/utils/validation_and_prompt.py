@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Dict, Any
 
-from ...database import get_db
-from ...crud import rules as crud_rules
+from ....database import get_db
+from ....crud import rules as crud_rules
 
 router = APIRouter()  # Validation and Prompt Generation
 @router.post("/validate-task")

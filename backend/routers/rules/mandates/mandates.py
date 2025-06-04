@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from ...database import get_sync_db as get_db
-from ...crud import rules as crud_rules
-from ...schemas.universal_mandate import (
+from ....database import get_sync_db as get_db
+from ....crud import rules as crud_rules
+from ....schemas.universal_mandate import (
     UniversalMandate,
     UniversalMandateCreate,
     UniversalMandateUpdate

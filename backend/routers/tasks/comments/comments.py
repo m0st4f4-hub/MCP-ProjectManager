@@ -3,12 +3,12 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import uuid
 
-from ...database import get_sync_db as get_db
-from ...services.task_service import TaskService  # Assuming comment retrieval is part of task service
+from ....database import get_sync_db as get_db
+from ....services.task_service import TaskService  # Assuming comment retrieval is part of task service
 
-from ...schemas.comment import Comment, CommentCreate
-from ...schemas.api_responses import ListResponse, PaginationParams, DataResponse
-from ...services.exceptions import EntityNotFoundError
+from ....schemas.comment import Comment, CommentCreate
+from ....schemas.api_responses import ListResponse, PaginationParams, DataResponse
+from ....services.exceptions import EntityNotFoundError
 
 router = APIRouter()
 

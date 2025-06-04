@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from ...database import get_sync_db as get_db
-from ...crud import rules as crud_rules
-from ...schemas.agent_behavior_log import AgentBehaviorLog, AgentBehaviorLogCreate
+from ....database import get_sync_db as get_db
+from ....crud import rules as crud_rules
+from ....schemas.agent_behavior_log import AgentBehaviorLog, AgentBehaviorLogCreate
 
 router = APIRouter()  # Behavior Logs
 @router.get("/", response_model=List[AgentBehaviorLog])

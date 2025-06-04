@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from ...database import get_sync_db as get_db
-from ...services.agent_service import AgentService
-from ...schemas.agent import Agent, AgentCreate, AgentUpdate
-from ...schemas.api_responses import DataResponse
+from ....database import get_sync_db as get_db
+from ....services.agent_service import AgentService
+from ....schemas.agent import Agent, AgentCreate, AgentUpdate
+from ....schemas.api_responses import DataResponse
 
 def get_agent_service(db: Session = Depends(get_db)) -> AgentService:
     """Dependency that provides an AgentService instance."""

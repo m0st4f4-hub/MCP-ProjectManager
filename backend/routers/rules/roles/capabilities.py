@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
 
-from ...database import get_db
-from ...crud import rules as crud_rules
+from ....database import get_db
+from ....crud import rules as crud_rules
 
 router = APIRouter()  # Agent Capabilities
 @router.post("/{agent_role_id}/capabilities")

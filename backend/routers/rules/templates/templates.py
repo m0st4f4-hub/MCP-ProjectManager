@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
 
-from ...database import get_sync_db as get_db
-from ...crud import rules as crud_rules
-from ...schemas.agent_prompt_template import (
+from ....database import get_sync_db as get_db
+from ....crud import rules as crud_rules
+from ....schemas.agent_prompt_template import (
     AgentPromptTemplate,
     AgentPromptTemplateCreate,
     AgentPromptTemplateUpdate
