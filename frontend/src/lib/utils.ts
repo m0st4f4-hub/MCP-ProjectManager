@@ -19,16 +19,6 @@ export const formatDisplayName = (name?: string | null): string => {
   return capitalizedWords.join(" ").trim();
 };
 
-// Example usage (can be removed or kept for testing)
-/*
-console.log(formatDisplayName("my_project_name")); // My Project Name
-console.log(formatDisplayName("another-agent-name")); // Another Agent Name
-console.log(formatDisplayName("SingleWord"));      // Singleword (Note: Could be improved to handle camelCase better if needed)
-console.log(formatDisplayName("  leading space  ")); // Leading Space
-console.log(formatDisplayName(null));                 // Unnamed
-console.log(formatDisplayName(""));                   // Unnamed
-*/
-
 export const mapStatusToStatusID = (
   status: string | null | undefined,
 ): CanonicalStatusID => {

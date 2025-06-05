@@ -145,11 +145,15 @@ graph TD
 <!-- File List Start -->
 ## File List
 
+- `TaskFilters.tsx`
 - `TaskItem.styles.ts`
 - `TaskItem.tsx`
 - `TaskItem.types.ts`
 - `TaskItem.utils.ts`
 - `TaskItemDetailsSection.tsx`
 - `TaskItemMainSection.tsx`
+- `TaskPagination.tsx`
+- `TaskRow.tsx`
 
 <!-- File List End -->
+

@@ -64,7 +64,10 @@ graph TD
 - `conftest_backup.py`
 - `test_crud.py`
 - `test_integration.py`
+- `test_memory_endpoints.py`
+- `test_memory_service.py`
 - `test_openapi.py`
 - `test_simple.py`
 
 <!-- File List End -->
+

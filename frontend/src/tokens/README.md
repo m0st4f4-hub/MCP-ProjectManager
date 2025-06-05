@@ -5,7 +5,9 @@ This directory contains the definition of design tokens used throughout the fron
 Key files:
 
 *   `colors.ts`: Defines the color palette.
-*   `typography.ts`: Defines font sizes, weights, line heights, etc.
+*   `fontFamily.ts`: Defines the application's font family stacks.
+*   `fontSize.ts`: Defines the font size scale.
+*   `typography.ts`: Aggregates typography tokens like font families, sizes, weights, and line heights.
 *   `spacing.ts`: Defines the spacing scale (padding, margin, gaps).
 *   `sizing.ts`: Defines size values for components and elements.
 *   `breakpoints.ts`: Defines screen breakpoints for responsive design.
@@ -32,6 +34,8 @@ graph TD
 - `blur.ts`
 - `breakpoints.ts`
 - `colors.ts`
+- `fontFamily.ts`
+- `fontSize.ts`
 - `index.ts`
 - `opacity.ts`
 - `shadows.ts`
@@ -41,3 +45,4 @@ graph TD
 - `zIndex.ts`
 
 <!-- File List End -->
+

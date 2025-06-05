@@ -18,7 +18,10 @@ graph TD
 <!-- File List Start -->
 ## File List
 
+- `mock-missing-files.cjs`
 - `task-management.test.tsx`
 - `validate-frontend.test.ts`
+- `validate-testing-framework.test.ts`
 
 <!-- File List End -->
+

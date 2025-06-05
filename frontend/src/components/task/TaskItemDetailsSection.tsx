@@ -32,8 +32,9 @@ import {
 import { DeleteIcon } from '@chakra-ui/icons';
 import TaskStatusTag from "../common/TaskStatusTag";
 import TaskProjectTag from "../common/TaskProjectTag";
-import TaskAgentTag from "../common/TaskAgentTag";
+import TaskAgentTag from "../TaskAgentTag";
 import TaskDependencyTag from "../common/TaskDependencyTag";
+import { IconMap } from "../common/iconMap";
 import {
   Task,
   TaskFileAssociation,
@@ -67,8 +68,8 @@ interface TaskItemDetailsSectionProps {
   projectName?: string;
   /** Style object, typically from a custom hook like useTaskItemStyles. */
   styles: Record<string, unknown>; // Consider a more specific type
-  /** Optional: A map of status IDs to React ElementType for rendering status icons in TaskStatusTag. */
-  iconMap?: Record<string, React.ElementType>;
+  /** Optional: Icon mapping used by `TaskStatusTag` for status icons. */
+  iconMap?: IconMap;
   /** The current status ID of the task, used by TaskStatusTag. */
   currentStatusId: StatusID;
   /** If true, applies specific styling adjustments, like reduced margin-top. */
@@ -339,17 +340,10 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
     {/* Conditionally render the agent tag if agent_name or agent_id is present on the task. */}
     {((task.agent_name || task.agent_id) && (
       <TaskAgentTag
-            agentName={(task.agent_name || task.agent_id) ?? ''}
-            agentTagStyle={
-              (styles.agentTagStyle as {
-                bg: string;
-                color: string;
-                fontWeight: string | number;
-              }) || { bg: '', color: '', fontWeight: 'normal' }
-            }
-        fontSize={styles.tagFontSize as string | number}
-            style={styles.agentTagStyle as React.CSSProperties}
-            status={task.agent_status}
+        agentName={(task.agent_name || task.agent_id) ?? ""}
+        tagBg={(styles.agentTagStyle as { bg: string }).bg}
+        tagColor={(styles.agentTagStyle as { color: string }).color}
+        fontWeight={(styles.agentTagStyle as { fontWeight: string | number }).fontWeight}
       />
     ))}
   </HStack>

@@ -4,15 +4,15 @@ sqlalchemy
 alembic
 psycopg2-binary
 python-dotenv
-fastapi-mcp # From project file analysis, this seems to be the MCP package
-passlib[bcrypt] # Added for secure password hashing
-python-jose # Added to resolve ModuleNotFoundError
+fastapi-mcp
+passlib[bcrypt]
+python-jose
+aiosqlite
+aiohttp
+httpx
 
 # For CI/Dev
 flake8
 pytest
 pytest-asyncio
 pytest-cov
-httpx
-aiosqlite
-aiohttp

@@ -22,7 +22,8 @@ export default defineConfig({
     include: [
       'src/lib/__tests__/utils.test.tsx',
       'src/store/__tests__/*.test.ts',
-      'src/__tests__/integration/**/*.{ts,tsx}'
+      'src/__tests__/integration/**/*.{ts,tsx}',
+      'src/services/api/__tests__/*.test.ts'
     ],
     coverage: {
       provider: 'v8',

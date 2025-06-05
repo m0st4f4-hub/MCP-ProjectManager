@@ -4,6 +4,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ### Environment Setup
 
+Ensure you have **Node.js 18 or later** installed. We recommend using [nvm](https://github.com/nvm-sh/nvm) or a similar version manager to manage Node versions.
+
 Copy the example environment file and adjust the API URL if needed:
 
 ```bash
@@ -130,6 +132,8 @@ graph TD
 <!-- File List Start -->
 ## File List
 
+- `.env.local`
+- `.env.local.example`
 - `.gitignore`
 - `ARCHITECTURE.md`
 - `BRAND_ASSETS_GUIDE.md`
@@ -155,3 +159,4 @@ graph TD
 - `vitest.config.ts`
 
 <!-- File List End -->
+
