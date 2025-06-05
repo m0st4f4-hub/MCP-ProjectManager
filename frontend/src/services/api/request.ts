@@ -1,4 +1,5 @@
 import { StatusID } from '@/lib/statusUtils';
+import { TaskStatus } from '@/types/task';
 
 /** Error type thrown when API requests fail */
 export class ApiError extends Error {
@@ -19,27 +20,27 @@ export const normalizeToStatusID = (
   completedFlag: boolean
 ): StatusID => {
   if (completedFlag) {
-    return 'Completed';
+    return TaskStatus.COMPLETED;
   }
   if (backendStatus) {
     const validStatuses: StatusID[] = [
-      'To Do',
-      'In Progress',
-      'In Review',
-      'Completed',
-      'Blocked',
-      'Cancelled',
+      TaskStatus.TO_DO,
+      TaskStatus.IN_PROGRESS,
+      TaskStatus.IN_REVIEW,
+      TaskStatus.COMPLETED,
+      TaskStatus.BLOCKED,
+      TaskStatus.CANCELLED,
     ];
     if (validStatuses.includes(backendStatus as StatusID)) {
       return backendStatus as StatusID;
     }
 
     console.warn(
-      `Unknown backend status string: "${backendStatus}". Defaulting to "To Do".`
+      `Unknown backend status string: "${backendStatus}". Defaulting to "${TaskStatus.TO_DO}".`
     );
-    return 'To Do';
+    return TaskStatus.TO_DO;
   }
-  return 'To Do';
+  return TaskStatus.TO_DO;
 };
 
 // Helper function to handle API requests
