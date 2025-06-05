@@ -104,6 +104,11 @@ SECRET_KEY=mysecretkey
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 DEBUG=True
+DB_POOL_SIZE=5
+DB_MAX_OVERFLOW=10
+DB_POOL_TIMEOUT=30
+DB_POOL_RECYCLE=1800
+DB_POOL_PRE_PING=true
 ```
 `DATABASE_URL` is read by `database.py` and `init_db.py`. Set it to a
 SQLAlchemy-compatible URL (e.g., a custom SQLite file path or PostgreSQL URI)
