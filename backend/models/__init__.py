@@ -10,9 +10,9 @@ except ImportError:
 
 # Import essential base utilities and make them available
 from .base import (
-    BaseModel, 
-    JSONText, 
-    generate_uuid, 
+    BaseModel,
+    JSONText,
+    generate_uuid,
     generate_uuid_with_hyphens,
     ArchivedMixin,
     ProjectMemberRole
@@ -31,7 +31,7 @@ from .project import Project, ProjectMember, ProjectFileAssociation
 # Import task models
 from .task import Task, TaskStatus
 
-# Import agent models  
+# Import agent models
 from .agent import Agent, AgentRule, AgentRole
 
 # Import additional agent models
@@ -57,13 +57,13 @@ from .universal_mandate import UniversalMandate
 __all__ = [
     # Base utilities
     'Base',
-    'BaseModel', 
+    'BaseModel',
     'JSONText',
     'generate_uuid',
     'generate_uuid_with_hyphens',
     'ArchivedMixin',
     'ProjectMemberRole',
-    
+
     # Core models
     'User',
     'UserRole',
@@ -71,17 +71,17 @@ __all__ = [
     'Task',
     'Agent',
     'Comment',
-    
+
     # Project models
     'ProjectMember',
     'ProjectFileAssociation',
     'ProjectTemplate',
-    
+
     # Task models
     'TaskStatus',
-    'TaskDependency', 
+    'TaskDependency',
     'TaskFileAssociation',
-    
+
     # Agent models
     'AgentRule',
     'AgentRole',
@@ -90,15 +90,15 @@ __all__ = [
     'AgentForbiddenAction',
     'AgentHandoffCriteria',
     'AgentVerificationRequirement',
-    
+
     # Memory models
     'MemoryEntity',
     'MemoryObservation',
     'MemoryRelation',
-    
+
     # Audit model
     'AuditLog',
-    
+
     # Additional models
     'Workflow',
     'WorkflowStep',
