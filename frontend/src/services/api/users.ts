@@ -43,7 +43,7 @@ export const getUsers = async (skip = 0, limit = 100): Promise<User[]> => {
  */
 export const updateUser = async (
   userId: string,
-  userData: UserUpdateData,
+  userData: UserUpdateData
 ): Promise<User> => {
   return request<User>(buildApiUrl(API_CONFIG.ENDPOINTS.USERS, `/${userId}`), {
     method: 'PUT',
@@ -65,9 +65,18 @@ export const deleteUser = async (userId: string): Promise<User> => {
  */
 export const login = async (formData: LoginRequest): Promise<TokenResponse> => {
   // Use the OAuth2-compatible token endpoint which expects URL encoded form data
-  return request<TokenResponse>(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/token'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(formData as Record<string, string>).toString(),
-  });
+  return request<TokenResponse>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/token'),
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(formData as Record<string, string>).toString(),
+    }
+  );
+};
+
+export const logout = (): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('token');
+  }
 };
