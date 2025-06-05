@@ -19,6 +19,7 @@ from ....services.project_template_service import ProjectTemplateService
 from ....schemas.project_template import ProjectTemplateCreate
 from ....services.rules_service import RulesService
 from ....services.agent_handoff_service import AgentHandoffService
+from ....services.error_protocol_service import ErrorProtocolService
 from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate, TaskUpdate
 from ....schemas import AgentRuleCreate
@@ -30,6 +31,7 @@ from ....schemas.memory import (
     MemoryRelationCreate
 )
 from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
+from ....schemas.error_protocol import ErrorProtocolCreate
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
@@ -58,6 +60,12 @@ def get_agent_handoff_service(
     db: Session = Depends(get_db_session),
 ) -> AgentHandoffService:
     return AgentHandoffService(db)
+
+
+def get_error_protocol_service(
+    db: Session = Depends(get_db_session),
+) -> ErrorProtocolService:
+    return ErrorProtocolService(db)
 
 
 @router.post(
@@ -877,4 +885,88 @@ async def mcp_delete_handoff_criteria(
         raise
     except Exception as e:
         logger.error(f"MCP delete handoff criteria failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/error-protocol/add",
+    tags=["mcp-tools"],
+    operation_id="add_error_protocol_tool",
+)
+async def mcp_add_error_protocol(
+    role_id: str,
+    protocol: ErrorProtocolCreate,
+    service: ErrorProtocolService = Depends(get_error_protocol_service),
+):
+    """MCP Tool: Add an error protocol to an agent role."""
+    try:
+        created = service.add_protocol(role_id, protocol)
+        return {
+            "success": True,
+            "protocol": {
+                "id": created.id,
+                "agent_role_id": created.agent_role_id,
+                "error_type": created.error_type,
+                "protocol": created.protocol,
+                "priority": created.priority,
+                "is_active": created.is_active,
+                "created_at": created.created_at.isoformat(),
+            },
+        }
+    except Exception as e:
+        logger.error(f"MCP add error protocol failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/error-protocol/list",
+    tags=["mcp-tools"],
+    operation_id="list_error_protocols_tool",
+)
+async def mcp_list_error_protocols(
+    role_id: Optional[str] = Query(None),
+    service: ErrorProtocolService = Depends(get_error_protocol_service),
+):
+    """MCP Tool: List error protocols."""
+    try:
+        items = service.list_protocols(role_id)
+        return {
+            "success": True,
+            "protocols": [
+                {
+                    "id": p.id,
+                    "agent_role_id": p.agent_role_id,
+                    "error_type": p.error_type,
+                    "protocol": p.protocol,
+                    "priority": p.priority,
+                    "is_active": p.is_active,
+                    "created_at": p.created_at.isoformat(),
+                }
+                for p in items
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list error protocols failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/error-protocol/remove",
+    tags=["mcp-tools"],
+    operation_id="remove_error_protocol_tool",
+)
+async def mcp_remove_error_protocol(
+    protocol_id: str,
+    service: ErrorProtocolService = Depends(get_error_protocol_service),
+):
+    """MCP Tool: Remove an error protocol."""
+    try:
+        success = service.remove_protocol(protocol_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Error protocol not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP remove error protocol failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

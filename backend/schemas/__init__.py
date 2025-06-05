@@ -80,3 +80,11 @@ from .agent_handoff_criteria import (
     AgentHandoffCriteria,
 )
 from .file_ingest import FileIngestInput
+
+from .error_protocol import (
+    ErrorProtocolBase,
+    ErrorProtocolCreate,
+    ErrorProtocolUpdate,
+    ErrorProtocol,
+)
+
