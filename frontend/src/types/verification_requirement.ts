@@ -8,7 +8,7 @@ export const verificationRequirementBaseSchema = z.object({
 });
 
 export const verificationRequirementCreateSchema = verificationRequirementBaseSchema.omit({
-  agent_role_id: false,
+  agent_role_id: true,
 });
 
 export type VerificationRequirementCreateData = z.infer<typeof verificationRequirementCreateSchema> & { agent_role_id: string };

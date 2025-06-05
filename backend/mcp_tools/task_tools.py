@@ -5,6 +5,7 @@ MCP Tools for Task Management.
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
+import uuid
 import logging
 
 from backend.services.task_service import TaskService
@@ -63,12 +64,12 @@ async def list_tasks_tool(
     """MCP Tool: List tasks with filtering."""
     try:
     task_service = TaskService(db)
-    tasks = task_service.get_tasks(
-    project_id=project_id,
-    status=status,
-    agent_id=agent_id,
-    skip=skip,
-    limit=limit
+    tasks, _ = await task_service.get_tasks(
+        project_id=uuid.UUID(project_id) if project_id else None,
+        status=status,
+        agent_id=agent_id,
+        skip=skip,
+        limit=limit,
     )
 
     return {

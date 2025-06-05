@@ -9,6 +9,7 @@
  */
 
 import { test, expect } from '@playwright/test'
+import { TaskStatus } from '../src/types/task'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
 
@@ -101,7 +102,7 @@ test.describe('Task Manager API E2E Tests', () => {
         data: {
           title: 'API Test Task',
           description: 'Task created via API test',
-          status: 'TO_DO',
+          status: TaskStatus.TO_DO,
         }
       })
       
@@ -143,7 +144,7 @@ test.describe('Task Manager API E2E Tests', () => {
         data: {
           title: 'Status Transition Test',
           description: 'Testing status transitions',
-          status: 'TO_DO',
+          status: TaskStatus.TO_DO,
         }
       })
       
@@ -152,7 +153,7 @@ test.describe('Task Manager API E2E Tests', () => {
 
       // Valid transitions: TO_DO -> IN_PROGRESS -> COMPLETED
       const transitions = [
-        { from: 'TO_DO', to: 'IN_PROGRESS' },
+        { from: TaskStatus.TO_DO, to: 'IN_PROGRESS' },
         { from: 'IN_PROGRESS', to: 'COMPLETED' }
       ]
 
@@ -175,7 +176,7 @@ test.describe('Task Manager API E2E Tests', () => {
       const missingTitleResponse = await request.post(`${API_BASE_URL}/api/v1/projects/${testProjectId}/tasks`, {
         data: {
           description: 'Task without title',
-          status: 'TO_DO',
+          status: TaskStatus.TO_DO,
         }
       })
       expect(missingTitleResponse.status()).toBe(422) // Validation error
@@ -194,7 +195,7 @@ test.describe('Task Manager API E2E Tests', () => {
         data: {
           title: 'Valid Task',
           description: 'This is a valid task',
-          status: 'TO_DO',
+          status: TaskStatus.TO_DO,
         }
       })
       expect(validResponse.status()).toBe(201)
@@ -210,7 +211,7 @@ test.describe('Task Manager API E2E Tests', () => {
     test.beforeEach(async ({ request }) => {
       // Create test tasks with different statuses
       const testTasks = [
-        { title: 'Frontend Task', status: 'TO_DO', description: 'Frontend development' },
+        { title: 'Frontend Task', status: TaskStatus.TO_DO, description: 'Frontend development' },
         { title: 'Backend Task', status: 'IN_PROGRESS', description: 'Backend development' },
         { title: 'Testing Task', status: 'COMPLETED', description: 'Testing phase' },
       ]
@@ -228,7 +229,7 @@ test.describe('Task Manager API E2E Tests', () => {
       
       expect(todoData.data).toHaveLength(1)
       expect(todoData.data[0].title).toBe('Frontend Task')
-      expect(todoData.data[0].status).toBe('TO_DO')
+      expect(todoData.data[0].status).toBe(TaskStatus.TO_DO)
     })
 
     test('should search tasks by title', async ({ request }) => {
@@ -314,7 +315,7 @@ test.describe('Task Manager API E2E Tests', () => {
         data: {
           title: 'Model Compliance Test',
           description: 'Testing data model compliance',
-          status: 'TO_DO',
+          status: TaskStatus.TO_DO,
         }
       })
       

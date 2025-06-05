@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { request, ApiError } from "@/services/api/request";
+import { request, ApiError, NetworkError } from "@/services/api/request";
 import { getTasks } from "@/services/api/tasks";
 import { server } from "@/__tests__/mocks/server";
 import { http, HttpResponse } from "msw";
 
-const API_URL = "http://localhost:8000/api/projects/project-1/tasks";
+const API_URL =
+  "http://localhost:8000/api/projects/project-1/tasks?skip=0&limit=100";
 
 describe("ApiError handling", () => {
   it("request throws ApiError for non-ok response", async () => {
@@ -21,14 +22,14 @@ describe("ApiError handling", () => {
     });
   });
 
-  it("request wraps network errors in ApiError", async () => {
+  it("request wraps network errors in NetworkError", async () => {
     server.use(
       http.get(API_URL, () => {
         throw new Error("Network fail");
       }),
     );
 
-    await expect(request(API_URL)).rejects.toBeInstanceOf(ApiError);
+    await expect(request(API_URL)).rejects.toBeInstanceOf(NetworkError);
   });
 
   it("service functions propagate ApiError", async () => {
@@ -38,6 +39,6 @@ describe("ApiError handling", () => {
       ),
     );
 
-    await expect(getTasks("project-1")).rejects.toBeInstanceOf(ApiError);
+    await expect(getTasks("project-1", undefined, undefined, 0, 100)).rejects.toBeInstanceOf(ApiError);
   });
 });

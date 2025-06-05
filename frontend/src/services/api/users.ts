@@ -77,6 +77,9 @@ export const login = async (formData: LoginRequest): Promise<TokenResponse> => {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
 export const redirectToOAuthLogin = (): void => {
   if (typeof window !== 'undefined') {
     window.location.href = buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/oauth/login');

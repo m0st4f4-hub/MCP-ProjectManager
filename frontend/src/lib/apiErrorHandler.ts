@@ -1,5 +1,5 @@
 import { createStandaloneToast, UseToastOptions } from '@chakra-ui/react';
-import { ApiError } from '@/services/api/request';
+import { ApiError, NetworkError } from '@/services/api/request';
 
 const { toast } = createStandaloneToast();
 
@@ -9,7 +9,10 @@ export function handleApiError(
   options?: Partial<UseToastOptions>
 ): void {
   let description = 'An unexpected error occurred.';
-  if (error instanceof ApiError) {
+  if (error instanceof NetworkError) {
+    description = error.message;
+    title = 'Network Error';
+  } else if (error instanceof ApiError) {
     description = error.message;
   } else if (error instanceof Error) {
     description = error.message;

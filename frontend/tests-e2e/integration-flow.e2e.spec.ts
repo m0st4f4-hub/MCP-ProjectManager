@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { spawn } from "child_process";
 import path from "path";
+import { TaskStatus } from "../src/types/task";
 
 async function waitFor(url: string, timeout = 120000) {
   const start = Date.now();
@@ -63,7 +64,7 @@ test.describe("Integration Flow via start_system.py", () => {
         data: {
           title: "Integration Task",
           description: "e2e",
-          status: "TO_DO",
+          status: TaskStatus.TO_DO,
         },
       },
     );

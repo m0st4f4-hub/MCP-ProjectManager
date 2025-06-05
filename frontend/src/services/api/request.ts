@@ -1,5 +1,4 @@
 import { StatusID } from '@/lib/statusUtils';
-import { buildApiUrl, API_CONFIG } from './config';
 
 /** Error type thrown when API requests fail */
 export class ApiError extends Error {
@@ -43,27 +42,6 @@ export const normalizeToStatusID = (
   return 'To Do';
 };
 
-// Request a new access token using the refresh token cookie
-async function refreshAccessToken(): Promise<string | null> {
-  try {
-    const res = await fetch(
-      buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/refresh'),
-      { method: 'POST', credentials: 'include' }
-    );
-    if (!res.ok) {
-      return null;
-    }
-    const data = await res.json();
-    if (data && data.access_token) {
-      localStorage.setItem('token', data.access_token);
-      return data.access_token as string;
-    }
-  } catch (err) {
-    console.error('Token refresh failed', err);
-  }
-  return null;
-}
-
 // Helper function to handle API requests
 export async function request<T>(
   url: string,
@@ -91,25 +69,12 @@ export async function request<T>(
     response = await fetch(url, {
       ...options,
       headers,
-      credentials: 'include',
     });
   } catch (err) {
     throw new ApiError((err as Error).message || 'Network Error', 0, url);
   }
 
   if (!response.ok) {
-    if (response.status === 401) {
-      const newToken = await refreshAccessToken();
-      if (newToken) {
-        (headers as Record<string, string>).Authorization =
-          `Bearer ${newToken}`;
-        response = await fetch(url, {
-          ...options,
-          headers,
-          credentials: 'include',
-        });
-      }
-    }
     console.error(`API request failed for URL: ${url}`, {
       status: response.status,
       options,

@@ -13,7 +13,7 @@ vi.mock('@chakra-ui/react', async () => {
 });
 
 import { handleApiError } from '../apiErrorHandler';
-import { ApiError } from '@/services/api/request';
+import { ApiError, NetworkError } from '@/services/api/request';
 
 describe('handleApiError', () => {
   beforeEach(() => {
@@ -27,6 +27,16 @@ describe('handleApiError', () => {
         title: 'Oops',
         description: 'Boom',
         status: 'error',
+      })
+    );
+  });
+
+  it('handles NetworkError instances with network title', () => {
+    handleApiError(new NetworkError('Offline', 'http://foo'));
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Network Error',
+        description: 'Offline',
       })
     );
   });

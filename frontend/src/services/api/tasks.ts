@@ -20,13 +20,20 @@ import { StatusID } from "@/lib/statusUtils";
 const convertStatusIDToTaskStatus = (statusId: StatusID): TaskStatus => {
   // Direct mapping since both use the same format
   switch (statusId) {
-    case "To Do": return TaskStatus.TO_DO;
-    case "In Progress": return TaskStatus.IN_PROGRESS;
-    case "In Review": return TaskStatus.IN_REVIEW;
-    case "Completed": return TaskStatus.COMPLETED;
-    case "Blocked": return TaskStatus.BLOCKED;
-    case "Cancelled": return TaskStatus.CANCELLED;
-    default: return TaskStatus.TO_DO;
+    case TaskStatus.TO_DO:
+      return TaskStatus.TO_DO;
+    case TaskStatus.IN_PROGRESS:
+      return TaskStatus.IN_PROGRESS;
+    case TaskStatus.IN_REVIEW:
+      return TaskStatus.IN_REVIEW;
+    case TaskStatus.COMPLETED:
+      return TaskStatus.COMPLETED;
+    case TaskStatus.BLOCKED:
+      return TaskStatus.BLOCKED;
+    case TaskStatus.CANCELLED:
+      return TaskStatus.CANCELLED;
+    default:
+      return TaskStatus.TO_DO;
   }
 };
 
@@ -175,9 +182,11 @@ export const getTasks = async (
   projectId: string,
   filters?: TaskFilters,
   sortOptions?: TaskSortOptions,
-  skip = 0,
-  limit = 100,
+  page = 0,
+  pageSize = 100,
 ): Promise<Task[]> => {
+  const skip = page * pageSize;
+  const limit = pageSize;
   const queryParams = new URLSearchParams();
   if (filters?.agentId) queryParams.append("agent_id", filters.agentId);
   if (filters?.status && filters.status !== "all")
@@ -223,9 +232,11 @@ export const getTasks = async (
 export const getAllTasks = async (
   filters?: TaskFilters,
   sortOptions?: TaskSortOptions,
-  skip = 0,
-  limit = 100,
+  page = 0,
+  pageSize = 100,
 ): Promise<Task[]> => {
+  const skip = page * pageSize;
+  const limit = pageSize;
   const queryParams = new URLSearchParams();
   if (filters?.agentId) queryParams.append("agent_id", filters.agentId);
   if (filters?.status && filters.status !== "all")
@@ -332,7 +343,9 @@ export const updateTask = async (
 ): Promise<Task> => {
   const payload: Partial<RawTask> = { ...taskData };
   if (typeof payload.completed === "boolean") {
-    payload.status = payload.completed ? "Completed" : "To Do";
+    payload.status = payload.completed
+      ? TaskStatus.COMPLETED
+      : TaskStatus.TO_DO;
     delete payload.completed;
   }
   const rawTask = await request<RawTask>(
@@ -359,8 +372,14 @@ export const updateTask = async (
 };
 
 // Fetch all tasks for a specific project (alias for getTasks for backward compatibility)
-export const getAllTasksForProject = async (projectId: string, filters?: TaskFilters, sortOptions?: TaskSortOptions): Promise<Task[]> => {
-  return getTasks(projectId, filters, sortOptions);
+export const getAllTasksForProject = async (
+  projectId: string,
+  filters?: TaskFilters,
+  sortOptions?: TaskSortOptions,
+  page = 0,
+  pageSize = 100,
+): Promise<Task[]> => {
+  return getTasks(projectId, filters, sortOptions, page, pageSize);
 };
 export const deleteTask = async (
   project_id: string,

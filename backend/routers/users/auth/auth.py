@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 # Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
 
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
+=======
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+>>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import timedelta
@@ -9,12 +13,17 @@ from backend.database import get_db
 from backend.services.user_service import UserService
 from backend.services.audit_log_service import AuditLogService
 from backend.services.exceptions import AuthorizationError
+<<<<<<< HEAD
 from backend.config import ACCESS_TOKEN_EXPIRE_MINUTES, OAUTH_REDIRECT_URI, REFRESH_TOKEN_EXPIRE_MINUTES
 from backend.auth import (
     create_access_token,
     create_refresh_token,
     verify_refresh_token,
 )
+=======
+from backend.config import ACCESS_TOKEN_EXPIRE_MINUTES, OAUTH_REDIRECT_URI
+from backend.auth import create_access_token
+>>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
 from backend.security import login_tracker, oauth
 from backend.schemas.user import UserCreate
 from backend.enums import UserRoleEnum
@@ -41,6 +50,7 @@ class Token(BaseModel):
     refresh_token: str | None = None # Added for refresh token flow
 
 
+
 class LoginRequest(BaseModel):
     username: str
     password: str
@@ -59,7 +69,10 @@ async def login_for_access_token_form(
         form_data.password,
         user_service,
         audit_log_service,
+<<<<<<< HEAD
         response,
+=======
+>>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
     )
 
 
@@ -76,6 +89,7 @@ async def login_for_access_token_json(
         login_data.password,
         user_service,
         audit_log_service,
+<<<<<<< HEAD
         response,
     )
 
@@ -105,12 +119,20 @@ async def logout(response: Response):
     return {"success": True}
 
 
+=======
+    )
+
+
+>>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
 async def _authenticate_user(
     username: str,
     password: str,
     user_service: UserService,
     audit_log_service: AuditLogService,
+<<<<<<< HEAD
     response: Response,
+=======
+>>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
 ):
     """Common authentication logic with brute force protection."""
     try:
@@ -127,6 +149,7 @@ async def _authenticate_user(
             access_token = create_access_token(
                 data={"sub": user.username}, expires_delta=access_token_expires
             )
+<<<<<<< HEAD
             refresh_token = create_refresh_token(data={"sub": user.username})
             response.set_cookie(
                 key="refresh_token",
@@ -135,6 +158,9 @@ async def _authenticate_user(
                 samesite="lax",
             )
             
+=======
+
+>>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
             await audit_log_service.create_log(
                 action="login_success",
                 user_id=user.id,
@@ -200,6 +226,7 @@ async def oauth_callback(
     )
 
     access_token = create_access_token(data={"sub": user.username})
+<<<<<<< HEAD
     refresh_token = create_refresh_token(data={"sub": user.username}) # Also create refresh token for OAuth
     response.set_cookie(
         key="refresh_token",
@@ -208,3 +235,6 @@ async def oauth_callback(
         samesite="lax",
     )
     return {"access_token": access_token, "token_type": "bearer", "refresh_token": refresh_token}
+=======
+    return {"access_token": access_token, "token_type": "bearer"}
+>>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7

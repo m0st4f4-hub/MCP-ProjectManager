@@ -1,9 +1,10 @@
 # Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, or_, func
 from .. import models
 import datetime
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 from uuid import UUID  # Import specific schema classes from their files
 from ..schemas.task import TaskCreate, TaskUpdate, Task  # Import the TaskStatusEnum
 from ..enums import TaskStatusEnum  # Import service utilities
@@ -13,6 +14,7 @@ from .exceptions import (
     ValidationError,
     DuplicateEntityError  # Import CRUD operations for tasks
 )
+from .event_publisher import publisher
 from ..crud.tasks import (
     get_task as crud_get_task,
     get_tasks as crud_get_tasks,
@@ -58,6 +60,69 @@ class TaskService:
             raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
         return task
 
+    async def get_tasks(
+        self,
+        project_id: Optional[UUID] = None,
+        skip: int = 0,
+        limit: int = 100,
+        agent_id: Optional[str] = None,
+        agent_name: Optional[str] = None,
+        search: Optional[str] = None,
+        status: Optional[Union[str, TaskStatusEnum]] = None,
+        is_archived: Optional[bool] = False,
+        sort_by: Optional[str] = None,
+        sort_direction: Optional[str] = None,
+    ) -> Tuple[List[models.Task], int]:
+        """Retrieve tasks with filtering and pagination applied at the SQL level.
+
+        Returns a tuple of (tasks, total_count).
+        """
+        project_id_str = str(project_id) if project_id else None
+
+        query = select(models.Task)
+        count_query = select(func.count()).select_from(models.Task)
+
+        if project_id_str:
+            query = query.filter(models.Task.project_id == project_id_str)
+            count_query = count_query.filter(models.Task.project_id == project_id_str)
+        if agent_id:
+            query = query.filter(models.Task.agent_id == agent_id)
+            count_query = count_query.filter(models.Task.agent_id == agent_id)
+        if agent_name:
+            query = query.join(models.Agent).filter(models.Agent.name == agent_name)
+            count_query = count_query.join(models.Agent).filter(models.Agent.name == agent_name)
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(or_(models.Task.title.ilike(search_term), models.Task.description.ilike(search_term)))
+            count_query = count_query.filter(or_(models.Task.title.ilike(search_term), models.Task.description.ilike(search_term)))
+        if status:
+            status_value = status.value if isinstance(status, TaskStatusEnum) else status
+            query = query.filter(models.Task.status == status_value)
+            count_query = count_query.filter(models.Task.status == status_value)
+        if is_archived is not None:
+            query = query.filter(models.Task.is_archived == is_archived)
+            count_query = count_query.filter(models.Task.is_archived == is_archived)
+
+        if sort_by:
+            sort_column = getattr(models.Task, sort_by, None)
+            if sort_column is not None:
+                if sort_direction == "desc":
+                    query = query.order_by(sort_column.desc())
+                else:
+                    query = query.order_by(sort_column)
+            else:
+                query = query.order_by(models.Task.created_at.desc())
+        else:
+            query = query.order_by(models.Task.created_at.desc())
+
+        result = await self.db.execute(query.offset(skip).limit(limit))
+        tasks = result.scalars().all()
+
+        total_result = await self.db.execute(count_query)
+        total = total_result.scalar_one()
+
+        return tasks, total
+
     async def get_tasks_by_project(
         self,
         project_id: UUID,
@@ -70,7 +135,7 @@ class TaskService:
         limit: Optional[int] = None,
         sort_by: Optional[str] = None,
         sort_direction: Optional[str] = None
-        ) -> List[models.Task]:  # Delegate to CRUD
+        ) -> List[models.Task]:
         project_id_str = str(project_id) if project_id is not None else None
         return await crud_get_tasks(
         self.db, project_id=project_id_str, skip=skip, limit=limit,
@@ -91,14 +156,14 @@ class TaskService:
         is_archived: Optional[bool] = False,
         sort_by: Optional[str] = None,
         sort_direction: Optional[str] = None
-        ) -> List[models.Task]:  # Delegate to CRUD  # Convert project_id to string if it exists before passing to crud
+        ) -> List[models.Task]:
         project_id_str = str(project_id) if project_id else None
         return await crud_get_all_tasks(
         self.db, project_id=project_id_str, skip=skip, limit=limit,
         agent_id=agent_id, agent_name=agent_name, search=search,
         status=status, is_archived=is_archived, sort_by=sort_by,
         sort_direction=sort_direction
-        )  # Removed get_next_task_number_for_project as it's handled in CRUD create
+        )
 
     async def create_task(
         self,
@@ -151,9 +216,11 @@ class TaskService:
 
                     if db_task_loaded is None:  # This should not happen if create_task succeeded, but handle defensively
                         raise EntityNotFoundError("Task", db_task.id)
-                    
+
+                    task_model = Task.model_validate(db_task_loaded)
+                    await publisher.publish({"type": "task_created", "task": task_model.model_dump()})
                     # Convert the fully loaded ORM object to a Pydantic model before returning
-                    return Task.model_validate(db_task_loaded)
+                    return task_model
 
                 except ValueError as e:  # Convert ValueError to ValidationError
                     raise ValidationError(str(e))
@@ -181,7 +248,8 @@ class TaskService:
         project_id: UUID,
         task_number: int,
         task_update: TaskUpdate,
-        ) -> models.Task:
+        agent_id: Optional[str] = None
+        ) -> Optional[models.Task]:
         """
         Update a task by project ID and task number.
 
@@ -189,6 +257,7 @@ class TaskService:
         project_id: The project ID
         task_number: The task number
         task_update: The update data
+        agent_id: Optional agent ID to assign
 
         Returns:
         The updated task
@@ -196,24 +265,36 @@ class TaskService:
         Raises:
         EntityNotFoundError: If the task is not found
         ValidationError: If the update data is invalid
-        """  # Check if task exists
-        existing_task = await crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
-        if not existing_task:
-            raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")  # Use transaction context manager
-        async with service_transaction(self.db, "update_task") as tx_db:
-            try:
+        """
+        try:
+            async with service_transaction(self.db, "update_task") as tx_db:
+                # First, ensure the task exists
+                existing_task = await crud_get_task(tx_db, project_id=str(project_id), task_number=task_number)
+                if not existing_task:
+                    raise EntityNotFoundError("Task", f"project_id: {project_id}, task_number: {task_number}")
+
+                # If an agent_id is provided, ensure it's a valid agent
+                if agent_id:  # This check was missing
+                    from ..services.agent_service import AgentService
+                    agent_service = AgentService(tx_db)
+                    agent = await agent_service.get_agent(agent_id)
+                    if not agent:
+                        raise EntityNotFoundError("Agent", agent_id)
+
+                # Update the task using the CRUD function
                 updated_task = await crud_update_task(
-                    tx_db, project_id=str(project_id), task_number=task_number, task=task_update
+                    tx_db, project_id=str(project_id), task_number=task_number, task_update=task_update, agent_id=agent_id
                 )
-                if not updated_task:
-                    raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
-                return updated_task
-            except ValueError as e:  # Convert ValueError to ValidationError
-                raise ValidationError(str(e))
-            except Exception as e:  # Convert any other exceptions to service exceptions
-                if isinstance(e, (EntityNotFoundError, ValidationError)):
-                    raise
-                raise ValidationError(f"Error updating task: {str(e)}")
+                
+                if updated_task:
+                    await publisher.publish({"type": "task_updated", "task": Task.model_validate(updated_task).model_dump()})
+                    return updated_task
+                return None
+        except Exception as e:
+            # Catch specific service exceptions already raised, otherwise wrap in ValidationError
+            if isinstance(e, (EntityNotFoundError, ValidationError)):
+                raise
+            raise ValidationError(f"Error updating task: {str(e)}")
 
     async def delete_task(self, project_id: UUID, task_number: int) -> models.Task:
         """
@@ -228,31 +309,67 @@ class TaskService:
 
         Raises:
         EntityNotFoundError: If the task is not found
-        """  # Check if task exists
+        """
+        # First, ensure the task exists
         existing_task = await crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
         if not existing_task:
-            raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")  # Store task data for return
-        from ..schemas.task import Task
-        task_data = Task.model_validate(existing_task)  # Use transaction context manager
-        async with service_transaction(self.db, "delete_task") as tx_db:
-            deleted_task_obj = await crud_delete_task(tx_db, project_id=str(project_id), task_number=task_number)
-            if not deleted_task_obj:
-                raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")  # Return the task data that was deleted
-            return deleted_task_obj
+            raise EntityNotFoundError("Task", f"project_id: {project_id}, task_number: {task_number}")
+
+        # Delete associated dependencies, comments, and files
+        await self.dependency_service.remove_all_dependencies_for_task(project_id, task_number)
+        await self.comment_service.delete_all_comments_for_task(project_id, task_number)
+        await self.file_association_service.remove_all_file_associations_for_task(project_id, task_number)
+
+        deleted_task = await crud_delete_task(self.db, project_id=str(project_id), task_number=task_number)
+        if deleted_task:
+            await publisher.publish({"type": "task_deleted", "task": Task.model_validate(deleted_task).model_dump()})
+        return deleted_task
 
     async def archive_task(
         self,
         project_id: UUID,
         task_number: int
-        ) -> Optional[models.Task]:  # Delegate to CRUD archive function
-        return await crud_archive_task(self.db, project_id=str(project_id), task_number=task_number)
+        ) -> Optional[models.Task]:
+        """
+        Archive a task by project ID and task number.
+
+        Args:
+        project_id: The project ID
+        task_number: The task number
+
+        Returns:
+        The archived task
+
+        Raises:
+        EntityNotFoundError: If the task is not found
+        """
+        archived_task = await crud_archive_task(self.db, project_id=str(project_id), task_number=task_number)
+        if archived_task:
+            await publisher.publish({"type": "task_archived", "task": Task.model_validate(archived_task).model_dump()})
+        return archived_task
 
     async def unarchive_task(
         self,
         project_id: UUID,
         task_number: int
-        ) -> Optional[models.Task]:  # Delegate to CRUD unarchive function
-        return await crud_unarchive_task(self.db, project_id=str(project_id), task_number=task_number)
+        ) -> Optional[models.Task]:
+        """
+        Unarchive a task by project ID and task number.
+
+        Args:
+        project_id: The project ID
+        task_number: The task number
+
+        Returns:
+        The unarchived task
+
+        Raises:
+        EntityNotFoundError: If the task is not found
+        """
+        unarchived_task = await crud_unarchive_task(self.db, project_id=str(project_id), task_number=task_number)
+        if unarchived_task:
+            await publisher.publish({"type": "task_unarchived", "task": Task.model_validate(unarchived_task).model_dump()})
+        return unarchived_task
 
     def add_dependency(
         self,
