@@ -1,5 +1,6 @@
 import { StoreApi } from 'zustand';
-import { createBaseStore, BaseState, handleApiError } from './baseStore';
+import { createBaseStore, BaseState, extractErrorMessage } from './baseStore';
+import { handleApiError } from '@/lib/apiErrorHandler';
 import { memoryApi } from '@/services/api';
 import type { MemoryEntity, MemoryEntityFilters } from '@/types/memory';
 
@@ -37,7 +38,8 @@ const actionsCreator = (
       });
       set({ entities: resp.data, loading: false });
     } catch (err) {
-      set({ error: handleApiError(err), loading: false });
+      handleApiError(err, 'Failed to fetch memory entities');
+      set({ error: extractErrorMessage(err), loading: false });
     }
   },
   ingestFile: async (filePath: string) => {
@@ -49,7 +51,8 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
-      set({ ingestionError: handleApiError(err), ingestionLoading: false });
+      handleApiError(err, 'Failed to ingest file');
+      set({ ingestionError: extractErrorMessage(err), ingestionLoading: false });
       throw err;
     }
   },
@@ -62,7 +65,8 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
-      set({ ingestionError: handleApiError(err), ingestionLoading: false });
+      handleApiError(err, 'Failed to ingest URL');
+      set({ ingestionError: extractErrorMessage(err), ingestionLoading: false });
       throw err;
     }
   },
@@ -75,7 +79,8 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
-      set({ ingestionError: handleApiError(err), ingestionLoading: false });
+      handleApiError(err, 'Failed to ingest text');
+      set({ ingestionError: extractErrorMessage(err), ingestionLoading: false });
       throw err;
     }
   },
@@ -88,7 +93,8 @@ const actionsCreator = (
         loading: false,
       }));
     } catch (err) {
-      set({ error: handleApiError(err), loading: false });
+      handleApiError(err, 'Failed to delete entity');
+      set({ error: extractErrorMessage(err), loading: false });
       throw err;
     }
   },

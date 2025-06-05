@@ -86,6 +86,9 @@ const AgentHandoffManager: React.FC<AgentHandoffManagerProps> = ({ agentRoleId }
       await createAgentHandoffCriteria({
         agent_role_id: agentRoleId,
         criteria: newCriteria,
+        description: form.description,
+        target_agent_role: form.target_agent_role,
+        is_active: form.is_active,
       });
       setNewCriteria("");
 

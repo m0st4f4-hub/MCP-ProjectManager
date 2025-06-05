@@ -40,12 +40,6 @@ const AddProjectTemplateForm: React.FC<AddProjectTemplateFormProps> = ({
     formState: { errors, isSubmitting },
     reset,
   } = useForm<FormFields>({
-    resolver: zodResolver(
-      projectTemplateCreateSchema.extend({
-        template_data:
-          projectTemplateCreateSchema.shape.template_data.transform(() => ({})),
-      })
-    ),
     defaultValues: { name: '', description: '', templateData: '{}' },
   });
 

@@ -28,6 +28,8 @@ const AuditLogViewer: React.FC = () => {
       const data = await getAuditLogs({
         project_id: projectId || undefined,
         user_id: userId || undefined,
+        skip: 0,
+        limit: 100,
       });
       setLogs(data);
     } catch (err) {

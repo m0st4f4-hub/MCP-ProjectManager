@@ -51,6 +51,7 @@ const VerificationRequirements: React.FC<VerificationRequirementsProps> = ({ age
       await verificationRequirementsApi.create({
         agent_role_id: agentRoleId,
         requirement: newReq,
+        is_mandatory: true,
       });
       setNewReq("");
       await loadRequirements();
