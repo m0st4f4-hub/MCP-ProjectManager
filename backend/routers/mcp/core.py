@@ -37,6 +37,11 @@ from ....mcp_tools.forbidden_action_tools import (
     add_forbidden_action_tool,
     list_forbidden_actions_tool,
 )
+from ....mcp_tools.capability_tools import (
+    create_capability_tool,
+    list_capabilities_tool,
+    delete_capability_tool,
+)
 from ....schemas.universal_mandate import UniversalMandateCreate
 from .... import models
 from ....schemas.memory import (
@@ -1079,6 +1084,68 @@ async def mcp_list_forbidden_actions(
         return await list_forbidden_actions_tool(agent_role_id, db)
     except Exception as e:
         logger.error(f"MCP list forbidden actions failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/capability/create",
+    tags=["mcp-tools"],
+    operation_id="create_capability_tool",
+)
+async def mcp_create_capability(
+    agent_role_id: str,
+    capability: str,
+    description: Optional[str] = None,
+    is_active: bool = True,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a capability for an agent role."""
+    try:
+        return await create_capability_tool(
+            agent_role_id=agent_role_id,
+            capability=capability,
+            description=description,
+            is_active=is_active,
+            db=db,
+        )
+    except Exception as e:
+        logger.error(f"MCP create capability failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/capability/list",
+    tags=["mcp-tools"],
+    operation_id="list_capabilities_tool",
+)
+async def mcp_list_capabilities(
+    agent_role_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List capabilities for agent roles."""
+    try:
+        return await list_capabilities_tool(agent_role_id, db)
+    except Exception as e:
+        logger.error(f"MCP list capabilities failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/capability/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_capability_tool",
+)
+async def mcp_delete_capability(
+    capability_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a capability."""
+    try:
+        return await delete_capability_tool(capability_id, db)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP delete capability failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
