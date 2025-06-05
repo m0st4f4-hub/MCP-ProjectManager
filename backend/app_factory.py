@@ -68,6 +68,17 @@ def include_app_routers(application: FastAPI) -> None:
         logger.warning(f"Could not import users router: {e}")
 
     try:
+        from .routers.users.roles import router as user_roles_router
+        application.include_router(
+            user_roles_router,
+            prefix="/api/v1/users",
+            tags=["User Roles"],
+        )
+        logger.info("User roles router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import user roles router: {e}")
+
+    try:
         from .routers.admin import router as admin_router
         application.include_router(admin_router, prefix="/api/v1", tags=["admin"])
         logger.info("Admin router included successfully")
