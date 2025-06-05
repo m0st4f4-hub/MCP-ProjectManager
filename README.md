@@ -78,6 +78,34 @@ project-manager/
 
 ---
 
+## 🆕 New Pages
+
+- **Project Detail**: `/projects/<id>` displays a single project's tasks using `ProjectDetail`.
+- **Templates**: `/templates` with subpages for creating (`/templates/new`) and editing templates.
+- **User Roles**: `/user-roles` page to assign and manage roles.
+- **Memory Graph**: `/memory/graph` visualizes the knowledge graph.
+- **Metrics**: `/mcp-tools/metrics` shows runtime metrics.
+
+## 🪝 Custom Hooks
+
+- `useEventSource(path, onMessage)` – Subscribe to `/mcp-tools/stream` events.
+  ```tsx
+  const { lastEvent } = useEventSource('/mcp-tools/stream', e => console.log(e));
+  ```
+- `useProjectData(projectId)` – Fetch a project and its tasks.
+  ```tsx
+  const { project, tasks, refresh } = useProjectData(id);
+  ```
+- `useFilteredTasks(tasks, filters)` – Memoized task filtering.
+- `useFilteredProjects(projects, filters, activeProject)` – Sync project lists with task view.
+
+## 📸 UI Screenshots
+
+![Light theme](./image-light.png)
+![Dark theme](./image-dark.png)
+
+---
+
 ## 🖥️ Manual Setup (Optional)
 
 ### Backend

@@ -85,6 +85,25 @@ This frontend application provides a modern and responsive user interface for ma
 *   **User Role Assignment:** Assign or remove roles using `/api/users/{user_id}/roles`.
 *   **Knowledge Graph Visualization:** View the memory graph via `/api/memory/entities/graph`.
 
+## New Pages
+
+- `/projects/[projectId]` – focused project details and task list.
+- `/templates` and subpages for creating or editing templates.
+- `/user-roles` – assign roles to users.
+- `/memory/graph` – interactive knowledge graph visualization.
+- `/mcp-tools/metrics` – runtime metrics dashboard.
+
+## Custom Hooks
+
+- `useProjectData(projectId)` retrieves a project and its tasks.
+- Example:
+  ```tsx
+  const { project, tasks } = useProjectData(id);
+  ```
+- `useFilteredTasks(tasks, filters)` filters tasks by status, search text, etc.
+- `useFilteredProjects(projects, filters, activeProject)` keeps project lists in sync.
+
+
 ---
 
 ## Inception Project: Refactoring Status
