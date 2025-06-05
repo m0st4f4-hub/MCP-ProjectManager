@@ -33,9 +33,12 @@ graph TD
 ## File List
 
 - `__init__.py`
+- `agent_error_protocol_service.py`
+- `agent_handoff_service.py`
 - `agent_service.py`
 - `audit_log_service.py`
 - `comment_service.py`
+- `error_protocol_service.py`
 - `exceptions.py`
 - `memory_service.py`
 - `project_file_association_service.py`
@@ -43,7 +46,6 @@ graph TD
 - `project_service.py`
 - `project_template_service.py`
 - `rules_service.py`
-- `error_protocol_service.py`
 - `task_dependency_service.py`
 - `task_file_association_service.py`
 - `task_service.py`
@@ -52,4 +54,6 @@ graph TD
 - `utils.py`
 
 <!-- File List End -->
+
+
 

@@ -154,6 +154,8 @@ cd backend
 - ✅ **Task Listing**: Global task listing available at `/api/v1/tasks` with optional `project_id` and pagination. Project-specific listing at `/api/v1/projects/{project_id}/tasks`.
 - ✅ **Task Comments**: API for listing and adding comments to tasks is fully functional.
 - ✅ **Project Members**: API for managing project members (add, remove, list) is fully functional.
+- ✅ **Agent Handoff Criteria**: Endpoints under `/api/v1/rules/roles/handoff-criteria` allow creation, listing, and deletion of handoff criteria for agent roles.
+- ✅ **Forbidden Action MCP Tools**: MCP endpoints `/mcp-tools/forbidden-action/create` and `/mcp-tools/forbidden-action/list` enable managing forbidden actions.
 ## 🔍 Troubleshooting
 
 ### Server Won't Start
@@ -225,37 +227,36 @@ graph TD
 <!-- File List Start -->
 ## File List
 
-- `.env.example`
 - `.env`
+- `.env.example`
 - `.flake8`
 - `__init__.py`
 - `alembic.ini`
+- `app_factory.py`
 - `auth.py`
 - `check_routes.py`
 - `comprehensive_flake8_fixer.py`
 - `comprehensive_indent_fix.py`
 - `database.py`
 - `debug_tables.py`
-- `debug_test_db.py`
 - `enums.py`
 - `init_db.py`
 - `main.py`
 - `middleware.py`
+- `pyproject.toml`
 - `pytest.ini`
 - `quick_fix_project_service.py`
 - `quick_indent_fix.py`
 - `requirements.txt`
 - `security.py`
-- `test_app_import.py`
-- `test_basic_imports.py`
-- `test_endpoints.py`
 - `test_individual_models.py`
 - `test_lazy_imports.py`
 - `test_openapi.json`
-- `test_router_imports.py`
 - `validation.py`
 
 <!-- File List End -->
+
+
 
 
 ## FastAPI-MCP Documentation
