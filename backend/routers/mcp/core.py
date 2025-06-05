@@ -7,6 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional, List, Dict, Any
 import logging
+from functools import wraps
+from collections import defaultdict
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -52,6 +54,23 @@ from ....schemas.memory import (
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
 
+# In-memory counters for tool usage
+tool_counters: Dict[str, int] = defaultdict(int)
+
+
+def track_tool_usage(name: str):
+    """Decorator to increment tool usage counters."""
+
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            tool_counters[name] += 1
+            return await func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
 
 def get_db_session():
     """Database session dependency."""
@@ -89,6 +108,7 @@ def get_error_protocol_service(
     tags=["mcp-tools"],
     operation_id="create_project_tool",
 )
+@track_tool_usage("create_project_tool")
 async def mcp_create_project(
     project_data: ProjectCreate,
     db: Session = Depends(get_db_session)
@@ -128,6 +148,7 @@ async def mcp_create_project(
     tags=["mcp-tools"],
     operation_id="create_task_tool",
 )
+@track_tool_usage("create_task_tool")
 async def mcp_create_task(
     task_data: TaskCreate,
     db: Session = Depends(get_db_session)
@@ -173,6 +194,7 @@ async def mcp_create_task(
     tags=["mcp-tools"],
     operation_id="list_projects_tool",
 )
+@track_tool_usage("list_projects_tool")
 async def mcp_list_projects(
     skip: int = Query(0, ge=0, description="Number of records to skip."),
     limit: int = Query(100, gt=0, description="Maximum records to return."),
@@ -212,6 +234,7 @@ async def mcp_list_projects(
     tags=["mcp-tools"],
     operation_id="list_tasks_tool",
 )
+@track_tool_usage("list_tasks_tool")
 async def mcp_list_tasks(
     project_id: Optional[str] = None,
     status: Optional[str] = None,
@@ -255,6 +278,7 @@ async def mcp_list_tasks(
     tags=["mcp-tools"],
     operation_id="update_task_tool",
 )
+@track_tool_usage("update_task_tool")
 async def mcp_update_task(
     project_id: str,
     task_number: int,
@@ -302,6 +326,7 @@ async def mcp_update_task(
     tags=["mcp-tools"],
     operation_id="delete_task_tool",
 )
+@track_tool_usage("delete_task_tool")
 async def mcp_delete_task(
     project_id: str,
     task_number: int,
@@ -334,6 +359,7 @@ async def mcp_delete_task(
     tags=["mcp-tools"],
     operation_id="add_project_file_tool",
 )
+@track_tool_usage("add_project_file_tool")
 async def mcp_add_project_file(
     project_id: str,
     file_memory_entity_id: int,
@@ -362,6 +388,7 @@ async def mcp_add_project_file(
     tags=["mcp-tools"],
     operation_id="list_project_files_tool",
 )
+@track_tool_usage("list_project_files_tool")
 async def mcp_list_project_files(
     project_id: str,
     skip: int = 0,
@@ -392,6 +419,7 @@ async def mcp_list_project_files(
     tags=["mcp-tools"],
     operation_id="remove_project_file_tool",
 )
+@track_tool_usage("remove_project_file_tool")
 async def mcp_remove_project_file(
     project_id: str,
     file_memory_entity_id: int,
@@ -417,6 +445,7 @@ async def mcp_remove_project_file(
     tags=["mcp-tools"],
     operation_id="create_project_template_tool",
 )
+@track_tool_usage("create_project_template_tool")
 async def mcp_create_project_template(
     template_data: ProjectTemplateCreate,
     db: Session = Depends(get_db_session),
@@ -445,6 +474,7 @@ async def mcp_create_project_template(
     tags=["mcp-tools"],
     operation_id="list_project_templates_tool",
 )
+@track_tool_usage("list_project_templates_tool")
 async def mcp_list_project_templates(
     skip: int = 0,
     limit: int = 100,
@@ -477,6 +507,7 @@ async def mcp_list_project_templates(
     tags=["mcp-tools"],
     operation_id="delete_project_template_tool",
 )
+@track_tool_usage("delete_project_template_tool")
 async def mcp_delete_project_template(
     template_id: str,
     db: Session = Depends(get_db_session),
@@ -498,6 +529,7 @@ async def mcp_delete_project_template(
     tags=["mcp-tools"],
     operation_id="add_memory_entity_tool",
 )
+@track_tool_usage("add_memory_entity_tool")
 async def mcp_add_memory_entity(
     entity_data: MemoryEntityCreate,
     memory_service: MemoryService = Depends(get_memory_service)
@@ -528,6 +560,7 @@ async def mcp_add_memory_entity(
     tags=["mcp-tools"],
     operation_id="update_memory_entity_tool",
 )
+@track_tool_usage("update_memory_entity_tool")
 async def mcp_update_memory_entity(
     entity_id: int,
     entity_update: MemoryEntityUpdate,
@@ -561,6 +594,7 @@ async def mcp_update_memory_entity(
     tags=["mcp-tools"],
     operation_id="add_memory_observation_tool",
 )
+@track_tool_usage("add_memory_observation_tool")
 async def mcp_add_memory_observation(
     entity_id: int,
     observation_data: MemoryObservationCreate,
@@ -590,6 +624,7 @@ async def mcp_add_memory_observation(
     tags=["mcp-tools"],
     operation_id="add_memory_relation_tool",
 )
+@track_tool_usage("add_memory_relation_tool")
 async def mcp_add_memory_relation(
     relation_data: MemoryRelationCreate,
     memory_service: MemoryService = Depends(get_memory_service)
@@ -620,6 +655,7 @@ async def mcp_add_memory_relation(
     tags=["mcp-tools"],
     operation_id="search_memory_tool",
 )
+@track_tool_usage("search_memory_tool")
 async def mcp_search_memory(
     query: str,
     limit: int = 10,
@@ -651,6 +687,7 @@ async def mcp_search_memory(
     tags=["mcp-tools"],
     operation_id="search_graph_tool",
 )
+@track_tool_usage("search_graph_tool")
 async def mcp_search_graph(
     query: str,
     limit: int = 10,
@@ -681,6 +718,7 @@ async def mcp_search_graph(
     tags=["mcp-tools"],
     operation_id="search_graph_tool",
 )
+@track_tool_usage("search_graph_tool")
 async def mcp_search_graph(
     query: str,
     limit: int = 10,
@@ -711,6 +749,7 @@ async def mcp_search_graph(
     tags=["mcp-tools"],
     operation_id="get_memory_content_tool",
 )
+@track_tool_usage("get_memory_content_tool")
 async def mcp_get_memory_content(
     entity_id: int,
     memory_service: MemoryService = Depends(get_memory_service),
@@ -731,6 +770,7 @@ async def mcp_get_memory_content(
     tags=["mcp-tools"],
     operation_id="get_memory_metadata_tool",
 )
+@track_tool_usage("get_memory_metadata_tool")
 async def mcp_get_memory_metadata(
     entity_id: int,
     memory_service: MemoryService = Depends(get_memory_service),
@@ -751,6 +791,7 @@ async def mcp_get_memory_metadata(
     tags=["mcp-tools"],
     operation_id="list_mcp_tools_tool",
 )
+@track_tool_usage("list_mcp_tools_tool")
 async def mcp_list_tools():
     """MCP Tool: List all available MCP tools."""
     tools = []
@@ -774,6 +815,7 @@ async def mcp_list_tools():
     tags=["mcp-tools"],
     operation_id="create_mandate_tool",
 )
+@track_tool_usage("create_mandate_tool")
 async def mcp_create_mandate(
     mandate: UniversalMandateCreate,
     db: Session = Depends(get_db_session),
@@ -802,6 +844,7 @@ async def mcp_create_mandate(
     tags=["mcp-tools"],
     operation_id="create_agent_rule_tool",
 )
+@track_tool_usage("create_agent_rule_tool")
 async def mcp_create_agent_rule(
     rule: AgentRuleCreate,
     db: Session = Depends(get_db_session),
@@ -829,6 +872,7 @@ async def mcp_create_agent_rule(
     tags=["mcp-tools"],
     operation_id="create_handoff_criteria_tool",
 )
+@track_tool_usage("create_handoff_criteria_tool")
 async def mcp_create_handoff_criteria(
     criteria: AgentHandoffCriteriaCreate,
     service: AgentHandoffService = Depends(get_agent_handoff_service),
@@ -860,6 +904,7 @@ async def mcp_create_handoff_criteria(
     tags=["mcp-tools"],
     operation_id="list_handoff_criteria_tool",
 )
+@track_tool_usage("list_handoff_criteria_tool")
 async def mcp_list_handoff_criteria(
     agent_role_id: Optional[str] = Query(None),
     service: AgentHandoffService = Depends(get_agent_handoff_service),
@@ -896,6 +941,7 @@ async def mcp_list_handoff_criteria(
     tags=["mcp-tools"],
     operation_id="delete_handoff_criteria_tool",
 )
+@track_tool_usage("delete_handoff_criteria_tool")
 async def mcp_delete_handoff_criteria(
     criteria_id: str,
     service: AgentHandoffService = Depends(get_agent_handoff_service),
@@ -916,6 +962,7 @@ async def mcp_delete_handoff_criteria(
     tags=["mcp-tools"],
     operation_id="add_error_protocol_tool",
 )
+@track_tool_usage("add_error_protocol_tool")
 async def mcp_add_error_protocol(
     role_id: str,
     protocol: ErrorProtocolCreate,
@@ -946,6 +993,7 @@ async def mcp_add_error_protocol(
     tags=["mcp-tools"],
     operation_id="list_error_protocols_tool",
 )
+@track_tool_usage("list_error_protocols_tool")
 async def mcp_list_error_protocols(
     role_id: Optional[str] = Query(None),
     service: ErrorProtocolService = Depends(get_error_protocol_service),
@@ -978,6 +1026,7 @@ async def mcp_list_error_protocols(
     tags=["mcp-tools"],
     operation_id="remove_error_protocol_tool",
 )
+@track_tool_usage("remove_error_protocol_tool")
 async def mcp_remove_error_protocol(
     protocol_id: str,
     service: ErrorProtocolService = Depends(get_error_protocol_service),
@@ -1000,6 +1049,7 @@ async def mcp_remove_error_protocol(
     tags=["mcp-tools"],
     operation_id="create_forbidden_action_tool",
 )
+@track_tool_usage("create_forbidden_action_tool")
 async def mcp_create_forbidden_action(
     agent_role_id: str,
     action: str,
@@ -1024,6 +1074,7 @@ async def mcp_create_forbidden_action(
     tags=["mcp-tools"],
     operation_id="list_forbidden_actions_tool",
 )
+@track_tool_usage("list_forbidden_actions_tool")
 async def mcp_list_forbidden_actions(
     agent_role_id: Optional[str] = Query(None),
     db: Session = Depends(get_db_session),
@@ -1103,6 +1154,7 @@ async def mcp_delete_capability(
     tags=["mcp-tools"],
     operation_id="assign_role_tool",
 )
+@track_tool_usage("assign_role_tool")
 async def mcp_assign_role(
     user_id: str,
     role_name: str,
@@ -1123,6 +1175,7 @@ async def mcp_assign_role(
     tags=["mcp-tools"],
     operation_id="list_roles_tool",
 )
+@track_tool_usage("list_roles_tool")
 async def mcp_list_roles(
     user_id: str,
     db: Session = Depends(get_db_session),
@@ -1142,6 +1195,7 @@ async def mcp_list_roles(
     tags=["mcp-tools"],
     operation_id="remove_role_tool",
 )
+@track_tool_usage("remove_role_tool")
 async def mcp_remove_role(
     user_id: str,
     role_name: str,
@@ -1157,3 +1211,9 @@ async def mcp_remove_role(
     except Exception as e:
         logger.error(f"MCP remove role failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/mcp-tools/metrics", tags=["mcp-tools"], operation_id="mcp_tools_metrics")
+async def mcp_tools_metrics():
+    """Return usage metrics for MCP tools."""
+    return {"metrics": dict(tool_counters)}
