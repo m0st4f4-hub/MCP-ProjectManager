@@ -11,9 +11,24 @@ import type {
   MemoryObservationCreateData,
   MemoryRelation,
   MemoryRelationCreateData,
+  MemoryRelationUpdateData,
   MemoryRelationFilters,
   KnowledgeGraph,
 } from "@/types/memory";
+
+export const updateRelation = async (
+  relationId: number,
+  data: MemoryRelationUpdateData
+): Promise<MemoryRelation> => {
+  const response = await request<{ data: MemoryRelation }>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
+    {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }
+  );
+  return response.data;
+};
 
 // --- Memory Entity APIs ---
 export const memoryApi = {
@@ -172,6 +187,9 @@ export const memoryApi = {
     );
     return response.data;
   },
+
+  // Update a relation
+  updateRelation,
 
   // Delete a relation
   deleteRelation: async (relationId: number): Promise<void> => {
