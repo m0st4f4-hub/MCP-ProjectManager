@@ -74,3 +74,32 @@ async def test_create_task_requires_project(authenticated_client):
         json={"title": "No Project"},
     )
     assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_projects_pagination(authenticated_client):
+    # create additional projects
+    for i in range(2):
+        await authenticated_client.post(
+            "/api/v1/projects/",
+            json={"name": f"P{i}"}
+        )
+
+    resp = await authenticated_client.get("/api/v1/projects/?skip=1&limit=1")
+    assert resp.status_code == 200
+    assert len(resp.json()["data"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_tasks_pagination(authenticated_client, test_project):
+    for i in range(3):
+        await authenticated_client.post(
+            "/api/v1/tasks/",
+            json={"title": f"t{i}", "project_id": str(test_project.id)}
+        )
+
+    resp = await authenticated_client.get(
+        f"/api/v1/tasks/?project_id={test_project.id}&skip=1&limit=1"
+    )
+    assert resp.status_code == 200
+    assert len(resp.json()["data"]) == 1

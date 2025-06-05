@@ -128,9 +128,17 @@ export const memoryApi = {
   },
 
   // Get observations for an entity
-  getObservations: async (entityId: number): Promise<MemoryObservation[]> => {
+  getObservations: async (
+    entityId: number,
+    skip = 0,
+    limit = 100
+  ): Promise<MemoryObservation[]> => {
+    const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
     const response = await request<{ data: MemoryObservation[] }>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/entities/${entityId}/observations`)
+      buildApiUrl(
+        API_CONFIG.ENDPOINTS.MEMORY,
+        `/entities/${entityId}/observations?${params.toString()}`
+      )
     );
     return response.data;
   },
@@ -158,7 +166,9 @@ export const memoryApi = {
   },
 
   // Get relations with filters
-  getRelations: async (filters?: MemoryRelationFilters): Promise<MemoryRelation[]> => {
+  getRelations: async (
+    filters?: MemoryRelationFilters & { skip?: number; limit?: number }
+  ): Promise<MemoryRelation[]> => {
     const params = new URLSearchParams();
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {

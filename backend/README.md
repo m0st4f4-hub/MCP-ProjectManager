@@ -152,6 +152,7 @@ cd backend
 - ✅ **Extended Task API**: Endpoints for task dependencies, file associations, archiving, and unarchiving.
 - ✅ **Database Migrations**: Alembic support updated for Memory Service models.
 - ✅ **Task Listing**: Global task listing available at `/api/v1/tasks` with optional `project_id` and pagination. Project-specific listing at `/api/v1/projects/{project_id}/tasks`.
+- ✅ **Pagination Parameters**: All list endpoints accept `skip` and `limit` query parameters.
 - ✅ **Task Comments**: API for listing and adding comments to tasks is fully functional.
 - ✅ **Project Members**: API for managing project members (add, remove, list) is fully functional.
 - ✅ **Agent Handoff Criteria**: Endpoints under `/api/v1/rules/roles/handoff-criteria` allow creation, listing, and deletion of handoff criteria for agent roles.

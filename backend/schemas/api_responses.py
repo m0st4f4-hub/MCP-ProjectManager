@@ -4,7 +4,7 @@ This module defines Pydantic models for API responses.
 """
 
 from typing import Generic, TypeVar, List, Dict, Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 from datetime import datetime, UTC  # Generic type for data
 
 T = TypeVar('T')
@@ -44,11 +44,30 @@ class PaginationParams(BaseModel):
     """Model for pagination parameters."""
     page: int = 1
     page_size: int = 100
+    skip: int | None = None
+    limit: int | None = None
+
+    @root_validator(pre=True)
+    def _sync_fields(cls, values: dict) -> dict:
+        page = int(values.get("page", 1))
+        page_size = int(values.get("page_size", 100))
+        skip = values.get("skip")
+        limit = values.get("limit")
+        skip = int(skip) if skip is not None else None
+        limit = int(limit) if limit is not None else None
+        if skip is not None or limit is not None:
+            if skip is None:
+                skip = (page - 1) * (limit or page_size)
+            if limit is None:
+                limit = page_size
+            page = skip // limit + 1
+            page_size = limit
+        else:
+            skip = (page - 1) * page_size
+            limit = page_size
+        values.update({"page": page, "page_size": page_size, "skip": skip, "limit": limit})
+        return values
 
     @property
     def offset(self) -> int:
-        return (self.page - 1) * self.page_size
-
-    @property
-    def limit(self) -> int:
-        return self.page_size
+        return self.skip

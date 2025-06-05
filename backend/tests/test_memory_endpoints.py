@@ -48,6 +48,14 @@ class DummyService:
     def get_entity(self, entity_id: int):
         return self.entities.get(entity_id)
 
+    def get_entities(self, type=None, name=None, skip=0, limit=100):
+        items = list(self.entities.values())
+        if type:
+            items = [e for e in items if e.entity_type == type]
+        if name:
+            items = [e for e in items if e.name == name]
+        return items[skip : skip + limit]
+
 
 dummy_user = types.SimpleNamespace(id="user1")
 
@@ -132,3 +140,18 @@ async def test_root_ingest_url():
         )
         assert resp.status_code == 201
         assert resp.json()["content"] == "content from http://root.com"
+
+
+@pytest.mark.asyncio
+async def test_list_entities_pagination():
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        # create three entities
+        for i in range(3):
+            await client.post("/entities/ingest/text", json={"text": f"e{i}"})
+
+        resp = await client.get("/?skip=1&limit=1")
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
