@@ -1,6 +1,5 @@
 export * from './project';
 export * from './agent';
-export * from './agents';
 export * from './task';
 export * from './user';
 export * from './audit_log';
