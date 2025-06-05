@@ -5,6 +5,7 @@ located in the project root and provide different ways to launch the backend and
 frontend or manage the full stack.
 
 ## `dev_launcher.js`
+
 - **Purpose:** Cross‑platform Node.js launcher.
 - **What it does:**
   - Kills any processes on ports **8000** and **3000**.
@@ -17,6 +18,7 @@ frontend or manage the full stack.
   ```
 
 ## `run_backend.py`
+
 - **Purpose:** Launch only the backend API.
 - **What it does:**
   - Verifies that `backend/.venv` exists.
@@ -28,6 +30,7 @@ frontend or manage the full stack.
   ```
 
 ## `start_system.py`
+
 - **Purpose:** Set up and start the entire development system.
 - **What it does:**
   - Checks the project structure for `backend/` and `frontend/`.
@@ -42,3 +45,15 @@ frontend or manage the full stack.
 
 These scripts simplify local development by automating common setup and startup
 steps. See `DEV_LAUNCHER_GUIDE.md` for more launcher details.
+
+## `cli.js`
+
+- **Purpose:** Primary command line interface.
+- **Additional Commands:**
+  - `mcp list-tools` – Display available MCP tools.
+  - `mcp run-tool <name> [jsonArgs]` – Execute a tool with optional JSON parameters.
+- **Usage Examples:**
+  ```bash
+  node cli.js list-tools
+  node cli.js run-tool create_project_tool '{"name":"demo","description":"test"}'
+  ```
