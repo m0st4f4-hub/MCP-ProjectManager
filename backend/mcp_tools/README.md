@@ -31,6 +31,7 @@ graph TD
 - `project_file_tools.py`
 - `rule_tools.py`
 - `agent_handoff_tools.py`
+- `user_role_tools.py`
 
 <!-- File List End -->
 

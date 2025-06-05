@@ -19,6 +19,7 @@ from ....services.project_template_service import ProjectTemplateService
 from ....schemas.project_template import ProjectTemplateCreate
 from ....services.rules_service import RulesService
 from ....services.agent_handoff_service import AgentHandoffService
+from ....services.user_role_service import UserRoleService
 from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate, TaskUpdate
 from ....schemas import AgentRuleCreate
@@ -58,6 +59,12 @@ def get_agent_handoff_service(
     db: Session = Depends(get_db_session),
 ) -> AgentHandoffService:
     return AgentHandoffService(db)
+
+
+def get_user_role_service(
+    db: Session = Depends(get_db_session),
+) -> UserRoleService:
+    return UserRoleService(db)
 
 
 @router.post(
@@ -877,4 +884,76 @@ async def mcp_delete_handoff_criteria(
         raise
     except Exception as e:
         logger.error(f"MCP delete handoff criteria failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/user/assign-role",
+    tags=["mcp-tools"],
+    operation_id="assign_role_tool",
+)
+async def mcp_assign_role(
+    user_id: str,
+    role_name: str,
+    service: UserRoleService = Depends(get_user_role_service),
+):
+    """MCP Tool: Assign a role to a user."""
+    try:
+        role = service.assign_role_to_user(user_id=user_id, role_name=role_name)
+        if role is None:
+            raise HTTPException(status_code=400, detail="Role assignment failed")
+        return {
+            "success": True,
+            "role": {"user_id": role.user_id, "role_name": role.role_name},
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP assign role failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/user/list-roles",
+    tags=["mcp-tools"],
+    operation_id="list_roles_tool",
+)
+async def mcp_list_roles(
+    user_id: str,
+    service: UserRoleService = Depends(get_user_role_service),
+):
+    """MCP Tool: List roles for a user."""
+    try:
+        roles = service.get_user_roles(user_id=user_id)
+        return {
+            "success": True,
+            "roles": [
+                {"user_id": r.user_id, "role_name": r.role_name} for r in roles
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list roles failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/user/remove-role",
+    tags=["mcp-tools"],
+    operation_id="remove_role_tool",
+)
+async def mcp_remove_role(
+    user_id: str,
+    role_name: str,
+    service: UserRoleService = Depends(get_user_role_service),
+):
+    """MCP Tool: Remove a role from a user."""
+    try:
+        success = service.remove_role_from_user(user_id=user_id, role_name=role_name)
+        if not success:
+            raise HTTPException(status_code=404, detail="Role not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP remove role failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -96,6 +96,9 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/handoff/create` (POST)
 - `/mcp-tools/handoff/list` (GET)
 - `/mcp-tools/handoff/delete` (DELETE)
+- `/mcp-tools/user/assign-role` (POST)
+- `/mcp-tools/user/list-roles` (GET)
+- `/mcp-tools/user/remove-role` (DELETE)
 
 ## Development and Contributing
 
