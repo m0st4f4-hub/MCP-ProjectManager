@@ -99,24 +99,26 @@ Reference related issues when applicable (e.g. `fix: #42`).
 
 ## ✅ Test Requirements
 
-Before opening a Pull Request, ensure the following tests and linters pass:
+Before opening a Pull Request, ensure all formatting, linting, and tests pass and that code coverage meets the required threshold (90% lines).
 
 ### Frontend
 
 ```bash
+npm run prettier:check
 cd frontend
 npm run lint
-npm test
+npx vitest --coverage.v8 --coverage-threshold=90
 ```
 
 ### Backend
 
 ```bash
 cd backend
-pytest
+flake8 .
+pytest --cov=. --cov-fail-under=90
 ```
 
-All tests and linters must pass locally before submitting a PR.
+All checks must succeed locally before submitting a PR.
 
 ---
 

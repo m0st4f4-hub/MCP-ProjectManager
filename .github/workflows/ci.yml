@@ -30,7 +30,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Lint
+      - name: Lint Python
         run: |
           cd backend
           flake8 .
@@ -38,9 +38,10 @@ jobs:
       - name: Test with coverage
         run: |
           cd backend
-          pytest --cov=. --cov-report=xml
+          pytest --cov=. --cov-report=xml --cov-fail-under=90
 
       - name: Upload Python coverage artifact
+        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage
@@ -58,10 +59,18 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
+      - name: Prettier check
+        run: npm run prettier:check
+
       - name: Install dependencies
         run: |
           cd frontend
           npm install
+
+      - name: Lint
+        run: |
+          cd frontend
+          npm run lint
 
       - name: Type check
         run: |
@@ -71,9 +80,10 @@ jobs:
       - name: Test with coverage
         run: |
           cd frontend
-          npm run test:coverage
+          npx vitest --coverage.v8 --coverage-threshold=90
 
       - name: Upload frontend coverage artifact
+        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
