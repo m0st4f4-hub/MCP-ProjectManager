@@ -164,6 +164,11 @@ async def get_project_by_id_endpoint(
 ):
     """Retrieves a specific project by its ID."""
     try:
+        try:
+            uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         db_project = await project_service.get_project(
             project_id=project_id, is_archived=is_archived
         )  # Return standardized response
@@ -205,6 +210,11 @@ async def update_project(
 ):
     """Update a project by ID."""
     try:
+        try:
+            uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         # First get the project to check ownership
         db_project = await project_service.get_project(project_id=project_id)
 
@@ -260,6 +270,11 @@ async def delete_project(
 ):
     """Delete a project by ID."""
     try:
+        try:
+            uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         db_project = await project_service.delete_project(project_id=project_id)
         if db_project is None:
             # Use EntityNotFoundError from services
@@ -292,6 +307,11 @@ async def archive_project(
 ):
     """Archive a project by setting is_archived to True."""
     try:  # Use the update_project method with is_archived=True
+        try:
+            uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         project_update = ProjectUpdate(is_archived=True)
         db_project = await project_service.update_project(
             project_id=project_id, project_update=project_update
@@ -331,6 +351,11 @@ async def unarchive_project(
 ):
     """Unarchive a project by setting is_archived to False."""
     try:  # Use the update_project method with is_archived=False
+        try:
+            uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         project_update = ProjectUpdate(is_archived=False)
         db_project = await project_service.update_project(
             project_id=project_id, project_update=project_update

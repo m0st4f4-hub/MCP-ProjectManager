@@ -74,3 +74,15 @@ async def test_create_task_requires_project(authenticated_client):
         json={"title": "No Project"},
     )
     assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_invalid_project_id_returns_422(authenticated_client):
+    resp = await authenticated_client.get("/api/v1/projects/not-a-uuid")
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_invalid_agent_id_returns_422(authenticated_client):
+    resp = await authenticated_client.get("/api/v1/agents/id/not-a-uuid")
+    assert resp.status_code == 422

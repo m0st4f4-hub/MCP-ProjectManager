@@ -33,11 +33,16 @@ async def associate_file_with_task_endpoint(
 ):
     """Associate a file with a task."""
     try:
-    db_association = await task_file_association_service.associate_file_with_task(
-    project_id=uuid.UUID(project_id),
-    task_number=task_number,
-    file_memory_entity_id=file_association.file_memory_entity_id
-    )
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
+        db_association = await task_file_association_service.associate_file_with_task(
+            project_id=project_uuid,
+            task_number=task_number,
+            file_memory_entity_id=file_association.file_memory_entity_id
+        )
     return DataResponse[TaskFileAssociation](
     data=db_association,
     message="File associated with task successfully"
@@ -69,13 +74,18 @@ async def get_files_for_task_endpoint(
 ):
     """Get all files associated with a task."""
     try:
-    files = await task_file_association_service.get_task_files(
-    project_id=uuid.UUID(project_id),
-    task_number=task_number,
-    sort_by=sort_by,
-    sort_direction=sort_direction,
-    filename=filename
-    )
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
+        files = await task_file_association_service.get_task_files(
+            project_id=project_uuid,
+            task_number=task_number,
+            sort_by=sort_by,
+            sort_direction=sort_direction,
+            filename=filename
+        )
     return ListResponse[TaskFileAssociation](
     data=files,
     total=len(files),
@@ -110,11 +120,16 @@ async def get_task_file_association_by_file_memory_entity_id_endpoint(
 ):
     """Retrieve a specific task file association by file memory entity ID."""
     try:
-    association = await task_file_association_service.get_task_file_association_by_file_memory_entity_id(
-    project_id=uuid.UUID(project_id),
-    task_number=task_number,
-    file_memory_entity_id=file_memory_entity_id
-    )
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
+        association = await task_file_association_service.get_task_file_association_by_file_memory_entity_id(
+            project_id=project_uuid,
+            task_number=task_number,
+            file_memory_entity_id=file_memory_entity_id
+        )
     return DataResponse[TaskFileAssociation](
     data=association,
     message="Task file association retrieved successfully"
@@ -141,25 +156,30 @@ async def disassociate_file_from_task_by_file_memory_entity_id_endpoint(
     task_number: int = Path(..., description="Task number unique within the project."),
     file_memory_entity_id: int = Path(..., description="ID of the associated file MemoryEntity."),
     task_file_association_service: TaskFileAssociationService = Depends(
-    get_task_file_association_service),
+        get_task_file_association_service),
 ):
     """Disassociate a file from a task by file memory entity ID."""
     try:
-    success = await task_file_association_service.disassociate_file_from_task(
-    project_id=uuid.UUID(project_id),
-    task_number=task_number,
-    file_memory_entity_id=file_memory_entity_id
-    )
-    if not success:
-    raise HTTPException(status_code=404, detail="Task file association not found")
-    return DataResponse[dict](
-    data={"success": success},
-    message="File disassociated from task successfully"
-    )
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
+        success = await task_file_association_service.disassociate_file_from_task(
+            project_id=project_uuid,
+            task_number=task_number,
+            file_memory_entity_id=file_memory_entity_id
+        )
+        if not success:
+            raise HTTPException(status_code=404, detail="Task file association not found")
+        return DataResponse[dict](
+            data={"success": success},
+            message="File disassociated from task successfully",
+        )
     except EntityNotFoundError as e:
-    raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-    raise HTTPException(
-    status_code=500,
-    detail=f"Internal server error: {e}"
-    )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}"
+        )

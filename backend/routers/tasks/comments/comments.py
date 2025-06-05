@@ -34,8 +34,13 @@ async def get_task_comments_endpoint(
 ):
     """Retrieves a list of comments for a task."""
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         comments, total_comments = await task_service.get_task_comments(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             task_number=task_number,
             skip=pagination.offset,
             limit=pagination.page_size,
@@ -79,8 +84,13 @@ async def add_task_comment_endpoint(
 ):
     """Adds a new comment to a specific task."""
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         db_comment = await task_service.add_comment_to_task(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             task_number=task_number,
             author_id=comment_create.author_id, # Assuming author_id is part of CommentCreate
             content=comment_create.content

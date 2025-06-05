@@ -68,6 +68,11 @@ def get_agent_by_name(agent_name: str, db: Session = Depends(get_db)):
 
 
 def get_agent_by_id_endpoint(agent_id: str, db: Session = Depends(get_db)):  # Instantiate AgentService
+    try:
+        uuid.UUID(agent_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid agent_id format")
+
     agent_service = AgentService(db)
     db_agent = agent_service.get_agent(agent_id=agent_id)
     if db_agent is None:
@@ -78,6 +83,11 @@ def get_agent_by_id_endpoint(agent_id: str, db: Session = Depends(get_db)):  # I
 
 
 def update_agent(agent_id: str, agent_update: AgentUpdate, db: Session = Depends(get_db)):  # Instantiate AgentService
+    try:
+        uuid.UUID(agent_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid agent_id format")
+
     agent_service = AgentService(db)
     try:
         db_agent = agent_service.update_agent(
@@ -94,6 +104,11 @@ def update_agent(agent_id: str, agent_update: AgentUpdate, db: Session = Depends
 
 
 def delete_agent(agent_id: str, db: Session = Depends(get_db)):  # Instantiate AgentService
+    try:
+        uuid.UUID(agent_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid agent_id format")
+
     agent_service = AgentService(db)
     db_agent = agent_service.delete_agent(agent_id=agent_id)
     if db_agent is None:
@@ -104,6 +119,11 @@ def delete_agent(agent_id: str, db: Session = Depends(get_db)):  # Instantiate A
 
 
 def archive_agent_endpoint(agent_id: str, db: Session = Depends(get_db)):  # Instantiate AgentService
+    try:
+        uuid.UUID(agent_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid agent_id format")
+
     agent_service = AgentService(db)
     try:
         archived_agent = agent_service.archive_agent(agent_id=agent_id)
@@ -121,6 +141,11 @@ def archive_agent_endpoint(agent_id: str, db: Session = Depends(get_db)):  # Ins
 
 
 def unarchive_agent_endpoint(agent_id: str, db: Session = Depends(get_db)):  # Instantiate AgentService
+    try:
+        uuid.UUID(agent_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid agent_id format")
+
     agent_service = AgentService(db)
     try:
         unarchived_agent = agent_service.unarchive_agent(agent_id=agent_id)

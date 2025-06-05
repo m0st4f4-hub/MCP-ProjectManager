@@ -228,6 +228,11 @@ async def mcp_update_task(
 ):
     """MCP Tool: Update an existing task."""
     try:
+        try:
+            uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         task_service = TaskService(db)
         task = task_service.update_task(
             project_id=project_id,
@@ -271,6 +276,11 @@ async def mcp_delete_task(
 ):
     """MCP Tool: Delete an existing task."""
     try:
+        try:
+            uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         task_service = TaskService(db)
         task_service.delete_task(
             project_id=project_id,
@@ -305,6 +315,11 @@ async def mcp_add_project_file(
 ):
     """MCP Tool: Associate a file (memory entity) with a project."""
     try:
+        try:
+            uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         project_file = service.add_project_file_association(
             project_id=project_id,
             file_memory_entity_id=file_memory_entity_id
@@ -338,6 +353,11 @@ async def mcp_list_project_files(
 ):
     """MCP Tool: List files associated with a project."""
     try:
+        try:
+            uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         project_files = service.get_project_file_associations(
             project_id=project_id,
             skip=skip,
@@ -372,6 +392,11 @@ async def mcp_remove_project_file(
 ):
     """MCP Tool: Remove a file (memory entity) association from a project."""
     try:
+        try:
+            uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         service.remove_project_file_association(
             project_id=project_id,
             file_memory_entity_id=file_memory_entity_id

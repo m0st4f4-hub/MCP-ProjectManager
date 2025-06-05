@@ -54,8 +54,13 @@ async def create_task_for_project(
 ):
     """Create a new task in a project."""
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         db_task = await task_service.create_task(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             task=task
         )
 
@@ -120,6 +125,17 @@ async def get_tasks_list(
     Supported sort fields: created_at, updated_at, title, status, task_number, agent_id
     """
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
+        if agent_id is not None:
+            try:
+                uuid.UUID(agent_id)
+            except ValueError:
+                raise HTTPException(status_code=422, detail="Invalid agent_id format")
+
         agent_id_val: Optional[str] = None
         if agent_name:
             agent = await agent_service.get_agent_by_name(name=agent_name)
@@ -136,7 +152,7 @@ async def get_tasks_list(
                 )
 
         all_tasks = await task_service.get_tasks_by_project(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             skip=0, limit=None,
             agent_id=agent_id_val or agent_id,
             search=search,
@@ -146,7 +162,7 @@ async def get_tasks_list(
         total = len(all_tasks)
 
         tasks = await task_service.get_tasks_by_project(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             skip=pagination.offset,
             limit=pagination.page_size,
             agent_id=agent_id_val or agent_id,
@@ -194,8 +210,13 @@ async def read_task(
 ):
     """Retrieve a specific task by project and task number."""
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         db_task = await task_service.get_task(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             task_number=task_number
         )
 
@@ -229,8 +250,13 @@ async def archive_task_endpoint(
 ):
     """Archive a task by setting is_archived to True."""
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         db_task = await task_service.archive_task(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             task_number=task_number
         )
 
@@ -273,8 +299,13 @@ async def unarchive_task_endpoint(
 ):
     """Unarchive a task by setting is_archived to False."""
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         db_task = await task_service.unarchive_task(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             task_number=task_number
         )
 
@@ -318,8 +349,13 @@ async def update_task(
 ):
     """Update a task by project and task number."""
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         db_task = await task_service.update_task(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             task_number=task_number,
             task_update=task_update
         )
@@ -368,8 +404,13 @@ async def delete_task(
 ):
     """Delete a task by project and task number."""
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         db_task = await task_service.delete_task(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             task_number=task_number
         )
 

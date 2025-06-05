@@ -111,7 +111,7 @@ async def get_all_tasks(
     (f" in project {project_id}" if project_id else "")
     )
     except ValueError as ve:
-    raise HTTPException(status_code=400, detail=f"Invalid UUID format for project_id or agent_id: {ve}")
+    raise HTTPException(status_code=422, detail=f"Invalid UUID format for project_id or agent_id: {ve}")
     except Exception as e:  # Consider logging the exception here
     raise HTTPException(
     status_code=500,

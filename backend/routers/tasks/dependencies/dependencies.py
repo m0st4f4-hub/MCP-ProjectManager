@@ -32,10 +32,16 @@ async def add_task_dependency_endpoint(
 ):
     """Add a dependency between two tasks."""
     try:
+        try:
+            successor_uuid = uuid.UUID(project_id)
+            predecessor_uuid = uuid.UUID(dependency.predecessor_project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         db_dependency = await task_dependency_service.add_task_dependency(
-            successor_project_id=uuid.UUID(project_id),
+            successor_project_id=successor_uuid,
             successor_task_number=task_number,
-            predecessor_project_id=uuid.UUID(dependency.predecessor_project_id),
+            predecessor_project_id=predecessor_uuid,
             predecessor_task_number=dependency.predecessor_task_number,
             dependency_type=dependency.dependency_type
         )
@@ -76,8 +82,13 @@ async def get_all_task_dependencies_endpoint(
 ):
     """Get all dependencies for a task (both predecessors and successors)."""
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         dependencies = await task_dependency_service.get_all_task_dependencies(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             task_number=task_number,
             sort_by=sort_by,
             sort_direction=sort_direction,
@@ -122,8 +133,13 @@ async def get_task_predecessors_endpoint(
 ):
     """Get the predecessors for a specific task."""
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         predecessors = await task_dependency_service.get_task_predecessors(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             task_number=task_number,
             sort_by=sort_by,
             sort_direction=sort_direction,
@@ -168,8 +184,13 @@ async def get_task_successors_endpoint(
 ):
     """Get the successors for a specific task."""
     try:
+        try:
+            project_uuid = uuid.UUID(project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         successors = await task_dependency_service.get_task_successors(
-            project_id=uuid.UUID(project_id),
+            project_id=project_uuid,
             task_number=task_number,
             sort_by=sort_by,
             sort_direction=sort_direction,
@@ -211,10 +232,16 @@ async def remove_task_dependency_endpoint(
 ):
     """Remove a dependency between two tasks."""
     try:
+        try:
+            successor_uuid = uuid.UUID(project_id)
+            predecessor_uuid = uuid.UUID(predecessor_project_id)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Invalid project_id format")
+
         success = await task_dependency_service.remove_task_dependency(
-            successor_project_id=uuid.UUID(project_id),
+            successor_project_id=successor_uuid,
             successor_task_number=task_number,
-            predecessor_project_id=uuid.UUID(predecessor_project_id),
+            predecessor_project_id=predecessor_uuid,
             predecessor_task_number=predecessor_task_number
         )
         if not success:
