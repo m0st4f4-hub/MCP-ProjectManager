@@ -192,6 +192,17 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 - `routers/` - API route definitions
 - `services/` - Business logic layer
 
+### MCP Tool List
+The backend exposes several MCP tools that mirror core API functionality:
+- `task_tools.py` - task management helpers
+- `memory_tools.py` - memory service interactions
+- `project_tools.py` - project CRUD helpers
+- `project_file_tools.py` - associate memory files with projects
+- `rule_tools.py` - manage agent rules and mandates
+- `agent_handoff_tools.py` - create, list, and delete agent handoff criteria
+- `forbidden_action_tools.py` - manage forbidden actions for agent roles
+- `error_protocol_tools.py` - manage agent error protocols
+
 ## 📈 Performance Considerations
 
 ### Backend Optimizations

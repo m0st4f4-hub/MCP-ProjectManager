@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from typing import Optional, Dict
 import logging
-import json
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -24,10 +23,6 @@ from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate, TaskUpdate
 from ....schemas import AgentRuleCreate
 from ....schemas.universal_mandate import UniversalMandateCreate
-from ....mcp_tools.forbidden_action_tools import (
-    add_forbidden_action_tool,
-    list_forbidden_actions_tool,
-)
 from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
@@ -658,6 +653,66 @@ async def mcp_search_memory(
 
 
 @router.get(
+    "/mcp-tools/memory/search-graph",
+    tags=["mcp-tools"],
+    operation_id="search_graph_tool",
+)
+async def mcp_search_graph(
+    query: str,
+    limit: int = 10,
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """MCP Tool: Search memory graph."""
+    try:
+        results = memory_service.search_memory_entities(query, limit=limit)
+        return {
+            "success": True,
+            "results": [
+                {
+                    "id": r.id,
+                    "type": r.type,
+                    "name": r.name,
+                    "description": r.description,
+                }
+                for r in results
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP search graph failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/memory/search-graph",
+    tags=["mcp-tools"],
+    operation_id="search_graph_tool",
+)
+async def mcp_search_graph(
+    query: str,
+    limit: int = 10,
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """MCP Tool: Search memory graph."""
+    try:
+        results = memory_service.search_memory_entities(query, limit=limit)
+        return {
+            "success": True,
+            "results": [
+                {
+                    "id": r.id,
+                    "type": r.type,
+                    "name": r.name,
+                    "description": r.description,
+                }
+                for r in results
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP search graph failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
     "/mcp-tools/memory/get-content",
     tags=["mcp-tools"],
     operation_id="get_memory_content_tool",
@@ -707,10 +762,15 @@ async def mcp_list_tools():
     tools = []
     for route in router.routes:
         if hasattr(route, "name") and route.name.startswith("mcp_"):
+            description = (
+                route.description.split('\n')[0]
+                if route.description
+                else "No description"
+            )
             tools.append({
                 "name": route.name,
                 "path": route.path,
-                "description": route.description.split('\n')[0] if route.description else "No description"
+                "description": description,
             })
     return {"success": True, "tools": tools}
 
@@ -770,48 +830,6 @@ async def mcp_create_agent_rule(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Add the new tool routes
-router.include_router(add_forbidden_action_tool.router)
-router.include_router(list_forbidden_actions_tool.router)
-
-@router.post(
-    "/mcp-tools/rule/forbidden/add",
-    tags=["mcp-tools"],
-    operation_id="add_forbidden_action_tool",
-)
-async def mcp_add_forbidden_action(
-    agent_role_id: str,
-    action: str,
-    reason: Optional[str] = None,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: Add a forbidden action for an agent role."""
-    rules_service = RulesService(db)
-    forbidden_action = rules_service.add_forbidden_action(agent_role_id, action, reason)
-    return {
-        "success": True,
-        "forbidden_action": forbidden_action.as_dict() # Assuming as_dict() method
-    }
-
-@router.get(
-    "/mcp-tools/rule/forbidden/list",
-    tags=["mcp-tools"],
-    operation_id="list_forbidden_actions_tool",
-)
-async def mcp_list_forbidden_actions(
-    agent_role_id: Optional[str] = None,
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: List forbidden actions, optionally filtered by agent role ID."""
-    rules_service = RulesService(db)
-    actions = rules_service.get_forbidden_actions(agent_role_id, skip, limit)
-    return {
-        "success": True,
-        "forbidden_actions": [action.as_dict() for action in actions] # Assuming as_dict()
-    }
-
 @router.post(
     "/mcp-tools/handoff/create",
     tags=["mcp-tools"],
@@ -842,6 +860,7 @@ async def mcp_create_handoff_criteria(
         logger.error(f"MCP create handoff criteria tool failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get(
     "/mcp-tools/handoff/list",
     tags=["mcp-tools"],
@@ -853,7 +872,11 @@ async def mcp_list_handoff_criteria(
 ):
     """MCP Tool: List agent handoff criteria."""
     try:
-        criteria_list = service.get_criteria_by_agent_role(agent_role_id) if agent_role_id else service.get_all_criteria()
+        criteria_list = (
+            service.get_criteria_by_agent_role(agent_role_id)
+            if agent_role_id
+            else service.get_all_criteria()
+        )
         return {
             "success": True,
             "criteria": [
@@ -872,6 +895,7 @@ async def mcp_list_handoff_criteria(
     except Exception as e:
         logger.error(f"MCP list handoff criteria tool failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.delete(
     "/mcp-tools/handoff/delete",
@@ -1019,4 +1043,65 @@ async def mcp_list_forbidden_actions(
         return await list_forbidden_actions_tool(agent_role_id, db)
     except Exception as e:
         logger.error(f"MCP list forbidden actions failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/user-role/assign",
+    tags=["mcp-tools"],
+    operation_id="assign_role_tool",
+)
+async def mcp_assign_role(
+    user_id: str,
+    role_name: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Assign a role to a user."""
+    try:
+        from ...mcp_tools.user_role_tools import assign_role_tool
+
+        return await assign_role_tool(user_id, role_name, db)
+    except Exception as e:
+        logger.error(f"MCP assign role failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/user-role/list",
+    tags=["mcp-tools"],
+    operation_id="list_roles_tool",
+)
+async def mcp_list_roles(
+    user_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List roles assigned to a user."""
+    try:
+        from ...mcp_tools.user_role_tools import list_roles_tool
+
+        return await list_roles_tool(user_id, db)
+    except Exception as e:
+        logger.error(f"MCP list roles failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/user-role/remove",
+    tags=["mcp-tools"],
+    operation_id="remove_role_tool",
+)
+async def mcp_remove_role(
+    user_id: str,
+    role_name: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Remove a role from a user."""
+    try:
+        from ...mcp_tools.user_role_tools import remove_role_tool
+
+        return await remove_role_tool(user_id, role_name, db)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP remove role failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
