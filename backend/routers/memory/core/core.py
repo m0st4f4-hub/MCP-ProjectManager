@@ -44,6 +44,17 @@ def create_memory_entity_endpoint(
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 
+@router.get("/graph")
+def get_knowledge_graph_endpoint(
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """Retrieve the full knowledge graph."""
+    try:
+        return memory_service.get_knowledge_graph()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+
+
 @router.get("/{entity_id}", response_model=MemoryEntity)
 def read_memory_entity_endpoint(
     entity_id: int = Path(...),
