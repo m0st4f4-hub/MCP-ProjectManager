@@ -6,9 +6,14 @@ This script initializes the database with all required tables and basic data.
 
 import asyncio
 import sys
-from pathlib import Path  # Add the backend directory to the Python path
+from pathlib import Path
+from dotenv import load_dotenv
+
 backend_dir = Path(__file__).parent
 sys.path.insert(0, str(backend_dir))
+load_dotenv(backend_dir / ".env")
+
+from database import Base, engine
 
 from sqlalchemy.orm import Session
 from sqlalchemy import text

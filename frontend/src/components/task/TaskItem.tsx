@@ -10,17 +10,7 @@ import {
   useToast,
   Button,
 } from "@chakra-ui/react";
-import {
-  EditIcon,
-  TimeIcon,
-  WarningTwoIcon,
-  CheckCircleIcon,
-  InfoOutlineIcon,
-  QuestionOutlineIcon,
-  CheckIcon,
-  NotAllowedIcon,
-  SettingsIcon, // Assuming ListOrderedIcon and RepeatClockIcon map to something like SettingsIcon or need specific imports
-} from "@chakra-ui/icons";
+import { defaultIconMap } from "../common/iconMap";
 import { useProjectStore } from "@/store/projectStore";
 import { useTaskStore } from "@/store/taskStore";
 import { getDisplayableStatus, StatusID, StatusAttributeObject } from "@/lib/statusUtils";
@@ -31,19 +21,8 @@ import TaskItemMainSection from "./TaskItemMainSection";
 import TaskItemModals from "../TaskItemModals";
 import { TaskStatus } from "@/types/task";
 
-// Define the iconMap
-const iconMap: Record<string, React.ElementType> = {
-  EditIcon: EditIcon,
-  TimeIcon: TimeIcon,
-  WarningTwoIcon: WarningTwoIcon,
-  CheckCircleIcon: CheckCircleIcon,
-  InfoOutlineIcon: InfoOutlineIcon,
-  ListOrderedIcon: SettingsIcon, // Placeholder, replace with actual icon if available
-  RepeatClockIcon: SettingsIcon, // Placeholder, replace with actual icon if available
-  QuestionOutlineIcon: QuestionOutlineIcon,
-  CheckIcon: CheckIcon,
-  NotAllowedIcon: NotAllowedIcon,
-};
+// Default mapping from status icon names to actual icon components.
+const iconMap = defaultIconMap;
 
 /**
  * @module TaskItem
@@ -141,7 +120,7 @@ const TaskItem: React.FC<TaskItemProps> = memo(
         overflow="hidden" // Ensures content respects border radius
         bg={
           // Background color based on completion status
-          task.status === "COMPLETED"
+          task.status === TaskStatus.COMPLETED
             ? styles.bgSurfaceElevatedColor // Elevated background for completed tasks
             : styles.bgSurfaceColor // Standard background for other tasks
         }
@@ -161,11 +140,11 @@ const TaskItem: React.FC<TaskItemProps> = memo(
           {/* Checkbox for task completion */}
           <Box pt="spacing.0-5">
             <Checkbox
-              isChecked={task.status === "COMPLETED"} // Checked if task is completed
+              isChecked={task.status === TaskStatus.COMPLETED} // Checked if task is completed
               onChange={handleToggleCompletion} // Handler to toggle completion
               size="lg" // Large size checkbox
               colorScheme={statusInfo?.colorScheme || "gray"} // Color scheme based on status
-              aria-label={`Mark task ${task.title} as ${task.status === "COMPLETED" ? "incomplete" : "complete"}`}
+              aria-label={`Mark task ${task.title} as ${task.status === TaskStatus.COMPLETED ? "incomplete" : "complete"}`}
             />
           </Box>
 

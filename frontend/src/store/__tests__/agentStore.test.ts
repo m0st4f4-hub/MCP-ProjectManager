@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { act } from 'react-dom/test-utils'
 import { useAgentStore } from '../agentStore'
 import * as api from '@/services/api'
 
@@ -31,7 +32,9 @@ describe('agentStore', () => {
     const agents = [{ id: '1', name: 'Alpha', created_at: '2024-01-01' }]
     mockedApi.getAgents.mockResolvedValueOnce(agents)
 
-    await useAgentStore.getState().fetchAgents(0, 10)
+    await act(async () => {
+      await useAgentStore.getState().fetchAgents(0, 10)
+    })
 
     expect(mockedApi.getAgents).toHaveBeenCalledWith(0, 10, undefined, 'all', false)
     expect(useAgentStore.getState().agents).toEqual(agents)
@@ -42,7 +45,9 @@ describe('agentStore', () => {
     const newAgent = { id: '2', name: 'Beta', created_at: '2024-01-02' }
     mockedApi.createAgent.mockResolvedValueOnce(newAgent)
 
-    await useAgentStore.getState().addAgent({ name: 'Beta' } as any)
+    await act(async () => {
+      await useAgentStore.getState().addAgent({ name: 'Beta' } as any)
+    })
 
     expect(mockedApi.createAgent).toHaveBeenCalledWith({ name: 'Beta' })
     expect(useAgentStore.getState().agents[0]).toEqual(newAgent)

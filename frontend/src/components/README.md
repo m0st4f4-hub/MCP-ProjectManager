@@ -159,6 +159,7 @@ graph TD
 ## File List
 
 - `AgentList.tsx`
+- `BulkActionsBar.tsx`
 - `ClientOnly.tsx`
 - `Dashboard.tsx`
 - `LoadingSkeleton.tsx`
@@ -175,9 +176,11 @@ graph TD
 - `TaskLoading.tsx`
 - `TaskProjectTag.tsx`
 - `TaskStatusTag.tsx`
+- `TaskViewControls.tsx`
 - `ThemeToggleButton.tsx`
 - `VirtualizedList.tsx`
 - `useTaskItemStyles.ts`
 - `useTaskListState.ts`
 
 <!-- File List End -->
+

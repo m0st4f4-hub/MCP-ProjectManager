@@ -64,7 +64,8 @@ export const deleteUser = async (userId: string): Promise<User> => {
  * Login to acquire token (OAuth2 compatible)
  */
 export const login = async (formData: LoginRequest): Promise<TokenResponse> => {
-  return request<TokenResponse>(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/login'), {
+  // Use the OAuth2-compatible token endpoint which expects URL encoded form data
+  return request<TokenResponse>(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/token'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams(formData as Record<string, string>).toString(),

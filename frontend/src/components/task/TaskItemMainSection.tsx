@@ -3,9 +3,10 @@ import { Box, Text, VStack } from "@chakra-ui/react";
 import TaskTitleEditor from "../common/TaskTitleEditor";
 import TaskDescriptionEditor from "../common/TaskDescriptionEditor";
 import { inputStyle, textareaStyle } from "./TaskItem.styles";
-import { Task, TaskUpdateData } from "@/types/task"; // Assuming Task is ITask or similar
+import { Task, TaskUpdateData, TaskStatus } from "@/types/task"; // Assuming Task is ITask or similar
 import TaskItemDetailsSection from "./TaskItemDetailsSection";
 import { StatusID, StatusAttributeObject } from "@/lib/statusUtils";
+import { IconMap } from "../common/iconMap";
 
 
 /**
@@ -25,8 +26,8 @@ interface TaskItemMainSectionProps {
   styles: Record<string, unknown>; // Consider a more specific type if possible
   /** The color to use for text elements, determined by archiving status or other factors. */
   textColor: string;
-  /** A map of status IDs to React ElementType, for rendering status icons. */
-  iconMap: Record<string, React.ElementType>;
+  /** A map of icon names to components used by TaskStatusTag. */
+  iconMap: IconMap;
   /** The current status ID of the task. */
   currentStatusId: StatusID;
   /** If true, renders a more compact version of this section. */
@@ -85,8 +86,8 @@ const TaskItemMainSection: React.FC<TaskItemMainSectionProps> = ({
     setIsEditingTitle(true); // Set editing mode to true
     // If task is not already "IN_PROGRESS", update its status
     // This is an optimistic update or side-effect of starting to edit.
-    if (task.status !== "IN_PROGRESS" && editTaskInStore) {
-      editTaskInStore(task.project_id, task.task_number, { status: "IN_PROGRESS" });
+    if (task.status !== TaskStatus.IN_PROGRESS && editTaskInStore) {
+      editTaskInStore(task.project_id, task.task_number, { status: TaskStatus.IN_PROGRESS });
     }
   };
 
@@ -95,8 +96,8 @@ const TaskItemMainSection: React.FC<TaskItemMainSectionProps> = ({
     setEditDescription(task.description || ""); // Initialize edit field with current description
     setIsEditingDescription(true); // Set editing mode to true
     // If task is not already "IN_PROGRESS", update its status
-    if (task.status !== "IN_PROGRESS" && editTaskInStore) {
-      editTaskInStore(task.project_id, task.task_number, { status: "IN_PROGRESS" });
+    if (task.status !== TaskStatus.IN_PROGRESS && editTaskInStore) {
+      editTaskInStore(task.project_id, task.task_number, { status: TaskStatus.IN_PROGRESS });
     }
   };
 
@@ -163,7 +164,7 @@ const TaskItemMainSection: React.FC<TaskItemMainSectionProps> = ({
             fontSize={styles.titleFontSize as string | number | undefined}
             fontWeight={styles.titleFontWeight as string | number | undefined}
             color={textColor}
-            textDecoration={task.status === "COMPLETED" ? "line-through" : "none"} // Line-through if completed
+            textDecoration={task.status === TaskStatus.COMPLETED ? "line-through" : "none"} // Line-through if completed
             cursor="pointer" // Indicate it's clickable
             noOfLines={2} // Limit to 2 lines, truncates with ellipsis if longer
           >

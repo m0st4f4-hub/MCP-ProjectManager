@@ -86,8 +86,10 @@ graph TD
 - `mcp.ts`
 - `memory.ts`
 - `project.ts`
+- `project_template.ts`
 - `rules.ts`
 - `task.ts`
 - `user.ts`
 
 <!-- File List End -->
+

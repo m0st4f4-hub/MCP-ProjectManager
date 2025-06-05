@@ -15,7 +15,7 @@ python start_system.py
 #### Backend Setup
 ```bash
 # From the project root
-python run_backend.py
+python run_backend.py [--core|--minimal]
 ```
 
 #### Frontend Setup  
@@ -67,7 +67,7 @@ cd backend
 
 ### 🗄️ Database Management
 ```bash
-# Initialize database
+# Initialize database (uses `DATABASE_URL` from backend/.env)
 cd backend
 python init_db.py
 
@@ -156,7 +156,7 @@ python -m venv .venv
 .venv\Scripts\pip install -r requirements.txt
 
 # If database issues:
-python init_db.py
+python init_db.py  # reads DATABASE_URL from backend/.env
 ```
 
 ### Frontend Issues
