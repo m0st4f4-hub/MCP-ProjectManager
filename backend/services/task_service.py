@@ -1,9 +1,10 @@
 # Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, or_, func
 from .. import models
 import datetime
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 from uuid import UUID  # Import specific schema classes from their files
 from ..schemas.task import TaskCreate, TaskUpdate, Task  # Import the TaskStatusEnum
 from ..enums import TaskStatusEnum  # Import service utilities
@@ -57,6 +58,69 @@ class TaskService:
         if not task:
             raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
         return task
+
+    async def get_tasks(
+        self,
+        project_id: Optional[UUID] = None,
+        skip: int = 0,
+        limit: int = 100,
+        agent_id: Optional[str] = None,
+        agent_name: Optional[str] = None,
+        search: Optional[str] = None,
+        status: Optional[Union[str, TaskStatusEnum]] = None,
+        is_archived: Optional[bool] = False,
+        sort_by: Optional[str] = None,
+        sort_direction: Optional[str] = None,
+    ) -> Tuple[List[models.Task], int]:
+        """Retrieve tasks with filtering and pagination applied at the SQL level.
+
+        Returns a tuple of (tasks, total_count).
+        """
+        project_id_str = str(project_id) if project_id else None
+
+        query = select(models.Task)
+        count_query = select(func.count()).select_from(models.Task)
+
+        if project_id_str:
+            query = query.filter(models.Task.project_id == project_id_str)
+            count_query = count_query.filter(models.Task.project_id == project_id_str)
+        if agent_id:
+            query = query.filter(models.Task.agent_id == agent_id)
+            count_query = count_query.filter(models.Task.agent_id == agent_id)
+        if agent_name:
+            query = query.join(models.Agent).filter(models.Agent.name == agent_name)
+            count_query = count_query.join(models.Agent).filter(models.Agent.name == agent_name)
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(or_(models.Task.title.ilike(search_term), models.Task.description.ilike(search_term)))
+            count_query = count_query.filter(or_(models.Task.title.ilike(search_term), models.Task.description.ilike(search_term)))
+        if status:
+            status_value = status.value if isinstance(status, TaskStatusEnum) else status
+            query = query.filter(models.Task.status == status_value)
+            count_query = count_query.filter(models.Task.status == status_value)
+        if is_archived is not None:
+            query = query.filter(models.Task.is_archived == is_archived)
+            count_query = count_query.filter(models.Task.is_archived == is_archived)
+
+        if sort_by:
+            sort_column = getattr(models.Task, sort_by, None)
+            if sort_column is not None:
+                if sort_direction == "desc":
+                    query = query.order_by(sort_column.desc())
+                else:
+                    query = query.order_by(sort_column)
+            else:
+                query = query.order_by(models.Task.created_at.desc())
+        else:
+            query = query.order_by(models.Task.created_at.desc())
+
+        result = await self.db.execute(query.offset(skip).limit(limit))
+        tasks = result.scalars().all()
+
+        total_result = await self.db.execute(count_query)
+        total = total_result.scalar_one()
+
+        return tasks, total
 
     async def get_tasks_by_project(
         self,

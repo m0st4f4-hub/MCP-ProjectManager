@@ -6,6 +6,7 @@ Provides MCP tool definitions.
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional, List, Dict, Any
+import uuid
 import logging
 from functools import wraps
 from collections import defaultdict
@@ -245,12 +246,12 @@ async def mcp_list_tasks(
     """MCP Tool: List tasks with filtering."""
     try:
         task_service = TaskService(db)
-        tasks = task_service.get_tasks(
-            project_id=project_id,
+        tasks, _ = await task_service.get_tasks(
+            project_id=uuid.UUID(project_id) if project_id else None,
             status=status,
             agent_id=agent_id,
             skip=skip,
-            limit=limit
+            limit=limit,
         )
         return {
             "success": True,
