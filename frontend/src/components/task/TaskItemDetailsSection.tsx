@@ -40,8 +40,8 @@ import {
   TaskFileAssociation,
   TaskDependency,
   TaskDependencyCreateData,
-  TaskComment,
 } from "@/types/task"; // Assuming Task is ITask or similar, adding new types
+import type { Comment } from "@/types/comment";
 import { StatusID, StatusAttributeObject } from "@/lib/statusUtils";
 import {
   getFilesAssociatedWithTask,
@@ -107,7 +107,7 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
   const [successors, setSuccessors] = useState<TaskDependency[]>([]);
   const [isLoadingDetails, setIsLoadingDetails] = useState(true);
   const [detailsError, setDetailsError] = useState<string | null>(null);
-  const [comments, setComments] = useState<TaskComment[]>([]); // State for comments
+  const [comments, setComments] = useState<Comment[]>([]); // State for comments
 
   // State for File Associations pagination, sorting, and filtering
   const [filePage, setFilePage] = useState(0);

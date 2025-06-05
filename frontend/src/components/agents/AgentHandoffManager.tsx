@@ -82,11 +82,12 @@ const AgentHandoffManager: React.FC<AgentHandoffManagerProps> = ({ agentRoleId }
   const handleCreate = async () => {
     if (!newCriteria.trim()) return;
     setLoading(true);
-    try {
-      await createAgentHandoffCriteria({
-        agent_role_id: agentRoleId,
-        criteria: newCriteria,
-      });
+      try {
+        await createAgentHandoffCriteria({
+          agent_role_id: agentRoleId,
+          criteria: newCriteria,
+          is_active: true,
+        });
       setNewCriteria("");
 
       const newHandoffCriteria = await handoffApi.create({

@@ -47,11 +47,12 @@ const VerificationRequirements: React.FC<VerificationRequirementsProps> = ({ age
   const handleCreate = async () => {
     if (!newReq.trim()) return;
     setLoading(true);
-    try {
-      await verificationRequirementsApi.create({
-        agent_role_id: agentRoleId,
-        requirement: newReq,
-      });
+      try {
+        await verificationRequirementsApi.create({
+          agent_role_id: agentRoleId,
+          requirement: newReq,
+          is_mandatory: true,
+        });
       setNewReq("");
       await loadRequirements();
       toast({ title: "Requirement added", status: "success", duration: 3000, isClosable: true });
