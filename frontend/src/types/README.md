@@ -80,6 +80,8 @@ graph TD
 ## File List
 
 - `agent.ts`
+- `agent_prompt_template.ts`
+- `agents.ts`
 - `audit_log.ts`
 - `comment.ts`
 - `index.ts`
@@ -87,10 +89,12 @@ graph TD
 - `memory.ts`
 - `project.ts`
 - `project_template.ts`
-- `agent_prompt_template.ts`
 - `rules.ts`
 - `task.ts`
 - `user.ts`
+- `verification_requirement.ts`
 
 <!-- File List End -->
+
+
 
