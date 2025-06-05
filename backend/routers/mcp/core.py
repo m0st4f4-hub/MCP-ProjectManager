@@ -415,7 +415,10 @@ async def mcp_add_memory_entity(
             for obs_content in entity_data.observations:
                 memory_service.add_observation_to_entity(
                     entity_id=entity.id,
-                    observation=MemoryObservationCreate(content=obs_content, source="mcp_tool")
+                    observation=MemoryObservationCreate(
+                        content=obs_content,
+                        source="mcp_tool",
+                    ),
                 )
 
         return {
@@ -515,8 +518,12 @@ async def mcp_add_memory_relation(
 ):
     """MCP Tool: Add relation to knowledge graph."""
     try:
-        from_entity = memory_service.get_memory_entity_by_id(relation_data.from_entity_id)
-        to_entity = memory_service.get_memory_entity_by_id(relation_data.to_entity_id)
+        from_entity = memory_service.get_memory_entity_by_id(
+            relation_data.from_entity_id
+        )
+        to_entity = memory_service.get_memory_entity_by_id(
+            relation_data.to_entity_id
+        )
 
         if not from_entity or not to_entity:
             raise HTTPException(
@@ -641,13 +648,15 @@ async def mcp_list_tools():
     except Exception as e:
         logger.error(f"MCP list tools failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
 @router.post(
     "/mcp-tools/rule/mandate/create",
     tags=["mcp-tools"],
     operation_id="create_mandate_tool",
 )
+async def mcp_create_mandate(
+    mandate: UniversalMandateCreate,
+    db: Session = Depends(get_db_session),
+):
 async def mcp_create_mandate(
     mandate: UniversalMandateCreate,
     db: Session = Depends(get_db_session),
@@ -674,6 +683,10 @@ async def mcp_create_mandate(
     tags=["mcp-tools"],
     operation_id="create_agent_rule_tool",
 )
+async def mcp_create_agent_rule(
+    rule: AgentRuleCreate,
+    db: Session = Depends(get_db_session),
+):
 async def mcp_create_agent_rule(
     rule: AgentRuleCreate,
     db: Session = Depends(get_db_session),
