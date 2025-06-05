@@ -38,7 +38,7 @@ jobs:
       - name: Test with coverage
         run: |
           cd backend
-          pytest --cov=. --cov-report=xml
+          pytest --cov=. --cov-report=xml --cov-fail-under=90
 
       - name: Upload Python coverage artifact
         uses: actions/upload-artifact@v4
@@ -63,6 +63,16 @@ jobs:
           cd frontend
           npm install
 
+      - name: Prettier check
+        run: |
+          cd frontend
+          npx prettier --check ..
+
+      - name: Lint
+        run: |
+          cd frontend
+          npm run lint
+
       - name: Type check
         run: |
           cd frontend
@@ -71,7 +81,7 @@ jobs:
       - name: Test with coverage
         run: |
           cd frontend
-          npm run test:coverage
+          npx vitest --coverage.v8 --coverage-threshold=90
 
       - name: Upload frontend coverage artifact
         uses: actions/upload-artifact@v4
