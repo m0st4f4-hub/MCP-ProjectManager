@@ -104,9 +104,11 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 
 ### Agent Handoff Tools
 
-Use these routes to manage when one agent role should hand off control to
-another. Create new rules with `/mcp-tools/handoff/create`, list all criteria
-via `/mcp-tools/handoff/list`, and remove a rule using `/mcp-tools/handoff/delete`.
+Manage when one agent role should hand off control to another:
+
+- `/mcp-tools/handoff/create` - create a new handoff criteria
+- `/mcp-tools/handoff/list` - list existing criteria
+- `/mcp-tools/handoff/delete` - remove a criteria by ID
 
 ## Development and Contributing
 

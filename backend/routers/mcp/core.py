@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 import logging
-import json
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -35,6 +34,11 @@ from ....schemas.memory import (
     MemoryRelationCreate
 )
 from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
+from ....mcp_tools.agent_handoff_tools import (
+    create_handoff_criteria_tool,
+    list_handoff_criteria_tool,
+    delete_handoff_criteria_tool,
+)
 from ....schemas.error_protocol import ErrorProtocolCreate
 
 logger = logging.getLogger(__name__)
@@ -687,7 +691,9 @@ async def mcp_list_tools():
             tools.append({
                 "name": route.name,
                 "path": route.path,
-                "description": route.description.split('\n')[0] if route.description else "No description"
+                "description": route.description.split("\n")[0]
+                if route.description
+                else "No description",
             })
     return {"success": True, "tools": tools}
 
@@ -749,7 +755,9 @@ async def mcp_create_agent_rule(
 
 # Add the new tool routes
 router.include_router(add_forbidden_action_tool.router)
+
 router.include_router(list_forbidden_actions_tool.router)
+
 
 @router.post(
     "/mcp-tools/rule/forbidden/add",
@@ -767,27 +775,9 @@ async def mcp_add_forbidden_action(
     forbidden_action = rules_service.add_forbidden_action(agent_role_id, action, reason)
     return {
         "success": True,
-        "forbidden_action": forbidden_action.as_dict() # Assuming as_dict() method
+        "forbidden_action": forbidden_action.as_dict()   # Assuming as_dict() method
     }
 
-@router.get(
-    "/mcp-tools/rule/forbidden/list",
-    tags=["mcp-tools"],
-    operation_id="list_forbidden_actions_tool",
-)
-async def mcp_list_forbidden_actions(
-    agent_role_id: Optional[str] = None,
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: List forbidden actions, optionally filtered by agent role ID."""
-    rules_service = RulesService(db)
-    actions = rules_service.get_forbidden_actions(agent_role_id, skip, limit)
-    return {
-        "success": True,
-        "forbidden_actions": [action.as_dict() for action in actions] # Assuming as_dict()
-    }
 
 @router.post(
     "/mcp-tools/handoff/create",
@@ -796,28 +786,15 @@ async def mcp_list_forbidden_actions(
 )
 async def mcp_create_handoff_criteria(
     criteria: AgentHandoffCriteriaCreate,
-    service: AgentHandoffService = Depends(get_agent_handoff_service),
+    db: Session = Depends(get_db_session),
 ):
     """MCP Tool: Create new agent handoff criteria."""
     try:
-        created_criteria = service.create_criteria(criteria)
-        return {
-            "success": True,
-            "criteria": {
-                "id": created_criteria.id,
-                "agent_role_id": created_criteria.agent_role_id,
-                "handoff_to_agent_role_id": created_criteria.handoff_to_agent_role_id,
-                "priority": created_criteria.priority,
-                "criteria_config": created_criteria.criteria_config,
-                "created_at": created_criteria.created_at.isoformat(),
-                "updated_at": created_criteria.updated_at.isoformat()
-            }
-        }
-    except ValueError as ve:
-        raise HTTPException(status_code=400, detail=str(ve))
+        return await create_handoff_criteria_tool(criteria, db)
     except Exception as e:
         logger.error(f"MCP create handoff criteria tool failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get(
     "/mcp-tools/handoff/list",
@@ -826,29 +803,15 @@ async def mcp_create_handoff_criteria(
 )
 async def mcp_list_handoff_criteria(
     agent_role_id: Optional[str] = Query(None),
-    service: AgentHandoffService = Depends(get_agent_handoff_service),
+    db: Session = Depends(get_db_session),
 ):
     """MCP Tool: List agent handoff criteria."""
     try:
-        criteria_list = service.get_criteria_by_agent_role(agent_role_id) if agent_role_id else service.get_all_criteria()
-        return {
-            "success": True,
-            "criteria": [
-                {
-                    "id": c.id,
-                    "agent_role_id": c.agent_role_id,
-                    "handoff_to_agent_role_id": c.handoff_to_agent_role_id,
-                    "priority": c.priority,
-                    "criteria_config": c.criteria_config,
-                    "created_at": c.created_at.isoformat(),
-                    "updated_at": c.updated_at.isoformat()
-                }
-                for c in criteria_list
-            ]
-        }
+        return await list_handoff_criteria_tool(agent_role_id, db)
     except Exception as e:
         logger.error(f"MCP list handoff criteria tool failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.delete(
     "/mcp-tools/handoff/delete",
@@ -857,14 +820,11 @@ async def mcp_list_handoff_criteria(
 )
 async def mcp_delete_handoff_criteria(
     criteria_id: str,
-    service: AgentHandoffService = Depends(get_agent_handoff_service),
+    db: Session = Depends(get_db_session),
 ):
     """MCP Tool: Delete agent handoff criteria."""
     try:
-        success = service.delete_criteria(criteria_id)
-        if not success:
-            raise HTTPException(status_code=404, detail="Handoff criteria not found")
-        return {"success": True, "message": "Handoff criteria deleted successfully"}
+        return await delete_handoff_criteria_tool(criteria_id, db)
     except Exception as e:
         logger.error(f"MCP delete handoff criteria tool failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
