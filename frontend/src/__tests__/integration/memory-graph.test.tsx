@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@/__tests__/utils/test-utils';
-import MemoryGraphPage from '@/app/memory/graph/page';
 
 vi.mock('react-force-graph', () => ({
   ForceGraph2D: (props: any) => <div data-testid="graph" {...props} />,
@@ -31,6 +30,8 @@ vi.mock('@/services/api', () => ({
     }),
   },
 }));
+
+import MemoryGraphPage from '@/app/memory/graph/page';
 
 describe('MemoryGraph page', () => {
   it('renders graph container with data', async () => {
