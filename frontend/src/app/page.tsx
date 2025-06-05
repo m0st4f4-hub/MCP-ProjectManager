@@ -1,8 +1,8 @@
 // D:\mcp\task-manager\frontend\src\app\page.tsx
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { Box, useDisclosure, useToast, useColorMode } from "@chakra-ui/react";
+import React, { useEffect, useState } from 'react';
+import { Box, useDisclosure, useToast, useColorMode } from '@chakra-ui/react';
 import {
   AddIcon,
   EditIcon,
@@ -11,37 +11,37 @@ import {
   ArrowUpIcon,
   ViewIcon,
   TimeIcon,
-} from "@chakra-ui/icons";
-import TaskList from "@/components/TaskList";
-import ProjectList from "@/components/project/ProjectList";
-import AgentList from "@/components/AgentList";
-import { useTaskStore } from "@/store/taskStore";
-import { useProjectStore } from "@/store/projectStore";
-import { useAgentStore } from "../store/agentStore";
-import { createProject, createAgent } from "../services/api";
-import { ProjectCreateData } from "../types/project";
-import Dashboard from "../components/Dashboard";
-import SettingsContent from "../components/SettingsContent";
+} from '@chakra-ui/icons';
+import TaskList from '@/components/TaskList';
+import ProjectList from '@/components/project/ProjectList';
+import AgentList from '@/components/AgentList';
+import { useTaskStore } from '@/store/taskStore';
+import { useProjectStore } from '@/store/projectStore';
+import { useAgentStore } from '../store/agentStore';
+import { createProject, createAgent } from '../services/api';
+import { ProjectCreateData } from '../types/project';
+import Dashboard from '../components/Dashboard';
+import SettingsContent from '../components/SettingsContent';
 
-import Sidebar from "../components/layout/Sidebar";
-import MainContent from "../components/layout/MainContent";
-import { ImportPlanModal } from "../components/modals/ImportPlanModal";
-import CreateProjectModal from "../components/modals/CreateProjectModal";
-import AddTaskModal from "../components/modals/AddTaskModal";
-import AddProjectModal from "../components/modals/AddProjectModal";
-import AddAgentModal from "../components/modals/AddAgentModal";
-import DevToolsDrawer from "../components/modals/DevToolsDrawer";
-import FilterPanel from "../components/common/FilterPanel";
-import AppIcon from "../components/common/AppIcon";
+import Sidebar from '../components/layout/Sidebar';
+import MainContent from '../components/layout/MainContent';
+import { ImportPlanModal } from '../components/modals/ImportPlanModal';
+import CreateProjectModal from '../components/modals/CreateProjectModal';
+import AddTaskModal from '../components/modals/AddTaskModal';
+import AddProjectModal from '../components/modals/AddProjectModal';
+import AddAgentModal from '../components/modals/AddAgentModal';
+import DevToolsDrawer from '../components/modals/DevToolsDrawer';
+import FilterPanel from '../components/common/FilterPanel';
+import AppIcon from '../components/common/AppIcon';
 
-import type { TaskState } from "../store/taskStore";
-import type { ProjectState } from "../store/projectStore";
-import type { AgentState } from "../store/agentStore";
+import type { TaskState } from '../store/taskStore';
+import type { ProjectState } from '../store/projectStore';
+import type { AgentState } from '../store/agentStore';
 
-import Head from "next/head";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { TaskCreateData } from "../types";
+import Head from 'next/head';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { TaskCreateData } from '../types';
 
 export default function Home() {
   const error = useTaskStore((state: TaskState) => state.error);
@@ -49,13 +49,13 @@ export default function Home() {
   const startPolling = useTaskStore((state: TaskState) => state.startPolling);
   const stopPolling = useTaskStore((state: TaskState) => state.stopPolling);
   const fetchProjects = useProjectStore(
-    (state: ProjectState) => state.fetchProjects,
+    (state: ProjectState) => state.fetchProjects
   );
   const fetchAgents = useAgentStore((state: AgentState) => state.fetchAgents);
   const toast = useToast();
   const { colorMode } = useColorMode();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeView, setActiveView] = useState("Dashboard");
+  const [activeView, setActiveView] = useState('Dashboard');
   const { isOpen: isDrawerOpen, onOpen: onDrawerOpen } = useDisclosure();
 
   const {
@@ -113,9 +113,9 @@ export default function Home() {
   useEffect(() => {
     if (error) {
       toast({
-        title: "Error",
+        title: 'Error',
         description: error,
-        status: "error",
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -145,15 +145,15 @@ export default function Home() {
 
   const renderContent = () => {
     switch (activeView) {
-      case "Dashboard":
+      case 'Dashboard':
         return <Dashboard />;
-      case "Workboard":
+      case 'Workboard':
         return <TaskList />;
-      case "Portfolio":
+      case 'Portfolio':
         return <ProjectList />;
-      case "Registry":
+      case 'Registry':
         return <AgentList />;
-      case "Settings":
+      case 'Settings':
         return <SettingsContent />;
       default:
         return null;
@@ -161,37 +161,37 @@ export default function Home() {
   };
 
   const navItems = [
-    { view: "Dashboard", label: "Dashboard", icon: <ViewIcon /> },
-    { view: "Workboard", label: "Workboard", icon: <EditIcon /> },
-    { view: "Portfolio", label: "Portfolio", icon: <SearchIcon /> },
-    { view: "Registry", label: "Registry", icon: <TimeIcon /> },
+    { view: 'Dashboard', label: 'Dashboard', icon: <ViewIcon /> },
+    { view: 'Workboard', label: 'Workboard', icon: <EditIcon /> },
+    { view: 'Portfolio', label: 'Portfolio', icon: <SearchIcon /> },
+    { view: 'Registry', label: 'Registry', icon: <TimeIcon /> },
   ];
 
   const actionNavItems = [
     {
-      id: "addTask",
-      label: "Add Task",
+      id: 'addTask',
+      label: 'Add Task',
       icon: <AddIcon />,
       action: onAddTaskOpen,
-      showInView: ["Workboard", "Dashboard"],
+      showInView: ['Workboard', 'Dashboard'],
     },
     {
-      id: "addProject",
-      label: "Add Project",
+      id: 'addProject',
+      label: 'Add Project',
       icon: <AddIcon />,
       action: onAddProjectOpen,
-      showInView: ["Portfolio", "Dashboard"],
+      showInView: ['Portfolio', 'Dashboard'],
     },
     {
-      id: "addAgent",
-      label: "Register Agent",
+      id: 'addAgent',
+      label: 'Register Agent',
       icon: <AddIcon />,
       action: onAddAgentOpen,
-      showInView: ["Registry", "Dashboard"],
+      showInView: ['Registry', 'Dashboard'],
     },
     {
-      id: "importPlan",
-      label: "Import Plan",
+      id: 'importPlan',
+      label: 'Import Plan',
       icon: <ArrowUpIcon />,
       action: onImportPlanOpen,
     },
@@ -199,20 +199,20 @@ export default function Home() {
 
   const utilityNavItems = [
     {
-      id: "filters",
-      label: "Filters & Sort",
+      id: 'filters',
+      label: 'Filters & Sort',
       icon: <AppIcon name="settings" />,
       action: onOpenFilterPanel,
     },
     {
-      id: "settings",
-      label: "Settings",
+      id: 'settings',
+      label: 'Settings',
       icon: <SettingsIcon />,
-      action: () => setActiveView("Settings"),
+      action: () => setActiveView('Settings'),
     },
     {
-      id: "devTools",
-      label: "Dev Tools",
+      id: 'devTools',
+      label: 'Dev Tools',
       icon: <SettingsIcon />,
       action: onOpenDevTools,
     },
@@ -263,7 +263,12 @@ export default function Home() {
           onClose={onAddAgentClose}
           onSubmit={async (name: string) => {
             if (!name.trim()) {
-              console.error("Agent name cannot be empty.");
+              toast({
+                title: 'Agent name cannot be empty.',
+                status: 'warning',
+                duration: 3000,
+                isClosable: true,
+              });
               return;
             }
             try {
@@ -271,7 +276,17 @@ export default function Home() {
               fetchAgents(0, 100);
               onAddAgentClose();
             } catch (error) {
-              console.error("Failed to create agent:", error);
+              console.error('Failed to create agent:', error);
+              toast({
+                title: 'Error creating agent',
+                description:
+                  error instanceof Error
+                    ? error.message
+                    : 'An unexpected error occurred.',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+              });
             }
           }}
         />
