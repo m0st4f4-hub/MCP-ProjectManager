@@ -73,6 +73,11 @@ jobs:
           cd frontend
           npm run test:coverage
 
+      - name: Run frontend test suite
+        run: |
+          cd frontend
+          npm run test:all
+
       - name: Upload frontend coverage artifact
         uses: actions/upload-artifact@v4
         with:

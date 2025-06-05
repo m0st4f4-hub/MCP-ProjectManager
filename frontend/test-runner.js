@@ -2,6 +2,15 @@ const { spawn, exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+const TEST_TYPES = {
+  unit: 'Unit Tests',
+  integration: 'Integration Tests',
+  e2e: 'End-to-End Tests',
+  api: 'API Tests',
+  coverage: 'Coverage Report',
+  all: 'Complete Suite'
+};
+
 (function() {
   Help() {
     console.log('Available test commands:')
