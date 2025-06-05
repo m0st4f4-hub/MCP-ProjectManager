@@ -1,5 +1,5 @@
-import { request } from "./request";
-import { buildApiUrl, API_CONFIG } from "./config";
+import { request } from './request';
+import { buildApiUrl, API_CONFIG } from './config';
 import type {
   MemoryEntity,
   MemoryEntityCreateData,
@@ -11,9 +11,10 @@ import type {
   MemoryObservationCreateData,
   MemoryRelation,
   MemoryRelationCreateData,
+  MemoryRelationUpdateData,
   MemoryRelationFilters,
   KnowledgeGraph,
-} from "@/types/memory";
+} from '@/types/memory';
 
 // --- Memory Entity APIs ---
 export const memoryApi = {
@@ -22,7 +23,7 @@ export const memoryApi = {
     const response = await request<MemoryEntityResponse>(
       buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY),
       {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify(data),
       }
     );
@@ -61,7 +62,7 @@ export const memoryApi = {
     const response = await request<MemoryEntityResponse>(
       buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/${entityId}`),
       {
-        method: "PUT",
+        method: 'PUT',
         body: JSON.stringify(data),
       }
     );
@@ -70,20 +71,17 @@ export const memoryApi = {
 
   // Delete a memory entity
   deleteEntity: async (entityId: number): Promise<void> => {
-    await request(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/${entityId}`),
-      {
-        method: "DELETE",
-      }
-    );
+    await request(buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/${entityId}`), {
+      method: 'DELETE',
+    });
   },
 
   // Ingest a file from the server filesystem
   ingestFile: async (filePath: string): Promise<MemoryEntity> => {
     const response = await request<MemoryEntityResponse>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, "/entities/ingest/file"),
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, '/entities/ingest/file'),
       {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ file_path: filePath }),
       }
     );
@@ -93,9 +91,9 @@ export const memoryApi = {
   // Ingest content directly from a URL
   ingestUrl: async (url: string): Promise<MemoryEntity> => {
     const response = await request<MemoryEntityResponse>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, "/ingest-url"),
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, '/ingest-url'),
       {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ url }),
       }
     );
@@ -105,9 +103,9 @@ export const memoryApi = {
   // Ingest a raw text snippet
   ingestText: async (text: string): Promise<MemoryEntity> => {
     const response = await request<MemoryEntityResponse>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, "/ingest-text"),
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, '/ingest-text'),
       {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ text }),
       }
     );
@@ -116,11 +114,13 @@ export const memoryApi = {
 
   // --- Memory Observation APIs ---
   // Add an observation to an entity
-  addObservation: async (data: MemoryObservationCreateData): Promise<MemoryObservation> => {
+  addObservation: async (
+    data: MemoryObservationCreateData
+  ): Promise<MemoryObservation> => {
     const response = await request<{ data: MemoryObservation }>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, "/observations"),
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, '/observations'),
       {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify(data),
       }
     );
@@ -130,7 +130,10 @@ export const memoryApi = {
   // Get observations for an entity
   getObservations: async (entityId: number): Promise<MemoryObservation[]> => {
     const response = await request<{ data: MemoryObservation[] }>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/entities/${entityId}/observations`)
+      buildApiUrl(
+        API_CONFIG.ENDPOINTS.MEMORY,
+        `/entities/${entityId}/observations`
+      )
     );
     return response.data;
   },
@@ -138,19 +141,39 @@ export const memoryApi = {
   // Delete an observation
   deleteObservation: async (observationId: number): Promise<void> => {
     await request(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/observations/${observationId}`),
+      buildApiUrl(
+        API_CONFIG.ENDPOINTS.MEMORY,
+        `/observations/${observationId}`
+      ),
       {
-        method: "DELETE",
+        method: 'DELETE',
       }
     );
   },
   // --- Memory Relation APIs ---
   // Create a relation between entities
-  createRelation: async (data: MemoryRelationCreateData): Promise<MemoryRelation> => {
+  createRelation: async (
+    data: MemoryRelationCreateData
+  ): Promise<MemoryRelation> => {
     const response = await request<{ data: MemoryRelation }>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, "/relations"),
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, '/relations'),
       {
-        method: "POST",
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+    return response.data;
+  },
+
+  // Update an existing relation
+  updateRelation: async (
+    relationId: number,
+    data: MemoryRelationUpdateData
+  ): Promise<MemoryRelation> => {
+    const response = await request<{ data: MemoryRelation }>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
+      {
+        method: 'PUT',
         body: JSON.stringify(data),
       }
     );
@@ -158,7 +181,9 @@ export const memoryApi = {
   },
 
   // Get relations with filters
-  getRelations: async (filters?: MemoryRelationFilters): Promise<MemoryRelation[]> => {
+  getRelations: async (
+    filters?: MemoryRelationFilters
+  ): Promise<MemoryRelation[]> => {
     const params = new URLSearchParams();
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
@@ -168,7 +193,10 @@ export const memoryApi = {
       });
     }
     const response = await request<{ data: MemoryRelation[] }>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations?${params.toString()}`)
+      buildApiUrl(
+        API_CONFIG.ENDPOINTS.MEMORY,
+        `/relations?${params.toString()}`
+      )
     );
     return response.data;
   },
@@ -178,7 +206,7 @@ export const memoryApi = {
     await request(
       buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
       {
-        method: "DELETE",
+        method: 'DELETE',
       }
     );
   },
@@ -187,7 +215,7 @@ export const memoryApi = {
   // Get the full knowledge graph
   getKnowledgeGraph: async (): Promise<KnowledgeGraph> => {
     const response = await request<{ data: KnowledgeGraph }>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, "/graph")
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, '/graph')
     );
     return response.data;
   },
@@ -195,7 +223,10 @@ export const memoryApi = {
   // Search the knowledge graph
   searchGraph: async (query: string): Promise<MemoryEntity[]> => {
     const response = await request<{ data: MemoryEntity[] }>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/search?q=${encodeURIComponent(query)}`)
+      buildApiUrl(
+        API_CONFIG.ENDPOINTS.MEMORY,
+        `/search?q=${encodeURIComponent(query)}`
+      )
     );
     return response.data;
   },
