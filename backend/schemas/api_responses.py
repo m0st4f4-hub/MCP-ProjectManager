@@ -52,3 +52,9 @@ class PaginationParams(BaseModel):
     @property
     def limit(self) -> int:
         return self.page_size
+
+
+class MetricsResponse(BaseResponse):
+    """Response model for tool usage metrics."""
+
+    metrics: Dict[str, int] = Field(default_factory=dict)

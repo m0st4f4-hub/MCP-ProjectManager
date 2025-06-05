@@ -43,7 +43,8 @@ from .api_responses import (  # noqa: F401
     DataResponse,
     ListResponse,
     ErrorResponse,
-    PaginationParams
+    PaginationParams,
+    MetricsResponse,
 )
 
 # Rebuild models to resolve forward references

@@ -30,6 +30,7 @@ from ....schemas.memory import (
     MemoryObservationCreate,
     MemoryRelationCreate
 )
+from ....schemas.api_responses import MetricsResponse
 from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
 from ....schemas.error_protocol import ErrorProtocolCreate
 from ....mcp_tools.forbidden_action_tools import (
@@ -1190,6 +1191,6 @@ async def mcp_remove_role(
 
 
 @router.get("/mcp-tools/metrics", tags=["mcp-tools"], operation_id="mcp_tools_metrics")
-async def mcp_tools_metrics():
+async def mcp_tools_metrics() -> MetricsResponse:
     """Return usage metrics for MCP tools."""
-    return {"metrics": dict(tool_counters)}
+    return MetricsResponse(metrics=dict(tool_counters))

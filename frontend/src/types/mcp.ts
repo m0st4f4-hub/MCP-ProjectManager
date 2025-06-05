@@ -185,3 +185,11 @@ export interface MCPToolInfo {
   parameters: Record<string, any>;
   example?: Record<string, any>;
 }
+
+// --- Metrics Response ---
+export interface MetricsResponse {
+  success: boolean;
+  message: string;
+  timestamp: string;
+  metrics: Record<string, number>;
+}

@@ -158,6 +158,19 @@ cd backend
 - ✅ **Forbidden Action MCP Tools**: MCP endpoints `/mcp-tools/forbidden-action/create` and `/mcp-tools/forbidden-action/list` enable managing forbidden actions.
 - ✅ **Capability MCP Tools**: MCP endpoints `/mcp-tools/capability/create`, `/mcp-tools/capability/list`, and `/mcp-tools/capability/delete` manage agent capabilities.
 - ✅ **Error Protocol MCP Tools**: `/mcp-tools/error-protocol/add`, `/mcp-tools/error-protocol/list`, and `/mcp-tools/error-protocol/remove` handle agent error protocols.
+- ✅ **Metrics Endpoint**: `/mcp-tools/metrics` returns a `MetricsResponse` with a `metrics` object mapping tool names to usage counts.
+
+```json
+{
+  "success": true,
+  "message": "Operation successful",
+  "timestamp": "2024-05-06T12:00:00Z",
+  "metrics": {
+    "create_project": 5,
+    "list_tasks": 12
+  }
+}
+```
 - ✅ **Project Template API**: CRUD operations available at `/api/v1/project-templates`.
 - ✅ **User Roles API**: Assign, list, and remove roles via `/api/v1/users/{user_id}/roles`.
 - ✅ **Agent Capability API**: Manage capabilities through `/api/v1/rules/roles/capabilities`.

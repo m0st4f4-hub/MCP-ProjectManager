@@ -20,6 +20,7 @@ import type {
   MCPProjectTemplateCreateRequest,
   MCPProjectTemplateDeleteRequest,
   MCPToolInfo,
+  MetricsResponse,
 } from '@/types/mcp';
 import type { ProjectFileAssociation } from './projects';
 
@@ -372,7 +373,7 @@ export const mcpApi = {
 
   // --- Metrics ---
   metrics: async (): Promise<Record<string, number>> => {
-    const response = await request<{ metrics: Record<string, number> }>(
+    const response = await request<MetricsResponse>(
       buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, '/metrics')
     );
     return response.metrics;
