@@ -14,6 +14,12 @@ repos:
         language: system
         pass_filenames: false
 
+      - id: npm-type-check
+        name: Type-check frontend with TypeScript
+        entry: npm run type-check --prefix frontend
+        language: system
+        pass_filenames: false
+
       - id: frontend-format
         name: Format frontend with Prettier
         entry: npm run format

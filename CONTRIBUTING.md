@@ -36,6 +36,8 @@ This project uses [pre-commit](https://pre-commit.com/) to automatically check c
 pip install pre-commit
 pre-commit install
 ```
+Pre-commit will automatically run `flake8` on backend files and
+`npm run type-check` in the frontend each time you commit.
 
 ### What gets checked:
 
