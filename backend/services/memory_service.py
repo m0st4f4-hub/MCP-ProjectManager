@@ -281,6 +281,55 @@ class MemoryService:
             )
         return query.offset(skip).limit(limit).all()
 
+    def update_observation(
+        self,
+        entity_id: int,
+        observation_id: int,
+        observation_update: MemoryObservationCreate,
+    ) -> Optional[models.MemoryObservation]:
+        """Update an existing observation for a memory entity."""
+        db_observation = (
+            self.db.query(models.MemoryObservation)
+            .filter(
+                models.MemoryObservation.id == observation_id,
+                models.MemoryObservation.entity_id == entity_id,
+            )
+            .first()
+        )
+        if db_observation is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Observation not found",
+            )
+
+        db_observation.content = observation_update.content
+        db_observation.metadata_ = observation_update.metadata_
+        if hasattr(observation_update, "source"):
+            db_observation.source = observation_update.source
+        if hasattr(observation_update, "timestamp"):
+            db_observation.timestamp = observation_update.timestamp
+
+        self.db.commit()
+        self.db.refresh(db_observation)
+        logger.info(
+            f"Updated observation {observation_id} for entity {entity_id}"
+        )
+        return db_observation
+
+    def delete_observation(self, observation_id: int) -> bool:
+        """Delete a memory observation by ID."""
+        db_observation = (
+            self.db.query(models.MemoryObservation)
+            .filter(models.MemoryObservation.id == observation_id)
+            .first()
+        )
+        if not db_observation:
+            return False
+        self.db.delete(db_observation)
+        self.db.commit()
+        logger.info(f"Deleted memory observation: {observation_id}")
+        return True
+
     def create_memory_relation(
         self, relation: MemoryRelationCreate
     ) -> models.MemoryRelation:
