@@ -53,6 +53,12 @@ node dev_start.js
 - **Project Management**: `/projects`
 - **Task Dashboard**: `/tasks`
 
+### MCP Tools
+The backend exposes additional MCP tool endpoints under `/api/mcp/mcp-tools`:
+- `POST /universal-mandate/create` – create a universal mandate
+- `GET /universal-mandate/list` – list mandates (filterable by `active_only`)
+- `POST /universal-mandate/delete` – delete a mandate by ID
+
 ## 🔧 Development Tools
 
 ### 🧪 Testing

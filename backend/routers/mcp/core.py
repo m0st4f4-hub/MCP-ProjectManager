@@ -7,9 +7,8 @@ Provides MCP tool definitions.
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Optional
+from typing import Optional
 import logging
-import json
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -18,12 +17,18 @@ from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
 from ....schemas.project import ProjectCreate
-from ....schemas.task import TaskCreate
+from ....schemas.task import TaskCreate, TaskUpdate
 from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
     MemoryObservationCreate,
     MemoryRelationCreate
+)
+from ....schemas.universal_mandate import UniversalMandateCreate
+from ....mcp_tools.mandate_tools import (
+    create_universal_mandate_tool,
+    list_universal_mandates_tool,
+    delete_universal_mandate_tool,
 )
 
 logger = logging.getLogger(__name__)
@@ -551,6 +556,45 @@ async def mcp_get_memory_metadata(
     except Exception as e:
         logger.error(f"MCP get memory metadata failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/universal-mandate/create",
+    tags=["mcp-tools"],
+    operation_id="create_universal_mandate_tool",
+)
+async def mcp_create_universal_mandate(
+    mandate: UniversalMandateCreate,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a universal mandate."""
+    return await create_universal_mandate_tool(mandate, db)
+
+
+@router.get(
+    "/mcp-tools/universal-mandate/list",
+    tags=["mcp-tools"],
+    operation_id="list_universal_mandates_tool",
+)
+async def mcp_list_universal_mandates(
+    active_only: bool = True,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List universal mandates."""
+    return await list_universal_mandates_tool(active_only=active_only, db=db)
+
+
+@router.post(
+    "/mcp-tools/universal-mandate/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_universal_mandate_tool",
+)
+async def mcp_delete_universal_mandate(
+    mandate_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a universal mandate."""
+    return await delete_universal_mandate_tool(mandate_id, db)
 
 
 @router.get(
