@@ -86,3 +86,8 @@ export interface MemoryRelationFilters {
   to_entity_id?: number;
   relation_type?: string;
 }
+
+export interface KnowledgeGraph {
+  entities: MemoryEntity[];
+  relations: MemoryRelation[];
+}

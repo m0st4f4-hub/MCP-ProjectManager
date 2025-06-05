@@ -1,4 +1,17 @@
-import { TaskFilters, Task, TaskCreateData, TaskUpdateData, TaskFileAssociation, TaskFileAssociationCreateData, TaskDependency, TaskDependencyCreateData, TaskSortOptions, TaskStatus } from "@/types";
+import {
+  TaskFilters,
+  Task,
+  TaskCreateData,
+  TaskUpdateData,
+  TaskFileAssociation,
+  TaskFileAssociationCreateData,
+  TaskDependency,
+  TaskDependencyCreateData,
+  TaskSortOptions,
+  TaskStatus,
+  Comment,
+  CommentCreateData,
+} from "@/types";
 import { request, normalizeToStatusID } from "./request";
 import { buildApiUrl, API_CONFIG } from "./config";
 import { StatusID } from "@/lib/statusUtils";
@@ -370,19 +383,25 @@ export const deleteTask = async (
 export const getTaskComments = async (
   project_id: string,
   task_number: number
-): Promise<any[]> => {
-  return request<any[]>(
-    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/comments/`)
+): Promise<Comment[]> => {
+  return request<Comment[]>(
+    buildApiUrl(
+      API_CONFIG.ENDPOINTS.PROJECTS,
+      `/${project_id}/tasks/${task_number}/comments/`
+    )
   );
 };
 
 export const addTaskComment = async (
   project_id: string,
   task_number: number,
-  commentData: { content: string; user_id?: string }
-): Promise<any> => {
-  return request<any>(
-    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/comments/`),
+  commentData: CommentCreateData
+): Promise<Comment> => {
+  return request<Comment>(
+    buildApiUrl(
+      API_CONFIG.ENDPOINTS.PROJECTS,
+      `/${project_id}/tasks/${task_number}/comments/`
+    ),
     { method: "POST", body: JSON.stringify(commentData) }
   );
 };
