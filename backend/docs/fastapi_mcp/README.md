@@ -105,6 +105,10 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/template/list` (GET)
 - `/mcp-tools/template/delete` (POST)
 
+- `/mcp-tools/user-role/assign` (POST)
+- `/mcp-tools/user-role/list` (GET)
+- `/mcp-tools/user-role/remove` (DELETE)
+
 ### Forbidden Action Tools
 
 Use these routes to restrict actions for specific agent roles. Create new
@@ -127,6 +131,22 @@ await create_forbidden_action_tool(
 Use these routes to manage when one agent role should hand off control to
 another. Create new rules with `/mcp-tools/handoff/create`, list all criteria
 via `/mcp-tools/handoff/list`, and remove a rule using `/mcp-tools/handoff/delete`.
+
+### User Role Tools
+
+Use these routes to assign roles to users, list roles for a user, and remove a
+role from a user. The routes are `/mcp-tools/user-role/assign`,
+`/mcp-tools/user-role/list`, and `/mcp-tools/user-role/remove`.
+
+```python
+from backend.mcp_tools.user_role_tools import assign_role_tool
+
+await assign_role_tool(
+    user_id="123",
+    role_name="admin",
+    db=session,
+)
+```
 
 ## Development and Contributing
 
@@ -153,6 +173,7 @@ MIT License. Copyright (c) 2024 Tadata Inc.
 - `docs.json`
 
 <!-- File List End -->
+
 
 
 
