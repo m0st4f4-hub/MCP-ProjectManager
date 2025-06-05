@@ -11,12 +11,25 @@ import {
 } from "@/types";
 import { TaskStatus } from "@/types/task";
 import { create, type StoreApi } from "zustand";
+import { persist } from "zustand/middleware";
 import * as api from "@/services/api";
 import { produce } from "immer";
 import { shallow } from "zustand/shallow";
 import debounce from "lodash.debounce";
 import { useProjectStore } from "./projectStore";
 import { useAgentStore } from "./agentStore";
+
+export const TASK_STORE_VERSION = 1;
+
+const defaultFilters: TaskFilters = {
+  top_level_only: true,
+  hideCompleted: false,
+  is_archived: false,
+  projectId: undefined,
+  agentId: undefined,
+  status: "all",
+  search: undefined,
+};
 
 // Improved upsertTasks: preserve references for unchanged items
 const upsertTasks = (tasksToUpsert: Task[], existingTasks: Task[]): Task[] => {
@@ -131,11 +144,12 @@ export interface TaskState {
   unarchiveTasksByProjectId: (projectId: string) => void;
 }
 
-export const useTaskStore = create<TaskState>(
-  (
-    set: StoreApi<TaskState>["setState"],
-    get: StoreApi<TaskState>["getState"],
-  ) => ({
+export const useTaskStore = create<TaskState>()(
+  persist(
+    (
+      set: StoreApi<TaskState>["setState"],
+      get: StoreApi<TaskState>["getState"],
+    ): TaskState => ({
   tasks: [],
   loading: false,
   isPolling: false,
@@ -148,15 +162,7 @@ export const useTaskStore = create<TaskState>(
     field: "created_at" as TaskSortField,
     direction: "desc",
   },
-  filters: {
-    top_level_only: true,
-    hideCompleted: false,
-    is_archived: false,
-    projectId: undefined,
-    agentId: undefined,
-    status: "all",
-    search: undefined,
-  },
+  filters: defaultFilters,
   projects: [],
   agents: [],
   pollingIntervalId: null,
@@ -651,8 +657,22 @@ export const useTaskStore = create<TaskState>(
     if (get().filters.is_archived === true) {
       get().fetchTasks(get().filters);
     }
+  }),
+  {
+    name: 'task-store',
+    version: TASK_STORE_VERSION,
+    migrate: (persisted: any, version: number) => {
+      const state = persisted as TaskState;
+      if (version < TASK_STORE_VERSION) {
+        return {
+          ...state,
+          filters: { ...defaultFilters, ...(state.filters ?? {}) },
+        } as TaskState;
+      }
+      return state;
+    },
   },
-}));
+));
 
 // Helper function to sort tasks
 export const sortTasks = (tasks: Task[], options: TaskSortOptions): Task[] => {
