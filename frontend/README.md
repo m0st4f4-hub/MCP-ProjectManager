@@ -84,6 +84,7 @@ This frontend application provides a modern and responsive user interface for ma
 *   **Error Protocol Management:** Add, list, and remove protocols through `/mcp-tools/error-protocol/*` routes.
 *   **User Role Assignment:** Assign or remove roles using `/api/users/{user_id}/roles`.
 *   **Knowledge Graph Visualization:** View the memory graph via `/api/memory/entities/graph`.
+*   **Friendly Error Pages:** `src/app/not-found.tsx` handles missing routes with a helpful message and link home, while `src/app/error.tsx` displays a generic error message when unexpected issues occur.
 
 ---
 
