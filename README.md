@@ -98,6 +98,15 @@ npm install
 npm run dev
 ```
 
+### Makefile Commands
+
+The root `Makefile` provides shortcuts for common tasks:
+
+```bash
+make migrate   # apply database migrations
+make format    # auto-fix Python and frontend code style
+```
+
 ---
 
 ## 🧪 Testing
