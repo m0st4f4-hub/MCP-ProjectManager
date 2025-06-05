@@ -5,6 +5,7 @@ export * from './planning';
 export * from './request';
 export * from './config';
 export * from './memory';
+export { updateObservation, deleteObservation } from './memory';
 export * from './comments';
 export * from './rules';
 export * from './mcp';

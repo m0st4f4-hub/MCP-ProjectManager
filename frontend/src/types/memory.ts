@@ -45,6 +45,13 @@ export const memoryObservationSchema = memoryObservationBaseSchema.extend({
 
 export type MemoryObservation = z.infer<typeof memoryObservationSchema>;
 
+export const memoryObservationUpdateSchema =
+  memoryObservationBaseSchema.partial();
+
+export type MemoryObservationUpdateData = z.infer<
+  typeof memoryObservationUpdateSchema
+>;
+
 // --- Memory Relation Schemas ---
 export const memoryRelationBaseSchema = z.object({
   from_entity_id: z.number(),
