@@ -25,6 +25,12 @@ This will automatically:
 * ✅ Clear ports 8000 and 3000
 * ✅ Open API docs at [http://localhost:8000/docs](http://localhost:8000/docs)
 
+For a fresh environment, install dependencies first:
+
+```bash
+bash scripts/setup.sh
+```
+
 ### Alternative Launch Methods
 
 ```bash
@@ -175,6 +181,7 @@ ISC
 - `validate_frontend.js`
 
 <!-- File List End -->
+
 
 
 

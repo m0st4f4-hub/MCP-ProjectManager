@@ -260,6 +260,7 @@ graph TD
 
 
 
+
 ## FastAPI-MCP Documentation
 Local reference docs for [FastAPI-MCP](https://github.com/tadata-org/fastapi_mcp) are available in `docs/fastapi_mcp/`.
 

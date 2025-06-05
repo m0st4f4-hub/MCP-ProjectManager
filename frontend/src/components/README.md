@@ -165,6 +165,7 @@ graph TD
 - `ErrorBoundary.tsx`
 - `LoadingSkeleton.tsx`
 - `MCPDevTools.tsx`
+- `MCPMetrics.tsx`
 - `NoTasks.tsx`
 - `SettingsContent.tsx`
 - `TaskAgentTag.tsx`
@@ -183,6 +184,7 @@ graph TD
 - `useTaskListState.ts`
 
 <!-- File List End -->
+
 
 
 

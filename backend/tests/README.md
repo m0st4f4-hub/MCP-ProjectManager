@@ -63,7 +63,10 @@ graph TD
 - `test_crud.py`
 - `test_integration.py`
 - `test_memory_endpoints.py`
+- `test_memory_graph.py`
 - `test_memory_ingestion.py`
+- `test_memory_observations.py`
+- `test_memory_relations.py`
 - `test_memory_service.py`
 - `test_openapi.py`
 - `test_project_file_service.py`
@@ -72,8 +75,10 @@ graph TD
 - `test_prompt_templates.py`
 - `test_rules_service.py`
 - `test_simple.py`
+- `test_user_roles.py`
 
 <!-- File List End -->
+
 
 
 

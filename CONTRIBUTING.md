@@ -9,6 +9,14 @@ Thank you for taking the time to contribute to **MCP Project Manager**! This pro
 
 ## 🔧 Install Dependencies
 
+Run the setup script to install both backend and frontend packages:
+
+```bash
+bash scripts/setup.sh
+```
+
+Or install each side manually:
+
 ### 1. Backend (Python)
 ```bash
 cd backend
