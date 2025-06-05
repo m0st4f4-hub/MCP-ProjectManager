@@ -186,6 +186,11 @@ export interface MCPToolInfo {
   example?: Record<string, any>;
 }
 
+// --- Metrics Response ---
+export interface MetricsResponse {
+  metrics: Record<string, number>;
+}
+
 // --- MCP Rule Tool Schemas ---
 export const mcpRuleMandateCreateRequestSchema = z.object({
   title: z.string(),
@@ -196,15 +201,4 @@ export const mcpRuleMandateCreateRequestSchema = z.object({
 
 export type MCPRuleMandateCreateRequest = z.infer<
   typeof mcpRuleMandateCreateRequestSchema
->;
-
-export const mcpAgentRuleCreateRequestSchema = z.object({
-  agent_id: z.string(),
-  rule_type: z.string(),
-  rule_content: z.string(),
-  is_active: z.boolean().optional(),
-});
-
-export type MCPAgentRuleCreateRequest = z.infer<
-  typeof mcpAgentRuleCreateRequestSchema
 >;
