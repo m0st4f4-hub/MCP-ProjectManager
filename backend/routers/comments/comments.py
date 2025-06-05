@@ -3,9 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession
 from typing import List, Optional
 import uuid  # Import uuid for comment and author IDs
 
-from ....database import get_sync_db as get_db
-from ....schemas.comment import Comment, CommentCreate, CommentUpdate
-from ....schemas.api_responses import DataResponse, ListResponse
+from ...database import get_sync_db as get_db
+from ...schemas.comment import Comment, CommentCreate, CommentUpdate
+from ...schemas.api_responses import DataResponse, ListResponse
 from backend.crud.comments import (
     get_comment,
     get_comments_by_task,

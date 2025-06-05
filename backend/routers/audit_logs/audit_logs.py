@@ -8,10 +8,10 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 from typing import List
 
-from ....database import get_sync_db as get_db
-from ....services.audit_log_service import AuditLogService
+from ...database import get_sync_db as get_db
+from ...services.audit_log_service import AuditLogService
 
-from ....schemas.audit_log import AuditLog, AuditLogCreate
+from ...schemas.audit_log import AuditLog, AuditLogCreate
 
 
 router = APIRouter(

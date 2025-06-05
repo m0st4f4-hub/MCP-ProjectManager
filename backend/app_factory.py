@@ -231,11 +231,22 @@ async def lifespan(app: FastAPI):
     mcp_instance = getattr(app.state, "mcp_instance", None)
     tools_info = []
     if mcp_instance and hasattr(mcp_instance, "tools"):
-        if mcp_instance.tools:
-            for tool_name, tool_info in mcp_instance.tools.items():
-                tools_info.append(f" - {tool_name}: {tool_info.get('description', '')}")
+        tools = mcp_instance.tools
+        if isinstance(tools, dict):
+            if tools:
+                for tool_name, tool_info in tools.items():
+                    tools_info.append(f" - {tool_name}: {tool_info.get('description', '')}")
+            else:
+                tools_info.append(" No MCP tools registered.")
+        elif isinstance(tools, list):
+            if tools:
+                for tool in tools:
+                    name = tool.get("name") if isinstance(tool, dict) else str(tool)
+                    tools_info.append(f" - {name}")
+            else:
+                tools_info.append(" No MCP tools registered.")
         else:
-            tools_info.append(" No MCP tools registered.")
+            tools_info.append(" MCP tools format not recognized.")
     else:
         tools_info.append(" MCP Client not available or tools not initialized.")
 

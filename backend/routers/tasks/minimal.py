@@ -2,12 +2,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
-from ....database import get_db
-from ....services.task_service import TaskService
-from ....schemas.task import Task, TaskCreate, TaskUpdate
-from ....schemas.api_responses import DataResponse
-from ....auth import get_current_active_user
-from ....models import User as UserModel
+from ...database import get_db
+from ...services.task_service import TaskService
+from ...schemas.task import Task, TaskCreate, TaskUpdate
+from ...schemas.api_responses import DataResponse
+from ...auth import get_current_active_user
+from ...models import User as UserModel
 from typing import List, Optional
 
 router = APIRouter()

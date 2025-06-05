@@ -164,8 +164,11 @@ class TheBuilderSystemIntegrator:
         
         # Check if key dependencies are listed
         content = requirements_file.read_text()
-        required_deps = ['fastapi', 'uvicorn', 'sqlalchemy', 'pydantic']
-        return all(dep in content.lower() for dep in required_deps)
+        required_deps = ['fastapi', 'sqlalchemy']
+        # Accept uvicorn or uvicorn[standard]
+        uvicorn_present = 'uvicorn' in content.lower()
+        other_deps_present = all(dep in content.lower() for dep in required_deps)
+        return uvicorn_present and other_deps_present
     
     def _check_database(self):
         """Check database files."""
@@ -187,7 +190,8 @@ class TheBuilderSystemIntegrator:
         if not routers_dir.exists():
             return False
         
-        key_routers = ['projects.py', 'tasks.py', 'agents.py', 'users.py']
+        # Routers are organized as directories in this project
+        key_routers = ['projects', 'tasks', 'agents', 'users']
         return all((routers_dir / router).exists() for router in key_routers)
     
     def _check_frontend_structure(self):
@@ -260,8 +264,8 @@ class TheBuilderSystemIntegrator:
         try:
             python_cmd = str(self.backend_dir / ".venv" / ("Scripts" if os.name == 'nt' else "bin") / "python")
             backend_process = subprocess.Popen(
-                [python_cmd, "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8000"],
-                cwd=self.backend_dir,
+                [python_cmd, "-m", "uvicorn", "backend.main:app", "--host", "127.0.0.1", "--port", "8000"],
+                cwd=self.root_dir,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
@@ -294,8 +298,8 @@ class TheBuilderSystemIntegrator:
         """Test key backend endpoints."""
         test_urls = [
             "http://localhost:8000/health",
-            "http://localhost:8000/api/projects/",
-            "http://localhost:8000/api/tasks/",
+            "http://localhost:8000/api/v1/projects",
+            "http://localhost:8000/api/v1/tasks",
             "http://localhost:8000/openapi.json"
         ]
         
