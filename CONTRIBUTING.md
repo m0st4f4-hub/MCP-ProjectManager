@@ -74,6 +74,7 @@ This writes `frontend/src/types/generatedEnums.ts`.
 * **Frontend**:
 
   * Run: `npm run lint`, `npm run type-check`, `npm run fix`, and `npm run format` before committing.
+  * Verify formatting with `npx prettier --check .` (the CI workflow will fail if Prettier finds issues).
 * **Backend**:
 
   * Run: `flake8` and ensure no style violations or unused imports remain.
@@ -105,18 +106,23 @@ Before opening a Pull Request, ensure the following tests and linters pass:
 
 ```bash
 cd frontend
+npx prettier --check ..
 npm run lint
-npm test
+npx vitest --coverage.v8 --coverage-threshold=90
 ```
 
 ### Backend
 
 ```bash
 cd backend
-pytest
+flake8 .
+pytest --cov=. --cov-fail-under=90
 ```
 
 All tests and linters must pass locally before submitting a PR.
+
+The CI workflow enforces a minimum 90% coverage for both backend and frontend
+tests and uploads coverage reports only if all checks succeed.
 
 ---
 
