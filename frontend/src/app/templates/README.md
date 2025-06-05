@@ -6,6 +6,7 @@ This directory contains pages for managing project templates.
 - `new/page.tsx` – Form for creating a template.
 - `[templateId]/edit/page.tsx` – Edit an existing template.
 - `[templateId]/delete/page.tsx` – Deletes a template then redirects back to the list.
+- `[templateId]/page.tsx` – View template details.
 
 <!-- File List Start -->
 
@@ -15,5 +16,6 @@ This directory contains pages for managing project templates.
 - `new/page.tsx`
 - `[templateId]/edit/page.tsx`
 - `[templateId]/delete/page.tsx`
+- `[templateId]/page.tsx`
 
 <!-- File List End -->
