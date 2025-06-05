@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/__tests__/utils/test-utils';
+import { render, screen, TestWrapper } from '@/__tests__/utils/test-utils';
 import TaskLoading from '../TaskLoading';
 
 vi.mock('@chakra-ui/react', async () => {
@@ -17,7 +17,7 @@ describe('TaskLoading', () => {
   });
 
   it('renders loading text', () => {
-    render(<TaskLoading />);
+    render(<TaskLoading />, { wrapper: TestWrapper });
     expect(screen.getByText('Loading tasks...')).toBeInTheDocument();
   });
 });
