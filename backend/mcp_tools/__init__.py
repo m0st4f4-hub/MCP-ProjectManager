@@ -18,5 +18,8 @@ __all__ = [
     'delete_handoff_criteria_tool',
     'create_project_template_tool',
     'list_project_templates_tool',
-    'delete_project_template_tool'
+    'delete_project_template_tool',
+    'create_mandate_tool',
+    'list_mandates_tool',
+    'delete_mandate_tool'
 ]
