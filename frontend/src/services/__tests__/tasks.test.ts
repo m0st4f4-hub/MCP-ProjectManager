@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as tasksApi from '../api/tasks';
 import { request } from '../api/request';
 import { buildApiUrl } from '../api/config';
+import { TaskStatus } from '@/types/task';
 
 // Mock the dependencies
 vi.mock('../api/request');
@@ -28,7 +29,7 @@ describe('Tasks API', () => {
           task_number: 1,
           title: 'Test Task',
           description: 'Test description',
-          status: 'To Do',
+          status: TaskStatus.TO_DO,
           completed: false,
           agent_id: 'agent-1',
           created_at: '2024-01-01T00:00:00Z',
@@ -81,7 +82,7 @@ describe('Tasks API', () => {
         project_id: 'project-1',
         task_number: 1,
         title: 'Test Task',
-        status: 'To Do',
+        status: TaskStatus.TO_DO,
         completed: false,
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',

@@ -20,13 +20,20 @@ import { StatusID } from "@/lib/statusUtils";
 const convertStatusIDToTaskStatus = (statusId: StatusID): TaskStatus => {
   // Direct mapping since both use the same format
   switch (statusId) {
-    case "To Do": return TaskStatus.TO_DO;
-    case "In Progress": return TaskStatus.IN_PROGRESS;
-    case "In Review": return TaskStatus.IN_REVIEW;
-    case "Completed": return TaskStatus.COMPLETED;
-    case "Blocked": return TaskStatus.BLOCKED;
-    case "Cancelled": return TaskStatus.CANCELLED;
-    default: return TaskStatus.TO_DO;
+    case TaskStatus.TO_DO:
+      return TaskStatus.TO_DO;
+    case TaskStatus.IN_PROGRESS:
+      return TaskStatus.IN_PROGRESS;
+    case TaskStatus.IN_REVIEW:
+      return TaskStatus.IN_REVIEW;
+    case TaskStatus.COMPLETED:
+      return TaskStatus.COMPLETED;
+    case TaskStatus.BLOCKED:
+      return TaskStatus.BLOCKED;
+    case TaskStatus.CANCELLED:
+      return TaskStatus.CANCELLED;
+    default:
+      return TaskStatus.TO_DO;
   }
 };
 
@@ -332,7 +339,9 @@ export const updateTask = async (
 ): Promise<Task> => {
   const payload: Partial<RawTask> = { ...taskData };
   if (typeof payload.completed === "boolean") {
-    payload.status = payload.completed ? "Completed" : "To Do";
+    payload.status = payload.completed
+      ? TaskStatus.COMPLETED
+      : TaskStatus.TO_DO;
     delete payload.completed;
   }
   const rawTask = await request<RawTask>(
