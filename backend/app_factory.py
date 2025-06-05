@@ -14,6 +14,7 @@ from sqlalchemy import text
 
 from .database import get_db, Base, engine
 from .middleware import init_middleware
+from .metrics import setup_metrics
 
 try:
     from fastapi_mcp import FastApiMCP
@@ -304,6 +305,7 @@ def create_app() -> FastAPI:
     )
 
     init_middleware(app)
+    setup_metrics(app)
 
     from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 

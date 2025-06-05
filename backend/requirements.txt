@@ -11,6 +11,7 @@ python-jose
 aiosqlite
 aiohttp
 httpx
+prometheus-client
 
 # For CI/Dev
 flake8

@@ -21,6 +21,7 @@ python-jose = "*"
 aiosqlite = "*"
 aiohttp = "*"
 httpx = "*"
+prometheus-client = "*"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "*"
