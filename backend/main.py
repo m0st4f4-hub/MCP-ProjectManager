@@ -54,6 +54,7 @@ def include_app_routers(app: FastAPI):
         mcp,
         rules,
         project_templates,
+        status_transitions,
         audit_logs,
         workflows,
     )
@@ -65,6 +66,7 @@ def include_app_routers(app: FastAPI):
     app.include_router(auth_router, prefix="/api/v1", tags=["auth"])
     app.include_router(projects.router, prefix="/api/v1/projects", tags=["projects"])
     app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
+    app.include_router(status_transitions.router, prefix="/api/v1/status-transitions", tags=["status-transitions"])
     app.include_router(comments.router, prefix="/api/comments", tags=["comments"])
     app.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])
     app.include_router(memory.router, prefix="/api/memory", tags=["memory"])

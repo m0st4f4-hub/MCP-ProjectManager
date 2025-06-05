@@ -19,6 +19,7 @@ export const API_CONFIG = {
     RULES: "/rules",
     MCP_TOOLS: "/mcp-tools",
     VERIFICATION_REQUIREMENTS: "/verification-requirements",
+    STATUS_TRANSITIONS: "/status-transitions",
   },
 } as const;
 
