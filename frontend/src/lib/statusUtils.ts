@@ -43,6 +43,7 @@ export type StatusID =
   | "VERIFICATION_COMPLETE"
   | "VERIFICATION_FAILED"
   | "COMPLETED_AWAITING_PROJECT_MANAGER"
+  | "COMPLETED_HANDOFF"
   | "COMPLETED_HANDOFF_TO_..."
   | "FAILED"
   | "IN_PROGRESS_AWAITING_SUBTASK"
@@ -80,7 +81,6 @@ export interface DisplayableStatus {
 /* ────────────────────────────────────────────────────────────── */
 
 const STATUS_MAP = {
-  /* ---------- TODO ---------- */
   "To Do": {
     id: "To Do",
     displayName: "To Do",
@@ -328,6 +328,18 @@ const STATUS_MAP = {
     isDynamic: false,
   },
   "Completed Handoff": {
+    id: "Completed Handoff",
+    displayName: "Completed Handoff",
+    category: "completed",
+    description: "Completed with handoff to another task.",
+    colorScheme: "green",
+    icon: "ArrowForwardIcon",
+    isTerminal: true,
+    isDynamic: true,
+    dynamicPartsExtractor: /^COMPLETED_HANDOFF_TO_(([a-zA-Z0-9-]+(?:\s*,\s*[a-zA-Z0-9-]+)*))$/,
+    dynamicDisplayNamePattern: "Handoff to: {value}",
+  },
+  COMPLETED_HANDOFF: {
     id: "Completed Handoff",
     displayName: "Completed Handoff",
     category: "completed",
