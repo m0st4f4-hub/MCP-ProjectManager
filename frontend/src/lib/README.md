@@ -96,6 +96,7 @@ graph TD
 <!-- File List Start -->
 ## File List
 
+- `apiErrorHandler.ts`
 - `mcpTools.ts`
 - `promptUtils.ts`
 - `statusUtils.test.ts`
@@ -104,4 +105,6 @@ graph TD
 - `utils.ts`
 
 <!-- File List End -->
+
+
 

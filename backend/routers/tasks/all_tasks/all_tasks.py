@@ -1,4 +1,8 @@
-# Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
+# Task ID: <taskId>
+# Agent Role: ImplementationSpecialist
+# Request ID: <requestId>
+# Project: task-manager
+# Timestamp: <timestamp>
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -57,9 +61,15 @@ async def get_all_tasks(
     ),
     pagination: PaginationParams = Depends(),  # Use PaginationParams for skip/limit
     sort_by: Optional[str] = Query(
-    "created_at", description="Field to sort by. Supported: \'created_at\', \'updated_at\', \'title\', \'status\', \'task_number\', \'agent_id\', \'project_id\'"),
+        "created_at", description=(
+            "Field to sort by. Supported: 'created_at', 'updated_at',"
+            "'title', 'status', 'task_number', 'agent_id',"
+            "'project_id'"
+        )
+    ),
     sort_direction: Optional[str] = Query(
-    "desc", description="Sort direction: \'asc\' or \'desc\'."),
+        "desc", description="Sort direction: 'asc' or 'desc'."
+    ),
     task_service: TaskService = Depends(get_task_service),
     agent_service: AgentService = Depends(get_agent_service)  # For agent_name lookup
 ):
