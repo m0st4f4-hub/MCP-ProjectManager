@@ -37,7 +37,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@wonderwhy-er/desktop-commander": "^0.1.39"
+    "@wonderwhy-er/desktop-commander": "^0.1.39",
+    "commander": "^11.0.0"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
