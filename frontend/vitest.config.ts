@@ -22,6 +22,7 @@ export default defineConfig({
     include: [
       'src/lib/__tests__/utils.test.tsx',
       'src/store/__tests__/*.test.ts',
+      'src/hooks/__tests__/*.test.tsx',
       'src/__tests__/integration/**/*.{ts,tsx}',
       'src/services/api/__tests__/*.test.ts',
       'tests/**/*.test.ts'
