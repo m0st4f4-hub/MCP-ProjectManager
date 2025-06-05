@@ -24,6 +24,15 @@ export const mcpProjectDeleteRequestSchema = z.object({
 
 export type MCPProjectDeleteRequest = z.infer<typeof mcpProjectDeleteRequestSchema>;
 
+export const mcpProjectUpdateRequestSchema = z.object({
+  project_id: z.string(),
+  name: z.string().optional(),
+  description: z.string().nullable().optional(),
+  is_archived: z.boolean().optional(),
+});
+
+export type MCPProjectUpdateRequest = z.infer<typeof mcpProjectUpdateRequestSchema>;
+
 // --- MCP Task Tool Schemas ---
 export const mcpTaskCreateRequestSchema = z.object({
   project_id: z.string(),
@@ -44,6 +53,13 @@ export const mcpTaskUpdateRequestSchema = z.object({
 });
 
 export type MCPTaskUpdateRequest = z.infer<typeof mcpTaskUpdateRequestSchema>;
+
+export const mcpTaskDeleteRequestSchema = z.object({
+  project_id: z.string(),
+  task_number: z.number(),
+});
+
+export type MCPTaskDeleteRequest = z.infer<typeof mcpTaskDeleteRequestSchema>;
 
 // --- MCP Memory Tool Schemas ---
 export const mcpMemoryCreateEntityRequestSchema = z.object({
@@ -69,6 +85,49 @@ export const mcpMemoryCreateRelationRequestSchema = z.object({
 });
 
 export type MCPMemoryCreateRelationRequest = z.infer<typeof mcpMemoryCreateRelationRequestSchema>;
+
+export const mcpMemoryGetContentRequestSchema = z.object({
+  entity_id: z.number(),
+});
+
+export type MCPMemoryGetContentRequest = z.infer<typeof mcpMemoryGetContentRequestSchema>;
+
+export const mcpMemoryGetMetadataRequestSchema = z.object({
+  entity_id: z.number(),
+});
+
+export type MCPMemoryGetMetadataRequest = z.infer<typeof mcpMemoryGetMetadataRequestSchema>;
+
+// --- MCP Project Member Tool Schemas ---
+export const mcpProjectMemberAddRequestSchema = z.object({
+  project_id: z.string(),
+  user_id: z.string(),
+  role: z.string(),
+});
+
+export type MCPProjectMemberAddRequest = z.infer<typeof mcpProjectMemberAddRequestSchema>;
+
+export const mcpProjectMemberRemoveRequestSchema = z.object({
+  project_id: z.string(),
+  user_id: z.string(),
+});
+
+export type MCPProjectMemberRemoveRequest = z.infer<typeof mcpProjectMemberRemoveRequestSchema>;
+
+// --- MCP Project File Tool Schemas ---
+export const mcpProjectFileAddRequestSchema = z.object({
+  project_id: z.string(),
+  file_id: z.string(),
+});
+
+export type MCPProjectFileAddRequest = z.infer<typeof mcpProjectFileAddRequestSchema>;
+
+export const mcpProjectFileRemoveRequestSchema = z.object({
+  project_id: z.string(),
+  file_id: z.string(),
+});
+
+export type MCPProjectFileRemoveRequest = z.infer<typeof mcpProjectFileRemoveRequestSchema>;
 
 // --- MCP Tool Categories ---
 export enum MCPToolCategory {
