@@ -104,6 +104,9 @@ def test_app(async_db_session: AsyncSession):
     
     test_app.dependency_overrides[get_db] = get_test_db
 
+    from backend.middleware.error_handlers import register_exception_handlers
+    register_exception_handlers(test_app)
+
     return test_app
 
 @pytest.fixture(scope="function")

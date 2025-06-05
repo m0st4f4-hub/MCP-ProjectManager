@@ -4,12 +4,22 @@ import { StatusID } from '@/lib/statusUtils';
 export class ApiError extends Error {
   status: number;
   url: string;
+  errorCode?: string;
+  errorDetails?: any;
 
-  constructor(message: string, status: number, url: string) {
+  constructor(
+    message: string,
+    status: number,
+    url: string,
+    errorCode?: string,
+    errorDetails?: any
+  ) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.url = url;
+    this.errorCode = errorCode;
+    this.errorDetails = errorDetails;
   }
 }
 
@@ -80,12 +90,18 @@ export async function request<T>(
       options,
     });
     let errorDetail = `API request failed with status ${response.status} for ${url}`;
+    let errorCode: string | undefined;
+    let errorDetails: any;
     try {
       const errorData = await response.json();
-      if (errorData && errorData.detail) {
-        errorDetail = errorData.detail;
-      } else if (errorData && errorData.message) {
-        errorDetail = errorData.message;
+      if (errorData && typeof errorData === 'object') {
+        if (errorData.message) {
+          errorDetail = errorData.message;
+        } else if (errorData.detail) {
+          errorDetail = errorData.detail;
+        }
+        errorCode = errorData.error_code;
+        errorDetails = errorData.error_details;
       } else {
         errorDetail = response.statusText || errorDetail;
       }
@@ -93,7 +109,7 @@ export async function request<T>(
       console.warn(`Failed to parse error response as JSON for URL: ${url}`, e);
       errorDetail = response.statusText || errorDetail;
     }
-    throw new ApiError(errorDetail, response.status, url);
+    throw new ApiError(errorDetail, response.status, url, errorCode, errorDetails);
   }
 
   if (response.status === 204) {

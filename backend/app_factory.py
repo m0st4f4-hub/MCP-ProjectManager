@@ -7,7 +7,7 @@ import logging.config
 from contextlib import asynccontextmanager
 from typing import Dict, Any
 
-from fastapi import FastAPI, Depends, Request, Response, status
+from fastapi import FastAPI, Depends, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -346,6 +346,33 @@ def create_app() -> FastAPI:
 
     include_app_routers(app)
     _rebuild_pydantic_models()
+
+    # Register basic exception handlers that return ErrorResponse models
+    from fastapi import HTTPException
+    from fastapi.responses import JSONResponse
+    from .schemas.api_responses import ErrorResponse
+    from starlette.requests import Request
+
+    @app.exception_handler(HTTPException)
+    async def http_error_handler(request: Request, exc: HTTPException):
+        error = ErrorResponse(
+            message=str(exc.detail),
+            error_code=f"HTTP{exc.status_code}",
+        )
+        return JSONResponse(status_code=exc.status_code, content=error.model_dump())
+
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(request: Request, exc: Exception):
+        logger.error(f"Unhandled exception: {exc}")
+        error = ErrorResponse(
+            message="Internal server error",
+            error_code="InternalServerError",
+            error_details={"error": str(exc)},
+        )
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=error.model_dump(),
+        )
 
     if FastApiMCP is not None:
         mcp = FastApiMCP(
