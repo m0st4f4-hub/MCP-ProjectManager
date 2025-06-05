@@ -19,6 +19,9 @@ from ....services.project_template_service import ProjectTemplateService
 from ....schemas.project_template import ProjectTemplateCreate
 from ....services.rules_service import RulesService
 from ....services.agent_handoff_service import AgentHandoffService
+from ....services.agent_verification_requirement_service import (
+    AgentVerificationRequirementService,
+)
 from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate, TaskUpdate
 from ....schemas import AgentRuleCreate
@@ -30,6 +33,9 @@ from ....schemas.memory import (
     MemoryRelationCreate
 )
 from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
+from ....schemas.agent_verification_requirement import (
+    AgentVerificationRequirementCreate,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
@@ -877,4 +883,86 @@ async def mcp_delete_handoff_criteria(
         raise
     except Exception as e:
         logger.error(f"MCP delete handoff criteria failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/verification/create",
+    tags=["mcp-tools"],
+    operation_id="create_verification_requirement_tool",
+)
+async def mcp_create_verification_requirement(
+    requirement: AgentVerificationRequirementCreate,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create agent verification requirement."""
+    try:
+        service = AgentVerificationRequirementService(db)
+        created = service.create_requirement(requirement)
+        return {
+            "success": True,
+            "requirement": {
+                "id": created.id,
+                "agent_role_id": created.agent_role_id,
+                "requirement": created.requirement,
+                "description": created.description,
+                "is_mandatory": created.is_mandatory,
+            },
+        }
+    except Exception as e:
+        logger.error(f"MCP create verification requirement failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/verification/list",
+    tags=["mcp-tools"],
+    operation_id="list_verification_requirements_tool",
+)
+async def mcp_list_verification_requirements(
+    agent_role_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List verification requirements."""
+    try:
+        service = AgentVerificationRequirementService(db)
+        items = service.list_requirements(agent_role_id)
+        return {
+            "success": True,
+            "requirements": [
+                {
+                    "id": r.id,
+                    "agent_role_id": r.agent_role_id,
+                    "requirement": r.requirement,
+                    "description": r.description,
+                    "is_mandatory": r.is_mandatory,
+                }
+                for r in items
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list verification requirements failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/verification/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_verification_requirement_tool",
+)
+async def mcp_delete_verification_requirement(
+    requirement_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a verification requirement."""
+    try:
+        service = AgentVerificationRequirementService(db)
+        success = service.delete_requirement(requirement_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Requirement not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP delete verification requirement failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -16,6 +16,9 @@ __all__ = [
     'create_handoff_criteria_tool',
     'list_handoff_criteria_tool',
     'delete_handoff_criteria_tool',
+    'create_verification_requirement_tool',
+    'list_verification_requirements_tool',
+    'delete_verification_requirement_tool',
     'create_project_template_tool',
     'list_project_templates_tool',
     'delete_project_template_tool'
