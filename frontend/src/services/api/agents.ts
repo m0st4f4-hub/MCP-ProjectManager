@@ -34,7 +34,7 @@ export const getAgents = async (skip: number = 0, limit: number = 100, search?: 
   if (is_archived !== undefined) queryParams.append("is_archived", String(is_archived));
   const queryString = queryParams.toString();
   const url = buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `?${queryString}`);
-  const rawAgents = await request<RawAgent[]>(url);
+  const { data: rawAgents } = await request<{ data: RawAgent[] }>(url);
   return rawAgents.map((rawAgent) => ({
     ...rawAgent,
     id: String(rawAgent.id),
@@ -49,7 +49,7 @@ export const getAgents = async (skip: number = 0, limit: number = 100, search?: 
 };
 
 export const getAgentById = async (agent_id: string): Promise<Agent> => {
-  const rawAgent = await request<RawAgent>(
+  const { data: rawAgent } = await request<{ data: RawAgent }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/id/${agent_id}`)
   );
   return {
@@ -62,7 +62,7 @@ export const getAgentById = async (agent_id: string): Promise<Agent> => {
 };
 
 export const getAgentByName = async (agent_name: string): Promise<Agent> => {
-  const rawAgent = await request<RawAgent>(
+  const { data: rawAgent } = await request<{ data: RawAgent }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/${agent_name}`)
   );
   return {
@@ -75,7 +75,7 @@ export const getAgentByName = async (agent_name: string): Promise<Agent> => {
 };
 
 export const createAgent = async (agentData: AgentCreateData): Promise<Agent> => {
-  const rawAgent = await request<RawAgent>(
+  const { data: rawAgent } = await request<{ data: RawAgent }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, "/"),
     { method: "POST", body: JSON.stringify(agentData) },
   );
@@ -92,7 +92,7 @@ export const updateAgentById = async (
   agent_id: string,
   agentData: AgentUpdateDataType,
 ): Promise<Agent> => {
-  const rawAgent = await request<RawAgent>(
+  const { data: rawAgent } = await request<{ data: RawAgent }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/${agent_id}`),
     { method: "PUT", body: JSON.stringify(agentData) },
   );

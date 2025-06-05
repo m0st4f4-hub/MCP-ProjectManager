@@ -22,21 +22,24 @@ export async function deleteTemplate(
 export const projectTemplatesApi = {
   /** Create a new project template */
   async create(data: ProjectTemplateCreateData): Promise<ProjectTemplate> {
-    return request<ProjectTemplate>(buildApiUrl("/project-templates/"), {
+    const { data: template } = await request<{ data: ProjectTemplate }>(buildApiUrl("/project-templates/"), {
       method: "POST",
       body: JSON.stringify(data),
     });
+    return template;
   },
 
   /** List project templates with basic pagination */
   async list(skip = 0, limit = 100): Promise<ProjectTemplate[]> {
     const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
-    return request<ProjectTemplate[]>(buildApiUrl("/project-templates/", `?${params}`));
+    const { data } = await request<{ data: ProjectTemplate[] }>(buildApiUrl("/project-templates/", `?${params}`));
+    return data;
   },
 
   /** Retrieve a single project template */
   async get(templateId: string): Promise<ProjectTemplate> {
-    return request<ProjectTemplate>(buildApiUrl("/project-templates/", `/${templateId}`));
+    const { data } = await request<{ data: ProjectTemplate }>(buildApiUrl("/project-templates/", `/${templateId}`));
+    return data;
   },
 
   /** Update a project template */
@@ -44,10 +47,11 @@ export const projectTemplatesApi = {
     templateId: string,
     data: ProjectTemplateUpdateData,
   ): Promise<ProjectTemplate> {
-    return request<ProjectTemplate>(buildApiUrl("/project-templates/", `/${templateId}`), {
+    const { data: tpl } = await request<{ data: ProjectTemplate }>(buildApiUrl("/project-templates/", `/${templateId}`), {
       method: "PUT",
       body: JSON.stringify(data),
     });
+    return tpl;
   },
 
   /** Delete a project template */
