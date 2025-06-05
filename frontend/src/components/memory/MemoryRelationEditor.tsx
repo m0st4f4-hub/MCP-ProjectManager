@@ -1,20 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
   FormControl,
   FormLabel,
   Input,
-  VStack,
+  Textarea,
   useToast,
 } from '@chakra-ui/react';
 import { memoryApi } from '@/services/api';
-import type { MemoryRelation } from '@/types/memory';
+import type { MemoryRelation, MemoryRelationUpdateData } from '@/types/memory';
 
 interface MemoryRelationEditorProps {
-  relation: MemoryRelation;
+  relation: MemoryRelation | null;
   onUpdated?: (relation: MemoryRelation) => void;
 }
 
@@ -23,21 +23,35 @@ const MemoryRelationEditor: React.FC<MemoryRelationEditorProps> = ({
   onUpdated,
 }) => {
   const toast = useToast();
-  const [relationType, setRelationType] = useState(relation.relation_type);
-  const [metadata, setMetadata] = useState(
-    JSON.stringify(relation.metadata ?? {}, null, 2)
-  );
+  const [relationType, setRelationType] = useState('');
+  const [metadata, setMetadata] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (relation) {
+      setRelationType(relation.relation_type);
+      setMetadata(
+        relation.metadata ? JSON.stringify(relation.metadata, null, 2) : ''
+      );
+    }
+  }, [relation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!relation) return;
     setLoading(true);
     try {
-      const updated = await memoryApi.updateRelation(relation.id, {
+      const data: MemoryRelationUpdateData = {
         relation_type: relationType,
         metadata: metadata ? JSON.parse(metadata) : undefined,
+      };
+      const updated = await memoryApi.updateRelation(relation.id, data);
+      toast({
+        title: 'Relation updated',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
       });
-      toast({ title: 'Relation updated', status: 'success', duration: 3000 });
       onUpdated?.(updated);
     } catch (err) {
       toast({
@@ -45,11 +59,14 @@ const MemoryRelationEditor: React.FC<MemoryRelationEditorProps> = ({
         description: err instanceof Error ? err.message : 'Failed to update',
         status: 'error',
         duration: 5000,
+        isClosable: true,
       });
     } finally {
       setLoading(false);
     }
   };
+
+  if (!relation) return null;
 
   return (
     <Box
@@ -60,35 +77,32 @@ const MemoryRelationEditor: React.FC<MemoryRelationEditorProps> = ({
       borderRadius="md"
       bg="bg.surface"
     >
-      <VStack spacing={4} align="stretch">
-        <FormControl>
-          <FormLabel>From Entity ID</FormLabel>
-          <Input value={relation.from_entity_id} isReadOnly />
-        </FormControl>
-        <FormControl>
-          <FormLabel>To Entity ID</FormLabel>
-          <Input value={relation.to_entity_id} isReadOnly />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Relation Type</FormLabel>
-          <Input
-            value={relationType}
-            onChange={(e) => setRelationType(e.target.value)}
-            placeholder="related_to"
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Metadata (JSON)</FormLabel>
-          <Input
-            value={metadata}
-            onChange={(e) => setMetadata(e.target.value)}
-            placeholder="{}"
-          />
-        </FormControl>
-        <Button type="submit" colorScheme="blue" isLoading={loading}>
-          Save
-        </Button>
-      </VStack>
+      <FormControl mb={2}>
+        <FormLabel>From Entity ID</FormLabel>
+        <Input value={relation.from_entity_id} isReadOnly />
+      </FormControl>
+      <FormControl mb={2}>
+        <FormLabel>To Entity ID</FormLabel>
+        <Input value={relation.to_entity_id} isReadOnly />
+      </FormControl>
+      <FormControl mb={2}>
+        <FormLabel>Relation Type</FormLabel>
+        <Input
+          value={relationType}
+          onChange={(e) => setRelationType(e.target.value)}
+        />
+      </FormControl>
+      <FormControl mb={2}>
+        <FormLabel>Metadata (JSON)</FormLabel>
+        <Textarea
+          value={metadata}
+          onChange={(e) => setMetadata(e.target.value)}
+          placeholder="{}"
+        />
+      </FormControl>
+      <Button type="submit" colorScheme="blue" isLoading={loading}>
+        Save
+      </Button>
     </Box>
   );
 };
