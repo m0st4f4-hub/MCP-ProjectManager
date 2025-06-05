@@ -1,7 +1,7 @@
 /**
  * TASK MANAGER SYSTEM - FRONTEND TEST SUITE
  * NASA/SpaceX Grade Testing Framework for React Components
- *
+ * 
  * Test Classification: MISSION-CRITICAL
  * Test Control: TMS-ATP-001-FRONTEND
  * Version: 2.0.0
@@ -20,18 +20,13 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/__tests__/setup.ts'],
     include: [
-<<<<<<< HEAD
-      'src/lib/__tests__/*.test.ts',
-      'src/lib/__tests__/*.test.tsx',
-=======
       'src/components/__tests__/*.test.tsx',
       'src/lib/__tests__/utils.test.tsx',
->>>>>>> codex/add-snapshot-testing-with-vitest-for-taskitem-and-projectlis
       'src/store/__tests__/*.test.ts',
       'src/hooks/__tests__/*.test.tsx',
       'src/__tests__/integration/**/*.{ts,tsx}',
       'src/services/api/__tests__/*.test.ts',
-      'tests/**/*.test.ts',
+      'tests/**/*.test.ts'
     ],
     coverage: {
       provider: 'v8',
@@ -42,8 +37,8 @@ export default defineConfig({
           branches: 80,
           functions: 80,
           lines: 80,
-          statements: 80,
-        },
+          statements: 80
+        }
       },
       include: [
         'src/**/*.{ts,tsx}',
@@ -51,8 +46,8 @@ export default defineConfig({
         '!src/**/*.stories.{ts,tsx}',
         '!src/**/__tests__/**',
         '!src/**/__mocks__/**',
-        '!src/**/test-utils/**',
-      ],
+        '!src/**/test-utils/**'
+      ]
     },
     mockReset: true,
     restoreMocks: true,
