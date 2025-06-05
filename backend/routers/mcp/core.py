@@ -1,4 +1,4 @@
-# Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
+# MCP Core Tools Router
 
 """
 MCP Core Tools Router - Functionality for Project and Task MCP integration.
@@ -7,9 +7,8 @@ Provides MCP tool definitions.
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Optional
+from typing import Optional
 import logging
-import json
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -17,8 +16,10 @@ from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
+from ....services.project_template_service import ProjectTemplateService
 from ....schemas.project import ProjectCreate
-from ....schemas.task import TaskCreate
+from ....schemas.task import TaskCreate, TaskUpdate
+from ....schemas.project_template import ProjectTemplateCreate
 from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
@@ -386,9 +387,94 @@ async def mcp_remove_project_file(
                 "file_memory_entity_id": file_memory_entity_id
             }
         )
-        return {"success": True, "message": "Project file association removed successfully"}
+        return {
+            "success": True,
+            "message": "Project file association removed successfully",
+        }
     except Exception as e:
         logger.error(f"MCP remove project file failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/template/create",
+    tags=["mcp-tools"],
+    operation_id="create_template_tool",
+)
+async def mcp_create_template(
+    template_data: ProjectTemplateCreate,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a new project template."""
+    try:
+        service = ProjectTemplateService(db)
+        existing = service.get_template_by_name(template_data.name)
+        if existing:
+            raise HTTPException(status_code=400, detail="Template already exists")
+        template = service.create_template(template_data)
+        return {
+            "success": True,
+            "template": {
+                "id": template.id,
+                "name": template.name,
+                "description": template.description,
+                "created_at": template.created_at.isoformat(),
+            },
+        }
+    except Exception as e:
+        logger.error(f"MCP create template failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/templates/list",
+    tags=["mcp-tools"],
+    operation_id="list_templates_tool",
+)
+async def mcp_list_templates(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List project templates."""
+    try:
+        service = ProjectTemplateService(db)
+        templates = service.get_templates(skip=skip, limit=limit)
+        return {
+            "success": True,
+            "templates": [
+                {
+                    "id": t.id,
+                    "name": t.name,
+                    "description": t.description,
+                    "created_at": t.created_at.isoformat(),
+                }
+                for t in templates
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list templates failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/template/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_template_tool",
+)
+async def mcp_delete_template(
+    template_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a project template."""
+    try:
+        service = ProjectTemplateService(db)
+        success = service.delete_template(template_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Template not found")
+        return {"success": True, "template_id": template_id}
+    except Exception as e:
+        logger.error(f"MCP delete template failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -455,7 +541,10 @@ async def mcp_add_memory_observation(
 ):
     """MCP Tool: Add an observation to a memory entity."""
     try:
-        observation = memory_service.create_memory_observation(entity_id, observation_data)
+        observation = memory_service.create_memory_observation(
+            entity_id,
+            observation_data,
+        )
         audit_service = AuditLogService(memory_service.db)
         audit_service.log_action(
             action="memory_observation_added",
@@ -526,7 +615,10 @@ async def mcp_get_memory_content(
     try:
         content = memory_service.get_memory_entity_content(entity_id)
         if content is None:
-            raise HTTPException(status_code=404, detail="Memory entity content not found")
+            raise HTTPException(
+                status_code=404,
+                detail="Memory entity content not found",
+            )
         return {"success": True, "content": content}
     except Exception as e:
         logger.error(f"MCP get memory content failed: {e}")
@@ -546,7 +638,10 @@ async def mcp_get_memory_metadata(
     try:
         metadata = memory_service.get_memory_entity_metadata(entity_id)
         if metadata is None:
-            raise HTTPException(status_code=404, detail="Memory entity metadata not found")
+            raise HTTPException(
+                status_code=404,
+                detail="Memory entity metadata not found",
+            )
         return {"success": True, "metadata": metadata}
     except Exception as e:
         logger.error(f"MCP get memory metadata failed: {e}")
@@ -568,7 +663,11 @@ async def mcp_list_tools():
                     "name": route.operation_id,
                     "path": route.path,
                     "method": list(route.methods)[0] if route.methods else "GET",
-                    "description": route.summary or route.description or "No description available"
+                    "description": (
+                        route.summary
+                        or route.description
+                        or "No description available"
+                    )
                 }
                 tool_list.append(tool_info)
         return {"success": True, "tools": tool_list}

@@ -25,6 +25,7 @@ graph TD
 - `memory_tools.py`
 - `project_tools.py`
 - `task_tools.py`
+- `template_tools.py`
 
 <!-- File List End -->
 
