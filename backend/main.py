@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 def include_app_routers(app: FastAPI):
     from .routers import (
         users, projects, tasks, comments, agents, memory,
-        mcp, rules, project_templates, audit_logs
+        mcp, rules, project_templates, audit_logs, enums
     )
     from .routers.admin import router as admin_router
     from .routers.users.auth.auth import router as auth_router
@@ -66,6 +66,7 @@ def include_app_routers(app: FastAPI):
         tags=["templates"],
     )
     app.include_router(audit_logs.router, prefix="/api/audit-logs", tags=["audit-logs"])
+    app.include_router(enums.router, prefix="/api", tags=["enums"])
 
 
 @asynccontextmanager

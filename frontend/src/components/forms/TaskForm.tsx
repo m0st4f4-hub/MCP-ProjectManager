@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { useTaskStore } from "@/store/taskStore";
 import { TaskCreateData, TaskUpdateData, TaskStatus } from "@/types";
+import { enumApi } from "@/services/api";
 import AppIcon from "../common/AppIcon";
 
 interface TaskFormProps {
@@ -44,10 +45,20 @@ const TaskForm: React.FC<TaskFormProps> = ({
   const [projectId, setProjectId] = useState(initialData.project_id || "");
   const [agentId, setAgentId] = useState(initialData.agent_id || "");
   const [status, setStatus] = useState(initialData.status || TaskStatus.TO_DO);
+  const [availableStatuses, setAvailableStatuses] = useState<string[]>(
+    Object.values(TaskStatus)
+  );
 
   useEffect(() => {
     fetchProjectsAndAgents();
   }, [fetchProjectsAndAgents]);
+
+  useEffect(() => {
+    enumApi
+      .getTaskStatuses()
+      .then((list) => setAvailableStatuses(list))
+      .catch((err) => console.error('Failed to fetch task statuses', err));
+  }, []);
 
   useEffect(() => {
     setTitle(initialData.title || "");
@@ -59,6 +70,15 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!availableStatuses.includes(status)) {
+      toast({
+        title: 'Invalid status',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
     try {
       await onSubmit({
         title,
@@ -221,9 +241,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
             _focus={{ borderColor: "borderFocused", boxShadow: "outline" }}
             _placeholder={{ color: "textPlaceholder" }}
           >
-            {Object.values(TaskStatus).map((s) => (
+            {availableStatuses.map((s) => (
               <option key={s} value={s}>
-                {s.replace(/_/g, " ").toUpperCase()}
+                {s.replace(/_/g, ' ').toUpperCase()}
               </option>
             ))}
           </Select>

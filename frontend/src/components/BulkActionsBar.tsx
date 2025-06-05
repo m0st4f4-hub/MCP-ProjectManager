@@ -14,6 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDownIcon, DeleteIcon } from "@chakra-ui/icons";
 import * as statusUtils from "@/lib/statusUtils";
+import { enumApi } from "@/services/api";
 import AppIcon from "./common/AppIcon";
 import { typography } from "../tokens";
 
@@ -36,11 +37,19 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
   bulkSetStatusTasks,
   loading = false,
 }) => {
-  const availableStatuses = React.useMemo(() => {
-    return statusUtils.getAllStatusIds().filter((id) => {
-      const attrs = statusUtils.getStatusAttributes(id);
-      return !attrs?.isTerminal && !attrs?.isDynamic;
-    });
+  const [availableStatuses, setAvailableStatuses] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    enumApi
+      .getTaskStatuses()
+      .then((list) => {
+        const filtered = list.filter((id) => {
+          const attrs = statusUtils.getStatusAttributes(id as statusUtils.StatusID);
+          return !attrs?.isTerminal && !attrs?.isDynamic;
+        });
+        setAvailableStatuses(filtered);
+      })
+      .catch((err) => console.error('Failed to fetch task statuses', err));
   }, []);
 
   if (selectedTaskIds.length === 0 && allFilterableTaskIds.length === 0) {
