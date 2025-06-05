@@ -24,9 +24,9 @@ describe('useFilteredProjects', () => {
     expect(result.current).toEqual([projects[0]]);
   });
 
-  it('returns project matching task view filter', () => {
+  it('returns archived project when archive filter is true', () => {
     const { result } = renderHook(() =>
-      useFilteredProjects(projects, { ...baseFilters, is_archived: null }, '2'),
+      useFilteredProjects(projects, { ...baseFilters, is_archived: true }, '2'),
     );
     expect(result.current).toEqual([projects[1]]);
   });
