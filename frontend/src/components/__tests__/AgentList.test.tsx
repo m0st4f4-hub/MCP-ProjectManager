@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, TestWrapper } from '@/__tests__/utils/test-utils';
 import userEvent from '@testing-library/user-event';
 import AgentList from '../AgentList';
 
@@ -20,7 +20,7 @@ describe('AgentList', () => {
   });
 
   it('should render without crashing', () => {
-    render(<AgentList />);
+    render(<AgentList />, { wrapper: TestWrapper });
     expect(document.body).toBeInTheDocument();
   });
 
@@ -30,14 +30,14 @@ describe('AgentList', () => {
       'data-testid': 'test-component'
     };
     
-    render(<AgentList {...props} />);
+    render(<AgentList {...props} />, { wrapper: TestWrapper });
     
     const component = screen.queryByTestId('test-component');
     expect(component || document.body).toBeInTheDocument();
   });
 
   it('should handle user interactions', async () => {
-    render(<AgentList />);
+    render(<AgentList />, { wrapper: TestWrapper });
     
     const buttons = screen.queryAllByRole('button');
     const inputs = screen.queryAllByRole('textbox');

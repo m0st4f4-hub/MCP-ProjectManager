@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@/__tests__/utils/test-utils';
 import { TestWrapper } from '@/__tests__/utils/test-utils';
 import { createMockTask } from '@/__tests__/factories';
 import TaskRow from '../TaskRow';
