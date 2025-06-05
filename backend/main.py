@@ -9,6 +9,7 @@ from typing import Dict, Any
 
 from .database import get_db, Base, engine
 from .middleware import init_middleware
+from .config import settings
 from .app_factory import create_app as factory_create_app
 
 # Optional MCP integration
@@ -108,7 +109,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=settings.CORS_ORIGINS or ["*"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

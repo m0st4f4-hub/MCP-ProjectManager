@@ -5,6 +5,7 @@ Handles router configuration and logging setup.
 
 import logging
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
 import os
 from typing import Optional  # Import load_dotenv
 from dotenv import load_dotenv  # Import routers  # REMOVED router imports to break circular dependency  # from backend.routers.projects import router as projects_router  # from backend.routers.agents import router as agents_router  # from backend.routers.audit_logs import router as audit_logs_router  # from backend.routers.tasks import router as tasks_router  # from backend.routers.rules import router as rules_router  # from backend.routers.memory import router as memory_router  # from backend.routers.mcp import router as mcp_tools_router  # Load environment variables from a .env file
@@ -31,9 +32,21 @@ class Settings(BaseSettings):
     # Rate limiting settings
     RATE_LIMIT_PER_MINUTE: int = 60
     USER_RATE_LIMIT_PER_MINUTE: int = 100
+
+    # CORS configuration
+    CORS_ORIGINS: list[str] = ["*"]
     
     # Add other configuration variables here as needed  # Add SettingsConfigDict - Allow extra fields to be more flexible
     model_config = SettingsConfigDict(env_file=".env", extra='ignore')
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def split_cors_origins(cls, v):
+        if isinstance(v, str):
+            if not v:
+                return ["*"]
+            return [origin.strip() for origin in v.split(',') if origin.strip()]
+        return v
 
 def __init__(self, **kwargs):
         super().__init__(**kwargs)  # Strip whitespace from string values
