@@ -63,7 +63,8 @@ def create_audit_log_entry_endpoint(
 )
 def get_audit_log_entry_by_id_endpoint(
     log_id: str = Path(
-        ..., description="ID of the audit log entry to retrieve."
+        ...,
+        description="ID of the audit log entry to retrieve."
     ),
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
@@ -83,12 +84,15 @@ def get_audit_log_entry_by_id_endpoint(
     operation_id="get_audit_log_entries_by_entity"
 )
 def get_audit_log_entries_by_entity_endpoint(
-    entity_type: str = Path(...,
-        description="Type of the entity (e.g., 'project', 'task')."),
+    entity_type: str = Path(
+        ...,
+        description="Type of the entity (e.g., 'project', 'task')."
+    ),
     entity_id: str = Path(..., description="ID of the entity."),
     skip: int = Query(0, description="Skip the first N entries."),
     limit: int = Query(
-        100, description="Limit the number of entries returned."),
+        100, description="Limit the number of entries returned."
+    ),
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Retrieves audit log entries for a specific entity type and ID."""
