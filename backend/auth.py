@@ -1,19 +1,23 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from sqlalchemy.orm import Session
 from typing import Optional, List
-from datetime import datetime, timedelta, timezone  # Import AsyncSession
-from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession
+from datetime import datetime, timedelta, timezone
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import get_db
-from backend.models import User as UserModel  # Use UserModel to avoid conflict with schema
-from backend.enums import UserRoleEnum  # Import UserRoleEnum
-from backend.crud.users import get_user_by_username  # Import the async CRUD function
-from backend.schemas.user import User as UserSchema  # Import User schema  # Import configuration settings
-from backend.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES  # Correct import for settings
+from backend.models import User as UserModel
+from backend.enums import UserRoleEnum
+from backend.crud.users import get_user_by_username
+from backend.schemas.user import User as UserSchema
+from backend.config import (
+    SECRET_KEY,
+    ALGORITHM,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
+
 
 async def verify_token(token: str, credentials_exception) -> str:
     """Verify a JWT token and return the username."""
@@ -26,7 +30,11 @@ async def verify_token(token: str, credentials_exception) -> str:
     except JWTError:
         raise credentials_exception
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> UserSchema:
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> UserSchema:
     """Dependency to get the current user from a token."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -39,28 +47,34 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         raise credentials_exception
     return user
 
-async def get_current_active_user(current_user: UserModel = Depends(get_current_user)) -> UserModel:
+
+async def get_current_active_user(
+    current_user: UserModel = Depends(get_current_user),
+) -> UserModel:
     """Dependency to get the current active user. Checks if the user is disabled."""
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user  # Implement RoleChecker
+    return current_user
 
 
 class RoleChecker:
     """Dependency to check if the current user has one of the allowed roles."""
-    
+
     def __init__(self, allowed_roles: List[UserRoleEnum]):
         self.allowed_roles = allowed_roles
 
-    async def __call__(self, current_user: UserModel = Depends(get_current_active_user)):
-        # Validate that the user has one of the allowed roles
+    async def __call__(
+        self, current_user: UserModel = Depends(get_current_active_user)
+    ):
+        """Validate that the user has one of the allowed roles."""
 
         if current_user.role not in self.allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Operation not permitted."
+                detail="Operation not permitted.",
             )
         return current_user
+
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Create a JWT access token."""
@@ -68,7 +82,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = (
+            datetime.now(timezone.utc)
+            + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        )
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
