@@ -5,7 +5,7 @@ Provides MCP tool definitions.
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List, Dict, Any
 import logging
 
 from ....database import get_sync_db as get_db
@@ -31,6 +31,18 @@ from ....schemas.memory import (
 )
 from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
 from ....schemas.error_protocol import ErrorProtocolCreate
+from ....mcp_tools.forbidden_action_tools import (
+    add_forbidden_action_tool,
+    list_forbidden_actions_tool,
+)
+from ....schemas.universal_mandate import UniversalMandateCreate
+from .... import models
+from ....schemas.memory import (
+    MemoryEntityCreate,
+    MemoryEntityUpdate,
+    MemoryObservationCreate,
+    MemoryRelationCreate
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
@@ -991,9 +1003,7 @@ async def mcp_create_forbidden_action(
 ):
     """MCP Tool: Create a forbidden action for an agent role."""
     try:
-        from ...mcp_tools.forbidden_action_tools import create_forbidden_action_tool
-
-        return await create_forbidden_action_tool(
+        return await add_forbidden_action_tool(
             agent_role_id=agent_role_id,
             action=action,
             reason=reason,
@@ -1015,8 +1025,6 @@ async def mcp_list_forbidden_actions(
 ):
     """MCP Tool: List forbidden actions for agent roles."""
     try:
-        from ...mcp_tools.forbidden_action_tools import list_forbidden_actions_tool
-
         return await list_forbidden_actions_tool(agent_role_id, db)
     except Exception as e:
         logger.error(f"MCP list forbidden actions failed: {e}")
