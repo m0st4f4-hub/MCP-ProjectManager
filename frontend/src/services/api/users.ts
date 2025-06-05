@@ -75,6 +75,12 @@ export const login = async (formData: LoginRequest): Promise<TokenResponse> => {
   );
 };
 
+export const redirectToOAuthLogin = (): void => {
+  if (typeof window !== 'undefined') {
+    window.location.href = buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/oauth/login');
+  }
+};
+
 export const logout = (): void => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('token');

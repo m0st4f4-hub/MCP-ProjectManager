@@ -6,6 +6,13 @@ from datetime import datetime, timedelta
 from typing import Dict
 import asyncio
 from collections import defaultdict
+from authlib.integrations.starlette_client import OAuth
+from backend.config import (
+    OAUTH_CLIENT_ID,
+    OAUTH_CLIENT_SECRET,
+    OAUTH_SERVER_METADATA_URL,
+    OAUTH_SCOPE,
+)
 
 
 class RateLimiter:
@@ -114,6 +121,16 @@ class LoginAttemptTracker:
 # Global instances
 rate_limiter = RateLimiter()
 login_tracker = LoginAttemptTracker()
+
+# OAuth configuration
+oauth = OAuth()
+oauth.register(
+    name="provider",
+    client_id=OAUTH_CLIENT_ID,
+    client_secret=OAUTH_CLIENT_SECRET,
+    server_metadata_url=OAUTH_SERVER_METADATA_URL,
+    client_kwargs={"scope": OAUTH_SCOPE},
+)
 
 
 async def check_request_rate_limit(request: Request, max_requests: int = 60):

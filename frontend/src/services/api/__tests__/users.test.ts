@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createUser, getUserById, getUsers, updateUser, deleteUser, login } from '../users';
+import { createUser, getUserById, getUsers, updateUser, deleteUser, login, redirectToOAuthLogin } from '../users';
 import { buildApiUrl, API_CONFIG } from '../config';
 import { request } from '../request';
 
@@ -57,5 +57,14 @@ describe('users service', () => {
       buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/token'),
       expect.any(Object)
     );
+  });
+
+  it('redirectToOAuthLogin navigates to provider', () => {
+    const original = window.location.href;
+    redirectToOAuthLogin();
+    expect(window.location.href).toBe(
+      buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/oauth/login')
+    );
+    window.location.href = original;
   });
 });
