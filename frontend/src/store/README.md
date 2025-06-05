@@ -74,15 +74,17 @@ graph TD
 ```
 
 <!-- File List Start -->
-
 ## File List
 
 - `agentStore.ts`
 - `authStore.ts`
 - `baseStore.ts`
 - `index.ts`
+- `memoryStore.ts`
 - `projectStore.ts`
 - `taskStore.ts`
-- `memoryStore.ts`
+- `templateStore.ts`
 
 <!-- File List End -->
+
+

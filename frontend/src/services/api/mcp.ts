@@ -236,6 +236,15 @@ export const mcpApi = {
         )
       );
     },
+
+    searchGraph: async (query: string): Promise<MCPToolResponse> => {
+      return await request<MCPToolResponse>(
+        buildApiUrl(
+          API_CONFIG.ENDPOINTS.MCP_TOOLS,
+          `/memory/search-graph?q=${encodeURIComponent(query)}`
+        )
+      );
+    },
   },
 
   // --- Project Member MCP Tools ---

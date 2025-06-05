@@ -40,17 +40,21 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
 
 async def get_project_files_endpoint(
     project_id: str,
+    skip: int = 0,
+    limit: int = 100,
     project_file_service: ProjectFileAssociationService = Depends(get_project_file_association_service)
 ):
-    """Get all files associated with a project."""
+    """Get files associated with a project with pagination."""
     try:
-        files = await project_file_service.get_project_files(project_id)  # Return standardized response
+        all_files = await project_file_service.get_project_files(project_id, skip=0, limit=None)
+        files = await project_file_service.get_project_files(project_id, skip=skip, limit=limit)
+        total = len(all_files)
         return ListResponse[schemas.ProjectFileAssociation](
             data=files,
-            total=len(files),
-            page=1,
-            page_size=len(files),
-            has_more=False,
+            total=total,
+            page=skip // limit + 1,
+            page_size=limit,
+            has_more=skip + len(files) < total,
             message=f"Retrieved {len(files)} project files"
         )
     except Exception as e:
