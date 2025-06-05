@@ -188,6 +188,18 @@ def get_universal_mandates_for_prompt(self) -> List[str]:
     mandates = crud_rules.get_universal_mandates(self.db)
     return [f"**{mandate.title}**: {mandate.description}" for mandate in mandates]
 
+def list_universal_mandates(self, active_only: bool = True):
+    """Return universal mandates."""
+    return crud_rules.get_universal_mandates(self.db, active_only=active_only)
+
+def create_universal_mandate(self, mandate: "UniversalMandateCreate"):
+    """Create a universal mandate."""
+    return crud_rules.create_universal_mandate(self.db, mandate)
+
+def delete_universal_mandate(self, mandate_id: str) -> bool:
+    """Delete a universal mandate by ID."""
+    return crud_rules.delete_universal_mandate(self.db, mandate_id)
+
 def delete_prompt_template(self, template_id: str) -> bool:
     """Delete an agent prompt template by ID."""
     return crud_rules.delete_agent_prompt_template(self.db, template_id)

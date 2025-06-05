@@ -545,3 +545,68 @@ def delete_agent_prompt_template(db: Session, template_id: str) -> bool:
     db.delete(db_template)
     db.commit()
     return True
+
+
+# --- Universal Mandate Operations ---
+
+def get_universal_mandates(
+    db: Session, active_only: bool = True
+) -> List[models.UniversalMandate]:
+    """Retrieve universal mandates."""
+    query = db.query(models.UniversalMandate)
+    if active_only:
+        query = query.filter(models.UniversalMandate.is_active.is_(True))
+    return query.all()
+
+
+def create_universal_mandate(
+    db: Session, mandate: schemas.UniversalMandateCreate
+) -> models.UniversalMandate:
+    """Create a new universal mandate."""
+    db_mandate = models.UniversalMandate(
+        id=str(uuid.uuid4()).replace("-", ""),
+        title=mandate.title,
+        description=mandate.content,
+        priority=mandate.priority,
+        is_active=mandate.is_active,
+        category=mandate.category,
+    )
+    db.add(db_mandate)
+    db.commit()
+    db.refresh(db_mandate)
+    return db_mandate
+
+
+def update_universal_mandate(
+    db: Session, mandate_id: str, mandate_update: schemas.UniversalMandateUpdate
+) -> Optional[models.UniversalMandate]:
+    """Update a universal mandate."""
+    db_mandate = (
+        db.query(models.UniversalMandate)
+        .filter(models.UniversalMandate.id == mandate_id)
+        .first()
+    )
+    if not db_mandate:
+        return None
+
+    update_data = mandate_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_mandate, field if field != "content" else "description", value)
+
+    db.commit()
+    db.refresh(db_mandate)
+    return db_mandate
+
+
+def delete_universal_mandate(db: Session, mandate_id: str) -> bool:
+    """Delete a universal mandate."""
+    db_mandate = (
+        db.query(models.UniversalMandate)
+        .filter(models.UniversalMandate.id == mandate_id)
+        .first()
+    )
+    if not db_mandate:
+        return False
+    db.delete(db_mandate)
+    db.commit()
+    return True

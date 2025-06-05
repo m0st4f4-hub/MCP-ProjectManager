@@ -52,6 +52,7 @@ node dev_start.js
 - **Main Application**: `/` (React/Next.js app)
 - **Project Management**: `/projects`
 - **Task Dashboard**: `/tasks`
+- **Universal Mandates**: `/universal-mandates`
 
 ## 🔧 Development Tools
 
@@ -199,6 +200,7 @@ The backend exposes several MCP tools that mirror core API functionality:
 - `project_tools.py` - project CRUD helpers
 - `project_file_tools.py` - associate memory files with projects
 - `rule_tools.py` - manage agent rules and mandates
+- `mandate_tools.py` - create, list, and delete universal mandates
 - `agent_handoff_tools.py` - create, list, and delete agent handoff criteria
 - `forbidden_action_tools.py` - manage forbidden actions for agent roles
 - `error_protocol_tools.py` - manage agent error protocols

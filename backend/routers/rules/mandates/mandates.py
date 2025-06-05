@@ -42,5 +42,17 @@ def update_mandate(
     """Update a universal mandate"""
     result = crud_rules.update_universal_mandate(db, mandate_id, mandate_update)
     if not result:
-    raise HTTPException(status_code=404, detail="Mandate not found")
+        raise HTTPException(status_code=404, detail="Mandate not found")
     return result
+
+
+@router.delete("/{mandate_id}")
+def delete_mandate(
+    mandate_id: str,
+    db: Session = Depends(get_db)
+):
+    """Delete a universal mandate"""
+    success = crud_rules.delete_universal_mandate(db, mandate_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Mandate not found")
+    return {"success": True}
