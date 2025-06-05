@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Path, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
@@ -14,6 +14,7 @@ from ....services.exceptions import (
 )
 from ....auth import get_current_active_user
 from ....models import User as UserModel
+from ....security import limiter
 
 router = APIRouter(
     prefix="/entities",
@@ -157,7 +158,9 @@ class TextIngestInput(BaseModel):
     response_model=MemoryEntity,
     status_code=status.HTTP_201_CREATED,
 )
+@limiter.limit("10/minute")
 def ingest_file_endpoint(
+    request: Request,
     ingest_input: FileIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
@@ -180,7 +183,9 @@ def ingest_file_endpoint(
     response_model=MemoryEntity,
     status_code=status.HTTP_201_CREATED,
 )
+@limiter.limit("10/minute")
 def ingest_url_endpoint(
+    request: Request,
     ingest_input: UrlIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
@@ -199,7 +204,9 @@ def ingest_url_endpoint(
     response_model=MemoryEntity,
     status_code=status.HTTP_201_CREATED,
 )
+@limiter.limit("10/minute")
 def ingest_text_endpoint(
+    request: Request,
     ingest_input: TextIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),

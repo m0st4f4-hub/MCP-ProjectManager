@@ -23,6 +23,7 @@ aiohttp = "*"
 httpx = "*"
 prometheus-client = "*"
 authlib = "*"
+slowapi = "*"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "*"

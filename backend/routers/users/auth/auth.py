@@ -9,7 +9,7 @@ from backend.services.audit_log_service import AuditLogService
 from backend.services.exceptions import AuthorizationError
 from backend.config import ACCESS_TOKEN_EXPIRE_MINUTES, OAUTH_REDIRECT_URI
 from backend.auth import create_access_token
-from backend.security import login_tracker, oauth
+from backend.security import login_tracker, oauth, limiter
 from backend.schemas.user import UserCreate
 from backend.enums import UserRoleEnum
 import uuid
@@ -40,7 +40,9 @@ class LoginRequest(BaseModel):
 
 
 @router.post("/token", response_model=Token)
+@limiter.limit("5/minute")
 async def login_for_access_token_form(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     user_service: UserService = Depends(get_user_service),
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
@@ -55,7 +57,9 @@ async def login_for_access_token_form(
 
 
 @router.post("/login", response_model=Token)
+@limiter.limit("5/minute")
 async def login_for_access_token_json(
+    request: Request,
     login_data: LoginRequest,
     user_service: UserService = Depends(get_user_service),
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
