@@ -156,6 +156,11 @@ cd backend
 - ✅ **Project Members**: API for managing project members (add, remove, list) is fully functional.
 - ✅ **Agent Handoff Criteria**: Endpoints under `/api/v1/rules/roles/handoff-criteria` allow creation, listing, and deletion of handoff criteria for agent roles.
 - ✅ **Forbidden Action MCP Tools**: MCP endpoints `/mcp-tools/forbidden-action/create` and `/mcp-tools/forbidden-action/list` enable managing forbidden actions.
+- ✅ **Error Protocols API**: Manage agent error protocols via `/api/v1/rules/error-protocols`.
+- ✅ **User Roles API**: Assign, list, and remove user roles at `/api/v1/users/{user_id}/roles`.
+- ✅ **Project Template API**: Create, list, and delete templates at `/api/v1/project-templates`.
+- ✅ **Error Protocol MCP Tools**: Add, list, and remove protocols using `/mcp-tools/error-protocol/*` endpoints.
+- ✅ **User Role MCP Tools**: Assign, list, and remove roles using `/mcp-tools/user-role/*` endpoints.
 ## 🔍 Troubleshooting
 
 ### Server Won't Start
@@ -255,6 +260,7 @@ graph TD
 - `validation.py`
 
 <!-- File List End -->
+
 
 
 

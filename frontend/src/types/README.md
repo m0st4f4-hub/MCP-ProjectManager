@@ -84,6 +84,7 @@ graph TD
 - `agents.ts`
 - `audit_log.ts`
 - `comment.ts`
+- `handoff.ts`
 - `index.ts`
 - `mcp.ts`
 - `memory.ts`
@@ -95,6 +96,7 @@ graph TD
 - `verification_requirement.ts`
 
 <!-- File List End -->
+
 
 
 

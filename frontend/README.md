@@ -64,6 +64,9 @@ This frontend application provides a modern and responsive user interface for ma
 *   **Themeability:** Supports light and dark modes.
 *   **Agent Forbidden Actions:** Interface for creating and listing forbidden actions via MCP tools.
 *   **Agent Handoff Criteria:** Manage handoff criteria between agents using the new MCP endpoints.
+*   **Error Protocols:** Manage error protocols for agent roles using the new API and MCP tools.
+*   **User Role Management:** Assign, list, and remove user roles through the admin page.
+*   **Memory Search:** Query memory entities directly from the UI using the memory search tool.
 
 ---
 
@@ -167,6 +170,7 @@ graph TD
 - `vitest.config.ts`
 
 <!-- File List End -->
+
 
 
 
