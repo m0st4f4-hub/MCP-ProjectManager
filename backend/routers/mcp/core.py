@@ -28,6 +28,11 @@ from ....mcp_tools.forbidden_action_tools import (
     add_forbidden_action_tool,
     list_forbidden_actions_tool,
 )
+from ....mcp_tools.mandate_tools import (
+    create_mandate_tool,
+    list_mandates_tool,
+    delete_mandate_tool,
+)
 from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
@@ -703,20 +708,47 @@ async def mcp_create_mandate(
 ):
     """MCP Tool: Create a new universal mandate."""
     try:
-        rules_service = RulesService(db)
-        created_mandate = rules_service.create_universal_mandate(mandate)
-        return {
-            "success": True,
-            "mandate": {
-                "id": created_mandate.id,
-                "name": created_mandate.name,
-                "description": created_mandate.description,
-                "rules": created_mandate.rules,
-                "created_at": created_mandate.created_at.isoformat(),
-            },
-        }
+        return await create_mandate_tool(mandate, db)
     except Exception as e:
         logger.error(f"MCP create mandate failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/rule/mandate/list",
+    tags=["mcp-tools"],
+    operation_id="list_mandates_tool",
+)
+async def mcp_list_mandates(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, gt=0),
+    active_only: Optional[bool] = None,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List universal mandates."""
+    try:
+        return await list_mandates_tool(db=db, skip=skip, limit=limit, active_only=active_only)
+    except Exception as e:
+        logger.error(f"MCP list mandates failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/rule/mandate/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_mandate_tool",
+)
+async def mcp_delete_mandate(
+    mandate_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a universal mandate."""
+    try:
+        return await delete_mandate_tool(mandate_id, db)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP delete mandate failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

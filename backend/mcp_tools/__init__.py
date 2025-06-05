@@ -23,5 +23,8 @@ __all__ = [
     'delete_project_template_tool',
     'add_error_protocol_tool',
     'list_error_protocols_tool',
-    'remove_error_protocol_tool'
+    'remove_error_protocol_tool',
+    'create_mandate_tool',
+    'list_mandates_tool',
+    'delete_mandate_tool'
 ]

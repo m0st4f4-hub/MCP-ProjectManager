@@ -47,6 +47,7 @@ node dev_start.js
 - **Alternative Docs**: `/redoc` (ReDoc)
 - **Health Check**: `/health`
 - **OpenAPI Spec**: `/openapi.json`
+- **Universal Mandate Tools**: `/mcp-tools/rule/mandate/*`
 
 ### Frontend (http://localhost:3000)
 - **Main Application**: `/` (React/Next.js app)
