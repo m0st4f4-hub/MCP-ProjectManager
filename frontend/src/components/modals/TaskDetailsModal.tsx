@@ -29,6 +29,7 @@ import {
   useDisclosure,
   Badge,
 } from "@chakra-ui/react";
+import { parseDate } from "@/utils/date";
 import { Task } from "@/types"; // Corrected import for Task
 import { getTaskById } from "@/services/api"; // Assuming getTaskById exists
 import { useTaskStore } from "@/store/taskStore"; // To potentially get project/agent names if not in task detail
@@ -429,12 +430,12 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     Timestamps
                   </Heading>
                   <Text color="textPrimary" fontSize="base">
-                    Created: {new Date(task.created_at).toLocaleString()}
+                    Created: {parseDate(task.created_at).toLocaleString()}
                   </Text>
                   <Text color="textPrimary" fontSize="base">
                     Updated:{" "}
                     {task.updated_at
-                      ? new Date(task.updated_at).toLocaleString()
+                      ? parseDate(task.updated_at).toLocaleString()
                       : "N/A"}
                   </Text>
                 </Box>

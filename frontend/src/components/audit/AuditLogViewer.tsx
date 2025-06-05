@@ -13,6 +13,7 @@ import {
   Button,
   Flex,
 } from '@chakra-ui/react';
+import { parseDate } from '@/utils/date';
 import { AuditLog } from '@/types/audit_log';
 import { getAuditLogs } from '@/services/api/audit_logs';
 
@@ -75,7 +76,7 @@ const AuditLogViewer: React.FC = () => {
               <Td>{log.id}</Td>
               <Td>{log.action}</Td>
               <Td>{log.user_id || '-'}</Td>
-              <Td>{new Date(log.timestamp).toLocaleString()}</Td>
+              <Td>{parseDate(log.timestamp).toLocaleString()}</Td>
             </Tr>
           ))}
         </Tbody>

@@ -13,6 +13,7 @@ import {
   Td,
   TableContainer,
 } from "@chakra-ui/react";
+import { parseDate } from "@/utils/date";
 import { getAuditLogsByEntity } from "@/services/api/audit_logs";
 import { AuditLog } from "@/types/audit_log";
 
@@ -88,7 +89,7 @@ const AuditLogListForEntity: React.FC<AuditLogListForEntityProps> = ({
               <Tbody>
                 {logs.map((log) => (
                   <Tr key={log.id}>
-                    <Td>{new Date(log.timestamp).toLocaleString()}</Td>
+                    <Td>{parseDate(log.timestamp).toLocaleString()}</Td>
                     <Td>{log.action}</Td>
                     <Td>{log.user_id || "System"}</Td>
                     <Td>

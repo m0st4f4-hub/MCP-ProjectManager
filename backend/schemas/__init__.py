@@ -1,6 +1,10 @@
 """
 Schemas package - contains Pydantic models for API requests/responses.
 """
+from datetime import datetime
+from pydantic.json import ENCODERS_BY_TYPE
+
+ENCODERS_BY_TYPE[datetime] = lambda v: v.isoformat()
 
 # Import and export project schemas
 from .project import (

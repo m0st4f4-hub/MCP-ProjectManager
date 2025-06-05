@@ -10,6 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { CheckCircleIcon, RepeatClockIcon, TimeIcon } from '@chakra-ui/icons';
 import { format, formatRelative } from 'date-fns';
+import { parseDate } from '@/utils/date';
 import { ProjectWithMeta, Project } from '@/types';
 import { colorPrimitives } from '@/tokens/colors';
 import AppIcon from '../common/AppIcon';
@@ -177,10 +178,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         )}
         <Flex justifyContent="space-between" alignItems="center" mt="auto" pt="3">
           <Text fontSize="xs" color="textSecondary">
-            Created: {project.created_at ? format(new Date(project.created_at), 'MMM d, yy') : 'N/A'}
+            Created: {project.created_at ? format(parseDate(project.created_at), 'MMM d, yy') : 'N/A'}
           </Text>
           <Text fontSize="xs" color="textSecondary">
-            Updated: {project.updated_at ? formatRelative(new Date(project.updated_at), new Date()) : 'Never'}
+            Updated: {project.updated_at ? formatRelative(parseDate(project.updated_at), new Date()) : 'Never'}
           </Text>
         </Flex>
       </VStack>
