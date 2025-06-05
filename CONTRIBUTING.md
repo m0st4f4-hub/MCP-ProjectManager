@@ -40,7 +40,7 @@ pre-commit install
 ### What gets checked:
 
 * **Backend**: `flake8` runs on Python files
-* **Frontend**: `npm run lint` runs on JS/TS files
+* **Frontend**: `npm run lint` and `npm run type-check` run on JS/TS files
 
 These checks will automatically run on every commit.
 
