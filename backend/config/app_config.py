@@ -60,6 +60,19 @@ def __init__(self, **kwargs):
 
 settings = Settings()
 
+
+def validate_settings(cfg: Settings = settings) -> None:
+    """Ensure required settings values are present."""
+    missing = []
+    if not getattr(cfg, "SECRET_KEY", ""):  # pragma: no cover - simple check
+        missing.append("SECRET_KEY")
+    if not getattr(cfg, "ALGORITHM", ""):
+        missing.append("ALGORITHM")
+    if missing:
+        raise ValueError(
+            "Missing required configuration values: " + ", ".join(missing)
+        )
+
 def configure_logging():
     """
     Configure application logging.

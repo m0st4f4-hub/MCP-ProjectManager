@@ -10,6 +10,7 @@ from typing import Dict, Any
 from .database import get_db, Base, engine
 from .middleware import init_middleware
 from .app_factory import create_app as factory_create_app
+from .config import validate_settings
 
 # Optional MCP integration
 try:
@@ -234,4 +235,5 @@ def _define_custom_routes(app: FastAPI):
         }
 
 
+validate_settings()
 app = factory_create_app()

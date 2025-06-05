@@ -2,7 +2,7 @@
 Configuration package initialization.
 """
 
-from .app_config import Settings
+from .app_config import Settings, validate_settings
 
 settings = Settings()
 
@@ -17,6 +17,7 @@ OAUTH_SCOPE = settings.OAUTH_SCOPE
 
 __all__ = [
     'configure_logging',
+    'validate_settings',
     'SECRET_KEY',
     'ALGORITHM',
     'ACCESS_TOKEN_EXPIRE_MINUTES',
