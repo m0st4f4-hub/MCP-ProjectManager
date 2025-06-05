@@ -1,3 +1,5 @@
+import { TaskStatus } from '../src/types/task'
+
 Page.route('**/api/v1/projects/*/tasks/*', (route) => {
         if (route.request().method() === 'PATCH') {
           route.fulfill({
@@ -71,7 +73,7 @@ Page.route('**/api/v1/projects/*/tasks/*', (route) => {
             task_number: 1,
             title: 'Frontend Development',
             description: 'Build the frontend',
-            status: 'TO_DO',
+            status: TaskStatus.TO_DO,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             is_archived: false,
@@ -126,7 +128,7 @@ Page.route('**/api/v1/projects/*/tasks/*', (route) => {
             project_id: 'proj1',
             task_number: 1,
             title: 'Todo Task',
-            status: 'TO_DO',
+            status: TaskStatus.TO_DO,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             is_archived: false,
@@ -161,7 +163,7 @@ Page.route('**/api/v1/projects/*/tasks/*', (route) => {
       await taskPage.gotoTasks()
       await taskPage.expectTaskCount(2)
       
-      await taskPage.filterByStatus('TO_DO')
+      await taskPage.filterByStatus(TaskStatus.TO_DO)
       await taskPage.expectTaskCount(1)
       await taskPage.expectTaskVisible('Todo Task')
     })
@@ -235,7 +237,7 @@ Page.route('**/api/v1/projects/*/tasks/*', (route) => {
                 project_id: 'proj1',
                 task_number: 1,
                 title: 'Recovered Task',
-                status: 'TO_DO',
+                status: TaskStatus.TO_DO,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
                 is_archived: false,
@@ -288,7 +290,7 @@ Page.route('**/api/v1/projects/*/tasks/*', (route) => {
         task_number: i + 1,
         title: `Task ${i + 1}`,
         description: `Description for task ${i + 1}`,
-        status: 'TO_DO',
+        status: TaskStatus.TO_DO,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         is_archived: false,

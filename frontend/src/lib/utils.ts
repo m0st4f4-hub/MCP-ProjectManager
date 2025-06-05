@@ -3,6 +3,7 @@ import {
   getStatusAttributes,
   StatusID as CanonicalStatusID,
 } from "@/lib/statusUtils";
+import { TaskStatus } from "@/types/task";
 
 export const formatDisplayName = (name?: string | null): string => {
   if (!name || name.trim() === "") {
@@ -23,7 +24,7 @@ export const mapStatusToStatusID = (
   status: string | null | undefined,
 ): CanonicalStatusID => {
   if (!status || typeof status !== "string" || status.trim() === "") {
-    return "TO_DO"; // Default for null, undefined, or empty/non-string
+    return TaskStatus.TO_DO; // Default for null, undefined, or empty/non-string
   }
 
   // Handle common display names case-insensitively
@@ -31,7 +32,7 @@ export const mapStatusToStatusID = (
   switch (lowerStatus) {
     case "to do":
     case "todo":
-      return "TO_DO";
+      return TaskStatus.TO_DO;
     case "in progress":
       return "IN_PROGRESS";
     case "blocked":
@@ -70,5 +71,5 @@ export const mapStatusToStatusID = (
       `[mapStatusToStatusID] Unknown status value: "${status}", defaulting to TO_DO.`,
     );
   }
-  return "TO_DO";
+  return TaskStatus.TO_DO;
 };

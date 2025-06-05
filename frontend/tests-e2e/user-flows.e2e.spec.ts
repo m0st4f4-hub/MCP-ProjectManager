@@ -6,6 +6,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { TaskStatus } from '../src/types/task';
 
 // Helper class for common user flow operations
 class UserFlowPage {
@@ -43,7 +44,7 @@ class UserFlowPage {
     await this.page.waitForSelector(`[data-testid="project-item"]:has-text("${name}")`);
   }
 
-  async createTask(projectId, title, description, status = 'TO_DO') {
+  async createTask(projectId, title, description, status = TaskStatus.TO_DO) {
     await this.page.goto(`/projects/${projectId}/tasks`);
     await this.page.click('[data-testid="create-task-button"]');
     
@@ -159,7 +160,7 @@ test.describe('User Flows', () => {
             task_number: 1,
             title: requestBody.title,
             description: requestBody.description,
-            status: requestBody.status || 'TO_DO',
+            status: requestBody.status || TaskStatus.TO_DO,
             created_at: new Date().toISOString(),
             is_archived: false
           })
