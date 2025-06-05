@@ -2,7 +2,10 @@
 import React, { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@chakra-ui/react';
-import EditProjectTemplateForm from '@/components/forms/EditProjectTemplateForm';
+import dynamic from 'next/dynamic';
+const EditProjectTemplateForm = dynamic(
+  () => import('@/components/forms/EditProjectTemplateForm')
+);
 import { useTemplateStore } from '@/store/templateStore';
 
 const EditTemplatePage: React.FC = () => {

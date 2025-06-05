@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
-import AgentManager from '@/components/agents/AgentManager';
+import dynamic from 'next/dynamic';
+const AgentManager = dynamic(() => import('@/components/agents/AgentManager'));
 
 const AgentsPage: React.FC = () => {
   return <AgentManager />;

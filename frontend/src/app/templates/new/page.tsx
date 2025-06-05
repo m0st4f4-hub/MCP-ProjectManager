@@ -1,7 +1,10 @@
 'use client';
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import AddProjectTemplateForm from '@/components/forms/AddProjectTemplateForm';
+import dynamic from 'next/dynamic';
+const AddProjectTemplateForm = dynamic(
+  () => import('@/components/forms/AddProjectTemplateForm')
+);
 import { useTemplateStore } from '@/store/templateStore';
 
 const NewTemplatePage: React.FC = () => {
