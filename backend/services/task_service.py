@@ -285,13 +285,13 @@ class TaskService:
                 updated_task = await crud_update_task(
                     tx_db, project_id=str(project_id), task_number=task_number, task_update=task_update, agent_id=agent_id
                 )
-                
-                if updated_task:
-                    await publisher.publish({"type": "task_updated", "task": Task.model_validate(updated_task).model_dump()})
-                    return updated_task
-                return None
-        except Exception as e:
-            # Catch specific service exceptions already raised, otherwise wrap in ValidationError
+                if not updated_task:
+                    raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
+                await publisher.publish({"type": "task_updated", "task": Task.model_validate(updated_task).model_dump()})
+                return updated_task
+        except ValueError as e:  # Convert ValueError to ValidationError
+            raise ValidationError(str(e))
+        except Exception as e:  # Convert any other exceptions to service exceptions
             if isinstance(e, (EntityNotFoundError, ValidationError)):
                 raise
             raise ValidationError(f"Error updating task: {str(e)}")
