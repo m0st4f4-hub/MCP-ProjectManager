@@ -12,7 +12,9 @@ from ..schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
     MemoryObservationCreate,
-    MemoryRelationCreate
+    MemoryRelationCreate,
+    MemoryEntity,
+    MemoryRelation,
 )
 from ..schemas.file_ingest import FileIngestInput
 from ..crud.memory import (
@@ -390,3 +392,17 @@ class MemoryService:
         self, query: str, limit: int = 10
     ) -> List[models.MemoryEntity]:
         return self.get_memory_entities(name=query, limit=limit)
+
+    def get_knowledge_graph(self) -> Dict[str, List[Dict[str, Any]]]:
+        """Return all memory entities and relations as a graph structure."""
+        entities = self.db.query(models.MemoryEntity).all()
+        relations = self.db.query(models.MemoryRelation).all()
+
+        pydantic_entities = [
+            MemoryEntity.model_validate(e).model_dump() for e in entities
+        ]
+        pydantic_relations = [
+            MemoryRelation.model_validate(r).model_dump() for r in relations
+        ]
+
+        return {"entities": pydantic_entities, "relations": pydantic_relations}

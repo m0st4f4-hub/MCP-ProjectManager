@@ -101,6 +101,9 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/error-protocol/add` (POST)
 - `/mcp-tools/error-protocol/list` (GET)
 - `/mcp-tools/error-protocol/remove` (DELETE)
+- `/mcp-tools/template/create` (POST)
+- `/mcp-tools/template/list` (GET)
+- `/mcp-tools/template/delete` (POST)
 
 ### Agent Handoff Tools
 
@@ -133,4 +136,6 @@ MIT License. Copyright (c) 2024 Tadata Inc.
 - `docs.json`
 
 <!-- File List End -->
+
+
 
