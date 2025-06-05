@@ -4,7 +4,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ### Environment Setup
 
-Ensure you have **Node.js 18 or later** installed. We recommend using [nvm](https://github.com/nvm-sh/nvm) or a similar version manager to manage Node versions.
+This project **requires Node.js 18 or later**. We recommend managing your Node versions with [nvm](https://github.com/nvm-sh/nvm).
 
 Copy the example environment file and adjust the API URL if needed:
 
