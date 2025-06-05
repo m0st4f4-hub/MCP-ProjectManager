@@ -165,8 +165,8 @@ class ProjectService:
                 "name": db_project_loaded.name,
                 "description": db_project_loaded.description,
                 "is_archived": db_project_loaded.is_archived,
-                "created_at": db_project_loaded.created_at,
-                "updated_at": db_project_loaded.updated_at,
+                "created_at": db_project_loaded.created_at.isoformat(),
+                "updated_at": db_project_loaded.updated_at.isoformat() if db_project_loaded.updated_at else None,
                 "task_count": db_project_loaded.task_count,  # Should be loaded integer  # Manually extract project_members and their users
                 "project_members": [
                     {
@@ -174,8 +174,8 @@ class ProjectService:
                         "project_id": str(member.project_id),
                         "user_id": str(member.user_id),
                         "role": member.role,
-                        "created_at": member.created_at,
-                        "updated_at": member.updated_at,
+                        "created_at": member.created_at.isoformat(),
+                        "updated_at": member.updated_at.isoformat() if member.updated_at else None,
                         "user": {  # Extract user details needed by ProjectMember schema
                             "id": str(member.user.id),  # Assuming User has an ID
                             "username": member.user.username,
