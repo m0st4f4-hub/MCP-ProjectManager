@@ -33,6 +33,10 @@ export const memoryObservationCreateSchema = memoryObservationBaseSchema;
 
 export type MemoryObservationCreateData = z.infer<typeof memoryObservationCreateSchema>;
 
+export const memoryObservationUpdateSchema = memoryObservationBaseSchema.partial();
+
+export type MemoryObservationUpdateData = z.infer<typeof memoryObservationUpdateSchema>;
+
 export const memoryObservationSchema = memoryObservationBaseSchema.extend({
   id: z.number(),
   created_at: z.string(),
