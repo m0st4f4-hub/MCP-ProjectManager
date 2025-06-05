@@ -53,6 +53,10 @@ const { lastEvent } = useEventSource('/mcp-tools/stream', (e) => {
 
 Each event is JSON encoded with a `type` field describing the payload.
 
+### Updating README File Lists
+
+Run `npm run update-readmes` from the project root to refresh the `File List` sections across all README files. The script overwrites files in place, so review the diff and commit the changes. It automatically skips directories named `__tests__`.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
