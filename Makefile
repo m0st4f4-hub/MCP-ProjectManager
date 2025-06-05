@@ -1,4 +1,4 @@
-.PHONY: setup-backend setup-frontend test lint dev
+.PHONY: setup-backend setup-frontend test lint dev migrate format
 
 setup-backend:
 	python -m venv backend/.venv
@@ -21,3 +21,10 @@ lint:
 
 dev:
 	python start_system.py
+
+migrate:
+	cd backend && ../backend/.venv/bin/alembic upgrade head
+
+format:
+	cd backend && ../backend/.venv/bin/python comprehensive_flake8_fixer.py
+	cd frontend && npm run format
