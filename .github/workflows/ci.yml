@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   # pull_request:
   #   branches: [ main ]
 
@@ -83,3 +83,8 @@ jobs:
         run: |
           cd frontend
           npm audit --audit-level=high
+
+      - name: Accessibility tests
+        run: |
+          cd frontend
+          npm run test:e2e --project="Accessibility Tests"
