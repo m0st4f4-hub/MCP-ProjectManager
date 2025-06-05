@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, Input, List, ListItem, useToast } from '@chakra-ui/react';
 import { mcpApi, memoryApi } from '@/services/api';
 import type { ProjectFileAssociation } from '@/services/api/projects';
+import TaskPagination from '../task/TaskPagination';
 
 interface ProjectFilesProps {
   projectId: string;
@@ -16,11 +17,17 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
   const [error, setError] = useState<string | null>(null);
   const [filePath, setFilePath] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10;
 
   const fetchFiles = async () => {
     setLoading(true);
     try {
-      const data = await mcpApi.projectFile.list(projectId);
+      const data = await mcpApi.projectFile.list(
+        projectId,
+        currentPage * itemsPerPage,
+        itemsPerPage
+      );
       setFiles(data);
     } catch (err) {
       setError('Failed to fetch project files');
@@ -32,7 +39,7 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
 
   useEffect(() => {
     fetchFiles();
-  }, [projectId]);
+  }, [projectId, currentPage]);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,6 +130,15 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
           Upload
         </Button>
       </form>
+      <TaskPagination
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        totalItems={files.length + currentPage * itemsPerPage}
+        onPrevious={() => setCurrentPage((p) => Math.max(0, p - 1))}
+        onNext={() =>
+          setCurrentPage((p) => (files.length < itemsPerPage ? p : p + 1))
+        }
+      />
     </Box>
   );
 };
