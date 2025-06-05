@@ -44,6 +44,10 @@ describe('Tasks API', () => {
 
       const result = await tasksApi.getTasks('project-1');
 
+      expect(mockBuildApiUrl).toHaveBeenCalledWith(
+        expect.any(String),
+        '/project-1/tasks?skip=0&limit=100'
+      );
       expect(mockRequest).toHaveBeenCalledWith('http://localhost:8000/api/test');
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -67,11 +71,32 @@ describe('Tasks API', () => {
         is_archived: false,
       };
 
-      await tasksApi.getTasks('project-1', filters);
+      await tasksApi.getTasks('project-1', filters, undefined, 1, 10);
 
       expect(mockBuildApiUrl).toHaveBeenCalledWith(
-        expect.any(String), 
+        expect.any(String),
         expect.stringContaining('agent_id=agent-1')
+      );
+      expect(mockBuildApiUrl).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('skip=10')
+      );
+    });
+  });
+
+  describe('getAllTasks', () => {
+    it('builds pagination query params', async () => {
+      mockRequest.mockResolvedValue([]);
+
+      await tasksApi.getAllTasks(undefined, undefined, 2, 5);
+
+      expect(mockBuildApiUrl).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('skip=10'),
+      );
+      expect(mockBuildApiUrl).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining('limit=5'),
       );
     });
   });

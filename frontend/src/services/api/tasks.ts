@@ -182,9 +182,11 @@ export const getTasks = async (
   projectId: string,
   filters?: TaskFilters,
   sortOptions?: TaskSortOptions,
-  skip = 0,
-  limit = 100,
+  page = 0,
+  pageSize = 100,
 ): Promise<Task[]> => {
+  const skip = page * pageSize;
+  const limit = pageSize;
   const queryParams = new URLSearchParams();
   if (filters?.agentId) queryParams.append("agent_id", filters.agentId);
   if (filters?.status && filters.status !== "all")
@@ -230,9 +232,11 @@ export const getTasks = async (
 export const getAllTasks = async (
   filters?: TaskFilters,
   sortOptions?: TaskSortOptions,
-  skip = 0,
-  limit = 100,
+  page = 0,
+  pageSize = 100,
 ): Promise<Task[]> => {
+  const skip = page * pageSize;
+  const limit = pageSize;
   const queryParams = new URLSearchParams();
   if (filters?.agentId) queryParams.append("agent_id", filters.agentId);
   if (filters?.status && filters.status !== "all")
@@ -368,8 +372,14 @@ export const updateTask = async (
 };
 
 // Fetch all tasks for a specific project (alias for getTasks for backward compatibility)
-export const getAllTasksForProject = async (projectId: string, filters?: TaskFilters, sortOptions?: TaskSortOptions): Promise<Task[]> => {
-  return getTasks(projectId, filters, sortOptions);
+export const getAllTasksForProject = async (
+  projectId: string,
+  filters?: TaskFilters,
+  sortOptions?: TaskSortOptions,
+  page = 0,
+  pageSize = 100,
+): Promise<Task[]> => {
+  return getTasks(projectId, filters, sortOptions, page, pageSize);
 };
 export const deleteTask = async (
   project_id: string,

@@ -178,7 +178,12 @@ export const useTaskStore = create<TaskState>(
     );
     try {
       // Pass sortOptions to API so backend handles sorting
-      const fetchedTasks = await api.getAllTasks(currentActiveFilters, currentSortOptions);
+      const fetchedTasks = await api.getAllTasks(
+        currentActiveFilters,
+        currentSortOptions,
+        0,
+        100,
+      );
       set((state: TaskState) => {
         let updatedTasks = upsertTasks(fetchedTasks, state.tasks);
         const fetchedIds = new Set(

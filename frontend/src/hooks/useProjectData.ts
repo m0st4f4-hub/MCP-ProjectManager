@@ -28,7 +28,7 @@ export const useProjectData = (projectId: string): UseProjectDataResult => {
     try {
       const [proj, projTasks] = await Promise.all([
         getProjectById(projectId),
-        getAllTasksForProject(projectId),
+        getAllTasksForProject(projectId, undefined, undefined, 0, 100),
       ]);
       setProject(proj);
       setTasks(projTasks);

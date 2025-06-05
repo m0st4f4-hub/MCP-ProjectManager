@@ -4,7 +4,8 @@ import { getTasks } from "@/services/api/tasks";
 import { server } from "@/__tests__/mocks/server";
 import { http, HttpResponse } from "msw";
 
-const API_URL = "http://localhost:8000/api/projects/project-1/tasks";
+const API_URL =
+  "http://localhost:8000/api/projects/project-1/tasks?skip=0&limit=100";
 
 describe("ApiError handling", () => {
   it("request throws ApiError for non-ok response", async () => {
@@ -38,6 +39,6 @@ describe("ApiError handling", () => {
       ),
     );
 
-    await expect(getTasks("project-1")).rejects.toBeInstanceOf(ApiError);
+    await expect(getTasks("project-1", undefined, undefined, 0, 100)).rejects.toBeInstanceOf(ApiError);
   });
 });
