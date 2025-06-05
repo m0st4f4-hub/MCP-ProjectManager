@@ -10,12 +10,9 @@ export * from "./rules";
 export * from "./mcp";
 export * from "./project_template";
 export * from "./agent_prompt_template";
-<<<<<<< HEAD
 export * from "./handoff";
-=======
 export * from "./verification_requirement";
 export * from "./error_protocol";
->>>>>>> dbf07afe89e4a68f816243b7e80701b4e1995167
 
 // Common types used across the application
 // Canonical shared sort direction type for all entities
