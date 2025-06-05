@@ -3,13 +3,11 @@ import { StatusID } from '@/lib/statusUtils';
 /** Error type thrown when API requests fail */
 export class ApiError extends Error {
   status: number;
-  url: string;
 
-  constructor(message: string, status: number, url: string) {
+  constructor(message: string, status: number) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
-    this.url = url;
   }
 }
 
@@ -71,7 +69,7 @@ export async function request<T>(
       headers,
     });
   } catch (err) {
-    throw new ApiError((err as Error).message || 'Network Error', 0, url);
+    throw new ApiError((err as Error).message || 'Network Error', 0);
   }
 
   if (!response.ok) {
@@ -93,7 +91,7 @@ export async function request<T>(
       console.warn(`Failed to parse error response as JSON for URL: ${url}`, e);
       errorDetail = response.statusText || errorDetail;
     }
-    throw new ApiError(errorDetail, response.status, url);
+    throw new ApiError(errorDetail, response.status);
   }
 
   if (response.status === 204) {

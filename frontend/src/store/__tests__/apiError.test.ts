@@ -17,7 +17,6 @@ describe("ApiError handling", () => {
     await expect(request(API_URL)).rejects.toMatchObject({
       message: "Not found",
       status: 404,
-      url: API_URL,
     });
   });
 

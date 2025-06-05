@@ -8,6 +8,7 @@ import {
 } from "@/types/agent";
 import { createBaseStore, BaseState, withLoading } from "./baseStore";
 import * as api from "@/services/api";
+import { handleApiError } from "@/lib/apiErrorHandler";
 
 type AgentActions = {
   fetchAgents: (skip: number, limit: number, filters?: AgentFilters) => Promise<void>;
@@ -114,6 +115,7 @@ const agentActionsCreator = (
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch agents";
       set({ error: errorMessage, loading: false });
+      handleApiError(err, "Failed to fetch agents");
       console.error("Error fetching agents:", err);
     }
   },
@@ -135,6 +137,7 @@ const agentActionsCreator = (
       const errorMessage =
         err instanceof Error ? err.message : "Failed to add agent";
       set({ error: errorMessage, loading: false });
+      handleApiError(err, "Failed to add agent");
       console.error("[Store] Error adding agent:", err);
       throw err;
     }
@@ -152,6 +155,7 @@ const agentActionsCreator = (
       const errorMessage =
         err instanceof Error ? err.message : "Failed to remove agent";
       set({ error: errorMessage });
+      handleApiError(err, "Failed to remove agent");
       console.error(`[Store] Error removing agent ${id}:`, err);
       throw err;
     }
