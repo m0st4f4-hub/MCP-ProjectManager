@@ -2,6 +2,7 @@ from typing import List, Optional, Dict, Any
 import logging
 import os
 import httpx
+import aiofiles
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -13,8 +14,6 @@ from ..schemas.memory import (
     MemoryEntityUpdate,
     MemoryObservationCreate,
     MemoryRelationCreate,
-    MemoryEntity,
-    MemoryRelation,
 )
 from ..schemas.file_ingest import FileIngestInput
 from ..crud.memory import (
@@ -55,7 +54,7 @@ class MemoryService:
     def delete_entity(self, entity_id: int) -> bool:
         return delete_memory_entity(self.db, entity_id)
 
-    def ingest_file(
+    async def ingest_file(
         self, ingest_input: FileIngestInput, user_id: Optional[str] = None
     ) -> models.MemoryEntity:
         file_path = ingest_input.file_path
@@ -91,11 +90,11 @@ class MemoryService:
                 ".csv",
             ]:
                 try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        file_content = f.read()
+                    async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
+                        file_content = await f.read()
                 except UnicodeDecodeError:
-                    with open(file_path, 'r', encoding='latin-1') as f:
-                        file_content = f.read()
+                    async with aiofiles.open(file_path, 'r', encoding='latin-1') as f:
+                        file_content = await f.read()
             else:
                 file_content = f"Binary file: {file_info['filename']}"
 
@@ -115,11 +114,12 @@ class MemoryService:
                 detail=f"Error ingesting file: {str(e)}",
             )
 
-    def ingest_url(
+    async def ingest_url(
         self, url: str, user_id: Optional[str] = None
     ) -> models.MemoryEntity:
         try:
-            response = httpx.get(url)
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url)
             response.raise_for_status()
             entity_create = MemoryEntityCreate(
                 entity_type="url",
@@ -137,7 +137,7 @@ class MemoryService:
                 detail=f"Error ingesting url: {str(e)}",
             )
 
-    def ingest_text(
+    async def ingest_text(
         self,
         text: str,
         user_id: Optional[str] = None,
@@ -410,7 +410,8 @@ class MemoryService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=(
-                    f"Relation of type '{relation_update.relation_type}' already exists "
+                    "Relation of type "
+                    f"'{relation_update.relation_type}' already exists "
                     f"between entity {relation_update.from_entity_id} "
                     f"and entity {relation_update.to_entity_id}"
                 ),

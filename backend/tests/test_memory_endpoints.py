@@ -20,7 +20,7 @@ class DummyService:
         self.entities = {}
         self.next_id = 1
 
-    def ingest_text(self, text: str, user_id=None, metadata=None):
+    async def ingest_text(self, text: str, user_id=None, metadata=None):
         entity = MemoryEntity(
             id=self.next_id,
             entity_type="text",
@@ -36,8 +36,8 @@ class DummyService:
         self.next_id += 1
         return entity
 
-    def ingest_url(self, url: str, user_id=None):
-        return self.ingest_text(f"content from {url}", user_id)
+    async def ingest_url(self, url: str, user_id=None):
+        return await self.ingest_text(f"content from {url}", user_id)
 
     def get_file_content(self, entity_id: int):
         return self.entities[entity_id].content

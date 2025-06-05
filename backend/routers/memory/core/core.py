@@ -157,13 +157,13 @@ class TextIngestInput(BaseModel):
     response_model=MemoryEntity,
     status_code=status.HTTP_201_CREATED,
 )
-def ingest_file_endpoint(
+async def ingest_file_endpoint(
     ingest_input: FileIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
 ):
     try:
-        return memory_service.ingest_file(
+        return await memory_service.ingest_file(
             ingest_input=ingest_input,
             user_id=current_user.id,
         )
@@ -180,13 +180,13 @@ def ingest_file_endpoint(
     response_model=MemoryEntity,
     status_code=status.HTTP_201_CREATED,
 )
-def ingest_url_endpoint(
+async def ingest_url_endpoint(
     ingest_input: UrlIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
 ):
     try:
-        return memory_service.ingest_url(
+        return await memory_service.ingest_url(
             url=ingest_input.url,
             user_id=current_user.id,
         )
@@ -199,13 +199,13 @@ def ingest_url_endpoint(
     response_model=MemoryEntity,
     status_code=status.HTTP_201_CREATED,
 )
-def ingest_text_endpoint(
+async def ingest_text_endpoint(
     ingest_input: TextIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
 ):
     try:
-        return memory_service.ingest_text(
+        return await memory_service.ingest_text(
             text=ingest_input.text,
             user_id=current_user.id,
             metadata=ingest_input.metadata,
