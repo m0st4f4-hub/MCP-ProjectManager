@@ -39,7 +39,8 @@ def test_ingest_file_reads_text(tmp_path):
     assert entity.entity_type == "file"
     assert entity.content == content
     assert entity.source == "file_ingestion"
-    assert entity.source_metadata == {"path": str(tmp_file)}
+    assert entity.source_metadata == {"path": tmp_file.name}
+    assert entity.entity_metadata["path"] == tmp_file.name
     assert entity.created_by_user_id == "u1"
     assert result == created
 

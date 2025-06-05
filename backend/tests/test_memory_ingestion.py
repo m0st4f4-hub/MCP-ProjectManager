@@ -62,4 +62,5 @@ def test_ingest_file_and_retrieve(tmp_path, memory_service):
     entity = memory_service.ingest_file(str(f), user_id="u3")
 
     assert entity.content == "file content"
+    assert entity.entity_metadata["path"] == f.name
     assert memory_service.get_entity(entity.id) == entity

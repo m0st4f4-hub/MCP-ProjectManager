@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 import logging
 import os
 import httpx
@@ -56,9 +56,12 @@ class MemoryService:
         return delete_memory_entity(self.db, entity_id)
 
     def ingest_file(
-        self, ingest_input: FileIngestInput, user_id: Optional[str] = None
+        self, ingest_input: Union[FileIngestInput, str], user_id: Optional[str] = None
     ) -> models.MemoryEntity:
-        file_path = ingest_input.file_path
+        if isinstance(ingest_input, FileIngestInput):
+            file_path = ingest_input.file_path
+        else:
+            file_path = ingest_input
         try:
             if not os.path.exists(file_path):
                 logger.error(
@@ -70,12 +73,13 @@ class MemoryService:
                 )
 
             file_stat = os.stat(file_path)
+            filename = os.path.basename(file_path)
             file_info = {
-                "filename": os.path.basename(file_path),
-                "path": file_path,
+                "filename": filename,
+                "path": filename,
                 "size": file_stat.st_size,
                 "modified_time": file_stat.st_mtime,
-                "extension": os.path.splitext(file_path)[1].lower()
+                "extension": os.path.splitext(file_path)[1].lower(),
             }
 
             file_content = ""
@@ -104,7 +108,7 @@ class MemoryService:
                 content=file_content,
                 entity_metadata=file_info,
                 source="file_ingestion",
-                source_metadata={"path": file_path},
+                source_metadata={"path": filename},
                 created_by_user_id=user_id
             )
             return self.create_entity(entity_create)
