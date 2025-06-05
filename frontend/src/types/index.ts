@@ -2,6 +2,7 @@ export * from "./project";
 export * from "./agent";
 export * from "./task";
 export * from "./user";
+export * from "./user_role";
 export * from "./audit_log";
 export * from "./memory";
 export * from "./comment";
