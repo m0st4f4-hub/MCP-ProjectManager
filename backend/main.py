@@ -10,6 +10,7 @@ from typing import Dict, Any
 from .database import get_db, Base, engine
 from .middleware import init_middleware
 from .app_factory import create_app as factory_create_app
+from .schemas import _schema_init  # noqa: F401
 
 # Optional MCP integration
 try:
