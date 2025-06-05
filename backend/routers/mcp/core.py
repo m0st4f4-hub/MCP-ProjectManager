@@ -878,3 +878,48 @@ async def mcp_delete_handoff_criteria(
     except Exception as e:
         logger.error(f"MCP delete handoff criteria failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/forbidden-action/create",
+    tags=["mcp-tools"],
+    operation_id="create_forbidden_action_tool",
+)
+async def mcp_create_forbidden_action(
+    agent_role_id: str,
+    action: str,
+    reason: Optional[str] = None,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a forbidden action for an agent role."""
+    try:
+        from ...mcp_tools.forbidden_action_tools import create_forbidden_action_tool
+
+        return await create_forbidden_action_tool(
+            agent_role_id=agent_role_id,
+            action=action,
+            reason=reason,
+            db=db,
+        )
+    except Exception as e:
+        logger.error(f"MCP create forbidden action failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/forbidden-action/list",
+    tags=["mcp-tools"],
+    operation_id="list_forbidden_actions_tool",
+)
+async def mcp_list_forbidden_actions(
+    agent_role_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List forbidden actions for agent roles."""
+    try:
+        from ...mcp_tools.forbidden_action_tools import list_forbidden_actions_tool
+
+        return await list_forbidden_actions_tool(agent_role_id, db)
+    except Exception as e:
+        logger.error(f"MCP list forbidden actions failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
