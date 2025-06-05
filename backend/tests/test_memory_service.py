@@ -5,6 +5,7 @@ from fastapi import HTTPException
 
 from backend.services.memory_service import MemoryService
 from backend.schemas.file_ingest import FileIngestInput
+from backend.schemas.memory import MemoryRelationCreate
 
 
 def test_delete_memory_entity_no_error():
@@ -65,3 +66,61 @@ def test_ingest_file_unsupported_encoding(tmp_path):
     with patch("builtins.open", side_effect=[decode_error, decode_error]):
         with pytest.raises(HTTPException):
             service.ingest_file(FileIngestInput(file_path=str(tmp_file)))
+
+
+def test_update_memory_relation_success():
+    session = MagicMock()
+    service = MemoryService(session)
+
+    existing = MagicMock()
+    service.get_memory_relation = MagicMock(return_value=existing)
+    service.get_memory_entity_by_id = MagicMock(side_effect=[MagicMock(), MagicMock()])
+
+    update = MemoryRelationCreate(
+        from_entity_id=1,
+        to_entity_id=2,
+        relation_type="linked",
+        metadata_={"a": 1},
+    )
+
+    result = service.update_memory_relation(1, update)
+
+    assert result is existing
+    assert existing.from_entity_id == 1
+    assert existing.to_entity_id == 2
+    assert existing.relation_type == "linked"
+    assert existing.metadata_ == {"a": 1}
+    session.commit.assert_called_once()
+    session.refresh.assert_called_once_with(existing)
+
+
+def test_update_memory_relation_not_found():
+    session = MagicMock()
+    service = MemoryService(session)
+    service.get_memory_relation = MagicMock(return_value=None)
+
+    update = MemoryRelationCreate(
+        from_entity_id=1,
+        to_entity_id=2,
+        relation_type="linked",
+        metadata_={},
+    )
+
+    assert service.update_memory_relation(1, update) is None
+
+
+def test_update_memory_relation_missing_entity():
+    session = MagicMock()
+    service = MemoryService(session)
+    service.get_memory_relation = MagicMock(return_value=MagicMock())
+    service.get_memory_entity_by_id = MagicMock(return_value=None)
+
+    update = MemoryRelationCreate(
+        from_entity_id=1,
+        to_entity_id=2,
+        relation_type="linked",
+        metadata_={},
+    )
+
+    with pytest.raises(HTTPException):
+        service.update_memory_relation(1, update)

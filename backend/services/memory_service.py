@@ -13,8 +13,6 @@ from ..schemas.memory import (
     MemoryEntityUpdate,
     MemoryObservationCreate,
     MemoryRelationCreate,
-    MemoryEntity,
-    MemoryRelation,
 )
 from ..schemas.file_ingest import FileIngestInput
 from ..crud.memory import (
@@ -339,6 +337,59 @@ class MemoryService:
             .filter(models.MemoryRelation.id == relation_id)
             .first()
         )
+
+    def update_memory_relation(
+        self, relation_id: int, relation_update: MemoryRelationCreate
+    ) -> Optional[models.MemoryRelation]:
+        """Update a memory relation's details."""
+        db_relation = self.get_memory_relation(relation_id)
+        if not db_relation:
+            return None
+
+        # Validate referenced entities exist
+        if not self.get_memory_entity_by_id(relation_update.from_entity_id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=(
+                    f"Source entity with ID {relation_update.from_entity_id} not found"
+                ),
+            )
+        if not self.get_memory_entity_by_id(relation_update.to_entity_id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=(
+                    f"Target entity with ID {relation_update.to_entity_id} not found"
+                ),
+            )
+
+        try:
+            db_relation.from_entity_id = relation_update.from_entity_id
+            db_relation.to_entity_id = relation_update.to_entity_id
+            db_relation.relation_type = relation_update.relation_type
+            db_relation.metadata_ = relation_update.metadata_
+
+            self.db.commit()
+            self.db.refresh(db_relation)
+            logger.info(f"Updated memory relation: {db_relation.id}")
+            return db_relation
+        except IntegrityError:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    "Relation of type "
+                    f"'{relation_update.relation_type}' already exists "
+                    f"between entity {relation_update.from_entity_id} "
+                    f"and entity {relation_update.to_entity_id}"
+                ),
+            )
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Error updating memory relation: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error updating memory relation",
+            )
 
     def get_relations_for_entity(
         self, entity_id: int, relation_type: Optional[str] = None
