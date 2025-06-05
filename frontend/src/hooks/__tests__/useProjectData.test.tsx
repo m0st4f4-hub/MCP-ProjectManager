@@ -34,6 +34,13 @@ describe('useProjectData', () => {
 
     await waitFor(() => expect(result.current.project).toEqual(project));
     expect(result.current.tasks).toEqual(tasks);
+    expect(mockedApi.getAllTasksForProject).toHaveBeenCalledWith(
+      'p1',
+      undefined,
+      undefined,
+      0,
+      100,
+    );
     expect(result.current.error).toBeNull();
   });
 

@@ -42,7 +42,7 @@ const ProjectDetail: React.FC = () => {
   const fetchTasks = async () => {
     if (!projectId) return;
     try {
-      const data = await getAllTasksForProject(projectId);
+      const data = await getAllTasksForProject(projectId, undefined, undefined, 0, 100);
       setTasks(data);
     } catch (err) {
       setTasksError('Failed to fetch tasks');
