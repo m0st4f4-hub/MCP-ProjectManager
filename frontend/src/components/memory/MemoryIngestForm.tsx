@@ -19,7 +19,7 @@ import { memoryApi } from "@/services/api";
 const MemoryIngestForm: React.FC = () => {
   const toast = useToast();
   const [mode, setMode] = useState<"file" | "url" | "text">("file");
-  const [filePath, setFilePath] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState("");
   const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -29,19 +29,35 @@ const MemoryIngestForm: React.FC = () => {
     setIsLoading(true);
     try {
       if (mode === "file") {
-        await memoryApi.ingestFile(filePath);
+        if (!file) throw new Error("No file selected");
+        const entity = await memoryApi.uploadFile(file);
+        toast({
+          title: "Ingestion successful",
+          description: `ID: ${entity.id}`,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
       } else if (mode === "url") {
-        await memoryApi.ingestUrl(url);
+        const entity = await memoryApi.ingestUrl(url);
+        toast({
+          title: "Ingestion successful",
+          description: `ID: ${entity.id}`,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
       } else {
-        await memoryApi.ingestText(text);
+        const entity = await memoryApi.ingestText(text);
+        toast({
+          title: "Ingestion successful",
+          description: `ID: ${entity.id}`,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
       }
-      toast({
-        title: "Ingestion successful",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-      setFilePath("");
+      setFile(null);
       setUrl("");
       setText("");
     } catch (err) {
@@ -77,11 +93,10 @@ const MemoryIngestForm: React.FC = () => {
 
         {mode === "file" && (
           <FormControl>
-            <FormLabel>File Path</FormLabel>
+            <FormLabel>File</FormLabel>
             <Input
-              value={filePath}
-              onChange={(e) => setFilePath(e.target.value)}
-              placeholder="/path/to/file.txt"
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
             />
           </FormControl>
         )}
