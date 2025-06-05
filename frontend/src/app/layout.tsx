@@ -1,3 +1,4 @@
+import * as React from 'react';
 import type { Metadata } from "next";
 import "./globals.css";
 import ChakraProviderWrapper from "@/providers/ChakraProviderWrapper";
