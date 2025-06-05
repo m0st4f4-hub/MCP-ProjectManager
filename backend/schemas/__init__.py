@@ -78,5 +78,20 @@ from .agent_handoff_criteria import (
     AgentHandoffCriteriaBase,
     AgentHandoffCriteriaCreate,
     AgentHandoffCriteria,
+    AgentHandoffCriteriaUpdate,
+)
+from .agent_error_protocol import (
+    AgentErrorProtocolBase,
+    AgentErrorProtocolCreate,
+    AgentErrorProtocolUpdate,
+    AgentErrorProtocol,
 )
 from .file_ingest import FileIngestInput
+
+from .error_protocol import (
+    ErrorProtocolBase,
+    ErrorProtocolCreate,
+    ErrorProtocolUpdate,
+    ErrorProtocol,
+)
+

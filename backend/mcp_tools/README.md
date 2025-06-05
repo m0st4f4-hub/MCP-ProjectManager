@@ -10,6 +10,9 @@ Key files:
 *   `project_file_tools.py`: Associate memory files with projects.
 *   `rule_tools.py`: Tools for managing agent rules and mandates.
 *   `agent_handoff_tools.py`: Tools for managing agent handoff criteria.
+*   `forbidden_action_tools.py`: Tools for creating and listing forbidden actions for agent roles.
+*   `error_protocol_tools.py`: Tools for creating and listing error protocols for agent roles.
+*   `user_role_tools.py`: Tools for assigning, listing, and removing user roles.
 *   `__init__.py`: Initializes the mcp_tools package.
 
 ## Architecture Diagram
@@ -19,6 +22,29 @@ graph TD
     frontend -->|API requests| backend(Backend)
     backend -->|persists| database[(Database)]
     backend -->|integrates| mcp(MCP Server)
+```
+
+## Usage Examples
+
+### Create a Forbidden Action
+
+```python
+from backend.mcp_tools.forbidden_action_tools import create_forbidden_action_tool
+
+result = await create_forbidden_action_tool(
+    agent_role_id="manager",
+    action="deploy_production",
+    reason="Only ops may deploy",
+    db=session,
+)
+```
+
+### List Forbidden Actions
+
+```python
+from backend.mcp_tools.forbidden_action_tools import list_forbidden_actions_tool
+
+actions = await list_forbidden_actions_tool(agent_role_id="manager", db=session)
 ```
 
 <!-- File List Start -->
@@ -31,6 +57,9 @@ graph TD
 - `project_file_tools.py`
 - `rule_tools.py`
 - `agent_handoff_tools.py`
+- `forbidden_action_tools.py`
+- `error_protocol_tools.py`
+- `user_role_tools.py`
 
 <!-- File List End -->
 
