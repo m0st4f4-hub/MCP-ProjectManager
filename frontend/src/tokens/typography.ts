@@ -1,58 +1,7 @@
-export const fontFamily = {
-  sans: [
-    "Geist Sans",
-    "-apple-system",
-    "BlinkMacSystemFont",
-    "Segoe UI",
-    "Roboto",
-    "Helvetica Neue",
-    "Arial",
-    "Noto Sans",
-    "sans-serif",
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    "Segoe UI Symbol",
-    "Noto Color Emoji",
-  ],
-  heading: [
-    "Geist Sans",
-    "-apple-system",
-    "BlinkMacSystemFont",
-    "Segoe UI",
-    "Roboto",
-    "Helvetica Neue",
-    "Arial",
-    "Noto Sans",
-    "sans-serif",
-  ],
-  mono: [
-    "Menlo",
-    "Monaco",
-    "Consolas",
-    "Liberation Mono",
-    "Courier New",
-    "monospace",
-  ],
-};
+import { fontFamily } from "./fontFamily";
+import { fontSize } from "./fontSize";
 
-export const fontSize = {
-  xs: "0.75rem",
-  sm: "0.875rem",
-  base: "1rem",
-  md: "1rem",
-  lg: "1.125rem",
-  xl: "1.25rem",
-  h6: "1.25rem",
-  h5: "1.5rem",
-  h4: "1.875rem",
-  h3: "2.25rem",
-  h2: "3rem",
-  h1: "3.75rem",
-  display1: "4.5rem",
-  display2: "6rem",
-  caption: "0.75rem",
-  button: "0.875rem",
-};
+export { fontFamily, fontSize };
 
 export const fontWeight = {
   light: "300",

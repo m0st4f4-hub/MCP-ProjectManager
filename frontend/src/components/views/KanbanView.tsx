@@ -17,8 +17,10 @@ import {
 } from "@chakra-ui/react";
 import TaskItem from "../task/TaskItem"; // Assuming TaskItem can be used here
 import { Task } from "@/types"; // Removed StatusID, KanbanColumns
-import { useTaskStore, TaskState } from "@/store/taskStore"; // Added TaskState import
-import { getDisplayableStatus, StatusID } from "@/lib/statusUtils"; // Added StatusID here
+import { useTaskStore, TaskState } from "@/store/taskStore";
+import * as statusUtils from "@/lib/statusUtils";
+import { getDisplayableStatus, StatusID } from "@/lib/statusUtils";
+import { TaskStatus } from "@/types/task";
 import { mapStatusToStatusID } from "@/lib/utils"; // Import the new utility function
 import {
   DndContext,
@@ -210,7 +212,9 @@ const KanbanView: React.FC<KanbanViewProps> = ({
         );
         try {
           // Call updateTask with project_id and task_number
-          await updateTask(project_id, task_number, { status: newStatus });
+          const statusValue =
+            statusUtils.getStatusAttributes(newStatus)?.id as TaskStatus;
+          await updateTask(project_id, task_number, { status: statusValue });
           toast({
             title: `Task "${sourceTask.title}" moved to ${kanbanColumns[newStatus]?.title || newStatus}.`,
             status: "success",
@@ -358,6 +362,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({
             >
               <TaskItem
                 task={activeTask}
+                projectName={activeTask.project_name || ""}
                 compact={compactView}
                 onDeleteInitiate={() => {}}
               />

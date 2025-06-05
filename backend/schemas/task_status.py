@@ -17,7 +17,7 @@ class TaskStatusBase(BaseModel):
 
 class TaskStatusCreate(TaskStatusBase):
     """Schema for creating a new task status."""
-    pass
+    model_config = ConfigDict(from_attributes=True)
 
 class TaskStatusUpdate(BaseModel):
     """Schema for updating an existing task status. All fields are optional."""

@@ -28,7 +28,7 @@ interface ListSubgroupProps {
   handleAssignAgent: (task: Task) => void;
   handleDeleteInitiate: (task: Task) => void;
   setSelectedTask: (task: Task) => void;
-  handleCopyTaskGetCommand: (taskId: string) => void;
+  handleCopyTaskGetCommand: (task: Task) => void;
 }
 
 const ListSubgroup: React.FC<ListSubgroupProps> = ({
@@ -90,6 +90,7 @@ const ListSubgroup: React.FC<ListSubgroupProps> = ({
             <ListTaskItem
               key={`${task.project_id}-${task.task_number}`}
               task={task}
+              projectName={task.project_name || ""}
               selectedTaskIds={selectedTaskIds}
               toggleTaskSelection={toggleTaskSelection}
               handleAssignAgent={handleAssignAgent}

@@ -1,4 +1,5 @@
 import { StatusID } from "@/lib/statusUtils";
+import { ApiError } from "@/lib/apiErrorHandler";
 
 // Helper to normalize status string to a known StatusID (now simplified since formats match)
 export const normalizeToStatusID = (
@@ -65,7 +66,7 @@ export async function request<T>(
       console.warn(`Failed to parse error response as JSON for URL: ${url}`, e);
       errorDetail = response.statusText || errorDetail;
     }
-    throw new Error(errorDetail);
+    throw new ApiError(errorDetail, response.status);
   }
   // For DELETE requests, backend might return the deleted object or no content
   if (response.status === 204) {

@@ -1,68 +1,28 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { TestWrapper } from '@/__tests__/utils/test-utils';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import ModalProvider from '../ModalProvider';
+import Modal from 'react-modal';
 
-vi.mock('@chakra-ui/react', async () => {
-  const actual = await vi.importActual('@chakra-ui/react');
-  return {
-    ...actual,
-    useToast: () => vi.fn(),
-    useColorModeValue: (light: any, dark: any) => light,
-  };
-});
+vi.mock('react-modal', () => ({ default: { setAppElement: vi.fn() } }));
 
 describe('ModalProvider', () => {
-  const user = userEvent.setup();
+  it('sets react-modal app element on mount', () => {
+    render(
+      <ModalProvider>
+        <div />
+      </ModalProvider>
+    );
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+    expect(Modal.setAppElement).toHaveBeenCalledWith(document.body);
   });
 
-  it('should render without crashing', () => {
+  it('renders children', () => {
     render(
-      <TestWrapper>
-        <ModalProvider />
-      </TestWrapper>
+      <ModalProvider>
+        <span data-testid="child">Child</span>
+      </ModalProvider>
     );
-    expect(document.body).toBeInTheDocument();
-  });
 
-  it('should handle props correctly', () => {
-    const props = { 
-      testId: 'test-component',
-      'data-testid': 'test-component'
-    };
-    
-    render(
-      <TestWrapper>
-        <ModalProvider {...props} />
-      </TestWrapper>
-    );
-    
-    const component = screen.queryByTestId('test-component');
-    expect(component || document.body).toBeInTheDocument();
-  });
-
-  it('should handle user interactions', async () => {
-    render(
-      <TestWrapper>
-        <ModalProvider />
-      </TestWrapper>
-    );
-    
-    const buttons = screen.queryAllByRole('button');
-    const inputs = screen.queryAllByRole('textbox');
-    
-    if (buttons.length > 0) {
-      await user.click(buttons[0]);
-    }
-    
-    if (inputs.length > 0) {
-      await user.type(inputs[0], 'test input');
-    }
-    
-    expect(document.body).toBeInTheDocument();
+    expect(screen.getByTestId('child')).toBeInTheDocument();
   });
 });

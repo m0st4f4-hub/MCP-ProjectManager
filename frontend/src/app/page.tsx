@@ -13,7 +13,7 @@ import {
   TimeIcon,
 } from "@chakra-ui/icons";
 import TaskList from "@/components/TaskList";
-import ProjectList from "@/components/ProjectList";
+import ProjectList from "@/components/project/ProjectList";
 import AgentList from "@/components/AgentList";
 import { useTaskStore } from "@/store/taskStore";
 import { useProjectStore } from "@/store/projectStore";
