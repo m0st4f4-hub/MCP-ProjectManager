@@ -33,6 +33,19 @@ export const universalMandateSchema = universalMandateBaseSchema.extend({
 
 export type UniversalMandate = z.infer<typeof universalMandateSchema>;
 
+export interface UniversalMandateResponse {
+  data: UniversalMandate;
+  error?: { code: string; message: string; field?: string };
+}
+
+export interface UniversalMandateListResponse {
+  data: UniversalMandate[];
+  total: number;
+  page: number;
+  pageSize: number;
+  error?: { code: string; message: string; field?: string };
+}
+
 // --- Agent Rule Schemas ---
 export const ruleAgentRuleBaseSchema = z.object({
   agent_id: z.string(),
