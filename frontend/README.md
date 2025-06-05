@@ -38,6 +38,21 @@ Run `npm run type-check` to ensure the TypeScript codebase compiles without erro
 
 At the repository root there is a matching `type-check` script that simply invokes the frontend command, allowing you to execute the check from either location.
 
+### Real-time Events
+
+The backend exposes a Server-Sent Events (SSE) endpoint at `/mcp-tools/stream`. You can listen to
+tool executions, audit log entries, and task updates using the `useEventSource` hook:
+
+```tsx
+import useEventSource from '@/hooks/useEventSource';
+
+const { lastEvent } = useEventSource('/mcp-tools/stream', (e) => {
+  console.log('event received', e);
+});
+```
+
+Each event is JSON encoded with a `type` field describing the payload.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

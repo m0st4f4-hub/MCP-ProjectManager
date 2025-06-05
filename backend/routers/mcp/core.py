@@ -3,9 +3,11 @@ MCP Core Tools Router - Functionality for Project and Task MCP integration.
 Provides MCP tool definitions.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import StreamingResponse
+import json
 from sqlalchemy.orm import Session
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict
 import logging
 from functools import wraps
 from collections import defaultdict
@@ -41,6 +43,7 @@ from ....mcp_tools.capability_tools import (
     list_capabilities_tool,
     delete_capability_tool,
 )
+from ....services.event_publisher import publisher
 from ....schemas.universal_mandate import UniversalMandateCreate
 from .... import models
 from ....schemas.memory import (
@@ -64,7 +67,9 @@ def track_tool_usage(name: str):
         @wraps(func)
         async def wrapper(*args, **kwargs):
             tool_counters[name] += 1
-            return await func(*args, **kwargs)
+            result = await func(*args, **kwargs)
+            await publisher.publish({"type": "tool", "name": name})
+            return result
 
         return wrapper
 
@@ -1193,3 +1198,21 @@ async def mcp_remove_role(
 async def mcp_tools_metrics():
     """Return usage metrics for MCP tools."""
     return {"metrics": dict(tool_counters)}
+
+
+@router.get("/mcp-tools/stream", tags=["mcp-tools"], include_in_schema=False)
+async def mcp_tools_stream(request: Request):
+    """Server-Sent Events endpoint for tool and service events."""
+    queue = publisher.subscribe()
+
+    async def event_generator():
+        try:
+            while True:
+                if await request.is_disconnected():
+                    break
+                event = await queue.get()
+                yield f"data: {json.dumps(event)}\n\n"
+        finally:
+            publisher.unsubscribe(queue)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
