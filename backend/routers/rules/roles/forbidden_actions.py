@@ -26,15 +26,18 @@ def get_service(db: Session = Depends(get_db)) -> AgentForbiddenActionService:
 )
 async def list_forbidden_actions_endpoint(
     agent_role_id: str,
+    skip: int = Query(0, ge=0, description="Records to skip"),
+    limit: int = Query(100, gt=0, description="Max records to return"),
     service: AgentForbiddenActionService = Depends(get_service),
 ):
-    actions = await service.list_forbidden_actions(agent_role_id)
+    actions = await service.list_forbidden_actions(agent_role_id, skip=skip, limit=limit)
+    total_actions = await service.list_forbidden_actions(agent_role_id, skip=0, limit=None)
     return ListResponse[AgentForbiddenAction](
         data=actions,
-        total=len(actions),
-        page=1,
-        page_size=len(actions),
-        has_more=False,
+        total=len(total_actions),
+        page=skip // limit + 1,
+        page_size=limit,
+        has_more=skip + len(actions) < len(total_actions),
         message="Retrieved forbidden actions",
     )
 

@@ -32,17 +32,20 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
 
 async def get_project_members_endpoint(
     project_id: str,
+    skip: int = Query(0, ge=0, description="Records to skip"),
+    limit: int = Query(100, gt=0, description="Max records to return"),
     project_member_service: ProjectMemberService = Depends(get_project_member_service)
 ):
     """Get all members of a project."""
     try:
-        members = await project_member_service.get_project_members(project_id)  # Return standardized response
+        all_members = await project_member_service.get_project_members(project_id, skip=0, limit=None)
+        members = await project_member_service.get_project_members(project_id, skip=skip, limit=limit)
         return ListResponse[schemas.ProjectMember](
             data=members,
-            total=len(members),
-            page=1,
-            page_size=len(members),
-            has_more=False,
+            total=len(all_members),
+            page=skip // limit + 1,
+            page_size=limit,
+            has_more=skip + len(members) < len(all_members),
             message=f"Retrieved {len(members)} project members"
         )
     except Exception as e:

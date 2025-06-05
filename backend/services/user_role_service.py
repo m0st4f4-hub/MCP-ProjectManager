@@ -41,12 +41,14 @@ class UserRoleService:
             return True
         return False
 
-    def get_user_roles(self, user_id: str) -> List[models.UserRole]:
-        return (
+    def get_user_roles(self, user_id: str, skip: int = 0, limit: Optional[int] = 100) -> List[models.UserRole]:
+        query = (
             self.db.query(models.UserRole)
             .filter(models.UserRole.user_id == user_id)
-            .all()
         )
+        if limit is not None:
+            query = query.offset(skip).limit(limit)
+        return query.all()
 
     def has_role(self, user_id: str, role_name: str) -> bool:
         return (

@@ -15,11 +15,21 @@ export interface UseProjectDataResult {
  * Fetch project details and its tasks.
  * Provides helpers for refreshing data and updating the project.
  */
-export const useProjectData = (projectId: string): UseProjectDataResult => {
+export interface ProjectDataOptions {
+  page?: number;
+  pageSize?: number;
+}
+
+export const useProjectData = (
+  projectId: string,
+  options: ProjectDataOptions = {}
+): UseProjectDataResult => {
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { page = 0, pageSize = 100 } = options;
 
   const fetchData = useCallback(async () => {
     if (!projectId) return;
@@ -28,7 +38,7 @@ export const useProjectData = (projectId: string): UseProjectDataResult => {
     try {
       const [proj, projTasks] = await Promise.all([
         getProjectById(projectId),
-        getAllTasksForProject(projectId, undefined, undefined, 0, 100),
+        getAllTasksForProject(projectId, undefined, undefined, page, pageSize),
       ]);
       setProject(proj);
       setTasks(projTasks);

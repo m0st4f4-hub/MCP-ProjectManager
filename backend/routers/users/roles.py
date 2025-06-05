@@ -37,17 +37,20 @@ def assign_role(
 @router.get("/", response_model=ListResponse[user_schemas.UserRole])
 def list_roles(
     user_id: str,
+    skip: int = Query(0, ge=0, description="Records to skip"),
+    limit: int = Query(100, gt=0, description="Max records to return"),
     service: UserRoleService = Depends(get_role_service),
 ):
     """List roles for a user."""
-    roles = service.get_user_roles(user_id)
+    all_roles = service.get_user_roles(user_id, skip=0, limit=None)
+    roles = service.get_user_roles(user_id, skip=skip, limit=limit)
     pydantic_roles = [user_schemas.UserRole.model_validate(r) for r in roles]
     return ListResponse[user_schemas.UserRole](
         data=pydantic_roles,
-        total=len(pydantic_roles),
-        page=1,
-        page_size=len(pydantic_roles),
-        has_more=False,
+        total=len(all_roles),
+        page=skip // limit + 1,
+        page_size=limit,
+        has_more=skip + len(roles) < len(all_roles),
         message=f"Retrieved {len(pydantic_roles)} roles",
     )
 

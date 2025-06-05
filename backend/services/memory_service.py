@@ -433,7 +433,11 @@ class MemoryService:
         )
 
     def get_relations_for_entity(
-        self, entity_id: int, relation_type: Optional[str] = None
+        self,
+        entity_id: int,
+        relation_type: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 100,
     ) -> List[models.MemoryRelation]:
         query = self.db.query(models.MemoryRelation).filter(
             (models.MemoryRelation.from_entity_id == entity_id) |
@@ -441,7 +445,7 @@ class MemoryService:
         )
         if relation_type:
             query = query.filter(models.MemoryRelation.relation_type == relation_type)
-        return query.all()
+        return query.offset(skip).limit(limit).all()
 
     def delete_memory_relation(
         self, relation_id: int
