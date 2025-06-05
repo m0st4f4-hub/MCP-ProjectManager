@@ -18,6 +18,13 @@ export const userRoleObjectSchema = z.object({
 
 export type UserRoleObject = z.infer<typeof userRoleObjectSchema>;
 
+// Schema used when assigning a role to a user
+export const userRoleAssignSchema = z.object({
+  role_name: z.nativeEnum(UserRole),
+});
+
+export type UserRoleAssignData = z.infer<typeof userRoleAssignSchema>;
+
 // --- User Schemas ---
 export const userBaseSchema = z.object({
   username: z.string(),
