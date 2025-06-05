@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { errorProtocolsApi } from '../error_protocols';
-import { mockFetchResponse } from '@/__tests__/utils/test-utils';
+import { mockFetchResponse } from '../../../__tests__/utils/test-utils';
 
 describe('errorProtocolsApi', () => {
   beforeEach(() => {
