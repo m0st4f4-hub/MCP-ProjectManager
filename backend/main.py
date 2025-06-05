@@ -48,8 +48,10 @@ def include_app_routers(app: FastAPI):
     )
     from .routers.admin import router as admin_router
     from .routers.users.auth.auth import router as auth_router
+    from .routers.users.roles import router as user_roles_router
 
     app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+    app.include_router(user_roles_router, prefix="/api/v1/users", tags=["user-roles"])
     app.include_router(admin_router, prefix="/api/v1", tags=["admin"])
     app.include_router(auth_router, prefix="/api/v1", tags=["auth"])
     app.include_router(projects.router, prefix="/api/v1/projects", tags=["projects"])
