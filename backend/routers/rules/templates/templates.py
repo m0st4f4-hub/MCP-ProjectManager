@@ -22,7 +22,7 @@ def get_prompt_template(
     """Get prompt template for an agent"""
     template = crud_rules.get_agent_prompt_template(db, agent_name, template_name)
     if not template:
-    raise HTTPException(status_code=404, detail="Prompt template not found")
+        raise HTTPException(status_code=404, detail="Prompt template not found")
     return template
 
 @router.post("/", response_model=AgentPromptTemplate)
@@ -46,5 +46,19 @@ def update_prompt_template(
     """Update a prompt template"""
     result = crud_rules.update_agent_prompt_template(db, template_id, template_update)
     if not result:
-    raise HTTPException(status_code=404, detail="Prompt template not found")
+        raise HTTPException(status_code=404, detail="Prompt template not found")
     return result
+
+
+@router.delete("/{template_id}")
+
+
+def delete_prompt_template(
+    template_id: str,
+    db: Session = Depends(get_db),
+):
+    """Delete a prompt template"""
+    success = crud_rules.delete_agent_prompt_template(db, template_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Prompt template not found")
+    return {"message": "Prompt template deleted successfully"}
