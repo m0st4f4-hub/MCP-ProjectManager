@@ -40,12 +40,14 @@ interface TaskControlsProps {
   setSearchTerm: (value: string) => void;
 }
 
+// List of statuses a user can apply to multiple tasks at once.
+// Using enum values ensures type safety across the codebase.
 const availableStatusesForBulkUpdate: TaskStatus[] = [
-  "pending",
-  "in_progress",
-  "done",
-  "blocked",
-  "archived",
+  TaskStatus.TO_DO,
+  TaskStatus.IN_PROGRESS,
+  TaskStatus.COMPLETED,
+  TaskStatus.BLOCKED,
+  TaskStatus.CANCELLED,
 ];
 
 const TaskControls: React.FC<TaskControlsProps> = ({
