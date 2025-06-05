@@ -12,5 +12,8 @@ __all__ = [
     'search_memory_tool',
     'add_project_file_tool',
     'list_project_files_tool',
-    'remove_project_file_tool'
+    'remove_project_file_tool',
+    'assign_user_role_tool',
+    'remove_user_role_tool',
+    'list_user_roles_tool'
 ]
