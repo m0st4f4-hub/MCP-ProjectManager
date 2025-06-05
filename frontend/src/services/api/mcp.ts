@@ -4,11 +4,19 @@ import type {
   MCPToolResponse,
   MCPProjectCreateRequest,
   MCPProjectDeleteRequest,
+  MCPProjectUpdateRequest,
   MCPTaskCreateRequest,
   MCPTaskUpdateRequest,
+  MCPTaskDeleteRequest,
   MCPMemoryCreateEntityRequest,
   MCPMemoryCreateObservationRequest,
   MCPMemoryCreateRelationRequest,
+  MCPMemoryGetContentRequest,
+  MCPMemoryGetMetadataRequest,
+  MCPProjectMemberAddRequest,
+  MCPProjectMemberRemoveRequest,
+  MCPProjectFileAddRequest,
+  MCPProjectFileRemoveRequest,
   MCPToolInfo,
 } from "@/types/mcp";
 
@@ -18,6 +26,16 @@ export const mcpApi = {
     create: async (data: MCPProjectCreateRequest): Promise<MCPToolResponse> => {
       return await request<MCPToolResponse>(
         buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, "/project/create"),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+    },
+
+    update: async (data: MCPProjectUpdateRequest): Promise<MCPToolResponse> => {
+      return await request<MCPToolResponse>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, "/project/update"),
         {
           method: "POST",
           body: JSON.stringify(data),
@@ -51,6 +69,16 @@ export const mcpApi = {
     update: async (data: MCPTaskUpdateRequest): Promise<MCPToolResponse> => {
       return await request<MCPToolResponse>(
         buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, "/task/update"),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+    },
+
+    delete: async (data: MCPTaskDeleteRequest): Promise<MCPToolResponse> => {
+      return await request<MCPToolResponse>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, "/task/delete"),
         {
           method: "POST",
           body: JSON.stringify(data),
@@ -124,9 +152,85 @@ export const mcpApi = {
       );
     },
 
+    getContent: async (
+      data: MCPMemoryGetContentRequest
+    ): Promise<MCPToolResponse> => {
+      return await request<MCPToolResponse>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, "/memory/get-content"),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+    },
+
+    getMetadata: async (
+      data: MCPMemoryGetMetadataRequest
+    ): Promise<MCPToolResponse> => {
+      return await request<MCPToolResponse>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, "/memory/get-metadata"),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+    },
+
     search: async (query: string): Promise<MCPToolResponse> => {
       return await request<MCPToolResponse>(
         buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, `/memory/search?q=${encodeURIComponent(query)}`)
+      );
+    },
+  },
+
+  // --- Project Member MCP Tools ---
+  projectMember: {
+    add: async (
+      data: MCPProjectMemberAddRequest
+    ): Promise<MCPToolResponse> => {
+      return await request<MCPToolResponse>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, "/project/member/add"),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+    },
+
+    remove: async (
+      data: MCPProjectMemberRemoveRequest
+    ): Promise<MCPToolResponse> => {
+      return await request<MCPToolResponse>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, "/project/member/remove"),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+    },
+  },
+
+  // --- Project File MCP Tools ---
+  projectFile: {
+    add: async (data: MCPProjectFileAddRequest): Promise<MCPToolResponse> => {
+      return await request<MCPToolResponse>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, "/project/file/add"),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+    },
+
+    remove: async (
+      data: MCPProjectFileRemoveRequest
+    ): Promise<MCPToolResponse> => {
+      return await request<MCPToolResponse>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, "/project/file/remove"),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
       );
     },
   },
