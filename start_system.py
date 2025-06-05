@@ -132,6 +132,7 @@ class SystemIntegrator:
         """Initialize the database."""
         print("\n[Database] Initializing Database")
         print("-" * 40)
+<<<<<<< HEAD
 
         python_cmd = ".venv\\Scripts\\python.exe" if os.name == 'nt' else ".venv/bin/python"
 
@@ -154,6 +155,17 @@ class SystemIntegrator:
             print("[Warning] Database initialization script not found")
             return True
 
+=======
+        python_cmd = ".venv\\Scripts\\python.exe" if os.name == 'nt' else ".venv/bin/python"
+
+        return self.run_command(
+            f"{python_cmd} -m alembic upgrade head",
+            "Applying database migrations",
+            cwd=self.backend_dir,
+            timeout=60
+        )
+    
+>>>>>>> codex/remove-base.metadata.create_all-and-update-setup
     def start_backend_server(self):
         """Start the backend server in a separate process."""
         print("[Start] Starting Backend Server...")

@@ -61,7 +61,21 @@ async function main() {
     
     const projectRoot = path.resolve(__dirname);
     const isWindows = os.platform() === 'win32';
-    
+
+    // Apply database migrations
+    console.log('Applying database migrations...');
+    const migratePath = isWindows
+        ? path.join(projectRoot, 'backend', '.venv', 'Scripts', 'python.exe')
+        : path.join(projectRoot, 'backend', '.venv', 'bin', 'python');
+    await new Promise(resolve => {
+        const migrate = spawn(migratePath, ['-m', 'alembic', 'upgrade', 'head'], {
+            cwd: path.join(projectRoot, 'backend'),
+            stdio: 'inherit',
+            shell: false
+        });
+        migrate.on('close', resolve);
+    });
+
     // Start Backend
     console.log('Starting Backend Server (Python/FastAPI)...');
     console.log('Backend will be available at: http://localhost:8000');

@@ -33,6 +33,10 @@ Write-Host ""
 $projectRoot = "D:\mcp\task-manager"
 Set-Location $projectRoot
 
+# Apply database migrations
+Write-Host "Applying database migrations..." -ForegroundColor Yellow
+& backend\.venv\Scripts\python.exe -m alembic upgrade head
+
 # Start Backend Server
 Write-Host "Starting Backend Server (Python/FastAPI)..." -ForegroundColor Yellow
 Write-Host "Backend will be available at: http://localhost:8000" -ForegroundColor Cyan

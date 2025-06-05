@@ -45,14 +45,14 @@ To set up a fresh dev environment, follow these steps (examples use Unix-style s
    (This installs Next.js, React, Chakra UI, Zustand, and all frontend packages.)
 
 3. **Database setup:**
-   By default, the system uses SQLite (`backend/sql_app.db`).  If the DB file does not exist, run:
+   Apply migrations with Alembic (this will create the SQLite `sql_app.db` if needed):
 
    ```bash
    cd backend
-   python init_db.py
+   python -m alembic upgrade head
    ```
 
-   to create tables (or use Alembic: `alembic upgrade head`).  If switching to PostgreSQL, define a `.env` and rerun migrations via Alembic as shown in the project docs.
+   If switching to PostgreSQL, define a `.env` and rerun `alembic upgrade head` to initialize the new database.
 
 4. **Starting servers:**  You can launch both servers with one command:
 

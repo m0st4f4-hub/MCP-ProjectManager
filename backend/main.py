@@ -84,11 +84,9 @@ async def lifespan(app: FastAPI):
     logger.info("Starting backend initialization...")
 
     try:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database initialized.")
+        logger.info("Backend initialization complete.")
     except Exception as e:
-        logger.error(f"Database initialization failed: {e}")
+        logger.error(f"Initialization failed: {e}")
         raise
 
     yield

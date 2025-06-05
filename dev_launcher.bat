@@ -14,6 +14,11 @@ echo Checking and clearing ports...
 powershell -NoProfile -Command "$ports = @(8000, 3000); foreach ($port in $ports) { try { $process = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue; if ($process) { Stop-Process -Id $process.OwningProcess -Force -ErrorAction SilentlyContinue; Write-Host ('✓ Killed process on port ' + $port) } else { Write-Host ('✓ Port ' + $port + ' is free') } } catch { Write-Host ('⚠ Error checking port ' + $port + ': ' + $_.Exception.Message) } }; exit 0"
 echo.
 
+REM --- Apply database migrations ---
+echo Applying database migrations...
+cd /d D:\mcp\task-manager && backend\.venv\Scripts\python.exe -m alembic upgrade head
+cd /d D:\mcp\task-manager
+
 REM --- Start Backend Server ---
 echo Starting Backend Server (Python/FastAPI)...
 echo Backend will be available at: http://localhost:8000
