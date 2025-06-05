@@ -11,6 +11,7 @@ Key files:
 *   `rule_tools.py`: Tools for managing agent rules and mandates.
 *   `agent_handoff_tools.py`: Tools for managing agent handoff criteria.
 *   `forbidden_action_tools.py`: Tools for creating and listing forbidden actions for agent roles.
+*   `error_protocol_tools.py`: Tools for creating and listing error protocols for agent roles.
 *   `__init__.py`: Initializes the mcp_tools package.
 
 ## Architecture Diagram
@@ -56,6 +57,7 @@ actions = await list_forbidden_actions_tool(agent_role_id="manager", db=session)
 - `rule_tools.py`
 - `agent_handoff_tools.py`
 - `forbidden_action_tools.py`
+- `error_protocol_tools.py`
 
 <!-- File List End -->
 

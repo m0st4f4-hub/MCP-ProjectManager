@@ -2,7 +2,7 @@
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 import logging
 
 from backend.models.agent_forbidden_action import AgentForbiddenAction
@@ -52,26 +52,28 @@ async def create_forbidden_action_tool(
 async def list_forbidden_actions_tool(
     agent_role_id: Optional[str],
     db: Session,
+    skip: int = 0,
+    limit: int = 100,
 ) -> dict:
     """MCP Tool: List forbidden actions for agent roles."""
     try:
         query = db.query(AgentForbiddenAction)
         if agent_role_id:
             query = query.filter(AgentForbiddenAction.agent_role_id == agent_role_id)
-        actions = query.all()
+        actions: List[AgentForbiddenAction] = query.offset(skip).limit(limit).all()
         return {
             "success": True,
             "forbidden_actions": [
                 {
-                    "id": fa.id,
-                    "agent_role_id": fa.agent_role_id,
-                    "action": fa.action,
-                    "reason": fa.reason,
-                    "is_active": fa.is_active,
+                    "id": a.id,
+                    "agent_role_id": a.agent_role_id,
+                    "action": a.action,
+                    "reason": a.reason,
+                    "is_active": a.is_active,
                 }
-                for fa in actions
+                for a in actions
             ],
         }
-    except Exception as exc:
+    except Exception as exc:  # pragma: no cover - unexpected DB failure
         logger.error(f"MCP list forbidden actions failed: {exc}")
         raise HTTPException(status_code=500, detail=str(exc))

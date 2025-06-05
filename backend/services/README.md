@@ -43,6 +43,7 @@ graph TD
 - `project_service.py`
 - `project_template_service.py`
 - `rules_service.py`
+- `error_protocol_service.py`
 - `task_dependency_service.py`
 - `task_file_association_service.py`
 - `task_service.py`
