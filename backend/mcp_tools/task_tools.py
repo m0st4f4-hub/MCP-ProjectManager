@@ -89,3 +89,77 @@ async def list_tasks_tool(
     except Exception as e:
     logger.error(f"MCP list tasks failed: {e}")
     raise HTTPException(status_code=500, detail=str(e))
+
+
+async def update_task_tool(
+    project_id: str,
+    task_number: int,
+    task_update: schemas.TaskUpdate,
+    db: Session
+) -> dict:
+    """MCP Tool: Update an existing task."""
+    try:
+    task_service = TaskService(db)
+    task = task_service.update_task(
+    project_id=project_id,
+    task_number=task_number,
+    task_update=task_update
+    )
+    audit_service = AuditLogService(db)
+    audit_service.log_action(
+    action="task_updated",
+    entity_type="task",
+    entity_id=f"{project_id}-{task_number}",
+    changes=task_update.model_dump(exclude_unset=True)
+    )
+
+    return {
+    "success": True,
+    "task": {
+    "project_id": task.project_id,
+    "task_number": task.task_number,
+    "title": task.title,
+    "description": task.description,
+    "status": task.status,
+    "agent_id": task.agent_id,
+    "updated_at": task.updated_at.isoformat() if task.updated_at else None
+    }
+    }
+    except Exception as e:
+    logger.error(f"MCP update task failed: {e}")
+    raise HTTPException(status_code=500, detail=str(e))
+
+
+async def delete_task_tool(
+    project_id: str,
+    task_number: int,
+    db: Session
+) -> dict:
+    """MCP Tool: Delete a task."""
+    try:
+    task_service = TaskService(db)
+    task = task_service.delete_task(
+    project_id=project_id,
+    task_number=task_number
+    )
+    audit_service = AuditLogService(db)
+    audit_service.log_action(
+    action="task_deleted",
+    entity_type="task",
+    entity_id=f"{project_id}-{task_number}",
+    changes=None
+    )
+
+    return {
+    "success": True,
+    "task": {
+    "project_id": task.project_id,
+    "task_number": task.task_number,
+    "title": task.title,
+    "description": task.description,
+    "status": task.status
+    }
+    }
+    except Exception as e:
+    logger.error(f"MCP delete task failed: {e}")
+    raise HTTPException(status_code=500, detail=str(e))

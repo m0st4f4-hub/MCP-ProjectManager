@@ -276,7 +276,7 @@ def create_app() -> FastAPI:
     """Application factory for the Task Manager backend."""
     app = FastAPI(
         title="Task Manager API",
-        version="2.0.0",
+        version="2.0.1",
         description="Task Manager with MCP integration",
         openapi_url="/openapi.json",
         docs_url=None,
