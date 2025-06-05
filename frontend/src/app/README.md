@@ -137,6 +137,7 @@ graph TD
 - `layout.tsx`
 - `page.tsx`
 - `not-found.tsx`
+- `memory/[id]/`
 
 <!-- File List End -->
 

@@ -13,6 +13,8 @@ import type {
   MemoryRelationCreateData,
   MemoryRelationFilters,
   KnowledgeGraph,
+  MemoryContentResponse,
+  MemoryMetadataResponse,
 } from "@/types/memory";
 
 // --- Memory Entity APIs ---
@@ -75,6 +77,24 @@ export const memoryApi = {
       {
         method: "DELETE",
       }
+    );
+  },
+
+  // Retrieve raw content for a memory entity
+  getFileContent: async (
+    entityId: number,
+  ): Promise<MemoryContentResponse> => {
+    return request<MemoryContentResponse>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/entities/${entityId}/content`)
+    );
+  },
+
+  // Retrieve metadata for a memory entity
+  getFileMetadata: async (
+    entityId: number,
+  ): Promise<MemoryMetadataResponse> => {
+    return request<MemoryMetadataResponse>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/entities/${entityId}/metadata`)
     );
   },
 
