@@ -76,4 +76,12 @@ export const handlers = [
     const user = createMockUser({ id: params.userId as string })
     return HttpResponse.json(user)
   }),
+
+  // Memory retrieval endpoints
+  http.get(`${API_BASE_URL}/api/memory/entities/:id/content`, ({ params }) => {
+    return HttpResponse.json({ content: `content for ${params.id}` })
+  }),
+  http.get(`${API_BASE_URL}/api/memory/entities/:id/metadata`, ({ params }) => {
+    return HttpResponse.json({ metadata: { filename: `file-${params.id}.txt` } })
+  }),
 ]

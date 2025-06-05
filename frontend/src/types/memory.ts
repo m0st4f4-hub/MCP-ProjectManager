@@ -91,3 +91,11 @@ export interface KnowledgeGraph {
   entities: MemoryEntity[];
   relations: MemoryRelation[];
 }
+
+export interface MemoryContentResponse {
+  content: string;
+}
+
+export interface MemoryMetadataResponse {
+  metadata: Record<string, any>;
+}
