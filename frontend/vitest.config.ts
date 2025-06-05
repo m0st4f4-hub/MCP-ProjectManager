@@ -23,7 +23,8 @@ export default defineConfig({
       'src/lib/__tests__/utils.test.tsx',
       'src/store/__tests__/*.test.ts',
       'src/__tests__/integration/**/*.{ts,tsx}',
-      'src/services/api/__tests__/*.test.ts'
+      'src/services/api/__tests__/*.test.ts',
+      'tests/**/*.test.ts'
     ],
     coverage: {
       provider: 'v8',
