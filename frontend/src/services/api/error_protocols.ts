@@ -1,6 +1,9 @@
 import { request } from './request';
 import { buildApiUrl, API_CONFIG } from './config';
-import type { ErrorProtocol, ErrorProtocolCreateData } from '@/types/agents';
+import type {
+  ErrorProtocol,
+  ErrorProtocolCreateData,
+} from '@/types/error_protocol';
 
 /**
  * MCP wrappers for error protocol management
@@ -10,7 +13,10 @@ export const errorProtocolsApi = {
   async create(data: ErrorProtocolCreateData): Promise<ErrorProtocol> {
     const { agent_role_id, ...payload } = data;
     const params = new URLSearchParams({ role_id: agent_role_id });
-    const response = await request<{ success: boolean; protocol: ErrorProtocol }>(
+    const response = await request<{
+      success: boolean;
+      protocol: ErrorProtocol;
+    }>(
       buildApiUrl(
         API_CONFIG.ENDPOINTS.MCP_TOOLS,
         `/error-protocol/add?${params.toString()}`

@@ -1,5 +1,5 @@
-"use client";
-import React, { useEffect, useState } from "react";
+'use client';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -16,22 +16,27 @@ import {
   Text,
   useToast,
   Checkbox,
-} from "@chakra-ui/react";
-import { errorProtocolsApi } from "@/services/api/error_protocols";
-import type { ErrorProtocol, ErrorProtocolCreateData } from "@/types/agents";
+} from '@chakra-ui/react';
+import { errorProtocolsApi } from '@/services/api/error_protocols';
+import type {
+  ErrorProtocol,
+  ErrorProtocolCreateData,
+} from '@/types/error_protocol';
 
 interface ErrorProtocolManagerProps {
   agentRoleId: string;
 }
 
-const defaultForm: Omit<ErrorProtocolCreateData, "agent_role_id"> = {
-  error_type: "",
-  protocol: "",
+const defaultForm: Omit<ErrorProtocolCreateData, 'agent_role_id'> = {
+  error_type: '',
+  protocol: '',
   priority: 5,
   is_active: true,
 };
 
-const ErrorProtocolManager: React.FC<ErrorProtocolManagerProps> = ({ agentRoleId }) => {
+const ErrorProtocolManager: React.FC<ErrorProtocolManagerProps> = ({
+  agentRoleId,
+}) => {
   const toast = useToast();
   const [protocols, setProtocols] = useState<ErrorProtocol[] | null>(null);
   const [form, setForm] = useState(defaultForm);
@@ -43,9 +48,9 @@ const ErrorProtocolManager: React.FC<ErrorProtocolManagerProps> = ({ agentRoleId
       setProtocols(data);
     } catch (err) {
       toast({
-        title: "Failed to load protocols",
+        title: 'Failed to load protocols',
         description: err instanceof Error ? err.message : String(err),
-        status: "error",
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -61,7 +66,7 @@ const ErrorProtocolManager: React.FC<ErrorProtocolManagerProps> = ({ agentRoleId
     const { name, value, type, checked } = e.target;
     setForm((f) => ({
       ...f,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -72,12 +77,17 @@ const ErrorProtocolManager: React.FC<ErrorProtocolManagerProps> = ({ agentRoleId
       await errorProtocolsApi.create({ agent_role_id: agentRoleId, ...form });
       setForm(defaultForm);
       await loadProtocols();
-      toast({ title: "Protocol added", status: "success", duration: 3000, isClosable: true });
+      toast({
+        title: 'Protocol added',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
     } catch (err) {
       toast({
-        title: "Failed to add protocol",
+        title: 'Failed to add protocol',
         description: err instanceof Error ? err.message : String(err),
-        status: "error",
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -91,12 +101,17 @@ const ErrorProtocolManager: React.FC<ErrorProtocolManagerProps> = ({ agentRoleId
     try {
       await errorProtocolsApi.remove(id);
       await loadProtocols();
-      toast({ title: "Protocol removed", status: "success", duration: 3000, isClosable: true });
+      toast({
+        title: 'Protocol removed',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
     } catch (err) {
       toast({
-        title: "Failed to remove protocol",
+        title: 'Failed to remove protocol',
         description: err instanceof Error ? err.message : String(err),
-        status: "error",
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -136,10 +151,18 @@ const ErrorProtocolManager: React.FC<ErrorProtocolManagerProps> = ({ agentRoleId
           onChange={handleChange}
           width="90px"
         />
-        <Checkbox name="is_active" isChecked={form.is_active} onChange={handleChange}>
+        <Checkbox
+          name="is_active"
+          isChecked={form.is_active}
+          onChange={handleChange}
+        >
           Is Active
         </Checkbox>
-        <Button onClick={handleCreate} isLoading={loading} disabled={!form.error_type.trim() || !form.protocol.trim()}>
+        <Button
+          onClick={handleCreate}
+          isLoading={loading}
+          disabled={!form.error_type.trim() || !form.protocol.trim()}
+        >
           Add
         </Button>
       </Flex>
@@ -165,7 +188,11 @@ const ErrorProtocolManager: React.FC<ErrorProtocolManagerProps> = ({ agentRoleId
                   <Td>{p.priority}</Td>
                   <Td>{p.is_active ? 'Yes' : 'No'}</Td>
                   <Td>
-                    <Button size="sm" colorScheme="red" onClick={() => handleDelete(p.id)}>
+                    <Button
+                      size="sm"
+                      colorScheme="red"
+                      onClick={() => handleDelete(p.id)}
+                    >
                       Delete
                     </Button>
                   </Td>
