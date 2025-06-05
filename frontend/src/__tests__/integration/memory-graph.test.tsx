@@ -1,11 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@/__tests__/utils/test-utils';
 import MemoryGraphPage from '@/app/memory/graph/page';
-import { server } from '@/__tests__/mocks/server';
-import { http, HttpResponse } from 'msw';
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 vi.mock('react-force-graph', () => ({
   ForceGraph2D: (props: any) => <div data-testid="graph" {...props} />,
@@ -16,37 +11,26 @@ vi.mock('next/dynamic', () => ({
   default: () => (props: any) => <div data-testid="graph" {...props} />,
 }));
 
-beforeEach(() => {
-  server.use(
-    http.get(`${API_BASE_URL}/api/memory/graph`, () =>
-      HttpResponse.json({
-        entities: [
-          {
-            id: 1,
-            entity_type: 'text',
-            content: 'a',
-            created_at: '2024-01-01',
-          },
-          {
-            id: 2,
-            entity_type: 'text',
-            content: 'b',
-            created_at: '2024-01-02',
-          },
-        ],
-        relations: [
-          {
-            id: 1,
-            from_entity_id: 1,
-            to_entity_id: 2,
-            relation_type: 'linked',
-            created_at: '2024-01-03',
-          },
-        ],
-      })
-    )
-  );
-});
+vi.mock('@/services/api', () => ({
+  memoryApi: {
+    getKnowledgeGraph: vi.fn().mockResolvedValue({
+      entities: [
+        {
+          id: 1,
+          entity_type: 'text',
+          content: 'a',
+          entity_metadata: null,
+          source: null,
+          source_metadata: null,
+          created_by_user_id: null,
+          created_at: '',
+          updated_at: null,
+        },
+      ],
+      relations: [],
+    }),
+  },
+}));
 
 describe('MemoryGraph page', () => {
   it('renders graph container with data', async () => {
