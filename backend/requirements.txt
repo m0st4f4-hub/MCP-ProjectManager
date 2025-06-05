@@ -10,7 +10,7 @@ bcrypt<4
 python-jose
 aiosqlite
 aiohttp
-httpx
+prometheus-client
 authlib
 
 # For CI/Dev
