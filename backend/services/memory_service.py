@@ -250,31 +250,24 @@ class MemoryService:
         relation_type: Optional[str] = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> Dict[str, Any]:
-        nodes = []
-        edges = []
+    ) -> Dict[str, List[Any]]:
+        """Retrieve entities and relations with optional filters."""
 
-        # Fetch entities based on entity_type and pagination
-        entities_query = self.db.query(models.MemoryEntity)
+        entity_query = self.db.query(models.MemoryEntity)
         if entity_type:
-            entities_query = entities_query.filter(models.MemoryEntity.type == entity_type)
-        all_entities = await entities_query.offset(offset).limit(limit).all()
+            entity_query = entity_query.filter(
+                models.MemoryEntity.entity_type == entity_type
+            )
+        entities = await entity_query.offset(offset).limit(limit).all()
 
-        # Fetch relations based on relation_type and pagination
-        relations_query = self.db.query(models.MemoryRelation)
+        relation_query = self.db.query(models.MemoryRelation)
         if relation_type:
-            relations_query = relations_query.filter(models.MemoryRelation.type == relation_type)
-        all_relations = await relations_query.offset(offset).limit(limit).all()
+            relation_query = relation_query.filter(
+                models.MemoryRelation.relation_type == relation_type
+            )
+        relations = await relation_query.offset(offset).limit(limit).all()
 
-        # Map entities to nodes
-        for entity in all_entities:
-            nodes.append({"id": entity.id, "label": entity.name or str(entity.id), "type": entity.type})
-
-        # Map relations to edges
-        for relation in all_relations:
-            edges.append({"id": relation.id, "source": relation.from_entity_id, "target": relation.to_entity_id, "label": relation.type})
-
-        return {"nodes": nodes, "edges": edges}
+        return {"entities": entities, "relations": relations}
 
     async def get_memory_entities(
         self,
@@ -458,10 +451,9 @@ class MemoryService:
             query = query.filter(models.MemoryRelation.type == relation_type)
         return await query.offset(skip).limit(limit).all()
 
-    async def search_memory_entities(
+    async def search(
         self, query: str, limit: int = 10
     ) -> List[models.MemoryEntity]:
-        # Implement search logic here, e.g., using ilike on content or name
         return await self.db.query(models.MemoryEntity).filter(
             (models.MemoryEntity.content.ilike(f'%{query}%')) |
             (models.MemoryEntity.name.ilike(f'%{query}%'))
