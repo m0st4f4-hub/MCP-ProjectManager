@@ -1,6 +1,6 @@
 node_modules/
+frontend/node_modules/
 .cursor/
-sql_app.db
 
 # Ignore database files
 backend/sql_app.db
@@ -12,7 +12,3 @@ sql_app.db
 eslint_report.json
 **/__pycache__/
 **/*.pyc
-
-#
-/eslint_report.json
-sql_app.db

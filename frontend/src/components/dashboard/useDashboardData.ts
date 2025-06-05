@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { handleApiError } from "@/lib/apiErrorHandler";
 import { Project } from "@/types/project";
 import { Task } from "@/types/task";
 import * as api from "@/services/api";
@@ -24,6 +25,7 @@ export function useDashboardData() {
         "Error fetching all projects/tasks for dashboard totals:",
         error,
       );
+      handleApiError(error, "Failed to load dashboard data");
       const errorMessage =
         error instanceof Error
           ? error.message

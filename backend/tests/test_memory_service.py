@@ -4,6 +4,7 @@ import pytest
 from fastapi import HTTPException
 
 from backend.services.memory_service import MemoryService
+from backend.schemas.file_ingest import FileIngestInput
 
 
 def test_delete_memory_entity_no_error():
@@ -30,7 +31,8 @@ def test_ingest_file_reads_text(tmp_path):
     created = MagicMock()
     service.create_entity = MagicMock(return_value=created)
 
-    result = service.ingest_file(str(tmp_file), user_id="u1")
+    ingest_input = FileIngestInput(file_path=str(tmp_file))
+    result = service.ingest_file(ingest_input, user_id="u1")
 
     service.create_entity.assert_called_once()
     entity = service.create_entity.call_args.args[0]
@@ -48,7 +50,7 @@ def test_ingest_file_missing_file_raises():
     service = MemoryService(session)
 
     with pytest.raises(HTTPException):
-        service.ingest_file("/nonexistent/file.txt")
+        service.ingest_file(FileIngestInput(file_path="/nonexistent/file.txt"))
 
 
 def test_ingest_file_unsupported_encoding(tmp_path):
@@ -62,4 +64,4 @@ def test_ingest_file_unsupported_encoding(tmp_path):
     decode_error = UnicodeDecodeError("utf-8", b"", 0, 1, "bad")
     with patch("builtins.open", side_effect=[decode_error, decode_error]):
         with pytest.raises(HTTPException):
-            service.ingest_file(str(tmp_file))
+            service.ingest_file(FileIngestInput(file_path=str(tmp_file)))

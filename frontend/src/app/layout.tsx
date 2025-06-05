@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ChakraProviderWrapper from "@/providers/ChakraProviderWrapper";
 import ClientOnly from "@/components/ClientOnly";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Import Geist and Geist Mono fonts from next/font/google
 import { Geist, Geist_Mono } from "next/font/google";
@@ -56,7 +57,9 @@ export default function RootLayout({
     >
       <body suppressHydrationWarning>
         <ClientOnly>
-          <ChakraProviderWrapper>{children}</ChakraProviderWrapper>
+          <ErrorBoundary>
+            <ChakraProviderWrapper>{children}</ChakraProviderWrapper>
+          </ErrorBoundary>
         </ClientOnly>
       </body>
     </html>

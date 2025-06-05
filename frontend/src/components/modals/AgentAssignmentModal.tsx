@@ -12,6 +12,7 @@ import {
   ListItem,
   Spinner,
   Box,
+  Text,
 } from "@chakra-ui/react";
 import { Agent, Task } from "@/types";
 import { sizing } from "@/tokens";
@@ -61,7 +62,9 @@ const AgentAssignmentModal: React.FC<AgentAssignmentModalProps> = ({
                 justifyContent="space-between"
               >
                 <span>{agent.name}</span>
-                <span style={{ fontSize: '0.85em', color: '#888' }}>{agent.status || 'offline'}</span>
+                <Text fontSize="sm" color="textSecondary">
+                  {agent.status || 'offline'}
+                </Text>
               </ListItem>
             ))}
           </List>

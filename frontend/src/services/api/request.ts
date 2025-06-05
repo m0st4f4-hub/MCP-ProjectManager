@@ -13,7 +13,7 @@ export class ApiError extends Error {
   }
 }
 
-// Helper to normalize status string to a known StatusID (now simplified since formats match)
+// Helper to normalize status string to a known StatusID
 export const normalizeToStatusID = (
   backendStatus: string | null | undefined,
   completedFlag: boolean,
@@ -22,7 +22,6 @@ export const normalizeToStatusID = (
     return "Completed";
   }
   if (backendStatus) {
-    // Direct mapping since frontend and backend now use the same format
     const validStatuses: StatusID[] = [
       "To Do",
       "In Progress",
@@ -35,13 +34,11 @@ export const normalizeToStatusID = (
       return backendStatus as StatusID;
     }
 
-    // Fallback for unknown status strings
     console.warn(
       `Unknown backend status string: "${backendStatus}". Defaulting to "To Do".`,
     );
     return "To Do";
   }
-  // If backendStatus is null/undefined and not completed, default to 'To Do'
   return "To Do";
 };
 
@@ -54,7 +51,6 @@ export async function request<T>(
     ...(options.headers || {}),
   };
 
-  // Conditionally add Content-Type for methods that typically have a body
   const method = options.method?.toUpperCase();
   if (method === "POST" || method === "PUT" || method === "PATCH") {
     (headers as Record<string, string>)["Content-Type"] = "application/json";
@@ -64,7 +60,7 @@ export async function request<T>(
   try {
     response = await fetch(url, {
       ...options,
-      headers, // Use the modified headers object
+      headers,
     });
   } catch (err) {
     throw new ApiError((err as Error).message || "Network Error", 0, url);
@@ -75,42 +71,36 @@ export async function request<T>(
       status: response.status,
       options,
     });
-    let errorDetail = `API request failed with status ${response.status} for ${url}`; // Default generic message
+    let errorDetail = `API request failed with status ${response.status} for ${url}`;
     try {
       const errorData = await response.json();
       if (errorData && errorData.detail) {
         errorDetail = errorData.detail;
       } else if (errorData && errorData.message) {
-        // Handle standardized ErrorResponse format
         errorDetail = errorData.message;
       } else {
-        errorDetail = response.statusText || errorDetail; // Use statusText if detail is not present
+        errorDetail = response.statusText || errorDetail;
       }
     } catch (e) {
-      // JSON parsing failed, stick with the more generic error or statusText
       console.warn(`Failed to parse error response as JSON for URL: ${url}`, e);
       errorDetail = response.statusText || errorDetail;
     }
     throw new ApiError(errorDetail, response.status, url);
   }
-  // For DELETE requests, backend might return the deleted object or no content
+
   if (response.status === 204) {
-    return null as T; // Or handle as needed, maybe a specific type for no content
+    return null as T;
   }
 
   const responseData = await response.json();
 
-  // Handle standardized backend response formats
-  // Check if this is a DataResponse<T> or ListResponse<T> wrapper
   if (
     responseData &&
     typeof responseData === "object" &&
     "data" in responseData
   ) {
-    // This is a wrapped response from the backend
     return responseData.data as T;
   }
 
-  // For backwards compatibility, return the raw response if it's not wrapped
   return responseData as T;
 }
