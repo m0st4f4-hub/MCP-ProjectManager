@@ -75,3 +75,8 @@ from .memory import (
     MemoryRelation,
 )
 from .file_ingest import FileIngestInput
+from .verification_requirement import (
+    VerificationRequirementBase,
+    VerificationRequirementCreate,
+    VerificationRequirement,
+)

@@ -25,6 +25,12 @@ from ....schemas.memory import (
     MemoryObservationCreate,
     MemoryRelationCreate
 )
+from ....schemas.verification_requirement import VerificationRequirementCreate
+from ....mcp_tools.verification_requirement_tools import (
+    create_verification_requirement_tool,
+    list_verification_requirements_tool,
+    delete_verification_requirement_tool,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
@@ -706,3 +712,43 @@ async def mcp_create_agent_rule(
     except Exception as e:
         logger.error(f"MCP create agent rule failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/rule/verification/create",
+    tags=["mcp-tools"],
+    operation_id="create_verification_requirement_tool",
+)
+async def mcp_create_verification_requirement(
+    agent_role_id: str,
+    requirement: VerificationRequirementCreate,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a verification requirement for an agent role."""
+    return await create_verification_requirement_tool(agent_role_id, requirement, db)
+
+
+@router.get(
+    "/mcp-tools/rule/verification/list",
+    tags=["mcp-tools"],
+    operation_id="list_verification_requirements_tool",
+)
+async def mcp_list_verification_requirements(
+    agent_role_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List verification requirements for a role."""
+    return await list_verification_requirements_tool(agent_role_id, db)
+
+
+@router.post(
+    "/mcp-tools/rule/verification/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_verification_requirement_tool",
+)
+async def mcp_delete_verification_requirement(
+    requirement_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a verification requirement."""
+    return await delete_verification_requirement_tool(requirement_id, db)
