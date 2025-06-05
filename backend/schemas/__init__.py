@@ -79,4 +79,10 @@ from .agent_handoff_criteria import (
     AgentHandoffCriteriaCreate,
     AgentHandoffCriteria,
 )
+from .agent_verification_requirement import (
+    AgentVerificationRequirementBase,
+    AgentVerificationRequirementCreate,
+    AgentVerificationRequirementUpdate,
+    AgentVerificationRequirement,
+)
 from .file_ingest import FileIngestInput
