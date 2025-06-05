@@ -188,6 +188,18 @@ def get_universal_mandates_for_prompt(self) -> List[str]:
         mandates = crud_rules.get_universal_mandates(self.db)
         return [f"**{mandate.title}**: {mandate.description}" for mandate in mandates]
 
+def delete_universal_mandate(self, mandate_id: str) -> Optional[crud_rules.UniversalMandate]:
+        """Delete a universal mandate by ID"""
+        mandate = self.db.query(crud_rules.UniversalMandate).filter(
+            crud_rules.UniversalMandate.id == mandate_id
+        ).first()
+        if not mandate:
+            return None
+
+        self.db.delete(mandate)
+        self.db.commit()
+        return mandate
+
 def initialize_default_rules(self):
         """Initialize default rules for the system"""
         self._create_universal_mandates()
