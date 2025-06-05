@@ -28,6 +28,7 @@ export default defineConfig({
       'tests/**/*.test.ts'
     ],
     coverage: {
+      enabled: true,
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       reportsDirectory: './coverage',
