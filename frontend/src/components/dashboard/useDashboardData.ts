@@ -16,7 +16,7 @@ export function useDashboardData() {
     try {
       const [projectsFromApi, tasksFromApi] = await Promise.all([
         api.getProjects({ is_archived: null }),
-        api.getAllTasks({ is_archived: null }),
+        api.getAllTasks({ is_archived: null }, undefined, 0, 100),
       ]);
       setAllProjects(projectsFromApi || []);
       setAllTasks(tasksFromApi || []);

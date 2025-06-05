@@ -53,7 +53,12 @@ describe('taskStore', () => {
       await useTaskStore.getState().fetchTasks()
     })
 
-    expect(mockedApi.getAllTasks).toHaveBeenCalled()
+    expect(mockedApi.getAllTasks).toHaveBeenCalledWith(
+      initialState.filters,
+      initialState.sortOptions,
+      0,
+      100,
+    )
     expect(useTaskStore.getState().tasks).toEqual(tasks)
   })
 
