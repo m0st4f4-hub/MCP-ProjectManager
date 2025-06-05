@@ -1,9 +1,7 @@
-from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-
-from ....database import get_sync_db as get_db
+from ....database import get_db
 from ....schemas.agent_forbidden_action import (
     AgentForbiddenAction,
     AgentForbiddenActionCreate,
@@ -14,7 +12,7 @@ from ....services.agent_forbidden_action_service import AgentForbiddenActionServ
 router = APIRouter()
 
 
-def get_service(db: Session = Depends(get_db)) -> AgentForbiddenActionService:
+def get_service(db: AsyncSession = Depends(get_db)) -> AgentForbiddenActionService:
     return AgentForbiddenActionService(db)
 
 

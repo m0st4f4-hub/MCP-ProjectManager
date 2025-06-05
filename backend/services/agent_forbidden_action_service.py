@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import models
 from ..crud import rules as crud_rules
@@ -8,7 +8,7 @@ from ..crud import rules as crud_rules
 class AgentForbiddenActionService:
     """Service layer for agent forbidden actions."""
 
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
     async def create_forbidden_action(
