@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // --- Memory Entity Schemas ---
 export const memoryEntityBaseSchema = z.object({
-  entity_type: z.string().min(1, "Entity type is required"),
+  entity_type: z.string().min(1, 'Entity type is required'),
   content: z.string().nullable().optional(),
   metadata: z.record(z.any()).nullable().optional(),
 });
@@ -26,12 +26,21 @@ export type MemoryEntity = z.infer<typeof memoryEntitySchema>;
 // --- Memory Observation Schemas ---
 export const memoryObservationBaseSchema = z.object({
   entity_id: z.number(),
-  content: z.string().min(1, "Content is required"),
+  content: z.string().min(1, 'Content is required'),
 });
 
 export const memoryObservationCreateSchema = memoryObservationBaseSchema;
 
-export type MemoryObservationCreateData = z.infer<typeof memoryObservationCreateSchema>;
+export type MemoryObservationCreateData = z.infer<
+  typeof memoryObservationCreateSchema
+>;
+
+export const memoryObservationUpdateSchema =
+  memoryObservationBaseSchema.partial();
+
+export type MemoryObservationUpdateData = z.infer<
+  typeof memoryObservationUpdateSchema
+>;
 
 export const memoryObservationSchema = memoryObservationBaseSchema.extend({
   id: z.number(),
@@ -44,13 +53,15 @@ export type MemoryObservation = z.infer<typeof memoryObservationSchema>;
 export const memoryRelationBaseSchema = z.object({
   from_entity_id: z.number(),
   to_entity_id: z.number(),
-  relation_type: z.string().min(1, "Relation type is required"),
+  relation_type: z.string().min(1, 'Relation type is required'),
   metadata: z.record(z.any()).nullable().optional(),
 });
 
 export const memoryRelationCreateSchema = memoryRelationBaseSchema;
 
-export type MemoryRelationCreateData = z.infer<typeof memoryRelationCreateSchema>;
+export type MemoryRelationCreateData = z.infer<
+  typeof memoryRelationCreateSchema
+>;
 
 export const memoryRelationSchema = memoryRelationBaseSchema.extend({
   id: z.number(),
