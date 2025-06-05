@@ -25,6 +25,11 @@ from ....schemas.memory import (
     MemoryObservationCreate,
     MemoryRelationCreate
 )
+from ...mcp_tools.agent_capability_tools import (
+    create_capability_tool,
+    list_capabilities_tool,
+    delete_capability_tool,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
@@ -657,10 +662,6 @@ async def mcp_create_mandate(
     mandate: UniversalMandateCreate,
     db: Session = Depends(get_db_session),
 ):
-async def mcp_create_mandate(
-    mandate: UniversalMandateCreate,
-    db: Session = Depends(get_db_session),
-):
     """MCP Tool: Create a new universal mandate."""
     try:
         rules_service = RulesService(db)
@@ -687,10 +688,6 @@ async def mcp_create_agent_rule(
     rule: AgentRuleCreate,
     db: Session = Depends(get_db_session),
 ):
-async def mcp_create_agent_rule(
-    rule: AgentRuleCreate,
-    db: Session = Depends(get_db_session),
-):
     """MCP Tool: Create a new agent-specific rule."""
     try:
         rules_service = RulesService(db)
@@ -706,3 +703,44 @@ async def mcp_create_agent_rule(
     except Exception as e:
         logger.error(f"MCP create agent rule failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/rule/capability/create",
+    tags=["mcp-tools"],
+    operation_id="create_capability_tool",
+)
+async def mcp_create_capability(
+    agent_role_id: str,
+    capability: str,
+    description: Optional[str] = None,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a new capability for an agent role."""
+    return await create_capability_tool(agent_role_id, capability, description, db)
+
+
+@router.get(
+    "/mcp-tools/rule/capability/list",
+    tags=["mcp-tools"],
+    operation_id="list_capabilities_tool",
+)
+async def mcp_list_capabilities(
+    agent_role_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List capabilities, optionally by role."""
+    return await list_capabilities_tool(agent_role_id, db)
+
+
+@router.delete(
+    "/mcp-tools/rule/capability/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_capability_tool",
+)
+async def mcp_delete_capability(
+    capability_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a capability by ID."""
+    return await delete_capability_tool(capability_id, db)

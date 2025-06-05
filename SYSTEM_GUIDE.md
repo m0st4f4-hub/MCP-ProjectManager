@@ -37,6 +37,7 @@ node dev_start.js
 - **✅ Project Management**: Members, file associations, archive/unarchive
 - **✅ Task Management**: Dependencies, comments, status tracking
 - **✅ Agent System**: Rules-based agents with capabilities and constraints
+- **✅ Agent Capability Management**: Create, list, and delete role capabilities via MCP
 - **✅ Memory System**: Knowledge graph for file and content management
 - **✅ Audit Logging**: Complete action tracking and history
 
