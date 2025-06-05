@@ -1,12 +1,10 @@
-"""
-Admin endpoints for user management.
-"""
+"""Admin endpoints for user management."""
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
 
 from backend.database import get_db
-from backend.schemas.user import User, UserCreate, UserUpdate
+from backend.schemas.user import User, UserUpdate
 from backend.schemas.api_responses import DataResponse, ListResponse
 from backend.services.user_service import UserService
 from backend.auth import get_current_active_user, RoleChecker
@@ -19,8 +17,10 @@ router = APIRouter(
     dependencies=[Depends(RoleChecker([UserRoleEnum.ADMIN]))]
 )
 
+
 def get_user_service(db: AsyncSession = Depends(get_db)) -> UserService:
     return UserService(db)
+
 
 @router.get("/users", response_model=ListResponse[User])
 async def get_all_users(
@@ -32,7 +32,6 @@ async def get_all_users(
     """Get all users. Admin only."""
     users = await user_service.get_users(skip=skip, limit=limit)
     total = await user_service.count_users()
-    
     return ListResponse[User](
         items=[User.model_validate(u) for u in users],
         total=total,
@@ -40,6 +39,7 @@ async def get_all_users(
         page_size=limit,
         has_more=skip + len(users) < total
     )
+
 
 @router.put("/users/{user_id}", response_model=DataResponse[User])
 async def update_user(
@@ -61,6 +61,7 @@ async def update_user(
             detail=str(e)
         )
 
+
 @router.delete("/users/{user_id}")
 async def delete_user(
     user_id: str,
@@ -73,7 +74,7 @@ async def delete_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot delete your own account"
         )
-    
+
     try:
         await user_service.delete_user(user_id)
         return {"message": "User deleted successfully"}
