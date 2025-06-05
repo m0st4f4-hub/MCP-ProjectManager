@@ -5,7 +5,8 @@ alembic
 psycopg2-binary
 python-dotenv
 fastapi-mcp
-passlib[bcrypt]
+passlib==1.7.4
+bcrypt<4
 python-jose
 aiosqlite
 aiohttp
