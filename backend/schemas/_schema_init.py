@@ -17,6 +17,7 @@ from .memory import (  # noqa: F401
     MemoryEntityUpdate,
     MemoryObservation,
     MemoryObservationCreate,
+    MemoryObservationUpdate,
     MemoryRelationCreate
 )
 from .project import (  # noqa: F401

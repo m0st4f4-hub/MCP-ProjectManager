@@ -69,6 +69,7 @@ from .memory import (
     MemoryEntity,
     MemoryObservationBase,
     MemoryObservationCreate,
+    MemoryObservationUpdate,
     MemoryObservation,
     MemoryRelationBase,
     MemoryRelationCreate,

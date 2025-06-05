@@ -202,3 +202,54 @@ async def get_memory_metadata_tool(
     except Exception as e:
         logger.error(f"MCP get memory metadata failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+async def update_observation_tool(
+    observation_id: int,
+    update_data: Dict[str, Any],
+    db: Session,
+) -> dict:
+    """MCP Tool: Update a memory observation."""
+    try:
+        service = MemoryService(db)
+        observation = service.update_observation(observation_id, update_data)
+        return {
+            "success": True,
+            "observation": {
+                "id": observation.id,
+                "entity_id": observation.entity_id,
+                "content": observation.content,
+                "metadata": observation.metadata_,
+                "source": observation.source,
+                "timestamp": observation.timestamp.isoformat(),
+            },
+        }
+    except HTTPException as e:
+        logger.error(
+            f"MCP update observation failed with HTTP exception: {e.detail}"
+        )
+        raise e
+    except Exception as e:
+        logger.error(f"MCP update observation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def delete_observation_tool(
+    observation_id: int,
+    db: Session,
+) -> dict:
+    """MCP Tool: Delete a memory observation."""
+    try:
+        service = MemoryService(db)
+        success = service.delete_observation(observation_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Observation not found")
+        return {"success": True}
+    except HTTPException as e:
+        logger.error(
+            f"MCP delete observation failed with HTTP exception: {e.detail}"
+        )
+        raise e
+    except Exception as e:
+        logger.error(f"MCP delete observation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

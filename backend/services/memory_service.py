@@ -281,6 +281,42 @@ class MemoryService:
             )
         return query.offset(skip).limit(limit).all()
 
+    def update_observation(
+        self, observation_id: int, update_data: Dict[str, Any]
+    ) -> models.MemoryObservation:
+        observation = (
+            self.db.query(models.MemoryObservation)
+            .filter(models.MemoryObservation.id == observation_id)
+            .first()
+        )
+        if observation is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Observation not found",
+            )
+
+        for field in ["entity_id", "content", "metadata_", "source", "timestamp"]:
+            if field in update_data and update_data[field] is not None:
+                setattr(observation, field, update_data[field])
+
+        self.db.commit()
+        self.db.refresh(observation)
+        logger.info(f"Updated observation {observation_id}")
+        return observation
+
+    def delete_observation(self, observation_id: int) -> bool:
+        observation = (
+            self.db.query(models.MemoryObservation)
+            .filter(models.MemoryObservation.id == observation_id)
+            .first()
+        )
+        if observation:
+            self.db.delete(observation)
+            self.db.commit()
+            logger.info(f"Deleted observation {observation_id}")
+            return True
+        return False
+
     def create_memory_relation(
         self, relation: MemoryRelationCreate
     ) -> models.MemoryRelation:

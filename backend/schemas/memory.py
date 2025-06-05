@@ -46,6 +46,14 @@ class MemoryObservationCreate(MemoryObservationBase):
     """Schema for creating a new memory observation."""
     entity_id: int = Field(..., description="The ID of the memory entity this observation belongs to.")
 
+class MemoryObservationUpdate(BaseModel):
+    """Schema for updating an existing memory observation."""
+    entity_id: Optional[int] = Field(None, description="Update the related entity ID.")
+    content: Optional[str] = Field(None, description="Update the observation content.")
+    metadata_: Optional[Dict[str, Any]] = Field(None, description="Update observation metadata.")
+    source: Optional[str] = Field(None, description="Update observation source.")
+    timestamp: Optional[datetime] = Field(None, description="Update observation timestamp.")
+
 class MemoryObservation(MemoryObservationBase):
     """Schema for representing a memory observation in API responses, including relationships."""
     id: int = Field(..., description="Unique integer ID of the observation.")

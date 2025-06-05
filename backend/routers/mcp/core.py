@@ -581,6 +581,61 @@ async def mcp_add_memory_observation(
 
 
 @router.post(
+    "/mcp-tools/memory/update-observation",
+    tags=["mcp-tools"],
+    operation_id="update_observation_tool",
+)
+async def mcp_update_memory_observation(
+    observation_id: int,
+    update_data: Dict[str, Any],
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """MCP Tool: Update a memory observation."""
+    try:
+        observation = memory_service.update_observation(observation_id, update_data)
+        return {
+            "success": True,
+            "observation": {
+                "id": observation.id,
+                "entity_id": observation.entity_id,
+                "content": observation.content,
+                "metadata": observation.metadata_,
+                "source": observation.source,
+                "timestamp": observation.timestamp.isoformat(),
+            },
+        }
+    except HTTPException as e:
+        logger.error(f"MCP update memory observation failed: {e.detail}")
+        raise e
+    except Exception as e:
+        logger.error(f"MCP update memory observation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/memory/delete-observation",
+    tags=["mcp-tools"],
+    operation_id="delete_observation_tool",
+)
+async def mcp_delete_memory_observation(
+    observation_id: int,
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """MCP Tool: Delete a memory observation."""
+    try:
+        success = memory_service.delete_observation(observation_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Observation not found")
+        return {"success": True}
+    except HTTPException as e:
+        logger.error(f"MCP delete memory observation failed: {e.detail}")
+        raise e
+    except Exception as e:
+        logger.error(f"MCP delete memory observation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
     "/mcp-tools/memory/add-relation",
     tags=["mcp-tools"],
     operation_id="add_memory_relation_tool",
