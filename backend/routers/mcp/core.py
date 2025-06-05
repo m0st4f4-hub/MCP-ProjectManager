@@ -1,5 +1,3 @@
-# Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
-
 """
 MCP Core Tools Router - Functionality for Project and Task MCP integration.
 Provides MCP tool definitions.
@@ -7,9 +5,8 @@ Provides MCP tool definitions.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Optional
+from typing import Optional
 import logging
-import json
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -17,8 +14,11 @@ from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
+from ....services.rules_service import RulesService
 from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate
+from ....schemas import AgentRuleCreate
+from ....schemas.universal_mandate import UniversalMandateCreate
 from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
@@ -251,7 +251,7 @@ async def mcp_update_task(
                 "description": task.description,
                 "status": task.status,
                 "agent_id": task.agent_id,
-                "created_at": task.created_at.isoformat()
+                "updated_at": task.updated_at.isoformat() if task.updated_at else None
             }
         }
     except Exception as e:
@@ -269,10 +269,10 @@ async def mcp_delete_task(
     task_number: int,
     db: Session = Depends(get_db_session)
 ):
-    """MCP Tool: Delete an existing task."""
+    """MCP Tool: Delete a task."""
     try:
         task_service = TaskService(db)
-        task_service.delete_task(
+        task = task_service.delete_task(
             project_id=project_id,
             task_number=task_number
         )
@@ -281,12 +281,18 @@ async def mcp_delete_task(
             action="task_deleted",
             entity_type="task",
             entity_id=f"{project_id}-{task_number}",
-            changes={}
+            changes=None
         )
 
         return {
             "success": True,
-            "message": f"Task {project_id}-{task_number} deleted successfully"
+            "task": {
+                "project_id": task.project_id,
+                "task_number": task.task_number,
+                "title": task.title,
+                "description": task.description,
+                "status": task.status
+            }
         }
     except Exception as e:
         logger.error(f"MCP delete task failed: {e}")
@@ -401,17 +407,29 @@ async def mcp_add_memory_entity(
     entity_data: MemoryEntityCreate,
     memory_service: MemoryService = Depends(get_memory_service)
 ):
-    """MCP Tool: Add a new memory entity."""
+    """MCP Tool: Add entity to knowledge graph."""
     try:
-        entity = memory_service.create_memory_entity(entity_data)
-        audit_service = AuditLogService(memory_service.db)
-        audit_service.log_action(
-            action="memory_entity_added",
-            entity_type="memory_entity",
-            entity_id=entity.id,
-            changes=entity_data.model_dump(exclude_unset=True)
-        )
-        return {"success": True, "entity_id": entity.id}
+        entity = memory_service.create_memory_entity(entity=entity_data)
+
+        if hasattr(entity_data, "observations") and entity_data.observations:
+            for obs_content in entity_data.observations:
+                memory_service.add_observation_to_entity(
+                    entity_id=entity.id,
+                    observation=MemoryObservationCreate(content=obs_content, source="mcp_tool")
+                )
+
+        return {
+            "success": True,
+            "entity": {
+                "id": entity.id,
+                "name": entity.name,
+                "type": entity.type,
+                "description": entity.description
+            }
+        }
+    except HTTPException as e:
+        logger.error(f"MCP add memory entity failed with HTTP exception: {e.detail}")
+        raise e
     except Exception as e:
         logger.error(f"MCP add memory entity failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -429,15 +447,24 @@ async def mcp_update_memory_entity(
 ):
     """MCP Tool: Update an existing memory entity."""
     try:
-        entity = memory_service.update_memory_entity(entity_id, entity_update)
-        audit_service = AuditLogService(memory_service.db)
-        audit_service.log_action(
-            action="memory_entity_updated",
-            entity_type="memory_entity",
-            entity_id=entity.id,
-            changes=entity_update.model_dump(exclude_unset=True)
+        entity = memory_service.get_memory_entity_by_id(entity_id)
+        if not entity:
+            raise HTTPException(status_code=404, detail="Entity not found")
+
+        updated_entity = memory_service.update_memory_entity(
+            entity_id=entity_id,
+            update=entity_update
         )
-        return {"success": True, "entity_id": entity.id}
+
+        return {
+            "success": True,
+            "entity": {
+                "id": updated_entity.id,
+                "name": updated_entity.name,
+                "type": updated_entity.type,
+                "description": updated_entity.description
+            }
+        }
     except Exception as e:
         logger.error(f"MCP update memory entity failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -453,17 +480,25 @@ async def mcp_add_memory_observation(
     observation_data: MemoryObservationCreate,
     memory_service: MemoryService = Depends(get_memory_service)
 ):
-    """MCP Tool: Add an observation to a memory entity."""
+    """MCP Tool: Add observation to entity."""
     try:
-        observation = memory_service.create_memory_observation(entity_id, observation_data)
-        audit_service = AuditLogService(memory_service.db)
-        audit_service.log_action(
-            action="memory_observation_added",
-            entity_type="memory_observation",
-            entity_id=observation.id,
-            changes=observation_data.model_dump(exclude_unset=True)
+        entity = memory_service.get_memory_entity_by_id(entity_id)
+        if not entity:
+            raise HTTPException(status_code=404, detail="Entity not found")
+
+        observation = memory_service.add_observation_to_entity(
+            entity_id=entity_id,
+            observation=observation_data
         )
-        return {"success": True, "observation_id": observation.id}
+
+        return {
+            "success": True,
+            "observation": {
+                "id": observation.id,
+                "content": observation.content,
+                "source": observation.source
+            }
+        }
     except Exception as e:
         logger.error(f"MCP add memory observation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -478,17 +513,31 @@ async def mcp_add_memory_relation(
     relation_data: MemoryRelationCreate,
     memory_service: MemoryService = Depends(get_memory_service)
 ):
-    """MCP Tool: Add a relation between memory entities."""
+    """MCP Tool: Add relation to knowledge graph."""
     try:
-        relation = memory_service.create_memory_relation(relation_data)
-        audit_service = AuditLogService(memory_service.db)
-        audit_service.log_action(
-            action="memory_relation_added",
-            entity_type="memory_relation",
-            entity_id=relation.id,
-            changes=relation_data.model_dump(exclude_unset=True)
-        )
-        return {"success": True, "relation_id": relation.id}
+        from_entity = memory_service.get_memory_entity_by_id(relation_data.from_entity_id)
+        to_entity = memory_service.get_memory_entity_by_id(relation_data.to_entity_id)
+
+        if not from_entity or not to_entity:
+            raise HTTPException(
+                status_code=404,
+                detail="One or both entities not found",
+            )
+
+        relation = memory_service.create_memory_relation(relation=relation_data)
+
+        return {
+            "success": True,
+            "relation": {
+                "id": relation.id,
+                "from_entity_id": relation.from_entity_id,
+                "to_entity_id": relation.to_entity_id,
+                "relation_type": relation.relation_type
+            }
+        }
+    except HTTPException as e:
+        logger.error(f"MCP add memory relation failed with HTTP exception: {e.detail}")
+        raise e
     except Exception as e:
         logger.error(f"MCP add memory relation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -504,10 +553,21 @@ async def mcp_search_memory(
     limit: int = 10,
     memory_service: MemoryService = Depends(get_memory_service)
 ):
-    """MCP Tool: Search memory entities by content."""
+    """MCP Tool: Search memory entities."""
     try:
-        results = memory_service.search_memory_entities(query, limit)
-        return {"success": True, "results": results}
+        results = memory_service.search_memory_entities(query, limit=limit)
+
+        return {
+            "success": True,
+            "results": [
+                {
+                    "id": r.id,
+                    "type": r.type,
+                    "name": r.name,
+                    "description": r.description
+                } for r in results
+            ]
+        }
     except Exception as e:
         logger.error(f"MCP search memory failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -522,12 +582,15 @@ async def mcp_get_memory_content(
     entity_id: int,
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    """MCP Tool: Retrieve content of a memory entity by ID."""
+    """MCP Tool: Retrieve memory entity content."""
     try:
-        content = memory_service.get_memory_entity_content(entity_id)
-        if content is None:
-            raise HTTPException(status_code=404, detail="Memory entity content not found")
+        content = memory_service.get_file_content(entity_id)
         return {"success": True, "content": content}
+    except HTTPException as e:
+        logger.error(
+            f"MCP get memory content failed with HTTP exception: {e.detail}"
+        )
+        raise e
     except Exception as e:
         logger.error(f"MCP get memory content failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -542,12 +605,15 @@ async def mcp_get_memory_metadata(
     entity_id: int,
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    """MCP Tool: Retrieve metadata of a memory entity by ID."""
+    """MCP Tool: Retrieve memory entity metadata."""
     try:
-        metadata = memory_service.get_memory_entity_metadata(entity_id)
-        if metadata is None:
-            raise HTTPException(status_code=404, detail="Memory entity metadata not found")
+        metadata = memory_service.get_file_metadata(entity_id)
         return {"success": True, "metadata": metadata}
+    except HTTPException as e:
+        logger.error(
+            f"MCP get memory metadata failed with HTTP exception: {e.detail}"
+        )
+        raise e
     except Exception as e:
         logger.error(f"MCP get memory metadata failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -574,4 +640,56 @@ async def mcp_list_tools():
         return {"success": True, "tools": tool_list}
     except Exception as e:
         logger.error(f"MCP list tools failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/rule/mandate/create",
+    tags=["mcp-tools"],
+    operation_id="create_mandate_tool",
+)
+async def mcp_create_mandate(
+    mandate: UniversalMandateCreate,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a new universal mandate."""
+    try:
+        rules_service = RulesService(db)
+        new_mandate = rules_service.create_universal_mandate(mandate)
+        audit_service = AuditLogService(db)
+        audit_service.log_action(
+            action="mandate_created",
+            entity_type="universal_mandate",
+            entity_id=new_mandate.id,
+            changes=mandate.model_dump(exclude_unset=True)
+        )
+        return {"success": True, "mandate": new_mandate.model_dump()}
+    except Exception as e:
+        logger.error(f"MCP create mandate failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/rule/agent/create",
+    tags=["mcp-tools"],
+    operation_id="create_agent_rule_tool",
+)
+async def mcp_create_agent_rule(
+    rule: AgentRuleCreate,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a new agent-specific rule."""
+    try:
+        rules_service = RulesService(db)
+        new_rule = rules_service.create_agent_rule(rule)
+        audit_service = AuditLogService(db)
+        audit_service.log_action(
+            action="agent_rule_created",
+            entity_type="agent_rule",
+            entity_id=new_rule.id,
+            changes=rule.model_dump(exclude_unset=True)
+        )
+        return {"success": True, "rule": new_rule.model_dump()}
+    except Exception as e:
+        logger.error(f"MCP create agent rule failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
