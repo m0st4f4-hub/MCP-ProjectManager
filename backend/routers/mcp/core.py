@@ -16,6 +16,7 @@ from ....services.project_service import ProjectService
 from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
+from ....services.project_file_association_service import ProjectFileAssociationService
 from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate
 from ....schemas.memory import (
@@ -40,6 +41,12 @@ def get_db_session():
 
 def get_memory_service(db: Session = Depends(get_db_session)) -> MemoryService:
     return MemoryService(db)
+
+
+def get_project_file_service(
+    db: Session = Depends(get_db_session),
+) -> ProjectFileAssociationService:
+    return ProjectFileAssociationService(db)
 
 
 @router.post(
@@ -205,6 +212,84 @@ async def mcp_list_tasks(
         }
     except Exception as e:
         logger.error(f"MCP list tasks failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/project/file/add",
+    tags=["mcp-tools"],
+    operation_id="add_project_file_tool",
+)
+async def mcp_add_project_file(
+    project_id: str,
+    file_memory_entity_id: int,
+    service: ProjectFileAssociationService = Depends(get_project_file_service),
+):
+    """MCP Tool: Associate a file with a project."""
+    try:
+        association = service.associate_file_with_project(
+            project_id, file_memory_entity_id
+        )
+        return {
+            "success": True,
+            "association": {
+                "project_id": association.project_id,
+                "file_memory_entity_id": association.file_memory_entity_id,
+            },
+        }
+    except Exception as e:
+        logger.error(f"MCP add project file failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/project/file/list",
+    tags=["mcp-tools"],
+    operation_id="list_project_files_tool",
+)
+async def mcp_list_project_files(
+    project_id: str,
+    skip: int = 0,
+    limit: int = 100,
+    service: ProjectFileAssociationService = Depends(get_project_file_service),
+):
+    """MCP Tool: List files associated with a project."""
+    try:
+        files = service.get_files_for_project(project_id, skip=skip, limit=limit)
+        return {
+            "success": True,
+            "files": [
+                {
+                    "project_id": f.project_id,
+                    "file_memory_entity_id": f.file_memory_entity_id,
+                }
+                for f in files
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list project files failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/project/file/remove",
+    tags=["mcp-tools"],
+    operation_id="remove_project_file_tool",
+)
+async def mcp_remove_project_file(
+    project_id: str,
+    file_memory_entity_id: int,
+    service: ProjectFileAssociationService = Depends(get_project_file_service),
+):
+    """MCP Tool: Remove a file association from a project."""
+    try:
+        result = service.disassociate_file_from_project(
+            project_id, file_memory_entity_id
+        )
+        success = bool(result)
+        return {"success": success}
+    except Exception as e:
+        logger.error(f"MCP remove project file failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

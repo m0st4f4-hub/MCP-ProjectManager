@@ -9,5 +9,8 @@ __all__ = [
     'create_task_tool',
     'list_tasks_tool',
     'add_memory_entity_tool',
-    'search_memory_tool'
+    'search_memory_tool',
+    'add_project_file_tool',
+    'list_project_files_tool',
+    'remove_project_file_tool'
 ]
