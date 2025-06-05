@@ -13,6 +13,7 @@ from .exceptions import (
     ValidationError,
     DuplicateEntityError  # Import CRUD operations for tasks
 )
+from .event_publisher import publisher
 from ..crud.tasks import (
     get_task as crud_get_task,
     get_tasks as crud_get_tasks,
@@ -151,9 +152,11 @@ class TaskService:
 
                     if db_task_loaded is None:  # This should not happen if create_task succeeded, but handle defensively
                         raise EntityNotFoundError("Task", db_task.id)
-                    
+
+                    task_model = Task.model_validate(db_task_loaded)
+                    await publisher.publish({"type": "task_created", "task": task_model.model_dump()})
                     # Convert the fully loaded ORM object to a Pydantic model before returning
-                    return Task.model_validate(db_task_loaded)
+                    return task_model
 
                 except ValueError as e:  # Convert ValueError to ValidationError
                     raise ValidationError(str(e))
@@ -207,6 +210,7 @@ class TaskService:
                 )
                 if not updated_task:
                     raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
+                await publisher.publish({"type": "task_updated", "task": Task.model_validate(updated_task).model_dump()})
                 return updated_task
             except ValueError as e:  # Convert ValueError to ValidationError
                 raise ValidationError(str(e))
