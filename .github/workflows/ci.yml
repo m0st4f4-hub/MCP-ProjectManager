@@ -30,17 +30,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
+      - name: Test with coverage
+        run: |
+          cd backend
+          pytest --cov=. --cov-report=xml --cov-fail-under=90
+
       - name: Lint
         run: |
           cd backend
           flake8 .
 
-      - name: Test with coverage
-        run: |
-          cd backend
-          pytest --cov=. --cov-report=xml
-
       - name: Upload Python coverage artifact
+        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage
@@ -73,7 +74,18 @@ jobs:
           cd frontend
           npm run test:coverage
 
+      - name: Prettier check
+        run: |
+          cd frontend
+          npx prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,md}"
+
+      - name: Lint
+        run: |
+          cd frontend
+          npm run lint
+
       - name: Upload frontend coverage artifact
+        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage

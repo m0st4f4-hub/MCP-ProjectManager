@@ -14,7 +14,7 @@
     "export": "next build && next export",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
+    "test:coverage": "vitest run --coverage --coverage.v8",
     "test:watch": "vitest --watch",
     "test:run": "vitest run",
     "test:ci": "vitest run --coverage --reporter=json --reporter=default",

@@ -111,6 +111,17 @@ All tests and linters must pass locally before submitting a PR.
 
 ---
 
+## 🛰️ Continuous Integration
+
+The CI pipeline mirrors the local workflow and enforces quality gates:
+
+1. Backend tests run with `pytest --cov=. --cov-report=xml --cov-fail-under=90`.
+2. Frontend tests run with `npm run test:coverage` using Vitest's V8 coverage provider and a 90% global threshold.
+3. After tests pass, `flake8` is executed in `backend/` and `prettier --check` followed by `npm run lint` in `frontend/`.
+4. Coverage reports are uploaded only if all prior steps succeed.
+
+---
+
 ## 🤝 Thank You
 
 Your contributions help make this project better.
