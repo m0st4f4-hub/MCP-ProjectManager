@@ -1,7 +1,5 @@
 import logging
 import logging.config
-import os
-import json
 from fastapi import FastAPI, Request, Response, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -11,14 +9,6 @@ from typing import Dict, Any
 
 from .database import get_db, Base, engine
 from .middleware import init_middleware
-from . import models
-
-# Schema preload for Pydantic forward refs
-from .schemas import (
-    task, project, api_responses, task_status,
-    agent, task_dependency, comment, file_association,
-    memory, user
-)
 
 # Optional MCP integration
 try:
@@ -69,7 +59,11 @@ def include_app_routers(app: FastAPI):
     app.include_router(memory.router, prefix="/api/memory", tags=["memory"])
     app.include_router(mcp.router, prefix="/api/mcp", tags=["mcp"])
     app.include_router(rules.router, prefix="/api/rules", tags=["rules"])
-    app.include_router(project_templates.router, prefix="/api/templates", tags=["templates"])
+    app.include_router(
+        project_templates.router,
+        prefix="/api/templates",
+        tags=["templates"],
+    )
     app.include_router(audit_logs.router, prefix="/api/audit-logs", tags=["audit-logs"])
 
 
@@ -115,7 +109,11 @@ def create_app() -> FastAPI:
     _rebuild_models()
 
     if FastApiMCP is not None:
-        mcp = FastApiMCP(app, name="Task Manager MCP", description="MCP server for task manager")
+        mcp = FastApiMCP(
+            app,
+            name="Task Manager MCP",
+            description="MCP server for task manager",
+        )
         mcp.mount()
         app.state.mcp_instance = mcp
     else:
@@ -213,7 +211,10 @@ def _define_custom_routes(app: FastAPI):
 
         md.append("## Routes")
         for r in routes:
-            md.append(f"- `{r['path']}` ({', '.join(r['methods'])}): {r['name']} - {r['description']}")
+            md.append(
+                f"- `{r['path']}` ({', '.join(r['methods'])}): "
+                f"{r['name']} - {r['description']}"
+            )
 
         return {
             "tools": tools,
