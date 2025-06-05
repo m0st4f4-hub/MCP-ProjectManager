@@ -60,6 +60,11 @@ from .agent import (
     AgentRuleUpdate,
     AgentRule,
 )
+from .agent_forbidden_action import (
+    AgentForbiddenActionBase,
+    AgentForbiddenActionCreate,
+    AgentForbiddenAction,
+)
 
 # Import and export memory schemas
 from .memory import (

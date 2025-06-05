@@ -1,32 +1,77 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import Optional
+from ....database import get_sync_db as get_db
+from ....schemas.agent_forbidden_action import (
+    AgentForbiddenAction,
+    AgentForbiddenActionCreate,
+)
+from ....schemas.api_responses import DataResponse, ListResponse
+from ....services.agent_forbidden_action_service import AgentForbiddenActionService
 
-from ....database import get_db
-from ....crud import rules as crud_rules
-
-router = APIRouter()  # Agent Forbidden Actions
-@router.post("/{agent_role_id}/forbidden-actions")
+router = APIRouter()
 
 
-def add_forbidden_action(
+def get_service(db: Session = Depends(get_db)) -> AgentForbiddenActionService:
+    return AgentForbiddenActionService(db)
+
+
+@router.get(
+    "/{agent_role_id}/forbidden-actions",
+    response_model=ListResponse[AgentForbiddenAction],
+    summary="List Forbidden Actions",
+    operation_id="list_forbidden_actions",
+)
+async def list_forbidden_actions_endpoint(
     agent_role_id: str,
-    action: str,
-    reason: Optional[str] = None,
-    db: Session = Depends(get_db)
+    service: AgentForbiddenActionService = Depends(get_service),
 ):
-    """Add a forbidden action to an agent role"""
-    return crud_rules.add_forbidden_action(db, agent_role_id, action, reason)
+    actions = await service.list_forbidden_actions(agent_role_id)
+    return ListResponse[AgentForbiddenAction](
+        data=actions,
+        total=len(actions),
+        page=1,
+        page_size=len(actions),
+        has_more=False,
+        message="Retrieved forbidden actions",
+    )
 
-@router.delete("/forbidden-actions/{action_id}")
+
+@router.post(
+    "/{agent_role_id}/forbidden-actions",
+    response_model=DataResponse[AgentForbiddenAction],
+    summary="Create Forbidden Action",
+    operation_id="create_forbidden_action",
+)
+async def create_forbidden_action_endpoint(
+    agent_role_id: str,
+    action_data: AgentForbiddenActionCreate,
+    service: AgentForbiddenActionService = Depends(get_service),
+):
+    action = await service.create_forbidden_action(
+        agent_role_id,
+        action_data.action,
+        action_data.reason,
+    )
+    return DataResponse[AgentForbiddenAction](
+        data=action,
+        message="Forbidden action created successfully",
+    )
 
 
-def remove_forbidden_action(
+@router.delete(
+    "/forbidden-actions/{action_id}",
+    response_model=DataResponse[dict],
+    summary="Delete Forbidden Action",
+    operation_id="delete_forbidden_action",
+)
+async def delete_forbidden_action_endpoint(
     action_id: str,
-    db: Session = Depends(get_db)
+    service: AgentForbiddenActionService = Depends(get_service),
 ):
-    """Remove a forbidden action"""
-    success = crud_rules.remove_forbidden_action(db, action_id)
+    success = await service.delete_forbidden_action(action_id)
     if not success:
-    raise HTTPException(status_code=404, detail="Forbidden action not found")
-    return {"message": "Forbidden action removed successfully"}
+        raise HTTPException(status_code=404, detail="Forbidden action not found")
+    return DataResponse[dict](
+        data={"message": "Forbidden action removed"},
+        message="Forbidden action removed",
+    )
