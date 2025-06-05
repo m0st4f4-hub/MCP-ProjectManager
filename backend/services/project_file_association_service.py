@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
 from .. import models, schemas
 from typing import List, Optional
+from ..schemas.api_responses import PaginationParams
 from backend.crud.project_file_associations import (
     get_project_file_association,
     get_project_files,
@@ -17,14 +18,23 @@ class ProjectFileAssociationService:
     def get_association(self, project_id: str, file_memory_entity_id: int):
         return get_project_file_association(self.db, project_id, file_memory_entity_id)
 
-    def get_files_for_project(self, project_id: str, skip: int = 0, limit: int = 100):
-        return get_project_files(self.db, project_id, skip=skip, limit=limit)
+    def get_files_for_project(
+        self,
+        project_id: str,
+        pagination: PaginationParams = PaginationParams(),
+    ):
+        return get_project_files(
+            self.db,
+            project_id,
+            skip=pagination.offset,
+            limit=pagination.limit,
+        )
 
     async def get_project_files(
-        self, project_id: str, skip: int = 0, limit: int = 100
+        self, project_id: str, pagination: PaginationParams = PaginationParams()
     ):
         """Async wrapper for get_files_for_project with pagination."""
-        return self.get_files_for_project(project_id, skip=skip, limit=limit)
+        return self.get_files_for_project(project_id, pagination)
 
     def associate_file_with_project(self, project_id: str, file_memory_entity_id: int):
         project_file = ProjectFileAssociationCreate(

@@ -6,6 +6,7 @@ import {
   ProjectMember,
   ProjectMemberCreateData,
 } from '@/types';
+import type { PaginationParams } from '@/types';
 import { request } from './request';
 import { buildApiUrl, API_CONFIG } from './config';
 
@@ -220,15 +221,17 @@ export interface AssociateFileWithProjectData {
 
 export const getProjectFiles = async (
   projectId: string,
-  skip = 0,
-  limit = 100
+  pagination?: PaginationParams
 ): Promise<ProjectFileAssociation[]> => {
   const params = new URLSearchParams();
-  params.append('skip', String(skip));
-  params.append('limit', String(limit));
+  if (pagination) {
+    params.append('page', String(pagination.page));
+    params.append('pageSize', String(pagination.pageSize));
+  }
   const query = params.toString();
+  const suffix = query ? `?${query}` : '';
   return request<ProjectFileAssociation[]>(
-    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/files?${query}`)
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/files${suffix}`)
   );
 };
 

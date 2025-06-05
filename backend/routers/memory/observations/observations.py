@@ -5,6 +5,7 @@ from typing import List, Optional
 from ....database import get_sync_db as get_db
 from ....services.memory_service import MemoryService  # Assuming observation management is part of memory service
 from ....schemas.memory import MemoryObservation, MemoryObservationCreate
+from ....schemas.api_responses import PaginationParams
 from ....services.exceptions import EntityNotFoundError
 
 router = APIRouter()
@@ -39,8 +40,7 @@ def read_observations(
     search_query: Optional[str] = Query(
         None, description="Optional text to search within observation content."
     ),
-    skip: int = Query(0, description="The number of items to skip before returning results."),
-    limit: int = Query(100, description="The maximum number of items to return."),
+    pagination: PaginationParams = Depends(),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
     """Get observations, optionally filtered by entity or content search."""
@@ -48,8 +48,7 @@ def read_observations(
         return memory_service.get_observations(
             entity_id=entity_id,
             search_query=search_query,
-            skip=skip,
-            limit=limit,
+            pagination=pagination,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")

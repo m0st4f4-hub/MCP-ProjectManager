@@ -16,6 +16,7 @@ from ..schemas.memory import (
     MemoryEntity,
     MemoryRelation,
 )
+from ..schemas.api_responses import PaginationParams
 from ..schemas.file_ingest import FileIngestInput
 from ..crud.memory import (
     create_memory_entity,
@@ -213,24 +214,27 @@ class MemoryService:
         self,
         type: Optional[str] = None,
         name: Optional[str] = None,
-        skip: int = 0,
-        limit: int = 100,
+        pagination: PaginationParams = PaginationParams(),
     ) -> List[models.MemoryEntity]:
         query = self.db.query(models.MemoryEntity)
         if type:
             query = query.filter(models.MemoryEntity.type == type)
         if name:
             query = query.filter(models.MemoryEntity.name.ilike(f"%{name}%"))
-        return query.offset(skip).limit(limit).all()
+        return (
+            query.offset(pagination.offset)
+            .limit(pagination.limit)
+            .all()
+        )
 
     def get_memory_entities_by_type(
-        self, entity_type: str, skip: int = 0, limit: int = 100
+        self, entity_type: str, pagination: PaginationParams = PaginationParams()
     ) -> List[models.MemoryEntity]:
         return (
             self.db.query(models.MemoryEntity)
             .filter(models.MemoryEntity.type == entity_type)
-            .offset(skip)
-            .limit(limit)
+            .offset(pagination.offset)
+            .limit(pagination.limit)
             .all()
         )
 
@@ -269,8 +273,7 @@ class MemoryService:
         self,
         entity_id: Optional[int] = None,
         search_query: Optional[str] = None,
-        skip: int = 0,
-        limit: int = 100,
+        pagination: PaginationParams = PaginationParams(),
     ) -> List[models.MemoryObservation]:
         query = self.db.query(models.MemoryObservation)
         if entity_id is not None:
@@ -279,7 +282,11 @@ class MemoryService:
             query = query.filter(
                 models.MemoryObservation.content.ilike(f"%{search_query}%")
             )
-        return query.offset(skip).limit(limit).all()
+        return (
+            query.offset(pagination.offset)
+            .limit(pagination.limit)
+            .all()
+        )
 
     def update_observation(
         self, observation_id: int, observation_update: MemoryObservationCreate
@@ -454,13 +461,15 @@ class MemoryService:
         return db_relation
 
     def get_memory_relations_by_type(
-        self, relation_type: str, skip: int = 0, limit: int = 100
+        self,
+        relation_type: str,
+        pagination: PaginationParams = PaginationParams(),
     ) -> List[models.MemoryRelation]:
         return (
             self.db.query(models.MemoryRelation)
             .filter(models.MemoryRelation.relation_type == relation_type)
-            .offset(skip)
-            .limit(limit)
+            .offset(pagination.offset)
+            .limit(pagination.limit)
             .all()
         )
 
@@ -469,8 +478,7 @@ class MemoryService:
         from_entity_id: int,
         to_entity_id: int,
         relation_type: Optional[str] = None,
-        skip: int = 0,
-        limit: int = 100,
+        pagination: PaginationParams = PaginationParams(),
     ) -> List[models.MemoryRelation]:
         query = self.db.query(models.MemoryRelation).filter(
             models.MemoryRelation.from_entity_id == from_entity_id,
@@ -478,7 +486,11 @@ class MemoryService:
         )
         if relation_type:
             query = query.filter(models.MemoryRelation.relation_type == relation_type)
-        return query.offset(skip).limit(limit).all()
+        return (
+            query.offset(pagination.offset)
+            .limit(pagination.limit)
+            .all()
+        )
 
     def search_memory_entities(
         self, query: str, limit: int = 10

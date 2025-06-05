@@ -16,6 +16,7 @@ import type {
   MemoryRelationFilters,
   KnowledgeGraph,
 } from '@/types/memory';
+import type { PaginationParams } from '@/types';
 
 // --- Memory Entity APIs ---
 export const memoryApi = {
@@ -41,7 +42,8 @@ export const memoryApi = {
 
   // List memory entities with optional filters
   listEntities: async (
-    filters?: MemoryEntityFilters & { skip?: number; limit?: number }
+    filters?: MemoryEntityFilters,
+    pagination?: PaginationParams
   ): Promise<MemoryEntityListResponse> => {
     const params = new URLSearchParams();
     if (filters) {
@@ -50,6 +52,10 @@ export const memoryApi = {
           params.append(key, String(value));
         }
       });
+    }
+    if (pagination) {
+      params.append('page', String(pagination.page));
+      params.append('pageSize', String(pagination.pageSize));
     }
     return await request<MemoryEntityListResponse>(
       buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `?${params.toString()}`)
@@ -147,11 +153,21 @@ export const memoryApi = {
   },
 
   // Get observations for an entity
-  getObservations: async (entityId: number): Promise<MemoryObservation[]> => {
+  getObservations: async (
+    entityId: number,
+    pagination?: PaginationParams
+  ): Promise<MemoryObservation[]> => {
+    const params = new URLSearchParams();
+    if (pagination) {
+      params.append('page', String(pagination.page));
+      params.append('pageSize', String(pagination.pageSize));
+    }
+    const query = params.toString();
+    const suffix = query ? `?${query}` : '';
     const response = await request<{ data: MemoryObservation[] }>(
       buildApiUrl(
         API_CONFIG.ENDPOINTS.MEMORY,
-        `/entities/${entityId}/observations`
+        `/entities/${entityId}/observations${suffix}`
       )
     );
     return response.data;

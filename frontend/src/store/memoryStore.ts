@@ -30,11 +30,10 @@ const actionsCreator = (
   fetchEntities: async (filters?: MemoryEntityFilters) => {
     set({ loading: true, error: null });
     try {
-      const resp = await memoryApi.listEntities({
-        skip: 0,
-        limit: 100,
-        ...filters,
-      });
+      const resp = await memoryApi.listEntities(
+        filters,
+        { page: 1, pageSize: 100 }
+      );
       set({ entities: resp.data, loading: false });
     } catch (err) {
       set({ error: handleApiError(err), loading: false });

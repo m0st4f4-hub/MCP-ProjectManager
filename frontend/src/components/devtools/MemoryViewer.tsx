@@ -13,7 +13,10 @@ const MemoryViewer: React.FC = () => {
   useEffect(() => {
     const fetchEntities = async () => {
       try {
-        const resp = await memoryApi.listEntities({ skip: 0, limit: 20 });
+        const resp = await memoryApi.listEntities(undefined, {
+          page: 1,
+          pageSize: 20,
+        });
         setEntities(resp.data);
       } catch (err) {
         setError((err as Error).message);

@@ -6,6 +6,7 @@ from ....schemas.file_ingest import FileIngestInput
 
 from ....database import get_sync_db as get_db
 from ....services.memory_service import MemoryService
+from ....schemas.api_responses import PaginationParams
 from ....schemas.memory import MemoryEntity, MemoryEntityCreate, MemoryEntityUpdate
 from ....services.exceptions import (
     EntityNotFoundError,
@@ -75,12 +76,15 @@ def read_memory_entity_endpoint(
 def list_memory_entities_endpoint(
     type: Optional[str] = Query(None),
     name: Optional[str] = Query(None),
-    skip: int = Query(0),
-    limit: int = Query(100),
+    pagination: PaginationParams = Depends(),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
     try:
-        return memory_service.get_entities(type=type, name=name, skip=skip, limit=limit)
+        return memory_service.get_entities(
+            type=type,
+            name=name,
+            pagination=pagination,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
@@ -89,14 +93,12 @@ def list_memory_entities_endpoint(
 def read_entities_by_type(
     entity_type: str = Path(...),
     memory_service: MemoryService = Depends(get_memory_service),
-    skip: int = Query(0),
-    limit: int = Query(100),
+    pagination: PaginationParams = Depends(),
 ):
     try:
         return memory_service.get_entities_by_type(
             entity_type=entity_type,
-            skip=skip,
-            limit=limit,
+            pagination=pagination,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")

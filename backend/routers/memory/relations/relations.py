@@ -5,6 +5,7 @@ from typing import List, Optional
 from ....database import get_sync_db as get_db
 from ....services.memory_service import MemoryService  # Assuming relation management is part of memory service
 from ....schemas.memory import MemoryRelation, MemoryRelationCreate
+from ....schemas.api_responses import PaginationParams
 from ....services.exceptions import EntityNotFoundError, DuplicateEntityError
 
 router = APIRouter()
@@ -35,15 +36,14 @@ def create_relation(
 
 def read_relations_by_type(
     relation_type: str = Path(..., description="The type of relations to filter by."),
-    skip: int = Query(0, description="The number of items to skip before returning"
-        "results."),
-    limit: int = Query(100, description="The maximum number of items to return."),
+    pagination: PaginationParams = Depends(),
+    
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """Retrieve a list of memory relations filtered by type."""
     try:
         return memory_service.get_memory_relations_by_type(
-            relation_type=relation_type, skip=skip, limit=limit
+            relation_type=relation_type, pagination=pagination
         )
     except Exception as e:
         raise HTTPException(
@@ -57,9 +57,8 @@ def read_relations_between_entities(
     from_entity_id: int = Path(..., description="ID of the source entity."),
     to_entity_id: int = Path(..., description="ID of the target entity."),
     relation_type: Optional[str] = Query(None, description="Optional relation type to filter by."),
-    skip: int = Query(0, description="The number of items to skip before returning"
-        "results."),
-    limit: int = Query(100, description="The maximum number of items to return."),
+    pagination: PaginationParams = Depends(),
+    
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """Retrieve relations between two specific memory entities."""
@@ -68,8 +67,7 @@ def read_relations_between_entities(
             from_entity_id=from_entity_id,
             to_entity_id=to_entity_id,
             relation_type=relation_type,
-            skip=skip,
-            limit=limit,
+            pagination=pagination,
         )
     except Exception as e:
         raise HTTPException(

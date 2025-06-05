@@ -29,11 +29,13 @@ class DummyObsService:
         self.next_id += 1
         return obs
 
-    def get_observations(self, entity_id=None, search_query=None, skip=0, limit=100):
+    def get_observations(self, entity_id=None, search_query=None, pagination=None):
+        if pagination is None:
+            pagination = types.SimpleNamespace(offset=0, limit=100)
         obs = list(self.observations.values())
         if entity_id is not None:
             obs = [o for o in obs if o.entity_id == entity_id]
-        return obs[skip: skip + limit]
+        return obs[pagination.offset : pagination.offset + pagination.limit]
 
     def update_observation(self, observation_id: int, observation_update: MemoryObservationCreate):
         obs = self.observations.get(observation_id)
@@ -82,3 +84,16 @@ async def test_update_and_delete_observation():
 
         resp = await client.delete(f"/observations/{obs_id}")
         assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_read_observations_pagination():
+    dummy_service.add_observation_to_entity(1, MemoryObservationCreate(content="a"))
+    dummy_service.add_observation_to_entity(1, MemoryObservationCreate(content="b"))
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/observations/?page=2&pageSize=1")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["content"] == "b"

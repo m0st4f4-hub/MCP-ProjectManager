@@ -12,7 +12,8 @@ from ....auth import get_current_active_user
 from ....models import User as UserModel  # For type hinting current_user  # Import standardized API response models
 from ....schemas.api_responses import (
     DataResponse,
-    ListResponse  # Import Pydantic for bulk association schema
+    ListResponse,
+    PaginationParams,
 )
 from pydantic import BaseModel
 
@@ -40,21 +41,20 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
 
 async def get_project_files_endpoint(
     project_id: str,
-    skip: int = 0,
-    limit: int = 100,
+    pagination: PaginationParams = Depends(),
     project_file_service: ProjectFileAssociationService = Depends(get_project_file_association_service)
 ):
     """Get files associated with a project with pagination."""
     try:
-        all_files = await project_file_service.get_project_files(project_id, skip=0, limit=None)
-        files = await project_file_service.get_project_files(project_id, skip=skip, limit=limit)
+        all_files = await project_file_service.get_project_files(project_id, pagination=PaginationParams(page=1, pageSize=10**9))
+        files = await project_file_service.get_project_files(project_id, pagination=pagination)
         total = len(all_files)
         return ListResponse[schemas.ProjectFileAssociation](
             data=files,
             total=total,
-            page=skip // limit + 1,
-            page_size=limit,
-            has_more=skip + len(files) < total,
+            page=pagination.page,
+            page_size=pagination.page_size,
+            has_more=pagination.offset + len(files) < total,
             message=f"Retrieved {len(files)} project files"
         )
     except Exception as e:
