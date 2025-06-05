@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { getProjectMembers, addMemberToProject, removeMemberFromProject } from '@/services/api/projects';
+import { getProjectMembers } from '@/services/api/projects';
+import { mcpApi } from '@/services/api/mcp';
 import { ProjectMember, ProjectMemberRole } from '@/types/project';
 
 interface ProjectMembersProps {
@@ -36,7 +37,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
     if (!newMemberUserId || !newMemberRole) return;
 
     try {
-      await addMemberToProject(projectId, { project_id: projectId, user_id: newMemberUserId, role: newMemberRole as ProjectMemberRole });
+      await mcpApi.projectMember.add({ project_id: projectId, user_id: newMemberUserId, role: newMemberRole as ProjectMemberRole });
       setNewMemberUserId('');
       setNewMemberRole('');
       fetchMembers(); // Refresh the list
@@ -48,7 +49,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
 
   const handleRemoveMember = async (userId: string) => {
     try {
-      await removeMemberFromProject(projectId, userId);
+      await mcpApi.projectMember.remove({ project_id: projectId, user_id: userId });
       fetchMembers(); // Refresh the list
     } catch (err) {
       alert('Failed to remove member');
