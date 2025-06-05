@@ -42,7 +42,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
     <Box flex={1}>
       <TaskItem
         task={task}
-        projectName={task.project_name}
+        projectName={task.project_name ?? ''}
         onAssignAgent={onAssignAgent}
         onDeleteInitiate={onDelete}
         onClick={onClick}
