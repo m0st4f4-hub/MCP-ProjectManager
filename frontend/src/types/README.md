@@ -67,6 +67,15 @@ This directory centralizes all TypeScript type definitions, interfaces, enums, a
   - `TaskSortOptions`: Interface for task sorting options.
   - `TaskError`, `TaskResponse`, `TaskListResponse`: API-related types for tasks.
 
+### `workflow.ts`
+
+- **Purpose**: Defines schemas and types for **Workflows** and their steps.
+- **Key Exports**:
+  - `workflowSchema`, `Workflow`: Base workflow representation.
+  - `workflowCreateSchema`, `WorkflowCreateData`: For creating workflows.
+  - `workflowUpdateSchema`, `WorkflowUpdateData`: For updating workflows.
+  - `workflowStepSchema`, `WorkflowStep`: Represents individual workflow steps.
+
 ## Architecture Diagram
 ```mermaid
 graph TD
@@ -91,6 +100,7 @@ graph TD
 - `rules.ts`
 - `task.ts`
 - `user.ts`
+- `workflow.ts`
 
 <!-- File List End -->
 
