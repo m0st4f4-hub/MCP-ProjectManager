@@ -2,6 +2,23 @@ import { request } from "./request";
 import { AuditLog, AuditLogFilters } from "@/types/audit_log";
 import { buildApiUrl, API_CONFIG } from "./config";
 
+// Fetch audit logs with optional filters
+export const getAuditLogs = async (
+  filters?: AuditLogFilters & { project_id?: string }
+): Promise<AuditLog[]> => {
+  const queryParams = new URLSearchParams();
+  if (filters?.user_id) queryParams.append("user_id", filters.user_id);
+  if (filters?.project_id) queryParams.append("project_id", filters.project_id);
+  if (filters?.skip !== undefined) queryParams.append("skip", String(filters.skip));
+  if (filters?.limit !== undefined) queryParams.append("limit", String(filters.limit));
+  const queryString = queryParams.toString();
+  const url = buildApiUrl(
+    API_CONFIG.ENDPOINTS.AUDIT_LOGS,
+    queryString ? `?${queryString}` : ""
+  );
+  return request<AuditLog[]>(url);
+};
+
 // Fetch a single audit log entry by ID
 export const getAuditLogById = async (logId: string): Promise<AuditLog> => {
   return request<AuditLog>(buildApiUrl(API_CONFIG.ENDPOINTS.AUDIT_LOGS, `/${logId}`));
