@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { formatDisplayName, mapStatusToStatusID } from '../utils';
+import { getAllStatusIds } from '../statusUtils';
+import { TaskStatus } from '@/types/task';
 
 describe('Utils', () => {
   beforeEach(() => {
@@ -103,6 +105,18 @@ describe('Utils', () => {
       expect(mapStatusToStatusID(123)).toBe('TO_DO');
       // @ts-expect-error - testing runtime behavior with invalid types
       expect(mapStatusToStatusID({})).toBe('TO_DO');
+    });
+  });
+
+  describe('getAllStatusIds', () => {
+    it('returns the same enum values as TaskStatusEnum', () => {
+      const result = getAllStatusIds();
+      const enumIds = Object.keys(TaskStatus);
+      const filtered = result.filter((id) => enumIds.includes(id));
+      expect(filtered.length).toBe(enumIds.length);
+      enumIds.forEach((id) => {
+        expect(result).toContain(id);
+      });
     });
   });
 });

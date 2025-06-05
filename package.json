@@ -19,6 +19,7 @@
     "type-check": "npm --prefix frontend run type-check",
     "fix": "cd frontend && npm run fix",
     "format": "cd frontend && npm run format",
+    "generate": "python scripts/generate_ts_enums.py",
     "update-readmes": "python scripts/update_readmes.py",
     "prettier:check": "prettier --check .",
     "prettier:write": "prettier --write ."

@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@/__tests__/utils/test-utils'
+import { render, screen, waitFor, fireEvent, TestWrapper } from '@/__tests__/utils/test-utils'
 import { createMockTask, createMockTasks } from '@/__tests__/factories'
 import TaskList from '../TaskList'
 import { useTaskStore } from '@/store/taskStore'
@@ -109,7 +109,7 @@ describe('TaskList', () => {
         selector({ ...defaultStoreState, loading: true } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       expect(screen.getByTestId('task-loading')).toBeInTheDocument()
       expect(screen.getByText('Loading tasks...')).toBeInTheDocument()
@@ -123,7 +123,7 @@ describe('TaskList', () => {
         selector({ ...defaultStoreState, fetchTasks, fetchProjectsAndAgents } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       expect(fetchTasks).toHaveBeenCalledOnce()
       expect(fetchProjectsAndAgents).toHaveBeenCalledOnce()
@@ -141,7 +141,7 @@ describe('TaskList', () => {
         } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       expect(screen.getByTestId('task-error')).toBeInTheDocument()
       expect(screen.getByText('Error: Failed to fetch tasks')).toBeInTheDocument()
@@ -157,7 +157,7 @@ describe('TaskList', () => {
         } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       fireEvent.click(screen.getByTestId('retry-button'))
       expect(fetchTasks).toHaveBeenCalled()
@@ -172,7 +172,7 @@ describe('TaskList', () => {
         selector({ ...defaultStoreState, tasks } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       expect(screen.getByTestId('list-view')).toBeInTheDocument()
       expect(screen.getAllByTestId('task-item')).toHaveLength(3)
@@ -183,7 +183,7 @@ describe('TaskList', () => {
         selector({ ...defaultStoreState, tasks: [] } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       expect(screen.getByTestId('no-tasks')).toBeInTheDocument()
       expect(screen.getByTestId('add-task-button')).toBeInTheDocument()
@@ -198,7 +198,7 @@ describe('TaskList', () => {
         selector({ ...defaultStoreState, tasks } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       // Initially shows list view
       expect(screen.getByTestId('list-view')).toBeInTheDocument()
@@ -216,7 +216,7 @@ describe('TaskList', () => {
         selector({ ...defaultStoreState, tasks } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       expect(screen.getByTestId('task-controls')).toBeInTheDocument()
       expect(screen.getByTestId('search-input')).toBeInTheDocument()
@@ -229,7 +229,7 @@ describe('TaskList', () => {
         selector({ ...defaultStoreState, tasks } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       const searchInput = screen.getByTestId('search-input')
       fireEvent.change(searchInput, { target: { value: 'test search' } })
@@ -250,7 +250,7 @@ describe('TaskList', () => {
         } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       // Toast should appear for polling error
       await waitFor(() => {
@@ -270,7 +270,7 @@ describe('TaskList', () => {
         } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       await waitFor(() => {
         expect(clearMutationError).toHaveBeenCalledOnce()
@@ -284,7 +284,7 @@ describe('TaskList', () => {
         selector({ ...defaultStoreState, tasks: [] } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       fireEvent.click(screen.getByTestId('add-task-button'))
       
@@ -309,7 +309,7 @@ describe('TaskList', () => {
         selector({ ...defaultStoreState, tasks } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       expect(screen.getByText('Backend Task')).toBeInTheDocument()
     })
@@ -331,7 +331,7 @@ describe('TaskList', () => {
         selector({ ...defaultStoreState, tasks: [task] } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       expect(screen.getByText('Complete Task')).toBeInTheDocument()
     })
@@ -355,7 +355,7 @@ skSet = createMockTasks(100)
       )
 
       const startTime = performance.now()
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       const endTime = performance.now()
       
       // Should render within reasonable time (< 100ms for 100 tasks)
@@ -372,7 +372,7 @@ skSet = createMockTasks(100)
         selector({ ...defaultStoreState, tasks } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       // Should have proper landmark structure
       expect(screen.getByTestId('task-controls')).toBeInTheDocument()
@@ -386,7 +386,7 @@ skSet = createMockTasks(100)
         selector({ ...defaultStoreState, tasks } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       // Search input should be focusable
       const searchInput = screen.getByTestId('search-input')
@@ -404,7 +404,7 @@ skSet = createMockTasks(100)
         selector({ ...defaultStoreState, tasks } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       // Component should render successfully on mobile
       expect(screen.getByTestId('list-view')).toBeInTheDocument()
@@ -424,7 +424,7 @@ skSet = createMockTasks(100)
         } as any)
       )
 
-      render(<TaskList />)
+      render(<TaskList />, { wrapper: TestWrapper })
       
       expect(fetchTasks).toHaveBeenCalled()
       expect(fetchProjectsAndAgents).toHaveBeenCalled()
@@ -437,7 +437,7 @@ skSet = createMockTasks(100)
         selector(storeState as any)
       )
 
-      const { rerender } = render(<TaskList />)
+      const { rerender } = render(<TaskList />, { wrapper: TestWrapper })
       
       expect(screen.getByTestId('task-loading')).toBeInTheDocument()
       
@@ -447,7 +447,7 @@ skSet = createMockTasks(100)
         selector(storeState as any)
       )
       
-      rerender(<TaskList />)
+      rerender(<TaskList />, { wrapper: TestWrapper })
       
       expect(screen.queryByTestId('task-loading')).not.toBeInTheDocument()
       expect(screen.getAllByTestId('task-item')).toHaveLength(2)

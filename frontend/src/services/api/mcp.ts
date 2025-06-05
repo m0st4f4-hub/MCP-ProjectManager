@@ -19,6 +19,8 @@ import type {
   MCPProjectFileRemoveRequest,
   MCPProjectTemplateCreateRequest,
   MCPProjectTemplateDeleteRequest,
+  MCPRuleMandateCreateRequest,
+  MCPAgentRuleCreateRequest,
   MCPToolInfo,
 } from '@/types/mcp';
 import type { ProjectFileAssociation } from './projects';
@@ -322,12 +324,9 @@ export const mcpApi = {
 
   // --- Rule MCP Tools ---
   rule: {
-    createMandate: async (data: {
-      title: string;
-      description: string;
-      priority?: number;
-      is_active?: boolean;
-    }): Promise<MCPToolResponse> => {
+    createMandate: async (
+      data: MCPRuleMandateCreateRequest
+    ): Promise<MCPToolResponse> => {
       return await request<MCPToolResponse>(
         buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, '/rule/mandate/create'),
         {
@@ -337,12 +336,9 @@ export const mcpApi = {
       );
     },
 
-    createAgentRule: async (data: {
-      agent_id: string;
-      rule_type: string;
-      rule_content: string;
-      is_active?: boolean;
-    }): Promise<MCPToolResponse> => {
+    createAgentRule: async (
+      data: MCPAgentRuleCreateRequest
+    ): Promise<MCPToolResponse> => {
       return await request<MCPToolResponse>(
         buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, '/rule/agent/create'),
         {

@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '@/__tests__/utils/test-utils'
+import { render, screen, TestWrapper } from '@/__tests__/utils/test-utils'
 import { CheckIcon, TimeIcon, WarningIcon } from '@chakra-ui/icons'
 import TaskStatusTag from '../TaskStatusTag'
 
@@ -22,19 +22,19 @@ describe('TaskStatusTag', () => {
 
   describe('Basic Rendering', () => {
     it('should render task status tag with display name', () => {
-      render(<TaskStatusTag {...defaultProps} />)
+      render(<TaskStatusTag {...defaultProps} />, { wrapper: TestWrapper })
       
       expect(screen.getByText('In Progress')).toBeInTheDocument()
     })
 
     it('should apply default font weight when not specified', () => {
-      render(<TaskStatusTag {...defaultProps} />)
+      render(<TaskStatusTag {...defaultProps} />, { wrapper: TestWrapper })
       
       expect(screen.getByText('In Progress')).toBeInTheDocument()
     })
 
     it('should apply custom font weight when specified', () => {
-      render(<TaskStatusTag {...defaultProps} fontWeight="bold" />)
+      render(<TaskStatusTag {...defaultProps} fontWeight="bold" />, { wrapper: TestWrapper })
       
       expect(screen.getByText('In Progress')).toBeInTheDocument()
     })
@@ -43,12 +43,13 @@ describe('TaskStatusTag', () => {
   describe('Status Variants', () => {
     it('should render "To Do" status correctly', () => {
       render(
-        <TaskStatusTag 
+        <TaskStatusTag
           displayName="To Do"
           tagBg="gray.100"
           tagColor="gray.800"
           icon={TimeIcon}
-        />
+        />,
+        { wrapper: TestWrapper },
       )
       
       expect(screen.getByText('To Do')).toBeInTheDocument()
@@ -56,12 +57,13 @@ describe('TaskStatusTag', () => {
 
     it('should render "Completed" status correctly', () => {
       render(
-        <TaskStatusTag 
+        <TaskStatusTag
           displayName="Completed"
           tagBg="green.100"
           tagColor="green.800"
           icon={CheckIcon}
-        />
+        />,
+        { wrapper: TestWrapper },
       )
       
       expect(screen.getByText('Completed')).toBeInTheDocument()
@@ -71,11 +73,12 @@ describe('TaskStatusTag', () => {
   describe('Edge Cases', () => {
     it('should handle empty display name gracefully', () => {
       render(
-        <TaskStatusTag 
+        <TaskStatusTag
           displayName=""
           tagBg="gray.100"
           tagColor="gray.800"
-        />
+        />,
+        { wrapper: TestWrapper },
       )
       
       // Should still render the tag structure
@@ -86,11 +89,12 @@ describe('TaskStatusTag', () => {
     it('should handle very long display names', () => {
       const longName = 'This is a very long status name that might wrap or overflow'
       render(
-        <TaskStatusTag 
+        <TaskStatusTag
           displayName={longName}
           tagBg="blue.100"
           tagColor="blue.800"
-        />
+        />,
+        { wrapper: TestWrapper },
       )
       
       expect(screen.getByText(longName)).toBeInTheDocument()
@@ -99,11 +103,12 @@ describe('TaskStatusTag', () => {
     it('should handle special characters in display name', () => {
       const specialName = 'Status & Progress (50%)'
       render(
-        <TaskStatusTag 
+        <TaskStatusTag
           displayName={specialName}
           tagBg="blue.100"
           tagColor="blue.800"
-        />
+        />,
+        { wrapper: TestWrapper },
       )
       
       expect(screen.getByText(specialName)).toBeInTheDocument()
@@ -119,12 +124,13 @@ describe('TaskStatusTag', () => {
           .replace(/\b\w/g, l => l.toUpperCase())
         
         render(
-          <TaskStatusTag 
+          <TaskStatusTag
             key={status}
             displayName={displayName}
             tagBg="blue.100"
             tagColor="blue.800"
-          />
+          />,
+          { wrapper: TestWrapper },
         )
         
         expect(screen.getByText(displayName)).toBeInTheDocument()

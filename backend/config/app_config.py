@@ -26,11 +26,19 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
     DEBUG: bool = False  # Add debug setting
     
     # Rate limiting settings
     RATE_LIMIT_PER_MINUTE: int = 60
     USER_RATE_LIMIT_PER_MINUTE: int = 100
+
+    # OAuth configuration
+    OAUTH_CLIENT_ID: str = ""
+    OAUTH_CLIENT_SECRET: str = ""
+    OAUTH_SERVER_METADATA_URL: str = ""
+    OAUTH_REDIRECT_URI: str = "http://localhost:8000/auth/oauth/callback"
+    OAUTH_SCOPE: str = "openid email profile"
     
     # Add other configuration variables here as needed  # Add SettingsConfigDict - Allow extra fields to be more flexible
     model_config = SettingsConfigDict(env_file=".env", extra='ignore')
@@ -41,6 +49,15 @@ def __init__(self, **kwargs):
             self.SECRET_KEY = self.SECRET_KEY.strip()
         if hasattr(self, 'ALGORITHM'):
             self.ALGORITHM = self.ALGORITHM.strip()
+        for attr in [
+            'OAUTH_CLIENT_ID',
+            'OAUTH_CLIENT_SECRET',
+            'OAUTH_SERVER_METADATA_URL',
+            'OAUTH_REDIRECT_URI',
+            'OAUTH_SCOPE',
+        ]:
+            if hasattr(self, attr) and getattr(self, attr):
+                setattr(self, attr, getattr(self, attr).strip())
 
 settings = Settings()
 

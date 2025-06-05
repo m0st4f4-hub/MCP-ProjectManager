@@ -56,6 +56,14 @@ npm run update-readmes
 
 This ensures all `README.md` files reflect up-to-date directory contents.
 
+Run the enum generation script to sync frontend types with backend enums:
+
+```bash
+npm run generate
+```
+
+This writes `frontend/src/types/generatedEnums.ts`.
+
 ---
 
 ## 📐 Coding Standards

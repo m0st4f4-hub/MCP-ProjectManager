@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@/__tests__/utils/test-utils';
 import { useProjectData } from '../useProjectData';
 import { TaskStatus } from '@/types/task';
 import * as api from '@/services/api';

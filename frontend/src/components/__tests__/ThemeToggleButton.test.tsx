@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/__tests__/utils/test-utils';
+import { render, screen, TestWrapper } from '@/__tests__/utils/test-utils';
 import ThemeToggleButton from '../ThemeToggleButton';
 
 vi.mock('@chakra-ui/react', async () => {
@@ -23,7 +23,7 @@ describe('ThemeToggleButton', () => {
       toggleColorMode: toggle,
     } as any);
 
-    render(<ThemeToggleButton />);
+    render(<ThemeToggleButton />, { wrapper: TestWrapper });
     await screen.getByRole('button').click();
     expect(toggle).toHaveBeenCalled();
   });

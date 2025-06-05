@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 import {
   VStack,
   FormControl,
@@ -16,14 +16,14 @@ import {
   FormHelperText,
   useToken,
   Text,
-} from "@chakra-ui/react";
-import { SearchIcon } from "@chakra-ui/icons";
-import { useTaskStore } from "@/store/taskStore";
-import { TaskFilters, TaskSortOptions, TaskSortField } from "@/types";
-import { formatDisplayName } from "@/lib/utils";
-import { useProjectStore, ProjectState } from "@/store/projectStore";
-import { useAgentStore, AgentState } from "@/store/agentStore";
-import { sizing, shadows, typography } from "../../tokens";
+} from '@chakra-ui/react';
+import { SearchIcon } from '@chakra-ui/icons';
+import { useTaskStore } from '@/store/taskStore';
+import { TaskFilters, TaskSortOptions, TaskSortField } from '@/types';
+import { formatDisplayName } from '@/lib/utils';
+import { useProjectStore, ProjectState } from '@/store/projectStore';
+import { useAgentStore, AgentState } from '@/store/agentStore';
+import { sizing, shadows, typography } from '../../tokens';
 
 const FilterSidebar: React.FC = () => {
   const projectsFromStore = useTaskStore((state) => state.projects);
@@ -37,14 +37,14 @@ const FilterSidebar: React.FC = () => {
   const sortOptions = useTaskStore((state) => state.sortOptions);
   const setSortOptions = useTaskStore((state) => state.setSortOptions);
   const taskStoreFetchProjectsAndAgents = useTaskStore(
-    (state) => state.fetchProjectsAndAgents,
+    (state) => state.fetchProjectsAndAgents
   );
 
   const setProjectStoreFilters = useProjectStore(
-    (state: ProjectState) => state.setFilters,
+    (state: ProjectState) => state.setFilters
   );
   const setAgentStoreFilters = useAgentStore(
-    (state: AgentState) => state.setFilters,
+    (state: AgentState) => state.setFilters
   );
 
   const [
@@ -61,20 +61,20 @@ const FilterSidebar: React.FC = () => {
     iconAccentToken,
     interactiveNeutralHoverToken,
     interactiveNeutralActiveToken,
-  ] = useToken("colors", [
-    "surface",
-    "textPrimary",
-    "textSecondary",
-    "textPlaceholder",
-    "textLink",
-    "textLinkHover",
-    "borderDecorative",
-    "borderInteractive",
-    "borderFocused",
-    "iconPrimary",
-    "iconAccent",
-    "interactiveNeutralHover",
-    "interactiveNeutralActive",
+  ] = useToken('colors', [
+    'surface',
+    'textPrimary',
+    'textSecondary',
+    'textPlaceholder',
+    'textLink',
+    'textLinkHover',
+    'borderDecorative',
+    'borderInteractive',
+    'borderFocused',
+    'iconPrimary',
+    'iconAccent',
+    'interactiveNeutralHover',
+    'interactiveNeutralActive',
   ]);
 
   const uniqueAgentsForDropdown = React.useMemo(() => {
@@ -96,73 +96,73 @@ const FilterSidebar: React.FC = () => {
 
   const handleFilterChange = (
     field: keyof TaskFilters,
-    value: string | number | boolean | null,
+    value: string | number | boolean | null
   ) => {
     setFilters({ [field]: value });
   };
 
   const handleSortChange = (
-    field: TaskSortOptions["field"] | null,
-    direction: TaskSortOptions["direction"] | null,
+    field: TaskSortOptions['field'] | null,
+    direction: TaskSortOptions['direction'] | null
   ) => {
     if (field && direction) {
       setSortOptions({ field, direction });
     } else {
-      setSortOptions({ field: "created_at", direction: "desc" });
+      setSortOptions({ field: 'created_at', direction: 'desc' });
     }
   };
 
   const handleClearFilters = () => {
     setFilters({
-      status: "all",
+      status: 'all',
       projectId: undefined,
       agentId: undefined,
-      search: "",
+      search: '',
       hideCompleted: false,
       is_archived: false,
     });
     setProjectStoreFilters({
       is_archived: false,
-      search: "",
+      search: '',
       agentId: undefined,
-      status: "all",
+      status: 'all',
     });
-    setAgentStoreFilters({ is_archived: false, search: "", status: "all" });
-    setSortOptions({ field: "created_at", direction: "desc" });
+    setAgentStoreFilters({ is_archived: false, search: '', status: 'all' });
+    setSortOptions({ field: 'created_at', direction: 'desc' });
     taskStoreFetchProjectsAndAgents();
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    handleFilterChange("search", event.target.value);
+    handleFilterChange('search', event.target.value);
   };
 
   const formLabelStyles = {
-    fontFamily: typography.fontFamily.sans.join(", "),
+    fontFamily: typography.fontFamily.sans.join(', '),
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.medium,
     color: textSecondaryToken,
-    display: "block",
-    mb: sizing.spacing["1.5"],
+    display: 'block',
+    mb: sizing.spacing['1.5'],
     lineHeight: typography.lineHeight.regular,
   };
 
   const inputBaseStyles = {
-    fontFamily: typography.fontFamily.sans.join(", "),
+    fontFamily: typography.fontFamily.sans.join(', '),
     fontSize: typography.fontSize.base,
     h: sizing.height.lg,
     borderRadius: sizing.borderRadius.sm,
     bg: surfaceToken,
     borderWidth: sizing.borderWidth.DEFAULT,
-    borderStyle: "solid",
+    borderStyle: 'solid',
     borderColor: borderInteractiveToken,
     color: textPrimaryToken,
-    width: "100%",
-    boxSizing: "border-box",
-    appearance: "none",
-    position: "relative",
+    width: '100%',
+    boxSizing: 'border-box',
+    appearance: 'none',
+    position: 'relative',
     transition:
-      "background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
-    _placeholder: { color: textPlaceholderToken, fontStyle: "italic" },
+      'background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+    _placeholder: { color: textPlaceholderToken, fontStyle: 'italic' },
     _hover: {
       borderColor: borderInteractiveToken,
       bg: interactiveNeutralHoverToken,
@@ -170,7 +170,7 @@ const FilterSidebar: React.FC = () => {
     _focus: {
       borderColor: borderFocusedToken,
       boxShadow: shadows.outline,
-      outline: "none",
+      outline: 'none',
       bg: surfaceToken,
     },
   };
@@ -184,7 +184,7 @@ const FilterSidebar: React.FC = () => {
     iconSize: sizing.spacing[4],
     _hover: {
       ...inputBaseStyles._hover,
-      "+ .chakra-select__icon-wrapper svg": { color: iconAccentToken },
+      '+ .chakra-select__icon-wrapper svg': { color: iconAccentToken },
     },
   };
 
@@ -193,7 +193,7 @@ const FilterSidebar: React.FC = () => {
     paddingLeft: sizing.spacing[10],
     paddingRight: sizing.spacing[4],
     lineHeight: typography.lineHeight.regular,
-    textAlign: "left",
+    textAlign: 'left',
   };
 
   return (
@@ -249,13 +249,13 @@ const FilterSidebar: React.FC = () => {
             <Input
               type="text"
               placeholder="Search by title or description"
-              value={searchTermFilter || ""}
+              value={searchTermFilter || ''}
               onChange={handleSearchChange}
               sx={searchInputStyles}
             />
           </InputGroup>
           <FormHelperText
-            fontFamily={typography.fontFamily.sans.join(", ")}
+            fontFamily={typography.fontFamily.sans.join(', ')}
             fontSize={typography.fontSize.xs}
             color={textSecondaryToken}
             mt={sizing.spacing[1]}
@@ -269,13 +269,13 @@ const FilterSidebar: React.FC = () => {
           <FormLabel sx={formLabelStyles}>Status</FormLabel>
           <Select
             size="md"
-            value={statusFilter || ""}
+            value={statusFilter || ''}
             onChange={(e) =>
               handleFilterChange(
-                "status",
-                e.target.value === ""
-                  ? "all"
-                  : (e.target.value as TaskFilters["status"]) || null,
+                'status',
+                e.target.value === ''
+                  ? 'all'
+                  : (e.target.value as TaskFilters['status']) || null
               )
             }
             sx={selectInputStyles}
@@ -293,9 +293,9 @@ const FilterSidebar: React.FC = () => {
           <FormLabel sx={formLabelStyles}>Project</FormLabel>
           <Select
             size="md"
-            value={projectFilter || ""}
+            value={projectFilter || ''}
             onChange={(e) =>
-              handleFilterChange("projectId", e.target.value || null)
+              handleFilterChange('projectId', e.target.value || null)
             }
             placeholder="All Projects"
             sx={selectInputStyles}
@@ -312,9 +312,9 @@ const FilterSidebar: React.FC = () => {
           <FormLabel sx={formLabelStyles}>Agent</FormLabel>
           <Select
             size="md"
-            value={agentFilter || ""}
+            value={agentFilter || ''}
             onChange={(e) =>
-              handleFilterChange("agentId", e.target.value || null)
+              handleFilterChange('agentId', e.target.value || null)
             }
             placeholder="All Agents"
             sx={selectInputStyles}
@@ -328,7 +328,7 @@ const FilterSidebar: React.FC = () => {
         </FormControl>
 
         <Heading
-          fontFamily={typography.fontFamily.heading.join(", ")}
+          fontFamily={typography.fontFamily.heading.join(', ')}
           fontSize={typography.fontSize.md}
           fontWeight={typography.fontWeight.semibold}
           color={textPrimaryToken}
@@ -351,7 +351,7 @@ const FilterSidebar: React.FC = () => {
             onChange={(e) =>
               handleSortChange(
                 e.target.value as TaskSortField,
-                sortOptions.direction,
+                sortOptions.direction
               )
             }
             sx={{ ...selectInputStyles, flex: 1 }}
@@ -369,11 +369,11 @@ const FilterSidebar: React.FC = () => {
             onChange={(e) =>
               handleSortChange(
                 sortOptions.field,
-                e.target.value as "asc" | "desc",
+                e.target.value as 'asc' | 'desc'
               )
             }
             sx={selectInputStyles}
-            w={{ base: "120px", md: "140px" }}
+            w={{ base: '120px', md: '140px' }}
           >
             <option value="desc">Descending</option>
             <option value="asc">Ascending</option>
@@ -382,12 +382,12 @@ const FilterSidebar: React.FC = () => {
 
         <Button
           onClick={handleClearFilters}
-          fontFamily={typography.fontFamily.sans.join(", ")}
+          fontFamily={typography.fontFamily.sans.join(', ')}
           fontSize={typography.fontSize.sm}
           fontWeight={typography.fontWeight.medium}
           px={sizing.spacing[3]}
-          py="0.5rem"
-          h="2.25rem"
+          py={sizing.spacing[2]}
+          h={sizing.spacing[9]}
           borderRadius={sizing.borderRadius.sm}
           bg="transparent"
           borderWidth={sizing.borderWidth.DEFAULT}
@@ -408,10 +408,10 @@ const FilterSidebar: React.FC = () => {
             bg: interactiveNeutralActiveToken,
             borderColor: textLinkHoverToken,
             color: textLinkHoverToken,
-            transform: "translateY(1px)",
+            transform: 'translateY(1px)',
           }}
           _focusVisible={{
-            outline: "none",
+            outline: 'none',
             boxShadow: shadows.outline,
           }}
         >

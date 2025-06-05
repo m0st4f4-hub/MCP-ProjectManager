@@ -87,3 +87,15 @@ async def test_get_graph_endpoint():
         assert len(data["relations"]) == 1
         assert data["relations"][0]["from_entity_id"] == 1
         assert data["relations"][0]["to_entity_id"] == 2
+
+
+@pytest.mark.asyncio
+async def test_get_graph_root_endpoint():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/graph")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data["entities"]) == 2
+        assert len(data["relations"]) == 1
+        assert data["relations"][0]["from_entity_id"] == 1
+        assert data["relations"][0]["to_entity_id"] == 2

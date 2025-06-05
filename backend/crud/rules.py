@@ -227,7 +227,49 @@ async def delete_capability(
 
     await db.delete(db_capability)
     await db.commit()
-    return True  # Mandate operations
+    return True
+
+# Forbidden action operations
+
+async def add_forbidden_action(
+    db: AsyncSession,
+    role_id: str,
+    action: str,
+    reason: Optional[str] = None
+) -> models.AgentForbiddenAction:
+    """Create a forbidden action for an agent role."""
+    db_action = models.AgentForbiddenAction(
+        id=str(uuid.uuid4()).replace("-", ""),
+        agent_role_id=role_id,
+        action=action,
+        reason=reason,
+        is_active=True,
+    )
+    db.add(db_action)
+    await db.commit()
+    await db.refresh(db_action)
+    return db_action
+
+
+async def get_forbidden_actions(db: AsyncSession, role_id: str) -> List[models.AgentForbiddenAction]:
+    """List forbidden actions for a role."""
+    result = await db.execute(
+        select(models.AgentForbiddenAction).filter(models.AgentForbiddenAction.agent_role_id == role_id)
+    )
+    return result.scalars().all()
+
+
+async def remove_forbidden_action(db: AsyncSession, action_id: str) -> bool:
+    """Delete a forbidden action by ID."""
+    result = await db.execute(
+        select(models.AgentForbiddenAction).filter(models.AgentForbiddenAction.id == action_id)
+    )
+    db_action = result.scalar_one_or_none()
+    if not db_action:
+        return False
+    await db.delete(db_action)
+    await db.commit()
+    return True
 
 
 async def create_mandate(

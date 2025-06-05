@@ -14,6 +14,7 @@ from backend.config import (
     SECRET_KEY,
     ALGORITHM,
     ACCESS_TOKEN_EXPIRE_MINUTES,
+    REFRESH_TOKEN_EXPIRE_MINUTES,
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/login")
@@ -89,3 +90,28 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
+    """Create a JWT refresh token."""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = (
+            datetime.now(timezone.utc)
+            + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+        )
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def verify_refresh_token(token: str) -> str:
+    """Verify a refresh token and return the username."""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid refresh token",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    return verify_token(token, credentials_exception)
