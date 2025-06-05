@@ -43,6 +43,7 @@ const TaskList: React.FC = () => {
   const mutationError = useTaskStore((state) => state.mutationError);
   const clearMutationError = useTaskStore((state) => state.clearMutationError);
   const filters = useTaskStore((state) => state.filters);
+  const setFilters = useTaskStore((state) => state.setFilters);
 
   const [groupBy, setGroupBy] = useState<GroupByType>("status");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
@@ -96,6 +97,19 @@ const TaskList: React.FC = () => {
       });
     }
   }, [mutationError, toast, clearMutationError]);
+
+  // Update store search filter when search term changes
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setFilters({ search: searchTerm || "" });
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm, setFilters]);
+
+  // Sync local search term if filters change elsewhere
+  useEffect(() => {
+    setSearchTerm(filters.search || "");
+  }, [filters.search]);
 
   const handleOpenAddTaskModalCallback = useCallback(() => {
     onOpenAddTaskModal();

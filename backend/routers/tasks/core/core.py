@@ -178,6 +178,58 @@ async def get_tasks_list(
 
 
 @router.get(
+    "/search",
+    response_model=ListResponse[Task],
+    summary="Search Tasks",
+    tags=["Tasks"],
+    operation_id="tasks_search"
+)
+
+
+async def search_tasks_endpoint(
+    query: str = Query(..., description="Search term for task titles and descriptions."),
+    pagination: PaginationParams = Depends(),
+    is_archived: Optional[bool] = Query(
+        None,
+        description="Filter by archived status. False for non-archived, True for archived, null/None for all."
+    ),
+    task_service: TaskService = Depends(get_task_service)
+):
+    """Search tasks across all projects by title and description."""
+    try:
+        all_tasks = await task_service.get_all_tasks(
+            skip=0,
+            limit=None,
+            search=query,
+            is_archived=is_archived
+        )
+        total = len(all_tasks)
+
+        tasks = await task_service.get_all_tasks(
+            skip=pagination.offset,
+            limit=pagination.page_size,
+            search=query,
+            is_archived=is_archived
+        )
+
+        pydantic_tasks = [Task.model_validate(task) for task in tasks]
+
+        return ListResponse[Task](
+            data=pydantic_tasks,
+            total=total,
+            page=pagination.page,
+            page_size=pagination.page_size,
+            has_more=pagination.offset + len(pydantic_tasks) < total,
+            message=f"Found {len(pydantic_tasks)} matching tasks"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}"
+        )
+
+
+@router.get(
     "/{project_id}/tasks/{task_number}",
     response_model=DataResponse[Task],
     summary="Get Task by Project and Number",
