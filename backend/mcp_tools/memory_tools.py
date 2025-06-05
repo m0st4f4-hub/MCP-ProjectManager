@@ -162,3 +162,17 @@ async def get_memory_metadata_tool(
     except Exception as e:
         logger.error(f"MCP get memory metadata failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+async def search_graph_tool(query: str, limit: int = 10, db: Session = None) -> dict:
+    """MCP Tool: Search memory graph including relations."""
+    try:
+        service = MemoryService(db)
+        results = service.search_graph(query, limit)
+        return {"success": True, "results": results}
+    except HTTPException as e:
+        logger.error(f"MCP search graph failed with HTTP exception: {e.detail}")
+        raise e
+    except Exception as e:
+        logger.error(f"MCP search graph failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

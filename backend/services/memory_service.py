@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 import logging
 import os
 import httpx
@@ -54,8 +54,12 @@ class MemoryService:
         return delete_memory_entity(self.db, entity_id)
 
     def ingest_file(
-        self, ingest_input: FileIngestInput, user_id: Optional[str] = None
+        self,
+        ingest_input: Union[FileIngestInput, str],
+        user_id: Optional[str] = None,
     ) -> models.MemoryEntity:
+        if isinstance(ingest_input, str):
+            ingest_input = FileIngestInput(file_path=ingest_input)
         file_path = ingest_input.file_path
         try:
             if not os.path.exists(file_path):
@@ -390,3 +394,36 @@ class MemoryService:
         self, query: str, limit: int = 10
     ) -> List[models.MemoryEntity]:
         return self.get_memory_entities(name=query, limit=limit)
+
+    def search_graph(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """Search entities and return their relations."""
+        entities = self.search_memory_entities(query, limit)
+        graph_results = []
+        for ent in entities:
+            relations_from = [
+                {
+                    "id": rel.id,
+                    "to_entity_id": rel.to_entity_id,
+                    "relation_type": rel.relation_type,
+                }
+                for rel in ent.relations_as_from
+            ]
+            relations_to = [
+                {
+                    "id": rel.id,
+                    "from_entity_id": rel.from_entity_id,
+                    "relation_type": rel.relation_type,
+                }
+                for rel in ent.relations_as_to
+            ]
+            graph_results.append(
+                {
+                    "entity": {
+                        "id": ent.id,
+                        "entity_type": ent.entity_type,
+                    },
+                    "relations_from": relations_from,
+                    "relations_to": relations_to,
+                }
+            )
+        return graph_results
