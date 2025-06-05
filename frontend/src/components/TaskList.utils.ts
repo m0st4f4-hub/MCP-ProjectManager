@@ -3,6 +3,7 @@
 
 import { Task, TaskFilters, GroupByType, Project, Agent, TaskSortOptions } from "@/types";
 import { mapStatusToStatusID, formatDisplayName } from "@/lib/utils";
+import { TaskStatus } from "@/types/task";
 import * as statusUtils from "@/lib/statusUtils";
 import { sortTasks } from "@/store/taskStore";
 import type { TaskGroup, TaskSubgroup, GroupedTasks } from "./views/ListView.types";
@@ -89,7 +90,7 @@ function getStatusSubgroupsForProjectOrAgent(currentTasks: Task[], sortOptions: 
 export function groupTasksByStatus(topLevelTasks: Task[], sortOptions: TaskSortOptions): { type: GroupByType, groups: TaskGroup[] } {
   const tasksByStatusId: { [key: string]: Task[] } = {};
   topLevelTasks.forEach((task) => {
-    const currentTaskStatusId = (task.status || "TO_DO");
+    const currentTaskStatusId = task.status || TaskStatus.TO_DO;
     if (!tasksByStatusId[currentTaskStatusId]) {
       tasksByStatusId[currentTaskStatusId] = [];
     }
@@ -98,7 +99,7 @@ export function groupTasksByStatus(topLevelTasks: Task[], sortOptions: TaskSortO
 
   const allStatusIdsInTasks = Object.keys(tasksByStatusId);
   const preferredStatusOrder = [
-    "TO_DO",
+    TaskStatus.TO_DO,
     "IN_PROGRESS",
     "BLOCKED",
     "PENDING_VERIFICATION",
