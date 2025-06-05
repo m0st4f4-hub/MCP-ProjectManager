@@ -34,7 +34,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <ModalOverlay />
+      <ModalOverlay bg="overlayDefault" />
       <ModalContent
         bg="bgModal"
         color="onSurface"

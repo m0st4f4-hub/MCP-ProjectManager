@@ -67,7 +67,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl"> {/* Chakra UI Modal component */}
-      <ModalOverlay /> {/* Background overlay */}
+      <ModalOverlay bg="overlayDefault" /> {/* Background overlay */}
       <ModalContent
         bg="bgModal" // Custom background color from theme
         color="onSurface" // Custom text color from theme

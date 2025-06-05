@@ -23,7 +23,7 @@ const AddAgentModal: React.FC<AddAgentModalProps> = ({
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <ModalOverlay />
+      <ModalOverlay bg="overlayDefault" />
       <ModalContent
         bg="bgModal"
         color="onSurface"
