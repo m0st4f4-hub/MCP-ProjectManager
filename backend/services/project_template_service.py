@@ -5,9 +5,12 @@ from typing import List, Optional
 
 from ..models.project_template import ProjectTemplate as ProjectTemplateModel
 from ..schemas.project_template import ProjectTemplateCreate, ProjectTemplateUpdate
-from backend.crud import project_templates as project_template_crud  # Alias to avoid name collision
+# Alias to avoid name collision
+from backend.crud import project_templates as project_template_crud
+
 
 class ProjectTemplateService:
+
     def __init__(self, db: Session):
         self.db = db
 
@@ -23,13 +26,21 @@ class ProjectTemplateService:
         """Retrieve a single project template by name."""
         return project_template_crud.get_project_template_by_name(self.db, name)
 
-    def get_templates(self, skip: int = 0, limit: int = 100) -> List[ProjectTemplateModel]:
+    def get_templates(
+        self, skip: int = 0, limit: int = 100
+    ) -> List[ProjectTemplateModel]:
         """Retrieve multiple project templates."""
-        return project_template_crud.get_project_templates(self.db, skip, limit)
+        return project_template_crud.get_project_templates(
+            self.db, skip, limit
+        )
 
-    def update_template(self, template_id: str, template_update: ProjectTemplateUpdate) -> Optional[ProjectTemplateModel]:
+    def update_template(
+        self, template_id: str, template_update: ProjectTemplateUpdate
+    ) -> Optional[ProjectTemplateModel]:
         """Update a project template by ID."""
-        return project_template_crud.update_project_template(self.db, template_id, template_update)
+        return project_template_crud.update_project_template(
+            self.db, template_id, template_update
+        )
 
     def delete_template(self, template_id: str) -> bool:
         """Delete a project template by ID."""
