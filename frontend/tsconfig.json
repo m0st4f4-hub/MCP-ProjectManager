@@ -37,10 +37,6 @@
     "out",
     "src/**/*.test.ts",
     "src/**/*.test.tsx",
-    "src/**/__tests__/**",
-    "src/components/**",
-    "src/hooks/**",
-    "src/lib/**",
-    "src/types/**"
+    "src/**/__tests__/**"
   ]
 }
