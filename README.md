@@ -36,6 +36,7 @@ powershell dev_launcher.ps1   # PowerShell (Windows)
 
 See [`DEV_LAUNCHER_GUIDE.md`](./DEV_LAUNCHER_GUIDE.md) for complete setup instructions.
 For an overview of all dev scripts, see [`DEV_SCRIPTS.md`](./DEV_SCRIPTS.md).
+For required environment variables and defaults, check [`ENVIRONMENT_SETUP.md`](./ENVIRONMENT_SETUP.md).
 If you're contributing, read the [CONTRIBUTING.md](./CONTRIBUTING.md) guide.
 
 ---
@@ -96,6 +97,15 @@ uvicorn main:app --reload
 cd frontend
 npm install
 npm run dev
+```
+
+### Makefile Commands
+
+The root `Makefile` provides shortcuts for common tasks:
+
+```bash
+make migrate   # apply database migrations
+make format    # auto-fix Python and frontend code style
 ```
 
 ---
