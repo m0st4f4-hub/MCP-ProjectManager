@@ -114,6 +114,34 @@ to override the default `sql_app.db`.
 - **Production DB**: `backend\sql_app.db` (SQLite with async support)
 - **Test DB**: `backend\test.db` (Separate database for tests)
 - **Migrations**: Use Alembic for schema changes
+
+## ♻️ Recreating the Environment
+
+### Recreate the SQLite Database
+
+1. Remove the existing file if you want a clean start:
+   ```bash
+   rm backend/sql_app.db
+   ```
+2. Re-run migrations and the initialization script to create tables and seed data:
+   ```bash
+   cd backend
+   .venv/bin/alembic upgrade head    # Windows: .venv\Scripts\alembic.exe upgrade head
+   python init_db.py
+   ```
+
+### Recreate the `.venv`
+
+1. Delete the old virtual environment:
+   ```bash
+   rm -rf backend/.venv
+   ```
+2. Create a new one and install requirements:
+   ```bash
+   python3 -m venv backend/.venv
+   source backend/.venv/bin/activate   # Windows: backend\.venv\Scripts\activate
+   pip install -r backend/requirements.txt
+   ```
 ## 🛠️ Development Workflow
 
 ### 1. Make Code Changes
@@ -168,16 +196,19 @@ cd backend
 1. Make sure you're in the correct directory (`D:\mcp\task-manager`)
 2. Check that the virtual environment exists (`backend\.venv\`)
 3. Verify the `.env` file (copied from `.env.example`) has all required variables
+4. If the database is corrupted, delete `backend/sql_app.db` and run `python backend/init_db.py`
 
 ### Tests Failing
 1. Make sure the test database is not locked
 2. Run tests individually to isolate issues
 3. Check that imports work correctly
+4. Re-run migrations with `alembic upgrade head` if tables are missing
 
 ### Import Errors
 - The project is designed to run from the root directory
 - All imports should be relative to the `backend` package
 - Don't run files directly from the backend directory
+- Activate the virtual environment and install requirements with `pip install -r backend/requirements.txt`
 
 ## 🎯 Key Commands Reference
 
