@@ -4,3 +4,4 @@ export * from './agentStore';
 export * from './baseStore';
 export * from './authStore';
 export * from './memoryStore';
+export * from './templateStore';

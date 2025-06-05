@@ -19,6 +19,7 @@ import type {
   MCPProjectFileRemoveRequest,
   MCPToolInfo,
 } from '@/types/mcp';
+import type { ProjectFileAssociation } from './projects';
 
 export const mcpApi = {
   // --- Project MCP Tools ---
@@ -230,6 +231,29 @@ export const mcpApi = {
           body: JSON.stringify(data),
         }
       );
+    },
+
+    list: async (
+      projectId: string,
+      skip = 0,
+      limit = 100
+    ): Promise<ProjectFileAssociation[]> => {
+      const params = new URLSearchParams();
+      params.append('project_id', projectId);
+      params.append('skip', String(skip));
+      params.append('limit', String(limit));
+      const response = await request<{
+        files: { project_id: string; file_memory_entity_id: number }[];
+      }>(
+        buildApiUrl(
+          API_CONFIG.ENDPOINTS.MCP_TOOLS,
+          `/project/file/list?${params.toString()}`
+        )
+      );
+      return response.files.map((f) => ({
+        project_id: f.project_id,
+        file_id: String(f.file_memory_entity_id),
+      }));
     },
 
     remove: async (

@@ -81,12 +81,20 @@ class ProjectService:
     async def get_projects(
         self,
         skip: int = 0,
-        limit: int = 100,
+        limit: Optional[int] = 100,
         search: Optional[str] = None,
         status: Optional[str] = None,
-        is_archived: Optional[bool] = False
-        ) -> List[models.Project]:  # Delegate to CRUD and await
-        return await get_projects(self.db, skip, search, status, is_archived)  # Convert to async method and use await
+        is_archived: Optional[bool] = False,
+    ) -> List[models.Project]:
+        """Retrieve projects with optional pagination and filters."""
+        return await get_projects(
+            self.db,
+            skip=skip,
+            limit=limit,
+            search=search,
+            status=status,
+            is_archived=is_archived,
+        )
     async def create_project(
         self, project: ProjectCreate, created_by_user_id: Optional[str] = None
         ) -> models.Project:
@@ -157,8 +165,8 @@ class ProjectService:
                 "name": db_project_loaded.name,
                 "description": db_project_loaded.description,
                 "is_archived": db_project_loaded.is_archived,
-                "created_at": db_project_loaded.created_at,
-                "updated_at": db_project_loaded.updated_at,
+                "created_at": db_project_loaded.created_at.isoformat(),
+                "updated_at": db_project_loaded.updated_at.isoformat() if db_project_loaded.updated_at else None,
                 "task_count": db_project_loaded.task_count,  # Should be loaded integer  # Manually extract project_members and their users
                 "project_members": [
                     {
@@ -166,8 +174,8 @@ class ProjectService:
                         "project_id": str(member.project_id),
                         "user_id": str(member.user_id),
                         "role": member.role,
-                        "created_at": member.created_at,
-                        "updated_at": member.updated_at,
+                        "created_at": member.created_at.isoformat(),
+                        "updated_at": member.updated_at.isoformat() if member.updated_at else None,
                         "user": {  # Extract user details needed by ProjectMember schema
                             "id": str(member.user.id),  # Assuming User has an ID
                             "username": member.user.username,

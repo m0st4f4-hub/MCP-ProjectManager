@@ -1,50 +1,61 @@
-import { z } from "zod";
+import { z } from 'zod';
 // import { SortDirection, TaskSortField, TaskSortOptions } from "./index";
 
 // Task Status Enum matching backend TaskStatusEnum exactly
 export enum TaskStatus {
-  TO_DO = "To Do",
-  IN_PROGRESS = "In Progress",
-  IN_REVIEW = "In Review",
-  COMPLETED = "Completed",
-  BLOCKED = "Blocked",
-  CANCELLED = "Cancelled",
-  CONTEXT_ACQUIRED = "Context Acquired",
-  PLANNING_COMPLETE = "Planning Complete",
-  EXECUTION_IN_PROGRESS = "Execution In Progress",
-  PENDING_VERIFICATION = "Pending Verification",
-  VERIFICATION_COMPLETE = "Verification Complete",
-  VERIFICATION_FAILED = "Verification Failed",
-  COMPLETED_AWAITING_PROJECT_MANAGER = "Completed Awaiting Project Manager",
-  COMPLETED_HANDOFF = "Completed Handoff",
-  FAILED = "Failed",
-  IN_PROGRESS_AWAITING_SUBTASK = "In Progress Awaiting Subtask",
-  PENDING_RECOVERY_ATTEMPT = "Pending Recovery Attempt",
+  TO_DO = 'To Do',
+  IN_PROGRESS = 'In Progress',
+  IN_REVIEW = 'In Review',
+  COMPLETED = 'Completed',
+  BLOCKED = 'Blocked',
+  CANCELLED = 'Cancelled',
+  CONTEXT_ACQUIRED = 'Context Acquired',
+  PLANNING_COMPLETE = 'Planning Complete',
+  EXECUTION_IN_PROGRESS = 'Execution In Progress',
+  PENDING_VERIFICATION = 'Pending Verification',
+  VERIFICATION_COMPLETE = 'Verification Complete',
+  VERIFICATION_FAILED = 'Verification Failed',
+  COMPLETED_AWAITING_PROJECT_MANAGER = 'Completed Awaiting Project Manager',
+  COMPLETED_HANDOFF = 'Completed Handoff',
+  FAILED = 'Failed',
+  IN_PROGRESS_AWAITING_SUBTASK = 'In Progress Awaiting Subtask',
+  PENDING_RECOVERY_ATTEMPT = 'Pending Recovery Attempt',
 }
 
 export enum TaskPriority {
-  LOW = "low",
-  MEDIUM = "medium",
-  HIGH = "high",
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
 }
 
 // Base Task schema for validation
 export const taskSchema = z.object({
   project_id: z.string(),
   task_number: z.number(),
-  title: z.string().min(1, "Title is required"),
+  title: z.string().min(1, 'Title is required'),
   project_name: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   status: z.nativeEnum(TaskStatus).default(TaskStatus.TO_DO),
   agent_id: z.string().nullable().optional(),
   agent_name: z.string().nullable().optional(), // Backend includes this
   agent_status: z.string().nullable().optional(), // Backend includes this
-  created_at: z.string(),
-  updated_at: z.string().optional(),
+  created_at: z.string().datetime({ message: 'Invalid ISO datetime string' }),
+  updated_at: z
+    .string()
+    .datetime({ message: 'Invalid ISO datetime string' })
+    .optional(),
   is_archived: z.boolean().optional(),
   assigned_to: z.string().nullable().optional(),
-  start_date: z.string().datetime({ message: "Invalid datetime string" }).nullable().optional(),
-  due_date: z.string().datetime({ message: "Invalid datetime string" }).nullable().optional(),
+  start_date: z
+    .string()
+    .datetime({ message: 'Invalid datetime string' })
+    .nullable()
+    .optional(),
+  due_date: z
+    .string()
+    .datetime({ message: 'Invalid datetime string' })
+    .nullable()
+    .optional(),
 });
 
 // Runtime type for Task
@@ -54,16 +65,18 @@ export type Task = z.infer<typeof taskSchema> & {
 };
 
 // Schema for creating a new task
-export const taskCreateSchema = taskSchema.omit({
-  task_number: true,
-  created_at: true,
-  updated_at: true,
-}).extend({
-  // Add fields from backend TaskCreate if they are to be sent from frontend
-  // assigned_to is already in taskSchema and will be part of taskCreateSchema unless omitted
-  // start_date is already in taskSchema
-  // due_date is already in taskSchema
-});
+export const taskCreateSchema = taskSchema
+  .omit({
+    task_number: true,
+    created_at: true,
+    updated_at: true,
+  })
+  .extend({
+    // Add fields from backend TaskCreate if they are to be sent from frontend
+    // assigned_to is already in taskSchema and will be part of taskCreateSchema unless omitted
+    // start_date is already in taskSchema
+    // due_date is already in taskSchema
+  });
 
 export type TaskCreateData = z.infer<typeof taskCreateSchema>;
 
@@ -90,7 +103,7 @@ export interface TaskWithMeta extends Task {
 export interface TaskFilters {
   projectId?: string;
   agentId?: string;
-  status?: "all" | "completed" | "active";
+  status?: 'all' | 'completed' | 'active';
   search?: string;
   hideCompleted?: boolean;
   is_archived?: boolean | null;
@@ -124,7 +137,9 @@ export const taskFileAssociationBaseSchema = z.object({
 
 export const taskFileAssociationCreateSchema = taskFileAssociationBaseSchema;
 
-export type TaskFileAssociationCreateData = z.infer<typeof taskFileAssociationCreateSchema>;
+export type TaskFileAssociationCreateData = z.infer<
+  typeof taskFileAssociationCreateSchema
+>;
 
 export const taskFileAssociationSchema = taskFileAssociationBaseSchema.extend({
   task_project_id: z.string(), // The project ID of the associated task
@@ -144,7 +159,9 @@ export const taskDependencyBaseSchema = z.object({
 
 export const taskDependencyCreateSchema = taskDependencyBaseSchema;
 
-export type TaskDependencyCreateData = z.infer<typeof taskDependencyCreateSchema>;
+export type TaskDependencyCreateData = z.infer<
+  typeof taskDependencyCreateSchema
+>;
 
 export const taskDependencySchema = taskDependencyBaseSchema.extend({
   // If backend returns an ID for the relationship itself, add it here
@@ -158,7 +175,7 @@ export const taskCommentBaseSchema = z.object({
   task_project_id: z.string(),
   task_number: z.number(),
   user_id: z.string().nullable(), // Or a specific user schema/ID type
-  content: z.string().min(1, "Comment content cannot be empty"),
+  content: z.string().min(1, 'Comment content cannot be empty'),
 });
 
 export const taskCommentCreateSchema = taskCommentBaseSchema;
@@ -166,8 +183,11 @@ export type TaskCommentCreateData = z.infer<typeof taskCommentCreateSchema>;
 
 export const taskCommentSchema = taskCommentBaseSchema.extend({
   id: z.string(), // Unique ID for the comment
-  created_at: z.string(), // ISO date string
-  updated_at: z.string().optional(), // ISO date string
+  created_at: z.string().datetime({ message: 'Invalid ISO datetime string' }), // ISO date string
+  updated_at: z
+    .string()
+    .datetime({ message: 'Invalid ISO datetime string' })
+    .optional(), // ISO date string
 });
 
 export type TaskComment = z.infer<typeof taskCommentSchema>;

@@ -1,13 +1,13 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // User Role Enum matching backend UserRoleEnum
 export enum UserRole {
-  ADMIN = "admin",
-  MANAGER = "manager", 
-  ENGINEER = "engineer",
-  VIEWER = "viewer",
-  USER = "user",
-  AGENT = "agent"
+  ADMIN = 'admin',
+  MANAGER = 'manager',
+  ENGINEER = 'engineer',
+  VIEWER = 'viewer',
+  USER = 'user',
+  AGENT = 'agent',
 }
 
 // Define a schema for the UserRole object returned by the backend
@@ -43,8 +43,11 @@ export type UserUpdateData = z.infer<typeof userUpdateSchema>;
 export const userSchema = userBaseSchema.extend({
   id: z.string(),
   user_roles: z.array(userRoleObjectSchema).default([]),
-  created_at: z.string(),
-  updated_at: z.string().optional(),
+  created_at: z.string().datetime({ message: 'Invalid ISO datetime string' }),
+  updated_at: z
+    .string()
+    .datetime({ message: 'Invalid ISO datetime string' })
+    .optional(),
 });
 
 export type User = z.infer<typeof userSchema>;

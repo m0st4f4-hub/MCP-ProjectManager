@@ -1,35 +1,26 @@
-import { createStandaloneToast, UseToastOptions } from "@chakra-ui/react";
-
-export class ApiError extends Error {
-  status?: number;
-  code?: string | number;
-  constructor(message: string, status?: number, code?: string | number) {
-    super(message);
-    this.status = status;
-    this.code = code;
-  }
-}
+import { createStandaloneToast, UseToastOptions } from '@chakra-ui/react';
+import { ApiError } from '@/services/api/request';
 
 const { toast } = createStandaloneToast();
 
 export function handleApiError(
   error: unknown,
-  title = "API Error",
-  options?: Partial<UseToastOptions>,
+  title = 'API Error',
+  options?: Partial<UseToastOptions>
 ): void {
-  let description = "An unexpected error occurred.";
+  let description = 'An unexpected error occurred.';
   if (error instanceof ApiError) {
     description = error.message;
   } else if (error instanceof Error) {
     description = error.message;
-  } else if (typeof error === "string") {
+  } else if (typeof error === 'string') {
     description = error;
   }
 
   toast({
     title,
     description,
-    status: "error",
+    status: 'error',
     duration: 5000,
     isClosable: true,
     ...options,

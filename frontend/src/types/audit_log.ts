@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // --- Audit Log Schemas ---
 export const auditLogBaseSchema = z.object({
   action: z.string(),
   user_id: z.string().nullable().optional(), // Assuming user_id is string (UUID) and optional/nullable
-  timestamp: z.string(), // Backend uses datetime, can be string in frontend or converted
+  timestamp: z.string().datetime({ message: 'Invalid ISO datetime string' }), // Backend uses datetime, can be string in frontend or converted
   details: z.record(z.any()).nullable().optional(), // Assuming details is a dictionary
 });
 
@@ -24,4 +24,4 @@ export const auditLogFiltersSchema = z.object({
   limit: z.number().optional().default(100), // Assuming a default limit
 });
 
-export type AuditLogFilters = z.infer<typeof auditLogFiltersSchema>; 
+export type AuditLogFilters = z.infer<typeof auditLogFiltersSchema>;

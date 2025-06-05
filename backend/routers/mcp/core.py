@@ -3,7 +3,7 @@ MCP Core Tools Router - Functionality for Project and Task MCP integration.
 Provides MCP tool definitions.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 import logging
@@ -139,8 +139,8 @@ async def mcp_create_task(
     operation_id="list_projects_tool",
 )
 async def mcp_list_projects(
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(0, ge=0, description="Number of records to skip."),
+    limit: int = Query(100, gt=0, description="Maximum records to return."),
     is_archived: Optional[bool] = None,
     db: Session = Depends(get_db_session)
 ):
@@ -181,8 +181,8 @@ async def mcp_list_tasks(
     project_id: Optional[str] = None,
     status: Optional[str] = None,
     agent_id: Optional[str] = None,
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(0, ge=0, description="Number of records to skip."),
+    limit: int = Query(100, gt=0, description="Maximum records to return."),
     db: Session = Depends(get_db_session)
 ):
     """MCP Tool: List tasks with filtering."""

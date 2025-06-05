@@ -80,6 +80,20 @@ FastAPI-MCP is designed as a native extension of FastAPI, not just a converter t
 
 This design philosophy ensures minimum friction when adding MCP capabilities to your existing FastAPI services.
 
+## Tool Routes
+
+FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mcp-tools` prefix. The current routes are:
+
+- `/mcp-tools/project/create` (POST)
+- `/mcp-tools/task/create` (POST)
+- `/mcp-tools/projects/list` (GET)
+- `/mcp-tools/tasks/list` (GET)
+- `/mcp-tools/memory/add-entity` (POST)
+- `/mcp-tools/memory/update-entity` (POST)
+- `/mcp-tools/memory/add-observation` (POST)
+- `/mcp-tools/memory/add-relation` (POST)
+- `/mcp-tools/memory/search` (GET)
+
 ## Development and Contributing
 
 Thank you for considering contributing to FastAPI-MCP! We encourage the community to post Issues and create Pull Requests.
@@ -105,3 +119,4 @@ MIT License. Copyright (c) 2024 Tadata Inc.
 - `docs.json`
 
 <!-- File List End -->
+

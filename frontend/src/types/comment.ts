@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // --- Comment Schemas ---
 export const commentBaseSchema = z.object({
-  content: z.string().min(1, "Comment content is required"),
+  content: z.string().min(1, 'Comment content is required'),
   task_project_id: z.string().nullable().optional(),
   task_task_number: z.number().nullable().optional(),
   project_id: z.string().nullable().optional(),
@@ -16,15 +16,18 @@ export const commentCreateSchema = commentBaseSchema.omit({
 export type CommentCreateData = z.infer<typeof commentCreateSchema>;
 
 export const commentUpdateSchema = z.object({
-  content: z.string().min(1, "Comment content is required"),
+  content: z.string().min(1, 'Comment content is required'),
 });
 
 export type CommentUpdateData = z.infer<typeof commentUpdateSchema>;
 
 export const commentSchema = commentBaseSchema.extend({
   id: z.string(),
-  created_at: z.string(),
-  updated_at: z.string().optional(),
+  created_at: z.string().datetime({ message: 'Invalid ISO datetime string' }),
+  updated_at: z
+    .string()
+    .datetime({ message: 'Invalid ISO datetime string' })
+    .optional(),
   author_name: z.string().nullable().optional(), // Populated from user relationship
 });
 
