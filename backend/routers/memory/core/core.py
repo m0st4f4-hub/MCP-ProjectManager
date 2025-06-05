@@ -24,6 +24,17 @@ router = APIRouter(
 def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
     return MemoryService(db)
 
+
+@router.get("/graph")
+def get_knowledge_graph_endpoint(
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """Return all memory entities and their relations."""
+    try:
+        return memory_service.get_knowledge_graph()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+
 # =============================
 # CRUD Endpoints
 # =============================

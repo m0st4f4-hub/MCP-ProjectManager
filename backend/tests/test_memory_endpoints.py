@@ -48,6 +48,9 @@ class DummyService:
     def get_entity(self, entity_id: int):
         return self.entities.get(entity_id)
 
+    def get_knowledge_graph(self):
+        return {"entities": list(self.entities.values()), "relations": []}
+
 
 dummy_user = types.SimpleNamespace(id="user1")
 
@@ -132,3 +135,19 @@ async def test_root_ingest_url():
         )
         assert resp.status_code == 201
         assert resp.json()["content"] == "content from http://root.com"
+
+
+@pytest.mark.asyncio
+async def test_get_knowledge_graph():
+    dummy_service.ingest_text("a")
+    dummy_service.ingest_text("b")
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        resp = await client.get("/entities/graph")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "entities" in data and "relations" in data
+        assert len(data["entities"]) == 2
+        assert data["relations"] == []
