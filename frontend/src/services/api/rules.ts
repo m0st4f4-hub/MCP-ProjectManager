@@ -12,6 +12,7 @@ import type {
   UniversalMandateFilters,
   AgentRuleFilters,
 } from "@/types/rules";
+import type { AgentPromptTemplate } from "@/types/agent_prompt_template";
 
 export const rulesApi = {
   // --- Universal Mandate APIs ---
@@ -158,8 +159,8 @@ export const rulesApi = {
   // --- Rule Template APIs ---
   templates: {
     // Get all rule templates
-    list: async (): Promise<any[]> => {
-      const response = await request<{ data: any[] }>(
+    list: async (): Promise<AgentPromptTemplate[]> => {
+      const response = await request<{ data: AgentPromptTemplate[] }>(
         buildApiUrl(API_CONFIG.ENDPOINTS.RULES, "/templates")
       );
       return response.data;

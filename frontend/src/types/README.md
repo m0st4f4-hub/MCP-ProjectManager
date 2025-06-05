@@ -87,6 +87,7 @@ graph TD
 - `memory.ts`
 - `project.ts`
 - `project_template.ts`
+- `agent_prompt_template.ts`
 - `rules.ts`
 - `task.ts`
 - `user.ts`

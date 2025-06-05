@@ -12,6 +12,7 @@ import type {
   MemoryRelation,
   MemoryRelationCreateData,
   MemoryRelationFilters,
+  KnowledgeGraph,
 } from "@/types/memory";
 
 // --- Memory Entity APIs ---
@@ -148,8 +149,8 @@ export const memoryApi = {
 
   // --- Knowledge Graph APIs ---
   // Get the full knowledge graph
-  getKnowledgeGraph: async (): Promise<any> => {
-    const response = await request<{ data: any }>(
+  getKnowledgeGraph: async (): Promise<KnowledgeGraph> => {
+    const response = await request<{ data: KnowledgeGraph }>(
       buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, "/graph")
     );
     return response.data;
