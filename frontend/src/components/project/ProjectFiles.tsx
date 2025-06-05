@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Input, List, ListItem, useToast } from '@chakra-ui/react';
 import { mcpApi, memoryApi } from '@/services/api';
+import { useIngestFile } from '@/hooks/useMemory';
 import type { ProjectFileAssociation } from '@/services/api/projects';
 import TaskPagination from '../task/TaskPagination';
 
@@ -19,6 +20,7 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
   const [uploading, setUploading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
+  const { ingestFile } = useIngestFile();
 
   const fetchFiles = async () => {
     setLoading(true);
@@ -46,7 +48,7 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
     if (!filePath) return;
     setUploading(true);
     try {
-      const entity = await memoryApi.ingestFile(filePath);
+      const entity = await ingestFile(filePath);
       await mcpApi.projectFile.add({
         project_id: projectId,
         file_id: String(entity.id),

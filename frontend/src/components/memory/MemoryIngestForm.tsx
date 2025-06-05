@@ -15,6 +15,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { memoryApi } from "@/services/api";
+import { useIngestFile } from "@/hooks/useMemory";
 
 const MemoryIngestForm: React.FC = () => {
   const toast = useToast();
@@ -23,13 +24,14 @@ const MemoryIngestForm: React.FC = () => {
   const [url, setUrl] = useState("");
   const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { ingestFile } = useIngestFile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       if (mode === "file") {
-        await memoryApi.ingestFile(filePath);
+        await ingestFile(filePath);
       } else if (mode === "url") {
         await memoryApi.ingestUrl(url);
       } else {
