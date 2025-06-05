@@ -9,6 +9,7 @@ from ..schemas.memory import (
     MemoryEntityUpdate,
     MemoryObservationCreate,
     MemoryRelationCreate,
+    MemoryRelationUpdate,
 )
 from fastapi import HTTPException, status
 from typing import List, Optional, Dict, Any
@@ -133,6 +134,33 @@ async def create_memory_relation(db: AsyncSession, relation: MemoryRelationCreat
             await db.refresh(db_relationship)
             logger.debug(f"[DEBUG] create_memory_relation returned: {db_relationship}")  # Debug print
             return db_relationship
+
+
+async def update_memory_relation(
+    db: AsyncSession, relation_id: int, relation_update: MemoryRelationUpdate
+) -> Optional[MemoryRelationshipModel]:
+    """Update a memory relation by ID."""
+    logger.debug(
+        f"[DEBUG] update_memory_relation called with relation_id: {relation_id}, update_data: {relation_update.model_dump_json()}"
+    )
+    result = await db.execute(
+        select(MemoryRelationshipModel).where(MemoryRelationshipModel.id == relation_id)
+    )
+    db_relation = result.scalar_one_or_none()
+    if db_relation:
+        update_data = relation_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_relation, key, value)
+        await db.commit()
+        await db.refresh(db_relation)
+        logger.debug(
+            f"[DEBUG] update_memory_relation returned updated relation: {db_relation}"
+        )
+        return db_relation
+    logger.debug(
+        f"[DEBUG] update_memory_relation did not find relation with id {relation_id}"
+    )
+    return None
 
 async def delete_memory_relation(db: AsyncSession, relation_id: int):
             """Delete a memory relationship by ID."""  # This function was implicitly used, converting to async and adding debug

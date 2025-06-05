@@ -13,6 +13,7 @@ from ..schemas.memory import (
     MemoryEntityUpdate,
     MemoryObservationCreate,
     MemoryRelationCreate,
+    MemoryRelationUpdate,
     MemoryEntity,
     MemoryRelation,
 )
@@ -330,6 +331,20 @@ class MemoryService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Error creating memory relation",
             )
+
+    def update_memory_relation(
+        self, relation_id: int, relation_update: MemoryRelationUpdate
+    ) -> Optional[models.MemoryRelation]:
+        """Update an existing memory relation."""
+        db_relation = self.get_memory_relation(relation_id)
+        if not db_relation:
+            return None
+        for key, value in relation_update.model_dump(exclude_unset=True).items():
+            setattr(db_relation, key, value)
+        self.db.commit()
+        self.db.refresh(db_relation)
+        logger.info(f"Updated memory relation: {relation_id}")
+        return db_relation
 
     def get_memory_relation(
         self, relation_id: int

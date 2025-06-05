@@ -27,7 +27,8 @@ from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
     MemoryObservationCreate,
-    MemoryRelationCreate
+    MemoryRelationCreate,
+    MemoryRelationUpdate
 )
 from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
 from ....schemas.error_protocol import ErrorProtocolCreate
@@ -41,7 +42,8 @@ from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
     MemoryObservationCreate,
-    MemoryRelationCreate
+    MemoryRelationCreate,
+    MemoryRelationUpdate
 )
 
 logger = logging.getLogger(__name__)
@@ -607,6 +609,39 @@ async def mcp_add_memory_relation(
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"MCP add memory relation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/memory/update-relation",
+    tags=["mcp-tools"],
+    operation_id="update_relation_tool",
+)
+async def mcp_update_relation(
+    relation_id: int,
+    relation_data: MemoryRelationUpdate,
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """MCP Tool: Update a memory relation."""
+    try:
+        relation = memory_service.update_memory_relation(relation_id, relation_data)
+        if not relation:
+            raise HTTPException(status_code=404, detail="Relation not found")
+        return {
+            "success": True,
+            "relation": {
+                "id": relation.id,
+                "source_entity_id": relation.from_entity_id,
+                "target_entity_id": relation.to_entity_id,
+                "type": relation.relation_type,
+                "metadata": relation.metadata_,
+                "updated_at": relation.updated_at.isoformat() if relation.updated_at else None,
+            },
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"MCP update memory relation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

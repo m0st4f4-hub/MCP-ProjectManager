@@ -27,5 +27,6 @@ __all__ = [
     'remove_error_protocol_tool',
     'assign_role_tool',
     'list_roles_tool',
-    'remove_role_tool'
+    'remove_role_tool',
+    'update_relation_tool'
 ]

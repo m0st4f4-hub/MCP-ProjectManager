@@ -65,6 +65,22 @@ class MemoryRelationBase(BaseModel):
 class MemoryRelationCreate(MemoryRelationBase):
     pass
 
+
+class MemoryRelationUpdate(BaseModel):
+    """Schema for updating a memory relation."""
+    from_entity_id: Optional[int] = Field(
+        None, description="The ID of the source memory entity"
+    )
+    to_entity_id: Optional[int] = Field(
+        None, description="The ID of the target memory entity"
+    )
+    relation_type: Optional[str] = Field(
+        None, description="The type of the relationship"
+    )
+    metadata_: Optional[Dict[str, Any]] = Field(
+        None, description="Optional structured metadata for the relation"
+    )
+
 class MemoryRelation(MemoryRelationBase):
     """Schema for representing a memory relation in API responses, including relationships."""
     id: int = Field(..., description="Unique integer ID of the relation.")

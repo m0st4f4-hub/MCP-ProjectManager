@@ -10,6 +10,7 @@ import logging
 from backend.crud.memory import (
     create_memory_entity,
     create_memory_relation,
+    update_memory_relation,
     add_observation_to_entity,
     search_entities,
     get_memory_entity_by_name,
@@ -18,6 +19,7 @@ from backend.services.memory_service import MemoryService
 from backend.schemas.memory import (
     MemoryEntityCreate,
     MemoryRelationCreate,
+    MemoryRelationUpdate,
     MemoryObservationCreate,
 )
 
@@ -111,6 +113,43 @@ async def add_memory_relation_tool(
         raise e
     except Exception as e:
         logger.error(f"MCP add memory relation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def update_relation_tool(
+    relation_id: int,
+    relation_data: Dict[str, Any],
+    db: Session,
+) -> dict:
+    """MCP Tool: Update an existing relation."""
+    try:
+        relation_update = MemoryRelationUpdate(
+            from_entity_id=relation_data.get("from_entity_id"),
+            to_entity_id=relation_data.get("to_entity_id"),
+            relation_type=relation_data.get("relation_type"),
+            metadata_=relation_data.get("metadata"),
+        )
+        relation = await update_memory_relation(
+            db=db, relation_id=relation_id, relation_update=relation_update
+        )
+        if not relation:
+            raise HTTPException(status_code=404, detail="Relation not found")
+        return {
+            "success": True,
+            "relation": {
+                "id": relation.id,
+                "from_entity_id": relation.from_entity_id,
+                "to_entity_id": relation.to_entity_id,
+                "relation_type": relation.relation_type,
+            },
+        }
+    except HTTPException as e:
+        logger.error(
+            f"MCP update relation failed with HTTP exception: {e.detail}"
+        )
+        raise e
+    except Exception as e:
+        logger.error(f"MCP update relation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
