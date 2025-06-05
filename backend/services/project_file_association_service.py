@@ -20,9 +20,11 @@ class ProjectFileAssociationService:
     def get_files_for_project(self, project_id: str, skip: int = 0, limit: int = 100):
         return get_project_files(self.db, project_id, skip=skip, limit=limit)
 
-    async def get_project_files(self, project_id: str):
-        """Async wrapper for get_files_for_project."""
-        return self.get_files_for_project(project_id)
+    async def get_project_files(
+        self, project_id: str, skip: int = 0, limit: int = 100
+    ) -> List[models.ProjectFileAssociation]:
+        """Retrieve files for a project with optional pagination."""
+        return self.get_files_for_project(project_id, skip=skip, limit=limit)
 
     def associate_file_with_project(self, project_id: str, file_memory_entity_id: int):
         project_file = ProjectFileAssociationCreate(
