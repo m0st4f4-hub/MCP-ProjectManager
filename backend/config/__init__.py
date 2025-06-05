@@ -10,11 +10,14 @@ SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 REFRESH_TOKEN_EXPIRE_MINUTES = settings.REFRESH_TOKEN_EXPIRE_MINUTES
+<<<<<<< HEAD
 OAUTH_CLIENT_ID = settings.OAUTH_CLIENT_ID
 OAUTH_CLIENT_SECRET = settings.OAUTH_CLIENT_SECRET
 OAUTH_SERVER_METADATA_URL = settings.OAUTH_SERVER_METADATA_URL
 OAUTH_REDIRECT_URI = settings.OAUTH_REDIRECT_URI
 OAUTH_SCOPE = settings.OAUTH_SCOPE
+=======
+>>>>>>> codex/add-and-manage-refresh-token-functionality
 
 __all__ = [
     'configure_logging',
@@ -22,9 +25,12 @@ __all__ = [
     'ALGORITHM',
     'ACCESS_TOKEN_EXPIRE_MINUTES',
     'REFRESH_TOKEN_EXPIRE_MINUTES',
+<<<<<<< HEAD
     'OAUTH_CLIENT_ID',
     'OAUTH_CLIENT_SECRET',
     'OAUTH_SERVER_METADATA_URL',
     'OAUTH_REDIRECT_URI',
     'OAUTH_SCOPE',
+=======
+>>>>>>> codex/add-and-manage-refresh-token-functionality
 ]
