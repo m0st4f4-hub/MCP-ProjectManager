@@ -106,14 +106,19 @@ Before opening a Pull Request, ensure the following tests and linters pass:
 ```bash
 cd frontend
 npm run lint
-npm test
+npm run type-check
+cd ..
+npm run prettier:check
+cd frontend
+npx vitest run --coverage.v8 --coverage-threshold=90
 ```
 
 ### Backend
 
 ```bash
 cd backend
-pytest
+flake8 .
+pytest --cov=. --cov-fail-under=90
 ```
 
 All tests and linters must pass locally before submitting a PR.

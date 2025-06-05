@@ -38,9 +38,10 @@ jobs:
       - name: Test with coverage
         run: |
           cd backend
-          pytest --cov=. --cov-report=xml
+          pytest --cov=. --cov-report=xml --cov-fail-under=90
 
       - name: Upload Python coverage artifact
+        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage
@@ -63,6 +64,15 @@ jobs:
           cd frontend
           npm install
 
+      - name: Check formatting
+        run: |
+          npm run prettier:check
+
+      - name: Lint
+        run: |
+          cd frontend
+          npm run lint
+
       - name: Type check
         run: |
           cd frontend
@@ -71,9 +81,10 @@ jobs:
       - name: Test with coverage
         run: |
           cd frontend
-          npm run test:coverage
+          npx vitest run --coverage.v8 --coverage-threshold=90
 
       - name: Upload frontend coverage artifact
+        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
