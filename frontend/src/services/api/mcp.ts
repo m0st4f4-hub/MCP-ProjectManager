@@ -273,9 +273,9 @@ export const mcpApi = {
   rule: {
     createMandate: async (data: {
       title: string;
-      content: string;
+      description: string;
       priority?: number;
-      category?: string;
+      is_active?: boolean;
     }): Promise<MCPToolResponse> => {
       return await request<MCPToolResponse>(
         buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, '/rule/mandate/create'),
@@ -290,6 +290,7 @@ export const mcpApi = {
       agent_id: string;
       rule_type: string;
       rule_content: string;
+      is_active?: boolean;
     }): Promise<MCPToolResponse> => {
       return await request<MCPToolResponse>(
         buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, '/rule/agent/create'),

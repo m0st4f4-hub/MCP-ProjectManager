@@ -83,5 +83,6 @@ graph TD
 - `index.ts`
 - `projectStore.ts`
 - `taskStore.ts`
+- `memoryStore.ts`
 
 <!-- File List End -->
