@@ -23,6 +23,26 @@ class AgentHandoffCriteriaCreate(AgentHandoffCriteriaBase):
     pass
 
 
+class AgentHandoffCriteriaUpdate(BaseModel):
+    """Schema for updating handoff criteria."""
+
+    agent_role_id: Optional[str] = Field(
+        None, description="ID of the related agent role."
+    )
+    criteria: Optional[str] = Field(
+        None, description="Handoff trigger criteria."
+    )
+    description: Optional[str] = Field(
+        None, description="Optional description of the criteria."
+    )
+    target_agent_role: Optional[str] = Field(
+        None, description="Suggested target agent role for handoff."
+    )
+    is_active: Optional[bool] = Field(
+        None, description="Whether this criteria is active."
+    )
+
+
 class AgentHandoffCriteria(AgentHandoffCriteriaBase):
     """Schema representing handoff criteria."""
 
