@@ -12,7 +12,9 @@ from ..schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
     MemoryObservationCreate,
-    MemoryRelationCreate
+    MemoryRelationCreate,
+    MemoryEntity,
+    MemoryRelation,
 )
 from ..schemas.file_ingest import FileIngestInput
 from ..crud.memory import (
@@ -389,4 +391,36 @@ class MemoryService:
     def search_memory_entities(
         self, query: str, limit: int = 10
     ) -> List[models.MemoryEntity]:
-        return self.get_memory_entities(name=query, limit=limit)
+        return (
+            self.db.query(models.MemoryEntity)
+            .filter(models.MemoryEntity.content.ilike(f"%{query}%"))
+            .limit(limit)
+            .all()
+        )
+
+    def get_knowledge_graph(self) -> Dict[str, List[Dict[str, Any]]]:
+        nodes = []
+        edges = []
+
+        entities = self.db.query(models.MemoryEntity).all()
+        relations = self.db.query(models.MemoryRelation).all()
+
+        for entity in entities:
+            nodes.append({
+                "id": entity.id,
+                "type": entity.type,
+                "name": entity.name,
+                "description": entity.description,
+                "metadata": entity.metadata_
+            })
+
+        for relation in relations:
+            edges.append({
+                "id": relation.id,
+                "from": relation.from_entity_id,
+                "to": relation.to_entity_id,
+                "type": relation.relation_type,
+                "description": relation.metadata_,
+                "metadata": relation.metadata_
+            })
+        return {"nodes": nodes, "edges": edges}
