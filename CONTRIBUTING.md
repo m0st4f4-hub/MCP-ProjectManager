@@ -40,7 +40,7 @@ pre-commit install
 ### What gets checked:
 
 * **Backend**: `flake8` runs on Python files
-* **Frontend**: `npm run lint` runs on JS/TS files
+* **Frontend**: `npm run lint` and `npm run type-check` run on JS/TS files (the type check can also be triggered from the repo root with `npm run type-check`)
 
 These checks will automatically run on every commit.
 
@@ -64,7 +64,7 @@ This ensures all `README.md` files reflect up-to-date directory contents.
 * Keep code self-explanatory and remove unused code.
 * **Frontend**:
 
-  * Run: `npm run lint`, `npm run fix`, and `npm run format` before committing.
+  * Run: `npm run lint`, `npm run type-check`, `npm run fix`, and `npm run format` before committing.
 * **Backend**:
 
   * Run: `flake8` and ensure no style violations or unused imports remain.

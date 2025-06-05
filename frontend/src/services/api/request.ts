@@ -1,4 +1,4 @@
-import { StatusID } from "@/lib/statusUtils";
+import { StatusID } from '@/lib/statusUtils';
 
 /** Error type thrown when API requests fail */
 export class ApiError extends Error {
@@ -7,7 +7,7 @@ export class ApiError extends Error {
 
   constructor(message: string, status: number, url: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.status = status;
     this.url = url;
   }
@@ -16,44 +16,52 @@ export class ApiError extends Error {
 // Helper to normalize status string to a known StatusID
 export const normalizeToStatusID = (
   backendStatus: string | null | undefined,
-  completedFlag: boolean,
+  completedFlag: boolean
 ): StatusID => {
   if (completedFlag) {
-    return "Completed";
+    return 'Completed';
   }
   if (backendStatus) {
     const validStatuses: StatusID[] = [
-      "To Do",
-      "In Progress",
-      "In Review",
-      "Completed",
-      "Blocked",
-      "Cancelled",
+      'To Do',
+      'In Progress',
+      'In Review',
+      'Completed',
+      'Blocked',
+      'Cancelled',
     ];
     if (validStatuses.includes(backendStatus as StatusID)) {
       return backendStatus as StatusID;
     }
 
     console.warn(
-      `Unknown backend status string: "${backendStatus}". Defaulting to "To Do".`,
+      `Unknown backend status string: "${backendStatus}". Defaulting to "To Do".`
     );
-    return "To Do";
+    return 'To Do';
   }
-  return "To Do";
+  return 'To Do';
 };
 
 // Helper function to handle API requests
 export async function request<T>(
   url: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): Promise<T> {
   const headers: HeadersInit = {
     ...(options.headers || {}),
   };
 
+  if (!('Authorization' in headers)) {
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (token) {
+      (headers as Record<string, string>).Authorization = `Bearer ${token}`;
+    }
+  }
+
   const method = options.method?.toUpperCase();
-  if (method === "POST" || method === "PUT" || method === "PATCH") {
-    (headers as Record<string, string>)["Content-Type"] = "application/json";
+  if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+    (headers as Record<string, string>)['Content-Type'] = 'application/json';
   }
 
   let response: Response;
@@ -63,7 +71,7 @@ export async function request<T>(
       headers,
     });
   } catch (err) {
-    throw new ApiError((err as Error).message || "Network Error", 0, url);
+    throw new ApiError((err as Error).message || 'Network Error', 0, url);
   }
 
   if (!response.ok) {
@@ -96,8 +104,8 @@ export async function request<T>(
 
   if (
     responseData &&
-    typeof responseData === "object" &&
-    "data" in responseData
+    typeof responseData === 'object' &&
+    'data' in responseData
   ) {
     return responseData.data as T;
   }

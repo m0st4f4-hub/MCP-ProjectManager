@@ -32,6 +32,12 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+### Type Checking
+
+Run `npm run type-check` to ensure the TypeScript codebase compiles without errors. This command runs `tsc --noEmit` using the configuration in `tsconfig.json`.
+
+At the repository root there is a matching `type-check` script that simply invokes the frontend command, allowing you to execute the check from either location.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

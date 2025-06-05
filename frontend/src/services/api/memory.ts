@@ -78,6 +78,42 @@ export const memoryApi = {
     );
   },
 
+  // Ingest a file from the server filesystem
+  ingestFile: async (filePath: string): Promise<MemoryEntity> => {
+    const response = await request<MemoryEntityResponse>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, "/entities/ingest/file"),
+      {
+        method: "POST",
+        body: JSON.stringify({ file_path: filePath }),
+      }
+    );
+    return response.data;
+  },
+
+  // Ingest content directly from a URL
+  ingestUrl: async (url: string): Promise<MemoryEntity> => {
+    const response = await request<MemoryEntityResponse>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, "/ingest-url"),
+      {
+        method: "POST",
+        body: JSON.stringify({ url }),
+      }
+    );
+    return response.data;
+  },
+
+  // Ingest a raw text snippet
+  ingestText: async (text: string): Promise<MemoryEntity> => {
+    const response = await request<MemoryEntityResponse>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, "/ingest-text"),
+      {
+        method: "POST",
+        body: JSON.stringify({ text }),
+      }
+    );
+    return response.data;
+  },
+
   // --- Memory Observation APIs ---
   // Add an observation to an entity
   addObservation: async (data: MemoryObservationCreateData): Promise<MemoryObservation> => {

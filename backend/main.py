@@ -221,3 +221,6 @@ def _define_custom_routes(app: FastAPI):
             "routes": routes,
             "mcp_project_manager_tools_documentation": "\n".join(md)
         }
+
+
+app = FastAPI()

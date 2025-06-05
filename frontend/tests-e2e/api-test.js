@@ -149,3 +149,65 @@ test('Direct API Request Test', async ({ request }) => {
   const deleteResponse = await request.delete(`http://localhost:8000/api/v1/projects/project-123/tasks/${taskNumber}`);
   expect(deleteResponse.ok()).toBeTruthy();
 });
+
+test('MCP Memory Entity CRUD', async ({ request }) => {
+  // Create a memory entity using the MCP API
+  const createRes = await request.post('http://localhost:8000/api/mcp/mcp-tools/memory/add-entity', {
+    data: {
+      entity_type: 'text',
+      content: 'mcp e2e entity',
+      source: 'e2e-test'
+    }
+  });
+  expect(createRes.ok()).toBeTruthy();
+  const createData = await createRes.json();
+  const entityId = createData.entity.id;
+
+  // Update the memory entity
+  const updateRes = await request.post(`http://localhost:8000/api/mcp/mcp-tools/memory/update-entity?entity_id=${entityId}`, {
+    data: {
+      content: 'mcp e2e entity updated'
+    }
+  });
+  expect(updateRes.ok()).toBeTruthy();
+
+  // Delete the entity using the core memory API
+  const deleteRes = await request.delete(`http://localhost:8000/api/memory/entities/${entityId}`);
+  expect(deleteRes.ok()).toBeTruthy();
+});
+
+test('Memory ingestion endpoints', async ({ request }) => {
+  const user = `e2e-${Date.now()}`;
+
+  // Create a user
+  const userRes = await request.post('http://localhost:8000/api/v1/users', {
+    data: {
+      username: user,
+      email: `${user}@example.com`,
+      password: 'password123',
+      roles: ['manager']
+    }
+  });
+  expect(userRes.ok()).toBeTruthy();
+
+  // Login to obtain access token
+  const loginRes = await request.post('http://localhost:8000/api/v1/login', {
+    data: { username: user, password: 'password123' }
+  });
+  expect(loginRes.ok()).toBeTruthy();
+  const tokenData = await loginRes.json();
+  const headers = { Authorization: `Bearer ${tokenData.access_token}` };
+
+  // Ingest text into memory
+  const ingestRes = await request.post('http://localhost:8000/api/memory/entities/ingest/text', {
+    data: { text: 'hello memory' },
+    headers
+  });
+  expect(ingestRes.ok()).toBeTruthy();
+  const ingestData = await ingestRes.json();
+  const memId = ingestData.id;
+
+  // Clean up ingested entity
+  const delRes = await request.delete(`http://localhost:8000/api/memory/entities/${memId}`, { headers });
+  expect(delRes.ok()).toBeTruthy();
+});
