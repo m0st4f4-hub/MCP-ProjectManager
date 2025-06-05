@@ -42,3 +42,12 @@ frontend or manage the full stack.
 
 These scripts simplify local development by automating common setup and startup
 steps. See `DEV_LAUNCHER_GUIDE.md` for more launcher details.
+
+## `validate_alignment.py`
+- **Purpose:** Check that backend endpoints and MCP tools are reachable.
+- **What it does:** Launches the backend (if needed) and sends test requests to various API routes. Flags allow running specific suites.
+- **Usage:**
+  ```bash
+  python validate_alignment.py --projects --tasks
+  ```
+  Run without flags to execute the full validation suite.
