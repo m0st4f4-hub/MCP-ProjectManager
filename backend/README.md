@@ -47,6 +47,19 @@ backend\.venv\Scripts\pytest.exe backend\tests\test_audit_logs_crud.py -v
 # From the project root
 backend\.venv\Scripts\pytest.exe backend\tests\test_async_example.py backend\tests\test_projects_crud.py backend\tests\test_tasks_crud.py backend\tests\test_agents_crud.py backend\tests\test_comments_crud.py backend\tests\test_audit_logs_crud.py -v
 ```
+
+## 🧺 Linting
+
+Run `flake8` before committing to ensure Python code meets the project style.
+
+```bash
+cd backend
+flake8 .
+```
+
+Fix any issues reported. The helper script `comprehensive_flake8_fixer.py` can
+automatically clean common violations.
+
 ## 📁 Project Structure
 
 ```
