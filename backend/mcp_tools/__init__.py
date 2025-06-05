@@ -1,7 +1,6 @@
-"""
-MCP Tools package initialization.
-"""
+"""MCP Tools package initialization."""
 
+from .memory_tools import search_graph_tool
 
 __all__ = [
     'create_project_tool',

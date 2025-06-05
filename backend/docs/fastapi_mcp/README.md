@@ -93,6 +93,7 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/memory/add-observation` (POST)
 - `/mcp-tools/memory/add-relation` (POST)
 - `/mcp-tools/memory/search` (GET)
+- `/mcp-tools/memory/search-graph` (GET)
 - `/mcp-tools/forbidden-action/create` (POST)
 - `/mcp-tools/forbidden-action/list` (GET)
 - `/mcp-tools/handoff/create` (POST)
@@ -104,6 +105,12 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/template/create` (POST)
 - `/mcp-tools/template/list` (GET)
 - `/mcp-tools/template/delete` (POST)
+
+Both `/mcp-tools/memory/search` and `/mcp-tools/memory/search-graph` accept the
+following query parameters:
+
+- `query` – the text to search for in memory entity content.
+- `limit` – maximum number of results to return (default `10`).
 
 ### Forbidden Action Tools
 
