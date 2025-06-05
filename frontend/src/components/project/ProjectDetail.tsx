@@ -1,10 +1,20 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getProjectById, deleteProject, archiveProject, unarchiveProject } from '@/services/api/projects';
+import {
+  getProjectById,
+  deleteProject,
+  archiveProject,
+  unarchiveProject,
+  exportProject,
+} from '@/services/api/projects';
 import { Project } from '@/types/project';
-import { generateProjectManagerPlanningPrompt, PlanningRequestData, PlanningResponseData } from '@/services/api/planning';
+import {
+  generateProjectManagerPlanningPrompt,
+  PlanningRequestData,
+  PlanningResponseData,
+} from '@/services/api/planning';
 import ProjectMembers from './ProjectMembers';
 import ProjectFiles from './ProjectFiles';
 import { getAllTasksForProject } from '@/services/api/tasks';
@@ -95,13 +105,35 @@ const ProjectDetail: React.FC = () => {
     }
   };
 
+  const handleExport = async () => {
+    if (!project) return;
+    try {
+      const data = await exportProject(project.id);
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${project.name}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Failed to export project');
+      console.error(err);
+    }
+  };
+
   const handleGeneratePlanningPrompt = async () => {
     if (!project || !planningGoal) return;
     setPlanningLoading(true);
     setPlanningError(null);
     try {
       const data: PlanningRequestData = { goal: planningGoal };
-      const response: PlanningResponseData = await generateProjectManagerPlanningPrompt(data);
+      const response: PlanningResponseData =
+        await generateProjectManagerPlanningPrompt(data);
       setPlanningPrompt(response.prompt);
     } catch (err) {
       setPlanningError('Failed to generate planning prompt');
@@ -131,6 +163,7 @@ const ProjectDetail: React.FC = () => {
         <button onClick={handleDelete}>Delete Project</button>
         <button onClick={handleArchive}>Archive Project</button>
         <button onClick={handleUnarchive}>Unarchive Project</button>
+        <button onClick={handleExport}>Download JSON</button>
       </div>
 
       <ProjectMembers projectId={project.id} />
@@ -168,7 +201,10 @@ const ProjectDetail: React.FC = () => {
           value={planningGoal}
           onChange={(e) => setPlanningGoal(e.target.value)}
         />
-        <button onClick={handleGeneratePlanningPrompt} disabled={planningLoading || !planningGoal}>
+        <button
+          onClick={handleGeneratePlanningPrompt}
+          disabled={planningLoading || !planningGoal}
+        >
           {planningLoading ? 'Generating...' : 'Generate Prompt'}
         </button>
       </div>
