@@ -16,24 +16,24 @@ vi.mock('@chakra-ui/react', async () => {
 vi.mock('@/services/api', () => ({
   mcpApi: {
     projectFile: {
-      list: vi.fn(),
       add: vi.fn(),
       remove: vi.fn(),
     },
   },
+  getProjectFiles: vi.fn(),
   memoryApi: {
     ingestFile: vi.fn(),
   },
 }));
 
-const { mcpApi, memoryApi } = await import('@/services/api');
+const { mcpApi, memoryApi, getProjectFiles } = await import('@/services/api');
 
 describe('ProjectFiles', () => {
   const user = userEvent.setup();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (mcpApi.projectFile.list as any).mockResolvedValue([]);
+    (getProjectFiles as any).mockResolvedValue({ data: [], total: 0 });
   });
 
   it('refreshes list after upload', async () => {
@@ -44,7 +44,7 @@ describe('ProjectFiles', () => {
       </TestWrapper>
     );
     await waitFor(() =>
-      expect(mcpApi.projectFile.list).toHaveBeenCalledWith('p1', 0, 10)
+      expect(getProjectFiles).toHaveBeenCalledWith('p1', 0, 10)
     );
     const input = screen.getByPlaceholderText('/path/to/file.txt');
     await user.type(input, '/tmp/file.txt');
@@ -56,22 +56,23 @@ describe('ProjectFiles', () => {
         file_id: '1',
       })
     );
-    await waitFor(() =>
-      expect(mcpApi.projectFile.list).toHaveBeenCalledTimes(2)
-    );
+    await waitFor(() => expect(getProjectFiles).toHaveBeenCalledTimes(2));
   });
 
   it('refreshes list after deletion', async () => {
-    (mcpApi.projectFile.list as any)
-      .mockResolvedValueOnce([{ project_id: 'p1', file_id: '1' }])
-      .mockResolvedValueOnce([]);
+    (getProjectFiles as any)
+      .mockResolvedValueOnce({
+        data: [{ project_id: 'p1', file_id: '1' }],
+        total: 1,
+      })
+      .mockResolvedValueOnce({ data: [], total: 0 });
     render(
       <TestWrapper>
         <ProjectFiles projectId="p1" />
       </TestWrapper>
     );
     await waitFor(() =>
-      expect(mcpApi.projectFile.list).toHaveBeenCalledWith('p1', 0, 10)
+      expect(getProjectFiles).toHaveBeenCalledWith('p1', 0, 10)
     );
     await user.click(screen.getByRole('button', { name: /delete/i }));
     await waitFor(() =>
@@ -80,8 +81,6 @@ describe('ProjectFiles', () => {
         file_id: '1',
       })
     );
-    await waitFor(() =>
-      expect(mcpApi.projectFile.list).toHaveBeenCalledTimes(2)
-    );
+    await waitFor(() => expect(getProjectFiles).toHaveBeenCalledTimes(2));
   });
 });

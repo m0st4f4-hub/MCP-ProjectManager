@@ -5,6 +5,8 @@ import {
   ProjectFilters,
   ProjectMember,
   ProjectMemberCreateData,
+  ProjectFileAssociation,
+  ProjectFileAssociationListResponse,
 } from '@/types';
 import { request } from './request';
 import { buildApiUrl, API_CONFIG } from './config';
@@ -208,12 +210,6 @@ export const removeMemberFromProject = async (
   );
 };
 
-export interface ProjectFileAssociation {
-  project_id: string;
-  file_id: string;
-  // Potentially add file details here if the backend relation includes them, or fetch separately
-}
-
 export interface AssociateFileWithProjectData {
   file_id: string;
 }
@@ -222,12 +218,12 @@ export const getProjectFiles = async (
   projectId: string,
   skip = 0,
   limit = 100
-): Promise<ProjectFileAssociation[]> => {
+): Promise<ProjectFileAssociationListResponse> => {
   const params = new URLSearchParams();
   params.append('skip', String(skip));
   params.append('limit', String(limit));
   const query = params.toString();
-  return request<ProjectFileAssociation[]>(
+  return request<ProjectFileAssociationListResponse>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/files?${query}`)
   );
 };
