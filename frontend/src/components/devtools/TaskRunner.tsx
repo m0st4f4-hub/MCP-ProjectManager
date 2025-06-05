@@ -12,7 +12,8 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { createTask } from "@/services/api";
-import type { Task } from "@/types";
+import type { Task, TaskCreateData } from "@/types";
+import { TaskStatus } from "@/types";
 
 const TaskRunner: React.FC = () => {
   const [projectId, setProjectId] = useState("");
@@ -26,7 +27,13 @@ const TaskRunner: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const newTask = await createTask(projectId, { title, description });
+      const taskData: TaskCreateData = {
+        project_id: projectId,
+        title,
+        description,
+        status: TaskStatus.TO_DO,
+      };
+      const newTask = await createTask(projectId, taskData);
       setTask(newTask);
     } catch (err) {
       setError((err as Error).message);
