@@ -22,6 +22,8 @@ interface RawProject {
 // Fetch all projects
 export const getProjects = async (
   filters?: ProjectFilters,
+  skip = 0,
+  limit = 100,
 ): Promise<Project[]> => {
   const queryParams = new URLSearchParams();
   if (filters?.search) queryParams.append("search", filters.search);
@@ -29,6 +31,8 @@ export const getProjects = async (
   if (filters?.is_archived !== undefined && filters?.is_archived !== null) {
     queryParams.append("is_archived", String(filters.is_archived));
   }
+  queryParams.append("skip", String(skip));
+  queryParams.append("limit", String(limit));
   const queryString = queryParams.toString();
   const url = buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, queryString ? `?${queryString}` : "");
   const rawProjects = await request<RawProject[]>(url);

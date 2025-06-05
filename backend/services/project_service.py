@@ -81,12 +81,20 @@ class ProjectService:
     async def get_projects(
         self,
         skip: int = 0,
-        limit: int = 100,
+        limit: Optional[int] = 100,
         search: Optional[str] = None,
         status: Optional[str] = None,
-        is_archived: Optional[bool] = False
-        ) -> List[models.Project]:  # Delegate to CRUD and await
-        return await get_projects(self.db, skip, search, status, is_archived)  # Convert to async method and use await
+        is_archived: Optional[bool] = False,
+    ) -> List[models.Project]:
+        """Retrieve projects with optional pagination and filters."""
+        return await get_projects(
+            self.db,
+            skip=skip,
+            limit=limit,
+            search=search,
+            status=status,
+            is_archived=is_archived,
+        )
     async def create_project(
         self, project: ProjectCreate, created_by_user_id: Optional[str] = None
         ) -> models.Project:
