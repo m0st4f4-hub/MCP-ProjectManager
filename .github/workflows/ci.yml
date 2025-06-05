@@ -40,6 +40,16 @@ jobs:
           cd backend
           pytest --cov=. --cov-report=xml
 
+      - name: Generate OpenAPI schema
+        run: |
+          python scripts/update_openapi.py
+
+      - name: Commit OpenAPI schema
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update OpenAPI schema"
+          file_pattern: backend/openapi.json
+
       - name: Upload Python coverage artifact
         uses: actions/upload-artifact@v4
         with:
