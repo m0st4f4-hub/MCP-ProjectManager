@@ -56,6 +56,18 @@ npm run update-readmes
 
 This ensures all `README.md` files reflect up-to-date directory contents.
 
+### Generate shared TypeScript types
+
+Whenever you modify the Pydantic models under `backend/schemas`, regenerate the
+frontend type definitions:
+
+```bash
+npm run gen-types
+```
+
+This writes the file `frontend/src/types/generated.ts`. Commit the updated file
+so the frontend stays in sync with the backend.
+
 ---
 
 ## 📐 Coding Standards

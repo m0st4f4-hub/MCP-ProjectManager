@@ -1,13 +1,7 @@
 import { z } from 'zod';
 import { Task } from './task';
 import { SortDirection } from './index';
-
-// Project Member Role Enum matching backend ProjectMemberRole
-export enum ProjectMemberRole {
-  OWNER = 'owner',
-  MEMBER = 'member',
-  VIEWER = 'viewer',
-}
+import { ProjectMemberRole } from './generated';
 
 // Base Project schema for validation
 export const projectSchema = z.object({

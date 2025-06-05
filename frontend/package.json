@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
+    "gen-types": "python ../scripts/generate_ts_models.py",
     "fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix --config ./eslint.config.cjs",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "export": "next build && next export",
