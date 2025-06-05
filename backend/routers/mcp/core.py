@@ -353,7 +353,7 @@ async def mcp_list_project_files(
 ):
     """MCP Tool: List files associated with a project."""
     try:
-        associations = service.get_files_for_project(project_id, skip, limit)
+        associations = await service.get_project_files(project_id, skip, limit)
         return {
             "success": True,
             "files": [
