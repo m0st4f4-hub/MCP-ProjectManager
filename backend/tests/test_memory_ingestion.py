@@ -1,10 +1,12 @@
 from unittest.mock import MagicMock, patch
 from datetime import datetime, timezone
+import asyncio
 
 import pytest
 
 from backend.services.memory_service import MemoryService
 from backend.schemas.memory import MemoryEntity
+from backend.schemas.file_ingest import FileIngestInput
 
 
 @pytest.fixture
@@ -36,30 +38,41 @@ def memory_service():
     return service
 
 
-def test_ingest_text_and_retrieve(memory_service):
-    entity = memory_service.ingest_text("hello world", user_id="u1")
+@pytest.mark.asyncio
+async def test_ingest_text_and_retrieve(memory_service):
+    entity = await memory_service.ingest_text("hello world", user_id="u1")
 
     assert entity.content == "hello world"
     assert memory_service.get_entity(entity.id) == entity
 
 
-@patch("backend.services.memory_service.httpx.get")
-def test_ingest_url_and_retrieve(mock_get, memory_service):
-    mock_get.return_value.text = "from web"
-    mock_get.return_value.status_code = 200
+@patch("backend.services.memory_service.httpx.AsyncClient")
+@pytest.mark.asyncio
+async def test_ingest_url_and_retrieve(mock_client_cls, memory_service):
+    mock_client = MagicMock()
+    mock_response = MagicMock(status_code=200, text="from web")
+    mock_client.get.return_value = asyncio.Future()
+    mock_client.get.return_value.set_result(mock_response)
+    mock_client.__aenter__.return_value = mock_client
+    mock_client.__aexit__.return_value = asyncio.Future()
+    mock_client.__aexit__.return_value.set_result(None)
+    mock_client_cls.return_value = mock_client
 
-    entity = memory_service.ingest_url("http://example.com", user_id="u2")
-
-    mock_get.assert_called_once_with("http://example.com")
+    entity = await memory_service.ingest_url("http://example.com", user_id="u2")
+    mock_client.get.assert_called_once_with("http://example.com")
     assert entity.content == "from web"
     assert memory_service.get_entity(entity.id) == entity
 
 
-def test_ingest_file_and_retrieve(tmp_path, memory_service):
+@pytest.mark.asyncio
+async def test_ingest_file_and_retrieve(tmp_path, memory_service):
     f = tmp_path / "sample.txt"
     f.write_text("file content", encoding="utf-8")
 
-    entity = memory_service.ingest_file(str(f), user_id="u3")
+    entity = await memory_service.ingest_file(
+        FileIngestInput(file_path=str(f)),
+        user_id="u3",
+    )
 
     assert entity.content == "file content"
     assert memory_service.get_entity(entity.id) == entity
