@@ -11,4 +11,5 @@ export * from "./mcp";
 export * from "./users";
 export * from "./audit_logs";
 export * from "./project_templates";
+export * from "./verification_requirements";
 export * from "./error_protocols";
