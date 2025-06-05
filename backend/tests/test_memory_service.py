@@ -5,6 +5,7 @@ from fastapi import HTTPException
 
 from backend.services.memory_service import MemoryService
 from backend.schemas.file_ingest import FileIngestInput
+from backend.schemas.memory import MemoryRelationCreate
 
 
 def test_delete_memory_entity_no_error():
@@ -65,3 +66,60 @@ def test_ingest_file_unsupported_encoding(tmp_path):
     with patch("builtins.open", side_effect=[decode_error, decode_error]):
         with pytest.raises(HTTPException):
             service.ingest_file(FileIngestInput(file_path=str(tmp_file)))
+
+
+def make_query_mock(result=None):
+    """Helper to mock SQLAlchemy query.filter().filter().first()."""
+    query = MagicMock()
+    query.filter.return_value = query
+    query.first.return_value = result
+    return query
+
+
+def test_update_memory_relation_success():
+    session = MagicMock()
+    service = MemoryService(session)
+
+    relation = MagicMock()
+    service.get_memory_relation = MagicMock(return_value=relation)
+    service.get_memory_entity_by_id = MagicMock(return_value=MagicMock())
+    session.query.return_value = make_query_mock(None)
+
+    update = MemoryRelationCreate(
+        from_entity_id=2, to_entity_id=3, relation_type="ref", metadata_={"a": 1}
+    )
+    result = service.update_memory_relation(1, update)
+
+    assert result is relation
+    assert relation.from_entity_id == 2
+    assert relation.to_entity_id == 3
+    assert relation.relation_type == "ref"
+    assert relation.metadata_ == {"a": 1}
+    session.commit.assert_called_once()
+    session.refresh.assert_called_once_with(relation)
+
+
+def test_update_memory_relation_not_found():
+    session = MagicMock()
+    service = MemoryService(session)
+    service.get_memory_relation = MagicMock(return_value=None)
+
+    update = MemoryRelationCreate(from_entity_id=1, to_entity_id=2, relation_type="x")
+    result = service.update_memory_relation(1, update)
+
+    assert result is None
+    session.commit.assert_not_called()
+
+
+def test_update_memory_relation_duplicate_error():
+    session = MagicMock()
+    service = MemoryService(session)
+
+    relation = MagicMock()
+    service.get_memory_relation = MagicMock(return_value=relation)
+    service.get_memory_entity_by_id = MagicMock(return_value=MagicMock())
+    session.query.return_value = make_query_mock(MagicMock())
+
+    update = MemoryRelationCreate(from_entity_id=1, to_entity_id=2, relation_type="t")
+    with pytest.raises(HTTPException):
+        service.update_memory_relation(1, update)

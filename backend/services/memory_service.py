@@ -338,6 +338,67 @@ class MemoryService:
             .first()
         )
 
+    def update_memory_relation(
+        self, relation_id: int, relation_update: MemoryRelationCreate
+    ) -> Optional[models.MemoryRelation]:
+        """Update an existing memory relation."""
+        db_relation = self.get_memory_relation(relation_id)
+        if not db_relation:
+            return None
+
+        # Validate referenced entities exist if changing them
+        if relation_update.from_entity_id != db_relation.from_entity_id:
+            if not self.get_memory_entity_by_id(relation_update.from_entity_id):
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=(
+                        "Source entity with ID "
+                        f"{relation_update.from_entity_id} not found"
+                    ),
+                )
+        if relation_update.to_entity_id != db_relation.to_entity_id:
+            if not self.get_memory_entity_by_id(relation_update.to_entity_id):
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=(
+                        "Target entity with ID "
+                        f"{relation_update.to_entity_id} not found"
+                    ),
+                )
+
+        # Ensure no duplicate relation with same from/to/type
+        existing = (
+            self.db.query(models.MemoryRelation)
+            .filter(models.MemoryRelation.id != relation_id)
+            .filter(
+                models.MemoryRelation.from_entity_id
+                == relation_update.from_entity_id,
+                models.MemoryRelation.to_entity_id == relation_update.to_entity_id,
+                models.MemoryRelation.relation_type
+                == relation_update.relation_type,
+            )
+            .first()
+        )
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    "Relation of type '"
+                    f"{relation_update.relation_type}' already exists "
+                    f"between entity {relation_update.from_entity_id} "
+                    f"and entity {relation_update.to_entity_id}"
+                ),
+            )
+
+        db_relation.from_entity_id = relation_update.from_entity_id
+        db_relation.to_entity_id = relation_update.to_entity_id
+        db_relation.relation_type = relation_update.relation_type
+        db_relation.metadata_ = relation_update.metadata_
+
+        self.db.commit()
+        self.db.refresh(db_relation)
+        return db_relation
+
     def get_relations_for_entity(
         self, entity_id: int, relation_type: Optional[str] = None
     ) -> List[models.MemoryRelation]:
