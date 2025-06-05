@@ -65,6 +65,16 @@ export interface StatusAttributeObject {
   dynamicDisplayNamePattern?: string;          // pattern with {value} placeholder
 }
 
+/**
+ * Shape for objects returned by display helper functions.
+ */
+export interface DisplayableStatus {
+  displayName: string;
+  colorScheme: string;
+  icon?: ElementType | string;
+  dynamicValue?: string;
+}
+
 /* ────────────────────────────────────────────────────────────── */
 /* Canonical Status Map                                          */
 /* ────────────────────────────────────────────────────────────── */
@@ -446,9 +456,7 @@ export function getStatusAttributes(statusId: StatusID): StatusAttributeObject |
 export function getDisplayableStatus(
   statusId: string,
   fallback?: string,
-):
-  | { displayName: string; colorScheme: string; icon?: ElementType | string; dynamicValue?: string }
-  | undefined {
+): DisplayableStatus | undefined {
   let base: StatusAttributeObject | undefined;
   let extracted = fallback;
 
@@ -483,7 +491,7 @@ export function getDisplayableStatus(
 export function getFallbackDisplayableStatus(
   original: string,
   fallback?: string,
-): { displayName: string; colorScheme: string; icon?: ElementType | string; dynamicValue?: string } {
+): DisplayableStatus {
   const title =
     fallback ||
     original
