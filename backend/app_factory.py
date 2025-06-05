@@ -14,6 +14,7 @@ from sqlalchemy import text
 
 from .database import get_db, Base, engine
 from .middleware import init_middleware
+from .config.settings import settings as config_settings
 
 try:
     from fastapi_mcp import FastApiMCP
@@ -58,7 +59,7 @@ logging.config.dictConfig(log_config)
 logger = logging.getLogger(__name__)
 
 
-def include_app_routers(application: FastAPI) -> None:
+def include_app_routers(application: FastAPI, enable_mcp: bool = True) -> None:
     """Include all application routers."""
     try:
         from .routers import users
@@ -149,16 +150,17 @@ def include_app_routers(application: FastAPI) -> None:
     except ImportError as e:
         logger.warning(f"Could not import memory router: {e}")
 
-    try:
-        from .routers import mcp
-        application.include_router(
-            mcp.router,
-            prefix="/api/mcp",
-            tags=["mcp"],
-        )
-        logger.info("MCP router included successfully")
-    except ImportError as e:
-        logger.warning(f"Could not import mcp router: {e}")
+    if enable_mcp:
+        try:
+            from .routers import mcp
+            application.include_router(
+                mcp.router,
+                prefix="/api/mcp",
+                tags=["mcp"],
+            )
+            logger.info("MCP router included successfully")
+        except ImportError as e:
+            logger.warning(f"Could not import mcp router: {e}")
 
     try:
         from .routers import rules
@@ -344,10 +346,10 @@ def create_app() -> FastAPI:
             media_type="text/html",
         )
 
-    include_app_routers(app)
+    include_app_routers(app, enable_mcp=config_settings.ENABLE_MCP)
     _rebuild_pydantic_models()
 
-    if FastApiMCP is not None:
+    if config_settings.ENABLE_MCP and FastApiMCP is not None:
         mcp = FastApiMCP(
             app,
             name="Task Manager MCP",
@@ -359,6 +361,7 @@ def create_app() -> FastAPI:
         class MockMCP:
             def __init__(self):
                 self.tools = {}
+
         app.state.mcp_instance = MockMCP()
 
     @app.get("/")
@@ -376,65 +379,65 @@ def create_app() -> FastAPI:
             db_status = "error"
         return {"status": "healthy", "database": db_status}
 
-    @app.get("/test-mcp")
-    async def test_mcp(request: Request) -> Dict[str, Any]:
-        return {
-            "message": "MCP Test Endpoint",
-            "headers": dict(request.headers),
-            "client_host": request.client.host if request.client else "unknown",
-        }
+    if config_settings.ENABLE_MCP:
+        @app.get("/test-mcp")
+        async def test_mcp(request: Request) -> Dict[str, Any]:
+            return {
+                "message": "MCP Test Endpoint",
+                "headers": dict(request.headers),
+                "client_host": request.client.host if request.client else "unknown",
+            }
 
-    @app.get("/mcp-docs", tags=["MCP"], summary="MCP Tools and Route Documentation")
-    async def mcp_docs(request: Request) -> Dict[str, Any]:
-        mcp_instance = getattr(request.app.state, "mcp_instance", None)
-        tools = getattr(mcp_instance, "tools", {}) if mcp_instance else {}
+        @app.get("/mcp-docs", tags=["MCP"], summary="MCP Tools and Route Documentation")
+        async def mcp_docs(request: Request) -> Dict[str, Any]:
+            mcp_instance = getattr(request.app.state, "mcp_instance", None)
+            tools = getattr(mcp_instance, "tools", {}) if mcp_instance else {}
+            routes = []
+            for route in request.app.routes:
+                if route.path in ["/openapi.json", "/docs", "/redoc"]:
+                    continue
+                methods = list(route.methods) if hasattr(route, "methods") else []
+                routes.append({
+                    "path": route.path,
+                    "name": getattr(route, "name", ""),
+                    "description": getattr(route, "description", ""),
+                    "methods": methods,
+                })
 
-        routes = []
-        for route in request.app.routes:
-            if route.path in ["/openapi.json", "/docs", "/redoc"]:
-                continue
-            methods = list(route.methods) if hasattr(route, "methods") else []
-            routes.append({
-                "path": route.path,
-                "name": getattr(route, "name", ""),
-                "description": getattr(route, "description", ""),
-                "methods": methods,
-            })
+            md = ["# MCP Project Manager Tools Documentation\n"]
+            md.append("## Tools\n")
+            if tools:
+                if isinstance(tools, dict):
+                    tool_iter = tools.items()
+                elif isinstance(tools, list):
+                    tool_iter = []
+                    for idx, tool in enumerate(tools):
+                        if isinstance(tool, dict):
+                            name = tool.get("name", f"tool_{idx}")
+                            tool_iter.append((name, tool))
+                else:
+                    tool_iter = []
 
-        md = ["# MCP Project Manager Tools Documentation\n"]
-        md.append("## Tools\n")
-        if tools:
-            if isinstance(tools, dict):
-                tool_iter = tools.items()
-            elif isinstance(tools, list):
-                tool_iter = []
-                for idx, tool in enumerate(tools):
-                    if isinstance(tool, dict):
-                        name = tool.get("name", f"tool_{idx}")
-                        tool_iter.append((name, tool))
+                for tool_name, tool_info in tool_iter:
+                    md.append(
+                        f"- **{tool_name}**: {tool_info.get('description', '')}"
+                    )
+                if not tool_iter:
+                    md.append("No tools registered.\n")
             else:
-                tool_iter = []
-
-            for tool_name, tool_info in tool_iter:
-                md.append(
-                    f"- **{tool_name}**: {tool_info.get('description', '')}"
-                )
-            if not tool_iter:
                 md.append("No tools registered.\n")
-        else:
-            md.append("No tools registered.\n")
-        md.append("\n## Routes\n")
-        for r in routes:
-            md.append(
-                f"- `{r['path']}` ({', '.join(r['methods'])}): "
-                f"{r['name']} - {r['description']}"
-            )
-        md_doc = "\n".join(md)
-        return {
-            "tools": tools,
-            "routes": routes,
-            "mcp_project_manager_tools_documentation": md_doc,
-        }
+            md.append("\n## Routes\n")
+            for r in routes:
+                md.append(
+                    f"- `{r['path']}` ({', '.join(r['methods'])}): "
+                    f"{r['name']} - {r['description']}"
+                )
+            md_doc = "\n".join(md)
+            return {
+                "tools": tools,
+                "routes": routes,
+                "mcp_project_manager_tools_documentation": md_doc,
+            }
 
     return app
 
