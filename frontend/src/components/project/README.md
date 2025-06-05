@@ -4,12 +4,13 @@ This directory contains React components for displaying and managing project-rel
 
 Key files:
 
-*   `ProjectList.tsx`: Component for displaying a list of projects.
-*   `ProjectDetail.tsx`: Component for displaying the detailed information of a single project.
-*   `ProjectFiles.tsx`: Component for displaying and managing files associated with a project.
-*   `ProjectMembers.tsx`: Component for displaying and managing members associated with a project.
+- `ProjectList.tsx`: Component for displaying a list of projects.
+- `ProjectDetail.tsx`: Component for displaying the detailed information of a single project.
+- `ProjectFiles.tsx`: Component for displaying and managing files associated with a project.
+- `ProjectMembers.tsx`: Component for displaying and managing members associated with a project.
 
 ## Architecture Diagram
+
 ```mermaid
 graph TD
     user((User)) -->|interacts with| frontend(Frontend)
@@ -19,18 +20,17 @@ graph TD
 ```
 
 <!-- File List Start -->
+
 ## File List
 
 - `CliPromptModal.tsx`
 - `DeleteProjectDialog.tsx`
 - `ProjectCard.tsx`
 - `ProjectCardMenu.tsx`
+- `ProjectMenu.tsx`
 - `ProjectDetail.tsx`
 - `ProjectFiles.tsx`
 - `ProjectList.tsx`
 - `ProjectMembers.tsx`
 
 <!-- File List End -->
-
-
-
