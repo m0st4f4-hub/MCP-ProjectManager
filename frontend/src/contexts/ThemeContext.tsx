@@ -1,4 +1,5 @@
 "use client";
+import * as logger from '@/utils/logger';
 
 import React, {
   createContext,
@@ -36,7 +37,7 @@ const getInitialTheme = (): Theme => {
       ? "dark"
       : "light";
   } catch (error) {
-    console.error("Error reading theme preference:", error);
+    logger.error("Error reading theme preference:", error);
     return "light"; // Fallback
   }
 };
@@ -68,7 +69,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       // Persist theme preference in localStorage
       localStorage.setItem("theme", theme);
     } catch (error) {
-      console.error("Error applying theme:", error);
+      logger.error("Error applying theme:", error);
     }
     // Update localStorage whenever theme changes
   }, [theme]);

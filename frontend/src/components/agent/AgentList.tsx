@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -48,7 +49,7 @@ const AgentList: React.FC = () => {
         const agentData = await getAgents(skip, itemsPerPage, searchQuery);
         setAgents(agentData);
       } catch (err: any) {
-        console.error("Failed to fetch agents:", err);
+        logger.error("Failed to fetch agents:", err);
         setError(err.message || "An error occurred while fetching agents.");
       } finally {
         setIsLoading(false);

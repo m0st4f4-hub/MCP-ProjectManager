@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import React, { useState, useEffect } from "react";
 import {
   FormControl,
@@ -57,7 +58,7 @@ const EditAgentModal: React.FC<EditAgentModalProps> = ({
       });
       onClose();
     } catch (error: unknown) {
-      console.error("Failed to update agent:", error);
+      logger.error("Failed to update agent:", error);
       const message =
         error instanceof Error ? error.message : "Could not update the agent.";
       toast({
@@ -85,7 +86,7 @@ const EditAgentModal: React.FC<EditAgentModalProps> = ({
       });
       onClose();
     } catch (error: unknown) {
-      console.error("Failed to delete agent:", error);
+      logger.error("Failed to delete agent:", error);
       const message =
         error instanceof Error ? error.message : "Could not delete the agent.";
       toast({

@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -163,7 +164,7 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
       setComments(taskComments);
 
     } catch (err: any) {
-      console.error("Failed to fetch task details:", err);
+      logger.error("Failed to fetch task details:", err);
       setDetailsError(
         err.message || "An error occurred while fetching task details."
       );
@@ -194,7 +195,7 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
       setFileIdInput("");
       onFileModalClose();
     } catch (err: any) {
-      console.error("Failed to associate file:", err);
+      logger.error("Failed to associate file:", err);
       setAddFileError(err.message || "An error occurred while associating file.");
     } finally {
       setIsAddingFile(false);
@@ -214,7 +215,7 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
       // After disassociating, re-fetch file associations with current pagination/sorting/filtering
       fetchTaskDetails(); // This will refetch all details, including files with current settings
     } catch (err: any) {
-      console.error("Failed to disassociate file:", err);
+      logger.error("Failed to disassociate file:", err);
       setDetailsError(err.message || "An error occurred while disassociating file.");
       setIsLoadingDetails(false);
     }
@@ -250,7 +251,7 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
       setDependencyTypeInput("");
       onDependencyModalClose();
     } catch (err: any) {
-      console.error("Failed to add dependency:", err);
+      logger.error("Failed to add dependency:", err);
       setAddDependencyError(err.message || "An error occurred while adding dependency.");
     } finally {
       setIsAddingDependency(false);
@@ -275,7 +276,7 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
       // After removing, re-fetch task details
       fetchTaskDetails();
     } catch (err: any) {
-      console.error("Failed to remove dependency:", err);
+      logger.error("Failed to remove dependency:", err);
       setDetailsError(err.message || "An error occurred while removing dependency.");
       setIsLoadingDetails(false);
     }
@@ -295,7 +296,7 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
       setNewCommentText("");
       fetchTaskDetails(); // Refetch comments after adding a new one
     } catch (err: any) {
-      console.error("Failed to add comment:", err);
+      logger.error("Failed to add comment:", err);
       setAddCommentError(err.message || "An error occurred while adding the comment.");
     } finally {
       setIsAddingComment(false);

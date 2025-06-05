@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 // D:\mcp\task-manager\frontend\src\store\taskStore.ts
 import {
   Task,
@@ -170,7 +171,7 @@ export const useTaskStore = create<TaskState>(
     }
     const currentActiveFilters = filtersToApply || get().filters;
     const currentSortOptions = get().sortOptions;
-    console.log(
+    logger.info(
       "[TaskStore] Fetching tasks with filters:",
       currentActiveFilters,
       "and sort options:",
@@ -216,7 +217,7 @@ export const useTaskStore = create<TaskState>(
       } else {
         set({ pollingError: errorMessage, isPolling: false });
       }
-      console.error("Fetch Tasks Error:", error);
+      logger.error("Fetch Tasks Error:", error);
     }
   },
 
@@ -244,7 +245,7 @@ export const useTaskStore = create<TaskState>(
       let errorMessage = "Failed to fetch projects and agents";
       if (error instanceof Error) errorMessage = error.message;
       else if (typeof error === "string") errorMessage = error;
-      console.error("Error fetching projects and agents:", errorMessage, error);
+      logger.error("Error fetching projects and agents:", errorMessage, error);
     }
   },
 
@@ -305,7 +306,7 @@ export const useTaskStore = create<TaskState>(
         mutationError: { type: "add", message: errorMessage },
         loading: false,
       });
-      console.error("Error adding task:", error);
+      logger.error("Error adding task:", error);
       throw error;
     }
   },
@@ -352,7 +353,7 @@ export const useTaskStore = create<TaskState>(
         },
         loading: false,
       });
-      console.error("Error updating task:", error);
+      logger.error("Error updating task:", error);
       throw error;
     }
   },
@@ -382,7 +383,7 @@ export const useTaskStore = create<TaskState>(
         mutationError: { type: "delete", message: errorMessage },
         loading: false,
       });
-      console.error("Error deleting task:", error);
+      logger.error("Error deleting task:", error);
       throw error;
     }
   },
@@ -405,7 +406,7 @@ export const useTaskStore = create<TaskState>(
     const mergedFilters = { ...currentFilters, ...newFilters };
     if (!shallow(mergedFilters, currentFilters)) {
       set({ filters: mergedFilters });
-      console.log(
+      logger.info(
         "[TaskStore] Setting new task filters and re-fetching:",
         mergedFilters,
       );
@@ -470,7 +471,7 @@ export const useTaskStore = create<TaskState>(
         mutationError: { type: "bulk", message: errorMessage },
         loading: false,
       });
-      console.error("Bulk Delete Error:", error);
+      logger.error("Bulk Delete Error:", error);
     }
   },
   bulkSetStatusTasks: async (status: TaskStatus) => {
@@ -524,7 +525,7 @@ export const useTaskStore = create<TaskState>(
           draft.mutationError = { type: "bulk", message: errorMessage };
         }),
       );
-      console.error("Bulk Set Status Error:", error);
+      logger.error("Bulk Set Status Error:", error);
     }
   },
   removeTasksByProjectId: (projectId: string) => {
@@ -581,7 +582,7 @@ export const useTaskStore = create<TaskState>(
         },
         loading: false,
       });
-      console.error("Archive Task Error:", error);
+      logger.error("Archive Task Error:", error);
       throw error;
     }
   },
@@ -623,7 +624,7 @@ export const useTaskStore = create<TaskState>(
         },
         loading: false,
       });
-      console.error("Unarchive Task Error:", error);
+      logger.error("Unarchive Task Error:", error);
       throw error;
     }
   },

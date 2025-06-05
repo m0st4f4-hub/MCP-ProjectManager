@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import { create } from "zustand";
 import {
   getProjects,
@@ -100,7 +101,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       set({ isPolling: true, pollingError: null });
     }
     const currentActiveFilters = filtersToApply || get().filters;
-    console.log(
+    logger.info(
       "[ProjectStore] Fetching projects with filters:",
       currentActiveFilters,
     );
@@ -131,7 +132,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       } else {
         set({ pollingError: message, isPolling: false });
       }
-      console.error("Fetch Projects Error:", err);
+      logger.error("Fetch Projects Error:", err);
     }
   },
   addProject: async (projectData: ProjectCreateData) => {
@@ -149,7 +150,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const message =
         err instanceof Error ? err.message : "Failed to add project";
       set({ error: message, loading: false });
-      console.error("Add Project Error:", err);
+      logger.error("Add Project Error:", err);
       throw err;
     }
   },
@@ -178,7 +179,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const message =
         err instanceof Error ? err.message : "Failed to update project";
       set({ error: message, loading: false });
-      console.error("Edit Project Error:", err);
+      logger.error("Edit Project Error:", err);
       throw err;
     }
   },
@@ -199,7 +200,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const message =
         err instanceof Error ? err.message : "Failed to delete project";
       set({ error: message, loading: false });
-      console.error("Remove Project Error:", err);
+      logger.error("Remove Project Error:", err);
       throw err;
     }
   },
@@ -222,7 +223,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const message =
         err instanceof Error ? err.message : "Failed to archive project";
       set({ error: message, loading: false });
-      console.error("Archive Project Error:", err);
+      logger.error("Archive Project Error:", err);
       throw err;
     }
   },
@@ -245,7 +246,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const message =
         err instanceof Error ? err.message : "Failed to unarchive project";
       set({ error: message, loading: false });
-      console.error("Unarchive Project Error:", err);
+      logger.error("Unarchive Project Error:", err);
       throw err;
     }
   },
@@ -254,7 +255,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     const mergedFilters = { ...currentFilters, ...newFilters };
     if (!shallowEqual(mergedFilters, currentFilters)) {
       set({ filters: mergedFilters });
-      console.log(
+      logger.info(
         "[ProjectStore] Setting new filters and re-fetching:",
         mergedFilters,
       );

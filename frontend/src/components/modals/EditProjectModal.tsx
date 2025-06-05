@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import React, { useState, useEffect } from "react";
 import {
   FormControl,
@@ -61,7 +62,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
       });
       onClose();
     } catch (error: unknown) {
-      console.error("Failed to update project:", error);
+      logger.error("Failed to update project:", error);
       const message =
         error instanceof Error
           ? error.message
@@ -91,7 +92,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
       });
       onClose();
     } catch (error: unknown) {
-      console.error("Failed to delete project:", error);
+      logger.error("Failed to delete project:", error);
       const message =
         error instanceof Error
           ? error.message

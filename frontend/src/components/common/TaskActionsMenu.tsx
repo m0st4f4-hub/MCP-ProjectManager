@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import React from "react";
 import {
   IconButton,
@@ -55,11 +56,11 @@ const ArchiveIcon = (props: React.ComponentProps<typeof LucideArchive>) => (
  *
  * @example
  * <TaskActionsMenu
- *   onEdit={() => console.log('Edit clicked')}
- *   onDelete={() => console.log('Delete clicked')}
- *   onDuplicate={() => console.log('Duplicate clicked')}
- *   onArchive={() => console.log('Archive clicked')}
- *   onStatusChange={(newStatus) => console.log('Change status to', newStatus)}
+ *   onEdit={() => logger.info('Edit clicked')}
+ *   onDelete={() => logger.info('Delete clicked')}
+ *   onDuplicate={() => logger.info('Duplicate clicked')}
+ *   onArchive={() => logger.info('Archive clicked')}
+ *   onStatusChange={(newStatus) => logger.info('Change status to', newStatus)}
  *   availableStatuses={['TO_DO', 'IN_PROGRESS', 'COMPLETED']}
  *   isArchived={false}
  *   isLoading={false}

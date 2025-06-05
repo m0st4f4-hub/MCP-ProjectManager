@@ -1,4 +1,5 @@
 "use client";
+import * as logger from '@/utils/logger';
 
 import React from "react";
 import { Box, Heading, Text } from "@chakra-ui/react";
@@ -23,7 +24,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("ErrorBoundary caught an error", error, errorInfo);
+    logger.error("ErrorBoundary caught an error", error, errorInfo);
   }
 
   render() {

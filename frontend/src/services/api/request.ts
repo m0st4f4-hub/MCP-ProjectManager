@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import { StatusID } from '@/lib/statusUtils';
 import { buildApiUrl, API_CONFIG } from './config';
 
@@ -43,7 +44,7 @@ export const normalizeToStatusID = (
       return backendStatus as StatusID;
     }
 
-    console.warn(
+    logger.warn(
       `Unknown backend status string: "${backendStatus}". Defaulting to "To Do".`
     );
     return 'To Do';
@@ -122,7 +123,7 @@ export async function request<T>(
   }
 
   if (!response.ok) {
-    console.error(`API request failed for URL: ${url}`, {
+    logger.error(`API request failed for URL: ${url}`, {
       status: response.status,
       options,
     });
@@ -137,7 +138,7 @@ export async function request<T>(
         errorDetail = response.statusText || errorDetail;
       }
     } catch (e) {
-      console.warn(`Failed to parse error response as JSON for URL: ${url}`, e);
+      logger.warn(`Failed to parse error response as JSON for URL: ${url}`, e);
       errorDetail = response.statusText || errorDetail;
     }
     throw new ApiError(errorDetail, response.status, url);

@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import { StoreApi } from 'zustand';
 import {
   Agent,
@@ -101,7 +102,7 @@ const agentActionsCreator = (
     set({ loading: true, error: null });
     try {
       const effectiveFilters = filters || get().filters;
-      console.log(
+      logger.info(
         '[AgentStore] Fetching agents with effective filters:',
         effectiveFilters
       );
@@ -127,15 +128,15 @@ const agentActionsCreator = (
         err instanceof Error ? err.message : 'Failed to fetch agents';
       set({ error: errorMessage, loading: false });
       handleApiError(err, 'Failed to fetch agents');
-      console.error('Error fetching agents:', err);
+      logger.error('Error fetching agents:', err);
     }
   },
   addAgent: async (agentData: AgentCreateData) => {
     set({ loading: true, error: null });
     try {
-      console.log(`[Store] Calling API to create agent: ${agentData.name}`);
+      logger.info(`[Store] Calling API to create agent: ${agentData.name}`);
       const newAgent = await api.createAgent(agentData);
-      console.log(`[Store] API returned new agent:`, newAgent);
+      logger.info(`[Store] API returned new agent:`, newAgent);
       set(
         (state) =>
           ({
@@ -143,13 +144,13 @@ const agentActionsCreator = (
             loading: false,
           }) as Partial<AgentState>
       );
-      console.log(`[Store] Agent added to state.`);
+      logger.info(`[Store] Agent added to state.`);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to add agent';
       set({ error: errorMessage, loading: false });
       handleApiError(err, 'Failed to add agent');
-      console.error('[Store] Error adding agent:', err);
+      logger.error('[Store] Error adding agent:', err);
       throw err;
     }
   },
@@ -161,13 +162,13 @@ const agentActionsCreator = (
         agents: state.agents.filter((agent) => agent.id !== id),
         loading: false,
       }));
-      console.log(`[Store] Agent ${id} removed locally (API call skipped).`);
+      logger.info(`[Store] Agent ${id} removed locally (API call skipped).`);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to remove agent';
       set({ error: errorMessage });
       handleApiError(err, 'Failed to remove agent');
-      console.error(`[Store] Error removing agent ${id}:`, err);
+      logger.error(`[Store] Error removing agent ${id}:`, err);
       throw err;
     }
   },

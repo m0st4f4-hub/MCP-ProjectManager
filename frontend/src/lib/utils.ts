@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 // import { Status } from '@/types';
 import {
   getStatusAttributes,
@@ -55,10 +56,10 @@ export const mapStatusToStatusID = (
   const upperStatus = status.toUpperCase().replace(/\s+/g, "_");
   if (getStatusAttributes(upperStatus as CanonicalStatusID)) {
     // It's a known CanonicalStatusID.
-    // Optionally, add a console.warn if 'status' wasn't identical to 'upperStatus'
+    // Optionally, add a logger.warn if 'status' wasn't identical to 'upperStatus'
     // to catch statuses that are almost StatusIDs but have different casing/spacing.
     if (status !== upperStatus && typeof console !== "undefined") {
-      console.warn(
+      logger.warn(
         `[mapStatusToStatusID] Mapped status "${status}" to CanonicalStatusID "${upperStatus}".`,
       );
     }
@@ -67,7 +68,7 @@ export const mapStatusToStatusID = (
 
   // If no match after explicit cases and direct StatusID check, then it's unknown.
   if (typeof console !== "undefined") {
-    console.warn(
+    logger.warn(
       `[mapStatusToStatusID] Unknown status value: "${status}", defaulting to TO_DO.`,
     );
   }

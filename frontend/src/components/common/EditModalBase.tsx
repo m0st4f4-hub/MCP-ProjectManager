@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import React, { useRef } from "react";
 import {
   Modal,
@@ -117,7 +118,7 @@ function EditModalBase<T extends EntityWithIdAndName>({
     try {
       await onSave();
     } catch (error: unknown) {
-      console.error(`Failed to update ${entityName}:`, error);
+      logger.error(`Failed to update ${entityName}:`, error);
     }
   };
 
@@ -127,7 +128,7 @@ function EditModalBase<T extends EntityWithIdAndName>({
       await onDelete();
       onAlertClose();
     } catch (error: unknown) {
-      console.error(`Failed to delete ${entityName}:`, error);
+      logger.error(`Failed to delete ${entityName}:`, error);
     }
   };
 

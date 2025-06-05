@@ -1,5 +1,6 @@
 // D:\mcp\task-manager\frontend\src\components\TaskItem.tsx
 "use client";
+import * as logger from '@/utils/logger';
 
 import React, { useCallback, memo } from "react";
 import {
@@ -40,7 +41,7 @@ const iconMap = defaultIconMap;
  * <TaskItem
  *   task={myTaskObject}
  *   compact={false}
- *   onClick={() => console.log('Task clicked')}
+ *   onClick={() => logger.info('Task clicked')}
  * />
  *
  * @param {TaskItemProps} props - The props for the TaskItem component.

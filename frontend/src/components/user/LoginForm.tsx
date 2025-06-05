@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import React, { useState } from 'react';
 import {
   Box,
@@ -36,8 +37,8 @@ const LoginForm: React.FC = () => {
       setToken(response.access_token);
       router.push('/');
     } catch (err: any) {
-      console.error('Login failed:', err);
-      const message = err.message || 'An error occurred during login.';
+      logger.error("Login failed:", err);
+      const message = err.message || "An error occurred during login.";
       setError(message);
       toast({
         title: 'Login failed',

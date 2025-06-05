@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 // Centralized icon component for consistent icon usage across the app.
 // Usage:
 // <AppIcon name="add" ...chakraProps /> // for standard icons
@@ -71,7 +72,7 @@ const AppIcon: React.FC<AppIconProps> = ({ name, component, ...props }) => {
     (name && standardIcons[name.toLowerCase()]) || component;
   if (!IconComponent) {
     if (name) {
-      console.warn(
+      logger.warn(
         `AppIcon: Standard icon "${name}" not found. Ensure it's mapped in AppIcon.tsx or pass a component prop.`,
       );
     }

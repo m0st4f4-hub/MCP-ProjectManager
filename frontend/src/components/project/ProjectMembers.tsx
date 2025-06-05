@@ -1,4 +1,5 @@
 "use client";
+import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import { getProjectMembers } from '@/services/api/projects';
@@ -22,7 +23,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
       setMembers(data);
     } catch (err) {
       setError('Failed to fetch project members');
-      console.error(err);
+      logger.error(err);
     } finally {
       setLoading(false);
     }
@@ -43,7 +44,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
       fetchMembers(); // Refresh the list
     } catch (err) {
       alert('Failed to add member');
-      console.error(err);
+      logger.error(err);
     }
   };
 
@@ -53,7 +54,7 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
       fetchMembers(); // Refresh the list
     } catch (err) {
       alert('Failed to remove member');
-      console.error(err);
+      logger.error(err);
     }
   };
 

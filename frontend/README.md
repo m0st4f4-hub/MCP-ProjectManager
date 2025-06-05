@@ -13,6 +13,7 @@ cp .env.local.example .env.local
 ```
 
 `NEXT_PUBLIC_API_BASE_URL` points to your backend server and defaults to `http://localhost:8000`.
+`NEXT_PUBLIC_LOG_LEVEL` controls client-side logging. Set to `info`, `warn`, or `error` (default `info`).
 
 First, run the development server:
 
@@ -37,6 +38,10 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 Run `npm run type-check` to ensure the TypeScript codebase compiles without errors. This command runs `tsc --noEmit` using the configuration in `tsconfig.json`.
 
 At the repository root there is a matching `type-check` script that simply invokes the frontend command, allowing you to execute the check from either location.
+### Logging
+
+Use the utilities in `src/utils/logger.ts` for log output. The log level is controlled by `NEXT_PUBLIC_LOG_LEVEL` in your `.env.local`.
+
 
 ### Real-time Events
 

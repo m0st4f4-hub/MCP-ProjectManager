@@ -1,4 +1,5 @@
 "use client";
+import * as logger from '@/utils/logger';
 
 import React, { useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -87,7 +88,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
       fetchProjects(); // Refresh the project list
       onClose(); // Close modal after successful submission
     } catch (error) {
-      console.error("Failed to update project:", error);
+      logger.error("Failed to update project:", error);
       toast({
         title: "Error updating project",
         description:

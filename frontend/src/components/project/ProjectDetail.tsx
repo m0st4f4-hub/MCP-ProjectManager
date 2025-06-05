@@ -1,4 +1,5 @@
 "use client";
+import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -33,7 +34,7 @@ const ProjectDetail: React.FC = () => {
       setProject(data);
     } catch (err) {
       setError('Failed to fetch project details');
-      console.error(err);
+      logger.error(err);
     } finally {
       setLoading(false);
     }
@@ -46,7 +47,7 @@ const ProjectDetail: React.FC = () => {
       setTasks(data);
     } catch (err) {
       setTasksError('Failed to fetch tasks');
-      console.error(err);
+      logger.error(err);
     } finally {
       setTasksLoading(false);
     }
@@ -66,7 +67,7 @@ const ProjectDetail: React.FC = () => {
         router.push('/projects');
       } catch (err) {
         alert('Failed to delete project');
-        console.error(err);
+        logger.error(err);
       }
     }
   };
@@ -79,7 +80,7 @@ const ProjectDetail: React.FC = () => {
       fetchProject();
     } catch (err) {
       alert('Failed to archive project');
-      console.error(err);
+      logger.error(err);
     }
   };
 
@@ -91,7 +92,7 @@ const ProjectDetail: React.FC = () => {
       fetchProject();
     } catch (err) {
       alert('Failed to unarchive project');
-      console.error(err);
+      logger.error(err);
     }
   };
 
@@ -105,7 +106,7 @@ const ProjectDetail: React.FC = () => {
       setPlanningPrompt(response.prompt);
     } catch (err) {
       setPlanningError('Failed to generate planning prompt');
-      console.error(err);
+      logger.error(err);
     } finally {
       setPlanningLoading(false);
     }
