@@ -10,7 +10,7 @@ import {
   TaskSortField,
 } from "@/types";
 import { TaskStatus } from "@/types/task";
-import { create } from "zustand";
+import { create, type StoreApi } from "zustand";
 import * as api from "@/services/api";
 import { produce } from "immer";
 import { shallow } from "zustand/shallow";
@@ -20,7 +20,9 @@ import { useAgentStore } from "./agentStore";
 
 // Improved upsertTasks: preserve references for unchanged items
 const upsertTasks = (tasksToUpsert: Task[], existingTasks: Task[]): Task[] => {
-  const taskMap = new Map(existingTasks.map((task) => [`${task.project_id}-${task.task_number}`, task]));
+  const taskMap = new Map(
+    existingTasks.map((task: Task) => [`${task.project_id}-${task.task_number}`, task]),
+  );
   const result: Task[] = [];
   for (const newTask of tasksToUpsert) {
     const oldTask = taskMap.get(`${newTask.project_id}-${newTask.task_number}`);
@@ -129,7 +131,11 @@ export interface TaskState {
   unarchiveTasksByProjectId: (projectId: string) => void;
 }
 
-export const useTaskStore = create<TaskState>((set, get) => ({
+export const useTaskStore = create<TaskState>(
+  (
+    set: StoreApi<TaskState>["setState"],
+    get: StoreApi<TaskState>["getState"],
+  ) => ({
   tasks: [],
   loading: false,
   isPolling: false,
@@ -173,10 +179,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       // Pass sortOptions to API so backend handles sorting
       const fetchedTasks = await api.getAllTasks(currentActiveFilters, currentSortOptions);
-      set((state) => {
+      set((state: TaskState) => {
         let updatedTasks = upsertTasks(fetchedTasks, state.tasks);
-        const fetchedIds = new Set(fetchedTasks.map((t) => `${t.project_id}-${t.task_number}`));
-        updatedTasks = updatedTasks.filter((t) => fetchedIds.has(`${t.project_id}-${t.task_number}`));
+        const fetchedIds = new Set(
+          fetchedTasks.map((t: Task) => `${t.project_id}-${t.task_number}`),
+        );
+        updatedTasks = updatedTasks.filter((t: Task) =>
+          fetchedIds.has(`${t.project_id}-${t.task_number}`),
+        );
         const newState: Partial<TaskState> = {};
         if (
           !isPoll &&
@@ -270,7 +280,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         throw new Error("Project ID is required to add a task.");
       }
       const newTask = await api.createTask(project_id, taskData);
-      set((state) => {
+      set((state: TaskState) => {
         // Insert new task at the start (or end) as desired, backend will re-sort on next fetch
         const newTasks = [newTask, ...state.tasks];
         return {
@@ -297,7 +307,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   updateTask: async (project_id: string, task_number: number, taskData: Partial<TaskUpdateData>) => {
     set({ loading: true, mutationError: null });
-    const originalTask = get().tasks.find((t) => t.project_id === project_id && t.task_number === task_number);
+    const originalTask = get().tasks.find(
+      (t: Task) => t.project_id === project_id && t.task_number === task_number,
+    );
     try {
       const updatedTask = await api.updateTask(
         project_id,
@@ -306,7 +318,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       );
       set(
         produce((state: TaskState) => {
-          const index = state.tasks.findIndex((t) => t.project_id === project_id && t.task_number === task_number);
+          const index = state.tasks.findIndex(
+            (t: Task) => t.project_id === project_id && t.task_number === task_number,
+          );
           if (index !== -1) {
             state.tasks[index] = updatedTask;
           }
@@ -342,11 +356,13 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set({ loading: true, mutationError: null });
     try {
       await api.deleteTask(project_id, task_number);
-      set((state) => {
-        const newTasks = state.tasks.filter((t) => t.project_id !== project_id || t.task_number !== task_number);
+      set((state: TaskState) => {
+        const newTasks = state.tasks.filter(
+          (t: Task) => t.project_id !== project_id || t.task_number !== task_number,
+        );
         return {
           tasks: newTasks, // No local sort
-          selectedTaskIds: state.selectedTaskIds.filter((id) => id !== `${project_id}-${task_number}`),
+          selectedTaskIds: state.selectedTaskIds.filter((id: string) => id !== `${project_id}-${task_number}`),
           loading: false,
         };
       });
@@ -400,7 +416,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   clearMutationError: () => set({ mutationError: null }),
 
   getTaskById: (project_id: string, task_number: number) => {
-    return get().tasks.find((task) => task.project_id === project_id && task.task_number === task_number);
+    return get().tasks.find(
+      (task: Task) => task.project_id === project_id && task.task_number === task_number,
+    );
   },
 
   toggleTaskSelection: (taskKey: string) => {
@@ -426,14 +444,15 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     if (selectedTaskIds.length === 0) return;
     set({ loading: true, mutationError: null });
     try {
-      await Promise.all(selectedTaskIds.map((id) => {
+      await Promise.all(selectedTaskIds.map((id: string) => {
         const [project_id, task_number] = id.split('-');
         return api.deleteTask(project_id, parseInt(task_number));
       }));
       set(
         produce((draft: TaskState) => {
           draft.tasks = draft.tasks.filter(
-            (task) => !selectedTaskIds.includes(`${task.project_id}-${task.task_number}`),
+            (task: Task) =>
+              !selectedTaskIds.includes(`${task.project_id}-${task.task_number}`),
           );
           draft.selectedTaskIds = [];
         }),
@@ -454,17 +473,21 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     if (selectedTaskIds.length === 0) return;
 
     const originalTasks: Task[] = [];
-    selectedTaskIds.forEach((id) => {
+    selectedTaskIds.forEach((id: string) => {
       const [project_id, task_number] = id.split('-');
-      const task = tasks.find((t) => t.project_id === project_id && t.task_number === parseInt(task_number));
+      const task = tasks.find(
+        (t: Task) => t.project_id === project_id && t.task_number === parseInt(task_number),
+      );
       if (task) originalTasks.push(JSON.parse(JSON.stringify(task)));
     });
 
     set(
       produce((draft: TaskState) => {
-        selectedTaskIds.forEach((id) => {
+        selectedTaskIds.forEach((id: string) => {
           const [project_id, task_number] = id.split('-');
-          const task = draft.tasks.find((t) => t.project_id === project_id && t.task_number === parseInt(task_number));
+          const task = draft.tasks.find(
+            (t: Task) => t.project_id === project_id && t.task_number === parseInt(task_number),
+          );
           if (task) task.status = status;
         });
       }),
@@ -472,7 +495,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
     try {
       await Promise.all(
-        selectedTaskIds.map((id) => {
+        selectedTaskIds.map((id: string) => {
           const [project_id, task_number] = id.split('-');
           return api.updateTask(project_id, parseInt(task_number), { status } as Partial<TaskUpdateData>);
         }),
@@ -483,9 +506,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       if (error instanceof Error) errorMessage = error.message;
       set(
         produce((draft: TaskState) => {
-          originalTasks.forEach((originalTask) => {
+          originalTasks.forEach((originalTask: Task) => {
             const taskIndex = draft.tasks.findIndex(
-              (t) => t.project_id === originalTask.project_id && t.task_number === originalTask.task_number,
+              (t: Task) =>
+                t.project_id === originalTask.project_id &&
+                t.task_number === originalTask.task_number,
             );
             if (taskIndex !== -1) {
               draft.tasks[taskIndex] = originalTask;
@@ -501,11 +526,13 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set(
       produce((draft: TaskState) => {
         draft.tasks = draft.tasks.filter(
-          (task) => task.project_id !== projectId,
+          (task: Task) => task.project_id !== projectId,
         );
-        draft.selectedTaskIds = draft.selectedTaskIds.filter((taskId) => {
+        draft.selectedTaskIds = draft.selectedTaskIds.filter((taskId: string) => {
           const [project_id, task_number] = taskId.split('-');
-          const task = draft.tasks.find((t) => t.project_id === project_id && t.task_number === parseInt(task_number));
+          const task = draft.tasks.find(
+            (t: Task) => t.project_id === project_id && t.task_number === parseInt(task_number),
+          );
           return task ? task.project_id !== projectId : false;
         });
       }),
@@ -513,12 +540,16 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
   archiveTask: async (project_id: string, task_number: number) => {
     set({ loading: true, mutationError: null });
-    const originalTask = get().tasks.find((t) => t.project_id === project_id && t.task_number === task_number);
+    const originalTask = get().tasks.find(
+      (t: Task) => t.project_id === project_id && t.task_number === task_number,
+    );
     try {
       const archivedTask = await api.archiveTask(project_id, task_number);
       set(
         produce((state: TaskState) => {
-          const index = state.tasks.findIndex((t) => t.project_id === project_id && t.task_number === task_number);
+          const index = state.tasks.findIndex(
+            (t: Task) => t.project_id === project_id && t.task_number === task_number,
+          );
           if (index !== -1) {
             state.tasks[index] = archivedTask;
           }
@@ -551,12 +582,16 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
   unarchiveTask: async (project_id: string, task_number: number) => {
     set({ loading: true, mutationError: null });
-    const originalTask = get().tasks.find((t) => t.project_id === project_id && t.task_number === task_number);
+    const originalTask = get().tasks.find(
+      (t: Task) => t.project_id === project_id && t.task_number === task_number,
+    );
     try {
       const unarchivedTask = await api.unarchiveTask(project_id, task_number);
       set(
         produce((state: TaskState) => {
-          const index = state.tasks.findIndex((t) => t.project_id === project_id && t.task_number === task_number);
+          const index = state.tasks.findIndex(
+            (t: Task) => t.project_id === project_id && t.task_number === task_number,
+          );
           if (index !== -1) {
             state.tasks[index] = unarchivedTask;
           }
@@ -590,7 +625,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   archiveTasksByProjectId: (projectId: string) => {
     set(
       produce((state: TaskState) => {
-        state.tasks.forEach((task) => {
+        state.tasks.forEach((task: Task) => {
           if (task.project_id === projectId && !task.is_archived) {
             task.is_archived = true;
             task.updated_at = new Date().toISOString();
@@ -605,7 +640,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   unarchiveTasksByProjectId: (projectId: string) => {
     set(
       produce((state: TaskState) => {
-        state.tasks.forEach((task) => {
+        state.tasks.forEach((task: Task) => {
           if (task.project_id === projectId && task.is_archived) {
             task.is_archived = false;
             task.updated_at = new Date().toISOString();
@@ -624,7 +659,7 @@ export const sortTasks = (tasks: Task[], options: TaskSortOptions): Task[] => {
   if (!tasks) return [];
   const field = options.field;
   const direction = options.direction === "asc" ? 1 : -1;
-  return [...tasks].sort((a, b) => {
+  return [...tasks].sort((a: Task, b: Task) => {
     const valA = a[field as keyof Task];
     const valB = b[field as keyof Task];
 
