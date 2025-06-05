@@ -44,8 +44,17 @@ logger = logging.getLogger(__name__)
 
 def include_app_routers(app: FastAPI):
     from .routers import (
-        users, projects, tasks, comments, agents, memory,
-        mcp, rules, project_templates, audit_logs
+        users,
+        projects,
+        tasks,
+        comments,
+        agents,
+        memory,
+        mcp,
+        rules,
+        project_templates,
+        audit_logs,
+        verification_requirements,
     )
     from .routers.admin import router as admin_router
     from .routers.users.auth.auth import router as auth_router
@@ -60,6 +69,11 @@ def include_app_routers(app: FastAPI):
     app.include_router(memory.router, prefix="/api/memory", tags=["memory"])
     app.include_router(mcp.router, prefix="/api/mcp", tags=["mcp"])
     app.include_router(rules.router, prefix="/api/rules", tags=["rules"])
+    app.include_router(
+        verification_requirements.router,
+        prefix="/api/verification-requirements",
+        tags=["verification-requirements"],
+    )
     app.include_router(
         project_templates.router,
         prefix="/api/templates",

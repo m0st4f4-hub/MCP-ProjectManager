@@ -30,6 +30,21 @@ describe('Verification Requirements API', () => {
     expect(result).toEqual(mockResponse.data);
   });
 
+  it('lists verification requirements', async () => {
+    const mockResponse = {
+      data: [
+        { id: '1', agent_role_id: 'role1', requirement: 'req', is_mandatory: true, created_at: '2024-01-01T00:00:00Z' },
+      ],
+    };
+    mockRequest.mockResolvedValue(mockResponse);
+
+    const result = await verificationRequirementsApi.list('role1');
+
+    expect(mockBuildApiUrl).toHaveBeenCalled();
+    expect(mockRequest).toHaveBeenCalledWith('http://localhost:8000/api/test', undefined);
+    expect(result).toEqual(mockResponse.data);
+  });
+
   it('deletes a verification requirement', async () => {
     mockRequest.mockResolvedValue(null);
 
