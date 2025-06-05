@@ -3,9 +3,9 @@ MCP Core Tools Router - Functionality for Project and Task MCP integration.
 Provides MCP tool definitions.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Dict
 import logging
 import json
 
@@ -38,7 +38,20 @@ from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
 from ....schemas.error_protocol import ErrorProtocolCreate
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["mcp-tools"])
+
+# In-memory tool invocation counters
+tool_counters: Dict[str, int] = {}
+
+
+def track_tool_invocation(request: Request) -> None:
+    """Dependency to track how often each tool is called."""
+    endpoint = request.scope.get("endpoint")
+    name = getattr(endpoint, "__name__", "unknown")
+    if name != "mcp_get_metrics":
+        tool_counters[name] = tool_counters.get(name, 0) + 1
+
+
+router = APIRouter(tags=["mcp-tools"], dependencies=[Depends(track_tool_invocation)])
 
 
 def get_db_session():
@@ -70,6 +83,16 @@ def get_error_protocol_service(
     db: Session = Depends(get_db_session),
 ) -> ErrorProtocolService:
     return ErrorProtocolService(db)
+
+
+@router.get(
+    "/mcp-tools/metrics",
+    tags=["mcp-tools"],
+    operation_id="get_tool_metrics",
+)
+async def mcp_get_metrics():
+    """Return invocation counts for each MCP tool."""
+    return {"success": True, "metrics": tool_counters}
 
 
 @router.post(

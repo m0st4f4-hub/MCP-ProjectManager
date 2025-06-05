@@ -353,11 +353,19 @@ export const mcpApi = {
       return response.tools;
     },
 
-    info: async (toolName: string): Promise<MCPToolInfo> => {
-      const response = await request<MCPToolInfo>(
-        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, `/info/${toolName}`)
-      );
-      return response;
+      info: async (toolName: string): Promise<MCPToolInfo> => {
+        const response = await request<MCPToolInfo>(
+          buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, `/info/${toolName}`)
+        );
+        return response;
+      },
     },
+
+  // --- Metrics ---
+  metrics: async (): Promise<Record<string, number>> => {
+    const response = await request<{ metrics: Record<string, number> }>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, '/metrics')
+    );
+    return response.metrics;
   },
 };
