@@ -5,20 +5,18 @@ Fixes issues systematically to comply with strict flake8 rules.
 """
 
 import os
-import re
 import ast
-import subprocess
 from pathlib import Path
-from typing import List, Dict
+from typing import List
 
 
 class FlakeFixer:
-def __init__(self, backend_dir: Path):
+    def __init__(self, backend_dir: Path):
         self.backend_dir = backend_dir
         self.models_imports = set()
         self.schema_imports = set()
 
-def get_python_files(self) -> List[Path]:
+    def get_python_files(self) -> List[Path]:
         """Get all Python files to process."""
         files = []
         for root, dirs, filenames in os.walk(self.backend_dir):
@@ -33,7 +31,7 @@ def get_python_files(self) -> List[Path]:
                     files.append(Path(root) / filename)
         return files
 
-def fix_unused_imports(self, content: str) -> str:
+    def fix_unused_imports(self, content: str) -> str:
         """Remove unused imports while preserving needed ones."""
         lines = content.split('\n')
 
@@ -46,23 +44,23 @@ def fix_unused_imports(self, content: str) -> str:
         used_names = set()
         imported_names = {}
 
-class NameVisitor(ast.NodeVisitor):
-def visit_Name(self, node):
+        class NameVisitor(ast.NodeVisitor):
+            def visit_Name(self, node):
                 used_names.add(node.id)
                 self.generic_visit(node)
 
-def visit_Attribute(self, node):
+            def visit_Attribute(self, node):
                 if isinstance(node.value, ast.Name):
                     used_names.add(node.value.id)
                 self.generic_visit(node)
 
-class ImportVisitor(ast.NodeVisitor):
-def visit_Import(self, node):
+        class ImportVisitor(ast.NodeVisitor):
+            def visit_Import(self, node):
                 for alias in node.names:
                     name = alias.asname or alias.name
                     imported_names[name] = node.lineno - 1
 
-def visit_ImportFrom(self, node):
+            def visit_ImportFrom(self, node):
                 for alias in node.names:
                     name = alias.asname or alias.name
                     imported_names[name] = node.lineno - 1
@@ -80,10 +78,12 @@ def visit_ImportFrom(self, node):
 
         lines_to_remove = set()
         for name, line_idx in imported_names.items():
-            if (name not in used_names and
-                name not in keep_imports and
-                not name.startswith('_') and
-                'test' not in name.lower()):
+            if (
+                name not in used_names
+                and name not in keep_imports
+                and not name.startswith('_')
+                and 'test' not in name.lower()
+            ):
                 lines_to_remove.add(line_idx)
 
         # Remove unused import lines
@@ -94,7 +94,7 @@ def visit_ImportFrom(self, node):
 
         return '\n'.join(filtered_lines)
 
-def fix_line_length(self, content: str) -> str:
+    def fix_line_length(self, content: str) -> str:
         """Fix line length issues."""
         lines = content.split('\n')
         fixed_lines = []
@@ -135,12 +135,20 @@ def fix_line_length(self, content: str) -> str:
 
                         if len(prefix + middle[:40] + '..."') <= 88:
                             break_point = 40
-                            while break_point < len(middle) and middle[break_point] != ' ':
+                            while (
+                                break_point < len(middle)
+                                and middle[break_point] != ' '
+                            ):
                                 break_point += 1
 
                             if break_point < len(middle):
                                 fixed_lines.append(prefix + middle[:break_point] + '"')
-                                fixed_lines.append(' ' * (indent + 4) + '"' + middle[break_point:].lstrip() + suffix)
+                                fixed_lines.append(
+                                    ' ' * (indent + 4)
+                                    + '"'
+                                    + middle[break_point:].lstrip()
+                                    + suffix
+                                )
                                 continue
 
             # If we can't fix it, just keep the original line
@@ -148,7 +156,7 @@ def fix_line_length(self, content: str) -> str:
 
         return '\n'.join(fixed_lines)
 
-def fix_whitespace(self, content: str) -> str:
+    def fix_whitespace(self, content: str) -> str:
         """Fix whitespace issues."""
         lines = content.split('\n')
         fixed_lines = []
@@ -175,7 +183,7 @@ def fix_whitespace(self, content: str) -> str:
 
         return content
 
-def fix_indentation(self, content: str) -> str:
+    def fix_indentation(self, content: str) -> str:
         """Fix basic indentation issues."""
         lines = content.split('\n')
         fixed_lines = []
@@ -195,7 +203,18 @@ def fix_indentation(self, content: str) -> str:
                     fixed_lines.append('    ' * indent_level + stripped)
                 else:
                     fixed_lines.append(stripped)
-            elif stripped.startswith(('if ', 'for ', 'while ', 'with ', 'try:', 'except', 'else:', 'elif ')):
+            elif stripped.startswith(
+                (
+                    'if ',
+                    'for ',
+                    'while ',
+                    'with ',
+                    'try:',
+                    'except',
+                    'else:',
+                    'elif '
+                )
+            ):
                 # Control structures
                 current_indent = len(line) - len(line.lstrip())
                 if current_indent % 4 != 0:
@@ -216,7 +235,7 @@ def fix_indentation(self, content: str) -> str:
 
         return '\n'.join(fixed_lines)
 
-def fix_blank_lines(self, content: str) -> str:
+    def fix_blank_lines(self, content: str) -> str:
         """Fix blank line issues."""
         lines = content.split('\n')
         fixed_lines = []
@@ -227,11 +246,12 @@ def fix_blank_lines(self, content: str) -> str:
             stripped = line.strip()
 
             # Add blank lines before class/function definitions
-            if (stripped.startswith(('def ', 'class ', 'async def ')) and
-                i > 0 and
-                lines[i-1].strip() != '' and
-                not lines[i-1].strip().startswith('@')):  # Not a decorator
-
+            if (
+                stripped.startswith(('def ', 'class ', 'async def '))
+                and i > 0
+                and lines[i - 1].strip() != ''
+                and not lines[i - 1].strip().startswith('@')
+            ):
                 # Count existing blank lines
                 blank_count = 0
                 j = i - 1
@@ -240,7 +260,10 @@ def fix_blank_lines(self, content: str) -> str:
                     j -= 1
 
                 # Add missing blank lines for top-level definitions
-                if line.startswith(('def ', 'class ', 'async def ')) and blank_count < 2:
+                if (
+                    line.startswith(('def ', 'class ', 'async def '))
+                    and blank_count < 2
+                ):
                     for _ in range(2 - blank_count):
                         fixed_lines.append('')
                 elif not line.startswith(' ') and blank_count < 1:
@@ -264,7 +287,7 @@ def fix_blank_lines(self, content: str) -> str:
 
         return '\n'.join(final_lines)
 
-def fix_file(self, file_path: Path) -> bool:
+    def fix_file(self, file_path: Path) -> bool:
         """Fix a single file."""
         print(f"Fixing {file_path}")
 
@@ -289,7 +312,7 @@ def fix_file(self, file_path: Path) -> bool:
             print(f"Error fixing {file_path}: {e}")
             return False
 
-def run(self):
+    def run(self):
         """Run the fixer on all files."""
         files = self.get_python_files()
         print(f"Fixing {len(files)} Python files...")
@@ -303,6 +326,7 @@ def run(self):
 
 
 if __name__ == "__main__":
+
     backend_dir = Path(__file__).parent
     fixer = FlakeFixer(backend_dir)
     fixer.run()
