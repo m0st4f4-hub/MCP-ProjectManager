@@ -135,8 +135,10 @@ graph TD
 - `favicon.ico`
 - `globals.css`
 - `layout.tsx`
-- `page.tsx`
 - `not-found.tsx`
+- `page.tsx`
 
 <!-- File List End -->
+
+
 
