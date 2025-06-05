@@ -116,6 +116,12 @@ cd frontend
 npm test
 ```
 
+### Type Checking
+
+```bash
+npm run type-check
+```
+
 ---
 
 ## 🔍 System Validation & Tests

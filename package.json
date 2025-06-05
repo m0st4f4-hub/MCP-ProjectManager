@@ -16,7 +16,7 @@
     "lint:frontend": "cd frontend && npx eslint . --ext .js,.jsx,.ts,.tsx --config ./eslint.config.cjs --format json --output-file ../eslint_report.json",
     "watch:pack": "nodemon --watch cli.js --watch package.json --watch .npmignore --watch .cursor/rules --ext js,json,mdc --exec \"npm pack\"",
     "build:all": "cd frontend && npm run build && cd .. && backend\\.venv\\Scripts\\python.exe -m pip install -r backend\\requirements.txt",
-    "type-check": "npx tsc --noEmit",
+    "type-check": "npm --prefix frontend run type-check",
     "fix": "cd frontend && npm run fix",
     "format": "cd frontend && npm run format",
     "update-readmes": "python scripts/update_readmes.py",
