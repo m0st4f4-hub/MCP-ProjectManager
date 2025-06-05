@@ -53,6 +53,7 @@ actions = await list_forbidden_actions_tool(agent_role_id="manager", db=session)
 
 - `__init__.py`
 - `agent_handoff_tools.py`
+- `capability_tools.py`
 - `error_protocol_tools.py`
 - `forbidden_action_tools.py`
 - `memory_tools.py`
@@ -60,11 +61,11 @@ actions = await list_forbidden_actions_tool(agent_role_id="manager", db=session)
 - `project_template_tools.py`
 - `project_tools.py`
 - `rule_tools.py`
-- `capability_tools.py`
 - `task_tools.py`
 - `user_role_tools.py`
 
 <!-- File List End -->
+
 
 
 

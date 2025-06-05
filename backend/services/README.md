@@ -33,12 +33,15 @@ graph TD
 ## File List
 
 - `__init__.py`
+- `agent_capability_service.py`
 - `agent_error_protocol_service.py`
+- `agent_forbidden_action_service.py`
 - `agent_handoff_service.py`
 - `agent_service.py`
 - `audit_log_service.py`
 - `comment_service.py`
 - `error_protocol_service.py`
+- `event_publisher.py`
 - `exceptions.py`
 - `memory_service.py`
 - `project_file_association_service.py`
@@ -52,8 +55,10 @@ graph TD
 - `user_role_service.py`
 - `user_service.py`
 - `utils.py`
+- `workflow_service.py`
 
 <!-- File List End -->
+
 
 
 

@@ -63,17 +63,26 @@ graph TD
 - `test_crud.py`
 - `test_integration.py`
 - `test_memory_endpoints.py`
+- `test_memory_graph.py`
 - `test_memory_ingestion.py`
+- `test_memory_observations.py`
+- `test_memory_relations.py`
 - `test_memory_service.py`
+- `test_metrics_endpoint.py`
 - `test_openapi.py`
+- `test_openapi_validators.py`
 - `test_project_file_service.py`
 - `test_project_member_service.py`
 - `test_project_task_endpoints.py`
 - `test_prompt_templates.py`
 - `test_rules_service.py`
 - `test_simple.py`
+- `test_user_roles.py`
+- `test_workflow_endpoints.py`
+- `test_workflow_service.py`
 
 <!-- File List End -->
+
 
 
 

@@ -151,15 +151,16 @@ ISC
 - `.prettierrc.json`
 - `AEROSPACE_GRADE_DOCUMENTATION.md`
 - `AGENTS.MD`
+- `AUTH_SETUP.md`
 - `BACKEND_FRONTEND_ALIGNMENT_REPORT.md`
 - `CLEANUP_SUMMARY.md`
 - `CONTRIBUTING.md`
 - `DEV_LAUNCHER_COMPLETE.md`
 - `DEV_LAUNCHER_GUIDE.md`
 - `DEV_SCRIPTS.md`
-- `PROMETHEUS_GRAFANA_SETUP.md`
 - `LICENSE`
 - `Makefile`
+- `PROMETHEUS_GRAFANA_SETUP.md`
 - `SYSTEM_GUIDE.md`
 - `cli.js`
 - `dev_launcher.bat`
@@ -176,6 +177,7 @@ ISC
 - `validate_frontend.js`
 
 <!-- File List End -->
+
 
 
 
