@@ -282,5 +282,12 @@ export const mcpApi = {
       );
       return response;
     },
+
+    metrics: async (): Promise<Record<string, number>> => {
+      const response = await request<Record<string, number>>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, "/metrics")
+      );
+      return response;
+    },
   },
 };

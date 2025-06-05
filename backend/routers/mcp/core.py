@@ -16,7 +16,10 @@ from ....services.project_service import ProjectService
 from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
-from ....services.project_file_association_service import ProjectFileAssociationService
+from ....services.project_file_association_service import (
+    ProjectFileAssociationService,
+)
+from ....services.tool_metrics_service import ToolMetricsService
 from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate
 from ....schemas.memory import (
@@ -59,6 +62,7 @@ async def mcp_create_project(
     db: Session = Depends(get_db_session)
 ):
     """MCP Tool: Create a new project."""
+    ToolMetricsService.increment("create_project_tool")
     try:
         project_service = ProjectService(db)
         existing = project_service.get_project_by_name(project_data.name)
@@ -98,6 +102,7 @@ async def mcp_create_task(
     db: Session = Depends(get_db_session)
 ):
     """MCP Tool: Create a new task."""
+    ToolMetricsService.increment("create_task_tool")
     try:
         task_service = TaskService(db)
         project_service = ProjectService(db)
@@ -145,6 +150,7 @@ async def mcp_list_projects(
     db: Session = Depends(get_db_session)
 ):
     """MCP Tool: List all projects."""
+    ToolMetricsService.increment("list_projects_tool")
     try:
         project_service = ProjectService(db)
         projects = project_service.get_projects(
@@ -186,6 +192,7 @@ async def mcp_list_tasks(
     db: Session = Depends(get_db_session)
 ):
     """MCP Tool: List tasks with filtering."""
+    ToolMetricsService.increment("list_tasks_tool")
     try:
         task_service = TaskService(db)
         tasks = task_service.get_tasks(
@@ -227,6 +234,7 @@ async def mcp_update_task(
     db: Session = Depends(get_db_session)
 ):
     """MCP Tool: Update an existing task."""
+    ToolMetricsService.increment("update_task_tool")
     try:
         task_service = TaskService(db)
         task = task_service.update_task(
@@ -270,6 +278,7 @@ async def mcp_delete_task(
     db: Session = Depends(get_db_session)
 ):
     """MCP Tool: Delete an existing task."""
+    ToolMetricsService.increment("delete_task_tool")
     try:
         task_service = TaskService(db)
         task_service.delete_task(
@@ -304,6 +313,7 @@ async def mcp_add_project_file(
     service: ProjectFileAssociationService = Depends(get_project_file_service),
 ):
     """MCP Tool: Associate a file (memory entity) with a project."""
+    ToolMetricsService.increment("add_project_file_tool")
     try:
         project_file = service.add_project_file_association(
             project_id=project_id,
@@ -337,6 +347,7 @@ async def mcp_list_project_files(
     service: ProjectFileAssociationService = Depends(get_project_file_service),
 ):
     """MCP Tool: List files associated with a project."""
+    ToolMetricsService.increment("list_project_files_tool")
     try:
         project_files = service.get_project_file_associations(
             project_id=project_id,
@@ -371,6 +382,7 @@ async def mcp_remove_project_file(
     service: ProjectFileAssociationService = Depends(get_project_file_service),
 ):
     """MCP Tool: Remove a file (memory entity) association from a project."""
+    ToolMetricsService.increment("remove_project_file_tool")
     try:
         service.remove_project_file_association(
             project_id=project_id,
@@ -402,6 +414,7 @@ async def mcp_add_memory_entity(
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """MCP Tool: Add a new memory entity."""
+    ToolMetricsService.increment("add_memory_entity_tool")
     try:
         entity = memory_service.create_memory_entity(entity_data)
         audit_service = AuditLogService(memory_service.db)
@@ -428,6 +441,7 @@ async def mcp_update_memory_entity(
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """MCP Tool: Update an existing memory entity."""
+    ToolMetricsService.increment("update_memory_entity_tool")
     try:
         entity = memory_service.update_memory_entity(entity_id, entity_update)
         audit_service = AuditLogService(memory_service.db)
@@ -454,6 +468,7 @@ async def mcp_add_memory_observation(
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """MCP Tool: Add an observation to a memory entity."""
+    ToolMetricsService.increment("add_memory_observation_tool")
     try:
         observation = memory_service.create_memory_observation(entity_id, observation_data)
         audit_service = AuditLogService(memory_service.db)
@@ -479,6 +494,7 @@ async def mcp_add_memory_relation(
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """MCP Tool: Add a relation between memory entities."""
+    ToolMetricsService.increment("add_memory_relation_tool")
     try:
         relation = memory_service.create_memory_relation(relation_data)
         audit_service = AuditLogService(memory_service.db)
@@ -505,6 +521,7 @@ async def mcp_search_memory(
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """MCP Tool: Search memory entities by content."""
+    ToolMetricsService.increment("search_memory_tool")
     try:
         results = memory_service.search_memory_entities(query, limit)
         return {"success": True, "results": results}
@@ -523,6 +540,7 @@ async def mcp_get_memory_content(
     memory_service: MemoryService = Depends(get_memory_service),
 ):
     """MCP Tool: Retrieve content of a memory entity by ID."""
+    ToolMetricsService.increment("get_memory_content_tool")
     try:
         content = memory_service.get_memory_entity_content(entity_id)
         if content is None:
@@ -543,6 +561,7 @@ async def mcp_get_memory_metadata(
     memory_service: MemoryService = Depends(get_memory_service),
 ):
     """MCP Tool: Retrieve metadata of a memory entity by ID."""
+    ToolMetricsService.increment("get_memory_metadata_tool")
     try:
         metadata = memory_service.get_memory_entity_metadata(entity_id)
         if metadata is None:
@@ -560,6 +579,7 @@ async def mcp_get_memory_metadata(
 )
 async def mcp_list_tools():
     """MCP Tool: List all available MCP tools."""
+    ToolMetricsService.increment("list_mcp_tools_tool")
     try:
         tool_list = []
         for route in router.routes:
@@ -575,3 +595,13 @@ async def mcp_list_tools():
     except Exception as e:
         logger.error(f"MCP list tools failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/metrics",
+    tags=["mcp-tools"],
+    operation_id="tool_metrics",
+)
+async def mcp_tool_metrics() -> Dict[str, int]:
+    """Retrieve invocation counts for MCP tools."""
+    return ToolMetricsService.get_counts()
