@@ -1,3 +1,6 @@
+Here is the fully merged and finalized version of the `CONTRIBUTING.md` file, incorporating the `update-readmes` script section into the comprehensive contribution guide:
+
+````markdown
 # Contributing Guide
 
 Thank you for taking the time to contribute to **MCP Project Manager**! This project follows several conventions to ensure a clean, reliable, and collaborative development process.
@@ -43,6 +46,18 @@ These checks will automatically run on every commit.
 
 ---
 
+## 📝 Before Committing Documentation Changes
+
+Run the README update script to refresh file lists:
+
+```bash
+npm run update-readmes
+```
+
+This ensures all `README.md` files reflect up-to-date directory contents.
+
+---
+
 ## 📐 Coding Standards
 
 * Follow existing code structure and conventions.
@@ -56,7 +71,7 @@ These checks will automatically run on every commit.
 
 ---
 
-## 📝 Commit Style
+## 🧾 Commit Style
 
 This repo uses [Conventional Commits](https://www.conventionalcommits.org/) to maintain clean history and enable automatic changelog generation.
 
@@ -69,7 +84,7 @@ docs: update instructions for local setup
 ```
 
 Always prefix commits with `feat`, `fix`, `chore`, `docs`, etc.
-Reference related issues if applicable (e.g. `fix: #42`).
+Reference related issues when applicable (e.g. `fix: #42`).
 
 ---
 
@@ -99,6 +114,7 @@ All tests and linters must pass locally before submitting a PR.
 ## 🤝 Thank You
 
 Your contributions help make this project better.
-Whether it's fixing a bug, improving documentation, or adding a new feature, we appreciate your effort.
+Whether it's fixing a bug, improving documentation, or adding a new feature—we appreciate your effort.
 
+```
 ```
