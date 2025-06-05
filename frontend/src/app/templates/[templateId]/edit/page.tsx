@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@chakra-ui/react';
-import EditProjectTemplateForm from '@/components/forms/EditProjectTemplateForm';
+import TemplateForm from '@/components/templates/TemplateForm';
 import { useTemplateStore } from '@/store/templateStore';
 
 const EditTemplatePage: React.FC = () => {
@@ -40,7 +40,7 @@ const EditTemplatePage: React.FC = () => {
 
   return (
     <>
-      <EditProjectTemplateForm
+      <TemplateForm
         template={template}
         onSubmit={handleSubmit}
         onCancel={() => router.push('/templates')}
