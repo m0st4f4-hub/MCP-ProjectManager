@@ -12,7 +12,8 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import { useTaskStore } from "@/store/taskStore";
-import { TaskCreateData, TaskUpdateData, TaskStatus } from "@/types";
+import { TaskCreateData, TaskUpdateData, TaskStatus, Task } from "@/types";
+import { getAllTasksForProject } from "@/services/api";
 import AppIcon from "../common/AppIcon";
 
 interface TaskFormProps {
@@ -44,10 +45,30 @@ const TaskForm: React.FC<TaskFormProps> = ({
   const [projectId, setProjectId] = useState(initialData.project_id || "");
   const [agentId, setAgentId] = useState(initialData.agent_id || "");
   const [status, setStatus] = useState(initialData.status || TaskStatus.TO_DO);
+  const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
+  const [predecessors, setPredecessors] = useState<number[]>([]);
+  const [successors, setSuccessors] = useState<number[]>([]);
 
   useEffect(() => {
     fetchProjectsAndAgents();
   }, [fetchProjectsAndAgents]);
+
+  useEffect(() => {
+    const loadTasks = async () => {
+      if (!projectId) {
+        setAvailableTasks([]);
+        return;
+      }
+      try {
+        const tasks = await getAllTasksForProject(projectId, undefined, undefined, 0, 100);
+        setAvailableTasks(tasks);
+      } catch (err) {
+        console.error('Failed to load tasks for dependency selection', err);
+        setAvailableTasks([]);
+      }
+    };
+    loadTasks();
+  }, [projectId]);
 
   useEffect(() => {
     setTitle(initialData.title || "");
@@ -83,6 +104,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
         setProjectId("");
         setAgentId("");
         setStatus(TaskStatus.TO_DO);
+        setPredecessors([]);
+        setSuccessors([]);
       }
     } catch (error) {
       toast({
@@ -205,6 +228,52 @@ const TaskForm: React.FC<TaskFormProps> = ({
             ))}
           </Select>
         </FormControl>
+
+        {availableTasks.length > 0 && (
+          <FormControl>
+            <FormLabel color="textPrimary">Predecessor Tasks</FormLabel>
+            <Select
+              multiple
+              value={predecessors.map(String)}
+              onChange={(e) =>
+                setPredecessors(
+                  Array.from(e.target.selectedOptions).map((o) =>
+                    parseInt(o.value, 10),
+                  ),
+                )
+              }
+            >
+              {availableTasks.map((task) => (
+                <option key={task.task_number} value={task.task_number}>
+                  {task.title} ({task.task_number})
+                </option>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+
+        {availableTasks.length > 0 && (
+          <FormControl>
+            <FormLabel color="textPrimary">Successor Tasks</FormLabel>
+            <Select
+              multiple
+              value={successors.map(String)}
+              onChange={(e) =>
+                setSuccessors(
+                  Array.from(e.target.selectedOptions).map((o) =>
+                    parseInt(o.value, 10),
+                  ),
+                )
+              }
+            >
+              {availableTasks.map((task) => (
+                <option key={task.task_number} value={task.task_number}>
+                  {task.title} ({task.task_number})
+                </option>
+              ))}
+            </Select>
+          </FormControl>
+        )}
 
         <FormControl>
           <FormLabel color="textPrimary">Status</FormLabel>

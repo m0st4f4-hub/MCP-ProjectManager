@@ -29,8 +29,8 @@ import {
   useDisclosure,
   Badge,
 } from "@chakra-ui/react";
-import { Task } from "@/types"; // Corrected import for Task
-import { getTaskById } from "@/services/api"; // Assuming getTaskById exists
+import { Task, TaskDependency } from "@/types"; // Corrected import for Task
+import { getTaskById, getTaskPredecessors, getTaskSuccessors } from "@/services/api"; // Assuming getTaskById exists
 import { useTaskStore } from "@/store/taskStore"; // To potentially get project/agent names if not in task detail
 import { getDisplayableStatus, StatusID } from "@/lib/statusUtils"; // Added import
 import { DeleteIcon, DownloadIcon, RepeatClockIcon } from "@chakra-ui/icons";
@@ -53,6 +53,8 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   const [task, setTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [predecessors, setPredecessors] = useState<TaskDependency[]>([]);
+  const [successors, setSuccessors] = useState<TaskDependency[]>([]);
 
   // Move Zustand hooks to top level
   const projects = useTaskStore((state) => state.projects);
@@ -81,11 +83,31 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           const storeTask = tasks.find((t) => t.project_id === project_id && t.task_number === task_number);
           if (storeTask) {
             setTask(storeTask);
+            try {
+              const [preds, succs] = await Promise.all([
+                getTaskPredecessors(project_id, task_number),
+                getTaskSuccessors(project_id, task_number),
+              ]);
+              setPredecessors(preds);
+              setSuccessors(succs);
+            } catch (depErr) {
+              console.error('Failed to load dependencies', depErr);
+            }
           } else {
             try {
               // Use composite key for API call
               const fetchedTask = await getTaskById(project_id, task_number);
               setTask(fetchedTask);
+              try {
+                const [preds, succs] = await Promise.all([
+                  getTaskPredecessors(project_id, task_number),
+                  getTaskSuccessors(project_id, task_number),
+                ]);
+                setPredecessors(preds);
+                setSuccessors(succs);
+              } catch (depErr) {
+                console.error('Failed to load dependencies', depErr);
+              }
             } catch (fetchError) {
               console.error("Failed to fetch task by ID:", fetchError);
               setError("Failed to load task details.");
@@ -402,25 +424,53 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                   </Box>
                 </HStack>
                 <HStack justify="space-between" align="flex-start">
-                  <Box>
-                    <Heading
-                      size="xs"
-                      fontWeight="bold"
-                      textTransform="uppercase"
-                      color="textSecondary"
-                      mb="0.5"
-                    >
-                      Agent
-                    </Heading>
-                    <Text color="textPrimary" fontSize="base">
-                      {agent ? agent.name : task?.agent_name || "Unassigned"}
-                    </Text>
-                  </Box>
-                </HStack>
-                <Divider borderColor="borderDecorative" my="4" />
                 <Box>
                   <Heading
                     size="xs"
+                    fontWeight="bold"
+                    textTransform="uppercase"
+                    color="textSecondary"
+                    mb="0.5"
+                  >
+                    Agent
+                  </Heading>
+                  <Text color="textPrimary" fontSize="base">
+                    {agent ? agent.name : task?.agent_name || "Unassigned"}
+                  </Text>
+                </Box>
+              </HStack>
+              {(predecessors.length > 0 || successors.length > 0) && (
+                <Box>
+                  <Heading
+                    size="xs"
+                    fontWeight="bold"
+                    textTransform="uppercase"
+                    color="textSecondary"
+                    mb="0.5"
+                  >
+                    Dependency Chain
+                  </Heading>
+                  <HStack flexWrap="wrap" gap="1">
+                    {predecessors.map((dep) => (
+                      <Tag key={`pred-${dep.predecessor_task_number}`} size="sm" colorScheme="orange">
+                        {dep.predecessor_project_id}/{dep.predecessor_task_number}
+                      </Tag>
+                    ))}
+                    <Tag size="sm" colorScheme="blue">
+                      This Task
+                    </Tag>
+                    {successors.map((dep) => (
+                      <Tag key={`succ-${dep.successor_task_number}`} size="sm" colorScheme="purple">
+                        {dep.successor_project_id}/{dep.successor_task_number}
+                      </Tag>
+                    ))}
+                  </HStack>
+                </Box>
+              )}
+              <Divider borderColor="borderDecorative" my="4" />
+              <Box>
+                <Heading
+                  size="xs"
                     fontWeight="bold"
                     textTransform="uppercase"
                     color="textSecondary"
