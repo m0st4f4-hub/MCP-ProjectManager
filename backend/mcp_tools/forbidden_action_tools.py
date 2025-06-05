@@ -1,54 +1,61 @@
-"""MCP Tools for managing forbidden actions."""
-
-import logging
-from typing import Optional, List
+"""MCP Tools for managing forbidden actions for agent roles."""
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from typing import Optional, List
+import logging
 
 from backend.models.agent_forbidden_action import AgentForbiddenAction
+from backend.services.audit_log_service import AuditLogService
 
 logger = logging.getLogger(__name__)
 
 
-async def add_forbidden_action_tool(
+async def create_forbidden_action_tool(
     agent_role_id: str,
     action: str,
     reason: Optional[str],
     db: Session,
 ) -> dict:
-    """Add a forbidden action to an agent role."""
+    """MCP Tool: Create a forbidden action for an agent role."""
     try:
-        forbidden_action = AgentForbiddenAction(
+        forbidden = AgentForbiddenAction(
             agent_role_id=agent_role_id,
             action=action,
             reason=reason,
+            is_active=True,
         )
-        db.add(forbidden_action)
+        db.add(forbidden)
         db.commit()
-        db.refresh(forbidden_action)
+        db.refresh(forbidden)
+        AuditLogService(db).log_action(
+            action="forbidden_action_created",
+            entity_type="agent_forbidden_action",
+            entity_id=forbidden.id,
+            changes={"action": action, "reason": reason},
+        )
         return {
             "success": True,
             "forbidden_action": {
-                "id": forbidden_action.id,
-                "agent_role_id": forbidden_action.agent_role_id,
-                "action": forbidden_action.action,
-                "reason": forbidden_action.reason,
-                "is_active": forbidden_action.is_active,
+                "id": forbidden.id,
+                "agent_role_id": forbidden.agent_role_id,
+                "action": forbidden.action,
+                "reason": forbidden.reason,
+                "is_active": forbidden.is_active,
             },
         }
-    except Exception as exc:  # pragma: no cover - unexpected DB failure
-        logger.error(f"MCP add forbidden action failed: {exc}")
+    except Exception as exc:
+        logger.error(f"MCP create forbidden action failed: {exc}")
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 async def list_forbidden_actions_tool(
     agent_role_id: Optional[str],
-    skip: int,
-    limit: int,
     db: Session,
+    skip: int = 0,
+    limit: int = 100,
 ) -> dict:
-    """List forbidden actions for an agent role."""
+    """MCP Tool: List forbidden actions for agent roles."""
     try:
         query = db.query(AgentForbiddenAction)
         if agent_role_id:
