@@ -83,3 +83,23 @@ async def test_update_and_delete_observation():
 
         resp = await client.delete(f"/observations/{obs_id}")
         assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_read_observations_pagination():
+    dummy_service.observations = {}
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        for i in range(3):
+            resp = await client.post(
+                "/entities/1/observations/",
+                json={"entity_id": 1, "content": f"obs {i}"},
+            )
+            assert resp.status_code == 200
+
+        resp = await client.get("/observations/?entity_id=1&page=1&page_size=2")
+        assert resp.status_code == 200
+        assert len(resp.json()) == 2
+
+        resp = await client.get("/observations/?entity_id=1&page=2&page_size=2")
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1

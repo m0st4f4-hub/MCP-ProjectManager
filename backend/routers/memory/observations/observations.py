@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from ....database import get_sync_db as get_db
 from ....services.memory_service import MemoryService  # Assuming observation management is part of memory service
 from ....schemas.memory import MemoryObservation, MemoryObservationCreate
+from ....schemas.api_responses import PaginationParams
 from ....services.exceptions import EntityNotFoundError
 from ....schemas.response import DataResponse
 
@@ -27,26 +28,26 @@ def add_observation(
     return db_observation
 
 @router.get("/observations/", response_model=List[MemoryObservation])
-
-
-def read_observations(
+async def read_observations(
     entity_id: Optional[int] = Query(
         None, description="Optional entity ID to filter observations by."
     ),
     search_query: Optional[str] = Query(
         None, description="Optional text to search within observation content."
     ),
-    skip: int = Query(0, description="The number of items to skip before returning results."),
-    limit: int = Query(100, description="The maximum number of items to return."),
+    pagination: PaginationParams = Depends(),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
     """Get observations, optionally filtered by entity or content search."""
-    return memory_service.get_observations(
-        entity_id=entity_id,
-        search_query=search_query,
-        skip=skip,
-        limit=limit,
-    )
+    try:
+        return await memory_service.get_observations(
+            entity_id=entity_id,
+            search_query=search_query,
+            skip=pagination.offset,
+            limit=pagination.page_size,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 @router.put("/observations/{observation_id}", response_model=MemoryObservation)
 def update_observation(

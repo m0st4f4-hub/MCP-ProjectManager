@@ -175,11 +175,27 @@ export const memoryApi = {
   },
 
   // Get observations for an entity
-  getObservations: async (entityId: number): Promise<MemoryObservation[]> => {
+  getObservations: async (
+    entityId: number,
+    filters?: {
+      search_query?: string;
+      skip?: number;
+      limit?: number;
+    }
+  ): Promise<MemoryObservation[]> => {
+    const params = new URLSearchParams();
+    params.append('entity_id', String(entityId));
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      });
+    }
     const response = await request<{ data: MemoryObservation[] }>(
       buildApiUrl(
         API_CONFIG.ENDPOINTS.MEMORY,
-        `/entities/${entityId}/observations`
+        `/observations?${params.toString()}`
       )
     );
     return response.data;
