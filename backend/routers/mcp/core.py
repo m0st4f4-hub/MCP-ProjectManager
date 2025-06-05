@@ -3,9 +3,9 @@ MCP Core Tools Router - Functionality for Project and Task MCP integration.
 Provides MCP tool definitions.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import Optional, Dict
+from typing import Optional, List, Dict, Any
 import logging
 
 from ....database import get_sync_db as get_db
@@ -31,22 +31,21 @@ from ....schemas.memory import (
 )
 from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
 from ....schemas.error_protocol import ErrorProtocolCreate
+from ....mcp_tools.forbidden_action_tools import (
+    add_forbidden_action_tool,
+    list_forbidden_actions_tool,
+)
+from ....schemas.universal_mandate import UniversalMandateCreate
+from .... import models
+from ....schemas.memory import (
+    MemoryEntityCreate,
+    MemoryEntityUpdate,
+    MemoryObservationCreate,
+    MemoryRelationCreate
+)
 
 logger = logging.getLogger(__name__)
-
-# In-memory tool invocation counters
-tool_counters: Dict[str, int] = {}
-
-
-def track_tool_invocation(request: Request) -> None:
-    """Dependency to track how often each tool is called."""
-    endpoint = request.scope.get("endpoint")
-    name = getattr(endpoint, "__name__", "unknown")
-    if name != "mcp_get_metrics":
-        tool_counters[name] = tool_counters.get(name, 0) + 1
-
-
-router = APIRouter(tags=["mcp-tools"], dependencies=[Depends(track_tool_invocation)])
+router = APIRouter(tags=["mcp-tools"])
 
 
 def get_db_session():
@@ -78,16 +77,6 @@ def get_error_protocol_service(
     db: Session = Depends(get_db_session),
 ) -> ErrorProtocolService:
     return ErrorProtocolService(db)
-
-
-@router.get(
-    "/mcp-tools/metrics",
-    tags=["mcp-tools"],
-    operation_id="get_tool_metrics",
-)
-async def mcp_get_metrics():
-    """Return invocation counts for each MCP tool."""
-    return {"success": True, "metrics": tool_counters}
 
 
 @router.post(
@@ -1014,9 +1003,7 @@ async def mcp_create_forbidden_action(
 ):
     """MCP Tool: Create a forbidden action for an agent role."""
     try:
-        from ...mcp_tools.forbidden_action_tools import create_forbidden_action_tool
-
-        return await create_forbidden_action_tool(
+        return await add_forbidden_action_tool(
             agent_role_id=agent_role_id,
             action=action,
             reason=reason,
@@ -1038,8 +1025,6 @@ async def mcp_list_forbidden_actions(
 ):
     """MCP Tool: List forbidden actions for agent roles."""
     try:
-        from ...mcp_tools.forbidden_action_tools import list_forbidden_actions_tool
-
         return await list_forbidden_actions_tool(agent_role_id, db)
     except Exception as e:
         logger.error(f"MCP list forbidden actions failed: {e}")
