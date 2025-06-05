@@ -12,7 +12,11 @@ import type {
   UniversalMandateFilters,
   AgentRuleFilters,
 } from "@/types/rules";
-import type { AgentPromptTemplate } from "@/types/agent_prompt_template";
+import type {
+  AgentPromptTemplate,
+  AgentPromptTemplateCreateData,
+  AgentPromptTemplateUpdateData,
+} from "@/types/agent_prompt_template";
 
 export const rulesApi = {
   // --- Universal Mandate APIs ---
@@ -164,6 +168,51 @@ export const rulesApi = {
         buildApiUrl(API_CONFIG.ENDPOINTS.RULES, "/templates")
       );
       return response.data;
+    },
+
+    // Get single rule template
+    get: async (templateId: string): Promise<AgentPromptTemplate> => {
+      const response = await request<{ data: AgentPromptTemplate }>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.RULES, `/templates/${templateId}`)
+      );
+      return response.data;
+    },
+
+    // Create a new rule template
+    create: async (
+      data: AgentPromptTemplateCreateData
+    ): Promise<AgentPromptTemplate> => {
+      const response = await request<{ data: AgentPromptTemplate }>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.RULES, "/templates"),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+      return response.data;
+    },
+
+    // Update an existing template
+    update: async (
+      templateId: string,
+      data: AgentPromptTemplateUpdateData
+    ): Promise<AgentPromptTemplate> => {
+      const response = await request<{ data: AgentPromptTemplate }>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.RULES, `/templates/${templateId}`),
+        {
+          method: "PUT",
+          body: JSON.stringify(data),
+        }
+      );
+      return response.data;
+    },
+
+    // Delete a template
+    delete: async (templateId: string): Promise<void> => {
+      await request(
+        buildApiUrl(API_CONFIG.ENDPOINTS.RULES, `/templates/${templateId}`),
+        { method: "DELETE" }
+      );
     },
 
     // Apply a template to an agent
