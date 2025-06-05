@@ -21,10 +21,16 @@ graph TD
 <!-- File List Start -->
 ## File List
 
+- `CliPromptModal.tsx`
+- `DeleteProjectDialog.tsx`
+- `ProjectCard.tsx`
+- `ProjectCardMenu.tsx`
 - `ProjectDetail.tsx`
 - `ProjectFiles.tsx`
 - `ProjectList.tsx`
 - `ProjectMembers.tsx`
 
 <!-- File List End -->
+
+
 
