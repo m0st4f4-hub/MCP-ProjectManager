@@ -7,6 +7,7 @@ export * from "./config";
 export * from "./memory";
 export * from "./comments";
 export * from "./rules";
+export * from "./mandates";
 export * from "./mcp";
 export * from "./users";
 export * from "./audit_logs";
