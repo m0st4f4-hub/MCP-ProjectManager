@@ -35,9 +35,11 @@ async def add_task_dependency_endpoint(
         db_dependency = await task_dependency_service.add_task_dependency(
             successor_project_id=uuid.UUID(project_id),
             successor_task_number=task_number,
-            predecessor_project_id=uuid.UUID(dependency.predecessor_project_id),
+            predecessor_project_id=uuid.UUID(
+                dependency.predecessor_project_id
+            ),
             predecessor_task_number=dependency.predecessor_task_number,
-            dependency_type=dependency.dependency_type
+            dependency_type=dependency.dependency_type,
         )
         return DataResponse[TaskDependency](
             data=db_dependency,
