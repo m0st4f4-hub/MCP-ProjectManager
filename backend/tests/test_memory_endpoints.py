@@ -3,10 +3,17 @@ import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient, ASGITransport
 
-from backend.routers.memory import router, get_memory_service, get_current_active_user
-from backend.routers.memory.core.core import get_memory_service as core_get_memory_service
+from backend.routers.memory import (
+    router,
+    get_memory_service,
+    get_current_active_user,
+)
+from backend.routers.memory.core.core import (
+    get_memory_service as core_get_memory_service,
+)
 from backend.schemas.memory import MemoryEntity
 from datetime import datetime, timezone
+
 
 class DummyService:
     def __init__(self):
@@ -44,13 +51,17 @@ class DummyService:
 
 dummy_user = types.SimpleNamespace(id="user1")
 
+
 def override_user():
     return dummy_user
 
+
 dummy_service = DummyService()
+
 
 def override_service():
     return dummy_service
+
 
 app = FastAPI()
 app.include_router(router)
@@ -61,8 +72,14 @@ app.dependency_overrides[get_current_active_user] = override_user
 
 @pytest.mark.asyncio
 async def test_ingest_text_and_retrieve_content():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.post("/entities/ingest/text", json={"text": "hello"})
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        resp = await client.post(
+            "/entities/ingest/text",
+            json={"text": "hello"},
+        )
         assert resp.status_code == 201
         entity_id = resp.json()["id"]
 
@@ -73,8 +90,14 @@ async def test_ingest_text_and_retrieve_content():
 
 @pytest.mark.asyncio
 async def test_ingest_url_and_get_metadata():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.post("/entities/ingest/url", json={"url": "http://example.com"})
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        resp = await client.post(
+            "/entities/ingest/url",
+            json={"url": "http://example.com"},
+        )
         assert resp.status_code == 201
         entity_id = resp.json()["id"]
 
@@ -85,15 +108,27 @@ async def test_ingest_url_and_get_metadata():
 
 @pytest.mark.asyncio
 async def test_root_ingest_text():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.post("/ingest-text", json={"text": "root"})
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        resp = await client.post(
+            "/ingest-text",
+            json={"text": "root"},
+        )
         assert resp.status_code == 201
         assert resp.json()["content"] == "root"
 
 
 @pytest.mark.asyncio
 async def test_root_ingest_url():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.post("/ingest-url", json={"url": "http://root.com"})
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        resp = await client.post(
+            "/ingest-url",
+            json={"url": "http://root.com"},
+        )
         assert resp.status_code == 201
         assert resp.json()["content"] == "content from http://root.com"
