@@ -10,11 +10,13 @@ Thank you for taking the time to contribute to **MCP Project Manager**! This pro
 ## 🔧 Install Dependencies
 
 ### 1. Backend (Python)
+
 ```bash
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+```
 ````
 
 ### 2. Frontend (Node.js)
@@ -39,9 +41,9 @@ pre-commit install
 
 ### What gets checked:
 
-* **Backend**: `flake8` runs on Python files
-* **Frontend**: `npm run lint` and `npm run type-check` run on JS/TS files (the type check can also be triggered from the repo root with `npm run type-check`)
-* **Lint Staged Files**: `npx lint-staged` automatically fixes and formats only the files you commit using the config in `frontend/package.json`
+- **Backend**: `flake8` runs on Python files
+- **Frontend**: `npm run lint` and `npm run type-check` run on JS/TS files (the type check can also be triggered from the repo root with `npm run type-check`)
+- **Lint Staged Files**: `npx lint-staged` automatically fixes and formats only the files you commit using the config in `frontend/package.json`
 
 These checks will automatically run on every commit.
 
@@ -69,14 +71,15 @@ This writes `frontend/src/types/generatedEnums.ts`.
 
 ## 📐 Coding Standards
 
-* Follow existing code structure and conventions.
-* Keep code self-explanatory and remove unused code.
-* **Frontend**:
+- Follow existing code structure and conventions.
+- Keep code self-explanatory and remove unused code.
+- **Frontend**:
 
-  * Run: `npm run lint`, `npm run type-check`, `npm run fix`, and `npm run format` before committing.
-* **Backend**:
+  - Run: `npm run lint`, `npm run type-check`, `npm run fix`, and `npm run format` before committing.
 
-  * Run: `flake8` and ensure no style violations or unused imports remain.
+- **Backend**:
+
+  - Run: `flake8` and ensure no style violations or unused imports remain.
 
 ---
 
@@ -109,14 +112,28 @@ npm run lint
 npm test
 ```
 
+Run Prettier to check formatting:
+
+```bash
+npx prettier --check .
+```
+
 ### Backend
 
 ```bash
 cd backend
-pytest
+flake8
+pytest --cov=. --cov-fail-under=90
 ```
 
-All tests and linters must pass locally before submitting a PR.
+All tests and linters must pass locally before submitting a PR. Frontend tests
+should also meet a 90% coverage threshold:
+
+```bash
+npx vitest run --coverage.v8 --coverage-threshold=90
+```
+
+Coverage reports are uploaded in CI only when all checks succeed.
 
 ---
 
@@ -126,4 +143,5 @@ Your contributions help make this project better.
 Whether it's fixing a bug, improving documentation, or adding a new feature—we appreciate your effort.
 
 ```
+
 ```
