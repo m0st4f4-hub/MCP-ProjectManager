@@ -202,6 +202,9 @@ The backend exposes several MCP tools that mirror core API functionality:
 - `agent_handoff_tools.py` - create, list, and delete agent handoff criteria
 - `forbidden_action_tools.py` - manage forbidden actions for agent roles
 - `error_protocol_tools.py` - manage agent error protocols
+- `capability_tools.py` - manage agent capabilities
+- `project_template_tools.py` - handle reusable project templates
+- `user_role_tools.py` - assign, list, and remove user roles
 
 ## 📈 Performance Considerations
 

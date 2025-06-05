@@ -64,6 +64,11 @@ This frontend application provides a modern and responsive user interface for ma
 *   **Themeability:** Supports light and dark modes.
 *   **Agent Forbidden Actions:** Interface for creating and listing forbidden actions via MCP tools.
 *   **Agent Handoff Criteria:** Manage handoff criteria between agents using the new MCP endpoints.
+*   **Project Templates:** Create and manage templates via `/api/project-templates` endpoints.
+*   **Agent Capabilities:** Manage capabilities with `/api/rules/roles/capabilities`.
+*   **Error Protocol Management:** Add, list, and remove protocols through `/mcp-tools/error-protocol/*` routes.
+*   **User Role Assignment:** Assign or remove roles using `/api/users/{user_id}/roles`.
+*   **Knowledge Graph Visualization:** View the memory graph via `/api/memory/entities/graph`.
 
 ---
 
