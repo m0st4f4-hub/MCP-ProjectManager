@@ -8,7 +8,7 @@ from backend.crud.task_dependencies import create_task_dependency
 from ..schemas.task_dependency import TaskDependencyCreate
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException
+from ..services.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -74,12 +74,12 @@ class TaskDependencyService:
         # Check for self-dependency
         if self._is_self_dependency(task_dependency):
             logger.error("Self-dependency detected: Service Layer Check.")
-            raise HTTPException(status_code=400, detail="A task cannot be dependent on itself")
+            raise ValidationError("A task cannot be dependent on itself")
         
         # Check for circular dependency
         if await self._is_circular_dependency(task_dependency):
             logger.error("Circular dependency detected: Service Layer Check.")
-            raise HTTPException(status_code=400, detail="Circular dependency detected")
+            raise ValidationError("Circular dependency detected")
         
         # Create the dependency in the database
         db_task_dependency = await create_task_dependency(self.db, task_dependency)

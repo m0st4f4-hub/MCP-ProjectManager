@@ -3,7 +3,6 @@ import logging
 import os
 import httpx
 
-from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -24,7 +23,7 @@ from ..crud.memory import (
     update_memory_entity,
     delete_memory_entity,
 )
-from ..services.exceptions import EntityNotFoundError
+from ..services.exceptions import ServiceError, EntityNotFoundError, DuplicateEntityError
 
 logger = logging.getLogger(__name__)
 
@@ -64,10 +63,7 @@ class MemoryService:
                 logger.error(
                     f"File not found during ingestion: {file_path}"
                 )
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"File not found: {file_path}",
-                )
+                raise EntityNotFoundError("File", file_path)
 
             file_stat = os.stat(file_path)
             file_info = {
@@ -108,12 +104,11 @@ class MemoryService:
                 created_by_user_id=user_id
             )
             return self.create_entity(entity_create)
+        except EntityNotFoundError:
+            raise
         except Exception as e:
             logger.error(f"Error ingesting file {file_path}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Error ingesting file: {str(e)}",
-            )
+            raise ServiceError(f"Error ingesting file: {str(e)}")
 
     def ingest_url(
         self, url: str, user_id: Optional[str] = None
@@ -132,10 +127,7 @@ class MemoryService:
             return self.create_entity(entity_create)
         except Exception as e:
             logger.error(f"Error ingesting url {url}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Error ingesting url: {str(e)}",
-            )
+            raise ServiceError(f"Error ingesting url: {str(e)}")
 
     def ingest_text(
         self,
@@ -155,10 +147,7 @@ class MemoryService:
             return self.create_entity(entity_create)
         except Exception as e:
             logger.error(f"Error ingesting text: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Error ingesting text: {str(e)}",
-            )
+            raise ServiceError(f"Error ingesting text: {str(e)}")
 
     def get_file_content(self, entity_id: int) -> str:
         entity = self.get_entity(entity_id)
@@ -169,10 +158,7 @@ class MemoryService:
     def get_file_metadata(self, entity_id: int) -> Dict[str, Any]:
         entity = self.get_entity(entity_id)
         if not entity:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Entity not found",
-            )
+            raise EntityNotFoundError("MemoryEntity", entity_id)
         return entity.entity_metadata or {}
 
     def create_memory_entity(self, entity: MemoryEntityCreate) -> models.MemoryEntity:
@@ -190,17 +176,11 @@ class MemoryService:
             return db_entity
         except IntegrityError:
             self.db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Entity with name '{entity.name}' already exists",
-            )
+            raise DuplicateEntityError("MemoryEntity", entity.name)
         except Exception as e:
             self.db.rollback()
             logger.error(f"Error creating memory entity: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Error creating memory entity",
-            )
+            raise ServiceError("Error creating memory entity")
 
     def get_memory_entity_by_name(self, name: str) -> Optional[models.MemoryEntity]:
         return (
@@ -247,10 +227,7 @@ class MemoryService:
     ) -> models.MemoryObservation:
         db_entity = self.get_memory_entity_by_id(entity_id)
         if db_entity is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Entity not found",
-            )
+            raise EntityNotFoundError("MemoryEntity", entity_id)
 
         db_observation = models.MemoryObservation(
             entity_id=entity_id,
@@ -323,19 +300,9 @@ class MemoryService:
         from_entity = self.get_memory_entity_by_id(relation.from_entity_id)
         to_entity = self.get_memory_entity_by_id(relation.to_entity_id)
         if not from_entity:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=(
-                    f"Source entity with ID {relation.from_entity_id} not found"
-                ),
-            )
+            raise EntityNotFoundError("MemoryEntity", relation.from_entity_id)
         if not to_entity:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=(
-                    f"Target entity with ID {relation.to_entity_id} not found"
-                ),
-            )
+            raise EntityNotFoundError("MemoryEntity", relation.to_entity_id)
 
         try:
             db_relation = models.MemoryRelation(
@@ -351,21 +318,14 @@ class MemoryService:
             return db_relation
         except IntegrityError:
             self.db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=(
-                    f"Relation of type '{relation.relation_type}' already exists "
-                    f"between entity {relation.from_entity_id} "
-                    f"and entity {relation.to_entity_id}"
-                ),
+            raise DuplicateEntityError(
+                "MemoryRelation",
+                f"{relation.from_entity_id}-{relation.to_entity_id}-{relation.relation_type}"
             )
         except Exception as e:
             self.db.rollback()
             logger.error(f"Error creating memory relation: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Error creating memory relation",
-            )
+            raise ServiceError("Error creating memory relation")
 
     def update_memory_relation(
         self, relation_id: int, relation_update: MemoryRelationCreate
@@ -373,28 +333,15 @@ class MemoryService:
         """Update an existing memory relation."""
         db_relation = self.get_memory_relation(relation_id)
         if db_relation is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Relation not found",
-            )
+            raise EntityNotFoundError("MemoryRelation", relation_id)
 
         # Validate referenced entities exist
         from_entity = self.get_memory_entity_by_id(relation_update.from_entity_id)
         if from_entity is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=(
-                    f"Source entity with ID {relation_update.from_entity_id} not found"
-                ),
-            )
+            raise EntityNotFoundError("MemoryEntity", relation_update.from_entity_id)
         to_entity = self.get_memory_entity_by_id(relation_update.to_entity_id)
         if to_entity is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=(
-                    f"Target entity with ID {relation_update.to_entity_id} not found"
-                ),
-            )
+            raise EntityNotFoundError("MemoryEntity", relation_update.to_entity_id)
 
         db_relation.from_entity_id = relation_update.from_entity_id
         db_relation.to_entity_id = relation_update.to_entity_id
@@ -407,21 +354,14 @@ class MemoryService:
             return db_relation
         except IntegrityError:
             self.db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=(
-                    f"Relation of type '{relation_update.relation_type}' already exists "
-                    f"between entity {relation_update.from_entity_id} "
-                    f"and entity {relation_update.to_entity_id}"
-                ),
+            raise DuplicateEntityError(
+                "MemoryRelation",
+                f"{relation_update.from_entity_id}-{relation_update.to_entity_id}-{relation_update.relation_type}"
             )
         except Exception as e:
             self.db.rollback()
             logger.error(f"Error updating memory relation: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Error updating memory relation",
-            )
+            raise ServiceError("Error updating memory relation")
 
     def get_memory_relation(
         self, relation_id: int

@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from fastapi import HTTPException
+from backend.services.exceptions import EntityNotFoundError, ServiceError
 
 from backend.services.memory_service import MemoryService
 from backend.schemas.file_ingest import FileIngestInput
@@ -45,16 +45,16 @@ def test_ingest_file_reads_text(tmp_path):
 
 
 def test_ingest_file_missing_file_raises():
-    """ingest_file should raise HTTPException when the file is missing."""
+    """ingest_file should raise EntityNotFoundError when the file is missing."""
     session = MagicMock()
     service = MemoryService(session)
 
-    with pytest.raises(HTTPException):
+    with pytest.raises(EntityNotFoundError):
         service.ingest_file(FileIngestInput(file_path="/nonexistent/file.txt"))
 
 
 def test_ingest_file_unsupported_encoding(tmp_path):
-    """If decoding fails for all attempts, HTTPException should be raised."""
+    """If decoding fails for all attempts, ServiceError should be raised."""
     tmp_file = tmp_path / "bad.txt"
     tmp_file.write_bytes(b"\xff\xfe")
 
@@ -63,5 +63,5 @@ def test_ingest_file_unsupported_encoding(tmp_path):
 
     decode_error = UnicodeDecodeError("utf-8", b"", 0, 1, "bad")
     with patch("builtins.open", side_effect=[decode_error, decode_error]):
-        with pytest.raises(HTTPException):
+        with pytest.raises(ServiceError):
             service.ingest_file(FileIngestInput(file_path=str(tmp_file)))

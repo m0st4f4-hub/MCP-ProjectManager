@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
+from fastapi import APIRouter, Depends, status, Query, Path
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
@@ -30,10 +30,7 @@ def get_memory_graph(
     memory_service: MemoryService = Depends(get_memory_service),
 ):
     """Retrieve the entire knowledge graph."""
-    try:
-        return memory_service.get_knowledge_graph()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+    return memory_service.get_knowledge_graph()
 
 # =============================
 # CRUD Endpoints
@@ -45,14 +42,7 @@ def create_memory_entity_endpoint(
     entity_data: MemoryEntityCreate,
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    try:
-        return memory_service.create_entity(entity_data)
-    except DuplicateEntityError as e:
-        raise HTTPException(status_code=409, detail=str(e))
-    except ValidationError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+    return memory_service.create_entity(entity_data)
 
 
 @router.get("/{entity_id}", response_model=MemoryEntity)
@@ -60,15 +50,10 @@ def read_memory_entity_endpoint(
     entity_id: int = Path(...),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    try:
-        db_entity = memory_service.get_entity(entity_id)
-        if db_entity is None:
-            raise EntityNotFoundError("MemoryEntity", entity_id)
-        return db_entity
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+    db_entity = memory_service.get_entity(entity_id)
+    if db_entity is None:
+        raise EntityNotFoundError("MemoryEntity", entity_id)
+    return db_entity
 
 
 @router.get("/", response_model=List[MemoryEntity])
@@ -79,10 +64,7 @@ def list_memory_entities_endpoint(
     limit: int = Query(100),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    try:
-        return memory_service.get_entities(type=type, name=name, skip=skip, limit=limit)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+    return memory_service.get_entities(type=type, name=name, skip=skip, limit=limit)
 
 
 @router.get("/by-type/{entity_type}", response_model=List[MemoryEntity])
@@ -92,14 +74,11 @@ def read_entities_by_type(
     skip: int = Query(0),
     limit: int = Query(100),
 ):
-    try:
-        return memory_service.get_entities_by_type(
-            entity_type=entity_type,
-            skip=skip,
-            limit=limit,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+    return memory_service.get_entities_by_type(
+        entity_type=entity_type,
+        skip=skip,
+        limit=limit,
+    )
 
 
 @router.put("/{entity_id}", response_model=MemoryEntity)
@@ -108,15 +87,10 @@ def update_memory_entity_endpoint(
     entity_id: int = Path(...),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    try:
-        db_entity = memory_service.update_entity(entity_id, entity_update)
-        if db_entity is None:
-            raise EntityNotFoundError("MemoryEntity", entity_id)
-        return db_entity
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+    db_entity = memory_service.update_entity(entity_id, entity_update)
+    if db_entity is None:
+        raise EntityNotFoundError("MemoryEntity", entity_id)
+    return db_entity
 
 
 @router.delete("/{entity_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -124,15 +98,10 @@ def delete_memory_entity_endpoint(
     entity_id: int = Path(...),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    try:
-        success = memory_service.delete_entity(entity_id)
-        if not success:
-            raise EntityNotFoundError("MemoryEntity", entity_id)
-        return {"message": "Memory entity deleted successfully"}
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+    success = memory_service.delete_entity(entity_id)
+    if not success:
+        raise EntityNotFoundError("MemoryEntity", entity_id)
+    return {"message": "Memory entity deleted successfully"}
 
 # =============================
 # Ingestion Inputs
@@ -162,17 +131,10 @@ def ingest_file_endpoint(
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
 ):
-    try:
-        return memory_service.ingest_file(
-            ingest_input=ingest_input,
-            user_id=current_user.id,
-        )
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to ingest file: {e}")
+    return memory_service.ingest_file(
+        ingest_input=ingest_input,
+        user_id=current_user.id,
+    )
 
 
 @router.post(
@@ -185,13 +147,10 @@ def ingest_url_endpoint(
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
 ):
-    try:
-        return memory_service.ingest_url(
-            url=ingest_input.url,
-            user_id=current_user.id,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to ingest url: {e}")
+    return memory_service.ingest_url(
+        url=ingest_input.url,
+        user_id=current_user.id,
+    )
 
 
 @router.post(
@@ -204,14 +163,11 @@ def ingest_text_endpoint(
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
 ):
-    try:
-        return memory_service.ingest_text(
-            text=ingest_input.text,
-            user_id=current_user.id,
-            metadata=ingest_input.metadata,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to ingest text: {e}")
+    return memory_service.ingest_text(
+        text=ingest_input.text,
+        user_id=current_user.id,
+        metadata=ingest_input.metadata,
+    )
 
 # =============================
 # File Content & Metadata
@@ -223,13 +179,8 @@ def get_file_content_endpoint(
     entity_id: int = Path(...),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    try:
-        content = memory_service.get_file_content(entity_id)
-        return {"content": content}
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+    content = memory_service.get_file_content(entity_id)
+    return {"content": content}
 
 
 @router.get("/{entity_id}/metadata")
@@ -237,10 +188,5 @@ def get_file_metadata_endpoint(
     entity_id: int = Path(...),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    try:
-        metadata = memory_service.get_file_metadata(entity_id)
-        return {"metadata": metadata}
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+    metadata = memory_service.get_file_metadata(entity_id)
+    return {"metadata": metadata}

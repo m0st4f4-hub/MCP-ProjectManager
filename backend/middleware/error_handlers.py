@@ -5,6 +5,7 @@ This module provides middleware for handling exceptions in FastAPI routes.
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
+from backend.schemas.api_responses import ErrorResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import logging
@@ -55,16 +56,12 @@ async def service_exception_handler(request: Request, exc: ServiceError):
         f"Service error {error_id}: {exc.__class__.__name__} - {str(exc)}"
     )
 
-    return JSONResponse(
-        status_code=status_code,
-        content={
-            "success": False,
-            "message": str(exc),
-            "error_code": exc.__class__.__name__,
-            "error_id": error_id,
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
+    err = ErrorResponse(
+        message=str(exc),
+        error_code=exc.__class__.__name__,
+        error_details={"error_id": error_id}
     )
+    return JSONResponse(status_code=status_code, content=err.model_dump())
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handle request validation errors."""
@@ -72,17 +69,12 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
     logger.error(f"Validation error {error_id}: {exc}")
 
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "success": False,
-            "message": "Validation error",
-            "error_code": "RequestValidationError",
-            "error_id": error_id,
-            "error_details": exc.errors(),
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
+    err = ErrorResponse(
+        message="Validation error",
+        error_code="RequestValidationError",
+        error_details={"errors": exc.errors(), "error_id": error_id}
     )
+    return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content=err.model_dump())
 
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """Handle HTTP exceptions."""
@@ -90,16 +82,12 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 
     logger.error(f"HTTP error {error_id}: {exc.status_code} - {exc.detail}")
 
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "success": False,
-            "message": exc.detail,
-            "error_code": f"HTTP{exc.status_code}",
-            "error_id": error_id,
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
+    err = ErrorResponse(
+        message=exc.detail,
+        error_code=f"HTTP{exc.status_code}",
+        error_details={"error_id": error_id}
     )
+    return JSONResponse(status_code=exc.status_code, content=err.model_dump())
 
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle unhandled exceptions."""
@@ -110,16 +98,12 @@ async def general_exception_handler(request: Request, exc: Exception):
     )
     logger.error(traceback.format_exc())
 
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "success": False,
-            "message": "Internal server error",
-            "error_code": "InternalServerError",
-            "error_id": error_id,
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
+    err = ErrorResponse(
+        message="Internal server error",
+        error_code="InternalServerError",
+        error_details={"error_id": error_id}
     )
+    return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content=err.model_dump())
 
 def register_exception_handlers(app):
     """Register all exception handlers."""
