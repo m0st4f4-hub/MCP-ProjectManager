@@ -168,9 +168,10 @@ class TheBuilderSystemIntegrator:
         return all(dep in content.lower() for dep in required_deps)
     
     def _check_database(self):
-        """Check database files."""
-        init_script = self.backend_dir / "init_db.py"
-        return init_script.exists()
+        """Check Alembic migration configuration."""
+        alembic_ini = self.backend_dir / "alembic.ini"
+        versions_dir = self.backend_dir / "alembic" / "versions"
+        return alembic_ini.exists() and versions_dir.exists()
     
     def _check_models(self):
         """Check backend models."""

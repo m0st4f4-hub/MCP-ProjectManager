@@ -129,27 +129,14 @@ class SystemIntegrator:
         """Initialize the database."""
         print("\n[Database] Initializing Database")
         print("-" * 40)
-        
         python_cmd = ".venv\\Scripts\\python.exe" if os.name == 'nt' else ".venv/bin/python"
-        
-        # Check if database exists
-        db_path = self.backend_dir / "sql_app.db"
-        if db_path.exists():
-            print("[Success] Database already exists")
-            return True
-        
-        # Run database initialization
-        init_script = self.backend_dir / "init_db.py"
-        if init_script.exists():
-            return self.run_command(
-                f"{python_cmd} init_db.py",
-                "Initializing database",
-                cwd=self.backend_dir,
-                timeout=60
-            )
-        else:
-            print("[Warning] Database initialization script not found")
-            return True
+
+        return self.run_command(
+            f"{python_cmd} -m alembic upgrade head",
+            "Applying database migrations",
+            cwd=self.backend_dir,
+            timeout=60
+        )
     
     def start_backend_server(self):
         """Start the backend server in a separate process."""

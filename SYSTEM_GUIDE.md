@@ -67,14 +67,14 @@ cd backend
 
 ### 🗄️ Database Management
 ```bash
-# Initialize database (uses `DATABASE_URL` from backend/.env)
+# Apply migrations (uses `DATABASE_URL` from backend/.env)
 cd backend
-python init_db.py
+python -m alembic upgrade head
 
-# Generate migration
+# Generate new migration
 alembic revision --autogenerate -m "description"
 
-# Run migrations
+# Upgrade to latest
 alembic upgrade head
 ```
 
@@ -156,7 +156,7 @@ python -m venv .venv
 .venv\Scripts\pip install -r requirements.txt
 
 # If database issues:
-python init_db.py  # reads DATABASE_URL from backend/.env
+python -m alembic upgrade head  # reads DATABASE_URL from backend/.env
 ```
 
 ### Frontend Issues

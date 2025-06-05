@@ -201,11 +201,9 @@ async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     logger.info("Starting Task Manager Backend...")
     try:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database tables initialized")
+        logger.info("Task Manager Backend initialization complete")
     except Exception as e:  # pragma: no cover - unexpected DB failure
-        logger.error(f"Failed to initialize database: {e}")
+        logger.error(f"Initialization failed: {e}")
         raise
 
     server_addr = os.getenv("MCP_SERVER_ADDRESS", "http://localhost:8000")

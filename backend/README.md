@@ -12,7 +12,7 @@ backend\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --po
 ```
 
 The server will start and you should see:
-- ✅ Database tables being checked/initialized
+- ✅ Database migrations applied
 - ✅ "Application startup complete."
 - ✅ Server running on `http://0.0.0.0:8000`
 
@@ -105,7 +105,7 @@ ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 DEBUG=True
 ```
-`DATABASE_URL` is read by `database.py` and `init_db.py`. Set it to a
+`DATABASE_URL` is read by `database.py`. Set it to a
 SQLAlchemy-compatible URL (e.g., a custom SQLite file path or PostgreSQL URI)
 to override the default `sql_app.db`.
 
