@@ -157,7 +157,12 @@ cd backend
 - ✅ **Agent Handoff Criteria**: Endpoints under `/api/v1/rules/roles/handoff-criteria` allow creation, listing, and deletion of handoff criteria for agent roles.
 - ✅ **Forbidden Action MCP Tools**: MCP endpoints `/mcp-tools/forbidden-action/create` and `/mcp-tools/forbidden-action/list` enable managing forbidden actions.
 - ✅ **Capability MCP Tools**: MCP endpoints `/mcp-tools/capability/create`, `/mcp-tools/capability/list`, and `/mcp-tools/capability/delete` manage agent capabilities.
-## 🔍 Troubleshooting
+- ✅ **Error Protocol MCP Tools**: `/mcp-tools/error-protocol/add`, `/mcp-tools/error-protocol/list`, and `/mcp-tools/error-protocol/remove` handle agent error protocols.
+- ✅ **Project Template API**: CRUD operations available at `/api/v1/project-templates`.
+- ✅ **User Roles API**: Assign, list, and remove roles via `/api/v1/users/{user_id}/roles`.
+- ✅ **Agent Capability API**: Manage capabilities through `/api/v1/rules/roles/capabilities`.
+- ✅ **Forbidden Action API**: Manage actions via `/api/v1/rules/roles/forbidden-actions`.
+- ✅ **Knowledge Graph Endpoint**: Retrieve the full graph at `/api/v1/memory/entities/graph`.
 
 ### Server Won't Start
 1. Make sure you're in the correct directory (`D:\mcp\task-manager`)
