@@ -12,6 +12,7 @@ Key files:
 *   `agent_handoff_tools.py`: Tools for managing agent handoff criteria.
 *   `forbidden_action_tools.py`: Tools for creating and listing forbidden actions for agent roles.
 *   `error_protocol_tools.py`: Tools for creating and listing error protocols for agent roles.
+*   `user_role_tools.py`: Tools for assigning, listing, and removing user roles.
 *   `__init__.py`: Initializes the mcp_tools package.
 
 ## Architecture Diagram
@@ -59,6 +60,7 @@ actions = await list_forbidden_actions_tool(agent_role_id="manager", db=session)
 - `project_tools.py`
 - `rule_tools.py`
 - `task_tools.py`
+- `user_role_tools.py`
 
 <!-- File List End -->
 
