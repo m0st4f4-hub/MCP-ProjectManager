@@ -7,6 +7,9 @@ import pytest
 import asyncio
 from typing import AsyncGenerator, Generator
 from unittest.mock import AsyncMock, Mock
+import subprocess
+import time
+from pathlib import Path
 
 # Add backend to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -25,6 +28,23 @@ from backend.models import Task as TaskModel
 from backend.models import Agent as AgentModel
 from backend.crud.users import get_password_hash
 from backend.enums import UserRoleEnum, TaskStatusEnum
+
+
+@pytest.fixture(scope="session")
+def backend_server() -> Generator[None, None, None]:
+    """Start the FastAPI backend in a subprocess for integration tests."""
+    repo_root = Path(__file__).resolve().parents[2]
+    script = repo_root / "scripts" / "start_test_backend.py"
+    process = subprocess.Popen([sys.executable, str(script)])
+    time.sleep(2)
+    try:
+        yield
+    finally:
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
 
 # Test database URL - use SQLite for tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
