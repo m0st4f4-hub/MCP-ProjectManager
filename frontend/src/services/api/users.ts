@@ -71,10 +71,12 @@ export const login = async (formData: LoginRequest): Promise<TokenResponse> => {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(formData as Record<string, string>).toString(),
+      credentials: 'include',
     }
   );
 };
 
+<<<<<<< HEAD
 export const redirectToOAuthLogin = (): void => {
   if (typeof window !== 'undefined') {
     window.location.href = buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/oauth/login');
@@ -82,6 +84,17 @@ export const redirectToOAuthLogin = (): void => {
 };
 
 export const logout = (): void => {
+=======
+export const logout = async (): Promise<void> => {
+  try {
+    await request(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/logout'), {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch {
+    // Ignore errors during logout
+  }
+>>>>>>> origin/codex/add-and-manage-refresh-token-functionality
   if (typeof window !== 'undefined') {
     localStorage.removeItem('token');
   }

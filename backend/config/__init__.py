@@ -2,7 +2,7 @@
 Configuration package initialization.
 """
 
-from .app_config import Settings
+from .app_config import Settings, configure_logging
 
 settings = Settings()
 
@@ -14,6 +14,7 @@ OAUTH_CLIENT_SECRET = settings.OAUTH_CLIENT_SECRET
 OAUTH_SERVER_METADATA_URL = settings.OAUTH_SERVER_METADATA_URL
 OAUTH_REDIRECT_URI = settings.OAUTH_REDIRECT_URI
 OAUTH_SCOPE = settings.OAUTH_SCOPE
+REFRESH_TOKEN_EXPIRE_MINUTES = settings.REFRESH_TOKEN_EXPIRE_MINUTES
 
 __all__ = [
     'configure_logging',
@@ -25,4 +26,5 @@ __all__ = [
     'OAUTH_SERVER_METADATA_URL',
     'OAUTH_REDIRECT_URI',
     'OAUTH_SCOPE',
+    'REFRESH_TOKEN_EXPIRE_MINUTES',
 ]

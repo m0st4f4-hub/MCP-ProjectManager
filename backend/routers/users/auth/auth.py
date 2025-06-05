@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+# Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
+
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import timedelta
@@ -7,8 +9,12 @@ from backend.database import get_db
 from backend.services.user_service import UserService
 from backend.services.audit_log_service import AuditLogService
 from backend.services.exceptions import AuthorizationError
-from backend.config import ACCESS_TOKEN_EXPIRE_MINUTES, OAUTH_REDIRECT_URI
-from backend.auth import create_access_token
+from backend.config import ACCESS_TOKEN_EXPIRE_MINUTES, OAUTH_REDIRECT_URI, REFRESH_TOKEN_EXPIRE_MINUTES
+from backend.auth import (
+    create_access_token,
+    create_refresh_token,
+    verify_refresh_token,
+)
 from backend.security import login_tracker, oauth
 from backend.schemas.user import UserCreate
 from backend.enums import UserRoleEnum
@@ -32,6 +38,7 @@ def get_audit_log_service(db: AsyncSession = Depends(get_db)) -> AuditLogService
 class Token(BaseModel):
     access_token: str
     token_type: str
+    refresh_token: str | None = None # Added for refresh token flow
 
 
 class LoginRequest(BaseModel):
@@ -41,6 +48,7 @@ class LoginRequest(BaseModel):
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token_form(
+    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     user_service: UserService = Depends(get_user_service),
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
@@ -51,11 +59,13 @@ async def login_for_access_token_form(
         form_data.password,
         user_service,
         audit_log_service,
+        response,
     )
 
 
 @router.post("/login", response_model=Token)
 async def login_for_access_token_json(
+    response: Response,
     login_data: LoginRequest,
     user_service: UserService = Depends(get_user_service),
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
@@ -66,7 +76,33 @@ async def login_for_access_token_json(
         login_data.password,
         user_service,
         audit_log_service,
+        response,
     )
+
+
+@router.post("/refresh", response_model=Token)
+async def refresh_access_token(request: Request, response: Response):
+    """Refresh access token using refresh token cookie."""
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token missing")
+    username = verify_refresh_token(refresh_token)
+    access_token = create_access_token(data={"sub": username})
+    new_refresh_token = create_refresh_token(data={"sub": username})
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        samesite="lax",
+    )
+    return {"access_token": access_token, "token_type": "bearer", "refresh_token": new_refresh_token}
+
+
+@router.post("/logout")
+async def logout(response: Response):
+    """Clear refresh token cookie."""
+    response.delete_cookie("refresh_token")
+    return {"success": True}
 
 
 async def _authenticate_user(
@@ -74,6 +110,7 @@ async def _authenticate_user(
     password: str,
     user_service: UserService,
     audit_log_service: AuditLogService,
+    response: Response,
 ):
     """Common authentication logic with brute force protection."""
     try:
@@ -90,13 +127,20 @@ async def _authenticate_user(
             access_token = create_access_token(
                 data={"sub": user.username}, expires_delta=access_token_expires
             )
-
+            refresh_token = create_refresh_token(data={"sub": user.username})
+            response.set_cookie(
+                key="refresh_token",
+                value=refresh_token,
+                httponly=True,
+                samesite="lax",
+            )
+            
             await audit_log_service.create_log(
                 action="login_success",
                 user_id=user.id,
                 details={"username": user.username}
             )
-            return {"access_token": access_token, "token_type": "bearer"}
+            return {"access_token": access_token, "token_type": "bearer", "refresh_token": refresh_token}
         else:
             # Record failed login
             await login_tracker.record_attempt(username, success=False)
@@ -156,4 +200,11 @@ async def oauth_callback(
     )
 
     access_token = create_access_token(data={"sub": user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_token = create_refresh_token(data={"sub": user.username}) # Also create refresh token for OAuth
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        samesite="lax",
+    )
+    return {"access_token": access_token, "token_type": "bearer", "refresh_token": refresh_token}
