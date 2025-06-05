@@ -40,11 +40,11 @@ class AuditLogService:
         )
         # Create the audit log entry using the CRUD function
         # Pass the async session to the CRUD function
-        await audit_log_crud.create_audit_log(self.db, audit_log_create)
+        db_log = await audit_log_crud.create_audit_log(self.db, audit_log_create)
         await publisher.publish(
             {"type": "audit_log", "log": audit_log_create.model_dump()}
         )
-        return audit_log_create
+        return db_log
 
     async def get_log(self, audit_log_id: str) -> Optional[AuditLogModel]:
         """Retrieve a single audit log entry by its ID."""

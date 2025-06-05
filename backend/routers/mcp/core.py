@@ -12,6 +12,7 @@ import uuid
 import logging
 from functools import wraps
 from collections import defaultdict
+import asyncio
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -19,6 +20,7 @@ from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
+from ....services.event_publisher import publisher
 from ....schemas.project_template import ProjectTemplateCreate
 from ....services.rules_service import RulesService
 from ....services.agent_handoff_service import AgentHandoffService
@@ -46,7 +48,6 @@ from ....mcp_tools.capability_tools import (
     list_capabilities_tool,
     delete_capability_tool,
 )
-from ....services.event_publisher import publisher
 from ....schemas.universal_mandate import UniversalMandateCreate
 from .... import models
 from ....schemas.memory import (
@@ -77,6 +78,24 @@ def track_tool_usage(name: str):
         return wrapper
 
     return decorator
+
+
+@router.get("/mcp-tools/stream", tags=["mcp-tools"], include_in_schema=False)
+async def mcp_tools_stream(request: Request):
+    """Stream server events via Server-Sent Events."""
+    queue = publisher.subscribe()
+
+    async def event_generator():
+        try:
+            while True:
+                event = await queue.get()
+                yield f"data: {json.dumps(event)}\n\n"
+        except asyncio.CancelledError:
+            pass
+        finally:
+            publisher.unsubscribe(queue)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 def get_db_session():
@@ -1178,21 +1197,3 @@ async def mcp_remove_role(
 async def mcp_tools_metrics() -> MetricsResponse:
     """Return usage metrics for MCP tools."""
     return MetricsResponse(metrics=dict(tool_counters))
-
-
-@router.get("/mcp-tools/stream", tags=["mcp-tools"], include_in_schema=False)
-async def mcp_tools_stream(request: Request):
-    """Server-Sent Events endpoint for tool and service events."""
-    queue = publisher.subscribe()
-
-    async def event_generator():
-        try:
-            while True:
-                if await request.is_disconnected():
-                    break
-                event = await queue.get()
-                yield f"data: {json.dumps(event)}\n\n"
-        finally:
-            publisher.unsubscribe(queue)
-
-    return StreamingResponse(event_generator(), media_type="text/event-stream")

@@ -51,6 +51,16 @@ const { lastEvent } = useEventSource('/mcp-tools/stream', (e) => {
 });
 ```
 
+Alternatively, you can use the `useServerEvents` hook for a more generic approach:
+
+```tsx
+import useServerEvents from '@/hooks/useServerEvents';
+
+useServerEvents((event) => {
+  console.log('server event', event);
+});
+```
+
 Each event is JSON encoded with a `type` field describing the payload.
 
 ### Updating README File Lists
