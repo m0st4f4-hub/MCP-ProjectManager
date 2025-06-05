@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { render, screen } from '@/__tests__/utils/test-utils';
+import { render, screen, TestWrapper } from '@/__tests__/utils/test-utils';
 import AgentHandoffManager from '../AgentHandoffManager';
 import { mockFetchResponse } from '@/__tests__/utils/test-utils';
 
@@ -29,14 +29,14 @@ describe('AgentHandoffManager', () => {
 
   it('renders component', () => {
     render(<AgentHandoffManager agentRoleId="role1" />, {
-      wrapper: ({ children }) => <div>{children}</div>,
+      wrapper: TestWrapper,
     });
     expect(document.body).toBeInTheDocument();
   });
 
   it('handles user interactions and creates criteria', async () => {
     render(<AgentHandoffManager agentRoleId="role1" />, {
-      wrapper: ({ children }) => <div>{children}</div>,
+      wrapper: TestWrapper,
     });
 
     const input = screen.getByPlaceholderText('New criteria');

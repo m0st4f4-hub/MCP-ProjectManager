@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { render, screen } from '@/__tests__/utils/test-utils';
+import { render, screen, TestWrapper } from '@/__tests__/utils/test-utils';
 import AddProjectTemplateForm from '../AddProjectTemplateForm';
 
 vi.mock('@chakra-ui/react', async () => {
@@ -20,12 +20,12 @@ describe('AddProjectTemplateForm', () => {
   });
 
   it('renders without crashing', () => {
-    render(<AddProjectTemplateForm onSubmit={vi.fn()} onCancel={vi.fn()} />);
+    render(<AddProjectTemplateForm onSubmit={vi.fn()} onCancel={vi.fn()} />, { wrapper: TestWrapper });
     expect(document.body).toBeInTheDocument();
   });
 
   it('handles user input', async () => {
-    render(<AddProjectTemplateForm onSubmit={vi.fn()} onCancel={vi.fn()} />);
+    render(<AddProjectTemplateForm onSubmit={vi.fn()} onCancel={vi.fn()} />, { wrapper: TestWrapper });
     const inputs = screen.getAllByRole('textbox');
     if (inputs.length) {
       await user.type(inputs[0], 'test');

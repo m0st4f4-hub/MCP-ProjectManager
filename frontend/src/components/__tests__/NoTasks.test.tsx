@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/__tests__/utils/test-utils';
+import { render, screen, TestWrapper } from '@/__tests__/utils/test-utils';
 import NoTasks from '../NoTasks';
 
 vi.mock('@chakra-ui/react', async () => {
@@ -18,7 +18,7 @@ describe('NoTasks', () => {
 
   it('shows empty state and calls add', async () => {
     const add = vi.fn();
-    render(<NoTasks onAddTask={add} />);
+    render(<NoTasks onAddTask={add} />, { wrapper: TestWrapper });
     expect(screen.getByText('No Tasks Found')).toBeInTheDocument();
     await screen.getByRole('button', { name: /add your first task/i }).click();
     expect(add).toHaveBeenCalled();

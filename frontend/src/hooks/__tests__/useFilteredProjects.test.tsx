@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook } from '@/__tests__/utils/test-utils';
 import { useFilteredProjects } from '../useFilteredProjects';
 
 vi.mock('@chakra-ui/react', async () => {

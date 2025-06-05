@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { render, screen } from '@/__tests__/utils/test-utils';
+import { render, screen, TestWrapper } from '@/__tests__/utils/test-utils';
 import ErrorProtocolManager from '../ErrorProtocolManager';
 
 vi.mock('@chakra-ui/react', async () => {
@@ -29,14 +29,14 @@ describe('ErrorProtocolManager', () => {
 
   it('renders component', () => {
     render(<ErrorProtocolManager agentRoleId="role1" />, {
-      wrapper: ({ children }) => <div>{children}</div>,
+      wrapper: TestWrapper,
     });
     expect(document.body).toBeInTheDocument();
   });
 
   it('handles create flow', async () => {
     render(<ErrorProtocolManager agentRoleId="role1" />, {
-      wrapper: ({ children }) => <div>{children}</div>,
+      wrapper: TestWrapper,
     });
 
     await user.type(screen.getByPlaceholderText('Error Type'), 'Type');

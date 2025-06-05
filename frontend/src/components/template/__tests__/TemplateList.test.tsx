@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@/__tests__/utils/test-utils';
+import { render, screen, fireEvent, TestWrapper } from '@/__tests__/utils/test-utils';
 import TemplateList from '../TemplateList';
 import { useTemplateStore } from '@/store/templateStore';
 
@@ -35,7 +35,7 @@ describe('TemplateList', () => {
       selector(state as any)
     );
 
-    render(<TemplateList />);
+    render(<TemplateList />, { wrapper: TestWrapper });
 
     const deleteBtn = screen.getByLabelText('Delete');
     fireEvent.click(deleteBtn);

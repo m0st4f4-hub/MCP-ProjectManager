@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-// import { screen, fireEvent, waitFor } from '@testing-library/react';
+// import { screen, fireEvent, waitFor } from '@/__tests__/utils/test-utils';
 import userEvent from '@testing-library/user-event';
 import useDashboardData from '../useDashboardData';
-// import { renderHook } from '@testing-library/react';
+// import { renderHook } from '@/__tests__/utils/test-utils';
 
 vi.mock('@chakra-ui/react', async () => {
   const actual = await vi.importActual('@chakra-ui/react');

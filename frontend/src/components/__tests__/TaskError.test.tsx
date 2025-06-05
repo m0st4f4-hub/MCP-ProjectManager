@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/__tests__/utils/test-utils';
+import { render, screen, TestWrapper } from '@/__tests__/utils/test-utils';
 import TaskError from '../TaskError';
 
 vi.mock('@chakra-ui/react', async () => {
@@ -18,7 +18,7 @@ describe('TaskError', () => {
 
   it('displays error and retry', async () => {
     const retry = vi.fn();
-    render(<TaskError error="Oops" onRetry={retry} />);
+    render(<TaskError error="Oops" onRetry={retry} />, { wrapper: TestWrapper });
     expect(screen.getByText('Oops')).toBeInTheDocument();
     await screen.getByRole('button', { name: /retry/i }).click();
     expect(retry).toHaveBeenCalled();
