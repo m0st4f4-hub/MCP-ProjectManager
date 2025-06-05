@@ -1,6 +1,11 @@
 import enum
 
-__all__ = ["TaskStatusEnum", "UserRoleEnum", "ActionType"]
+from typing import List
+from fastapi import APIRouter
+
+
+__all__ = ["TaskStatusEnum", "UserRoleEnum", "ActionType", "router"]
+
 
 class TaskStatusEnum(enum.Enum):
     """Enum for standardized task statuses."""
@@ -22,6 +27,7 @@ class TaskStatusEnum(enum.Enum):
     IN_PROGRESS_AWAITING_SUBTASK = "In Progress Awaiting Subtask"
     PENDING_RECOVERY_ATTEMPT = "Pending Recovery Attempt"
 
+
 class UserRoleEnum(enum.Enum):
     """Enum for user roles."""
     ADMIN = "admin"
@@ -30,6 +36,7 @@ class UserRoleEnum(enum.Enum):
     VIEWER = "viewer"
     USER = "user"
     AGENT = "agent"  # For AI agents if they have user accounts
+
 
 class ActionType(enum.Enum):
     """Enum for audit log action types."""
@@ -41,3 +48,12 @@ class ActionType(enum.Enum):
     LOGOUT = "logout"
     ASSIGN = "assign"
     COMPLETE = "complete"
+
+
+router = APIRouter(prefix="/task-status")
+
+
+@router.get("/", response_model=List[str], summary="Get all task statuses")
+async def get_task_statuses() -> List[str]:
+    """Return all task status values."""
+    return [status.value for status in TaskStatusEnum]

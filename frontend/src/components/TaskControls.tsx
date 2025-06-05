@@ -19,6 +19,7 @@ import { ChevronDownIcon, DeleteIcon } from "@chakra-ui/icons";
 import { GroupByType, ViewMode } from "@/types";
 import { TaskStatus } from "@/types/task";
 import * as statusUtils from "@/lib/statusUtils";
+import { getTaskStatuses } from "@/services/api";
 import { useTaskStore } from "@/store/taskStore";
 
 import ConfirmationModal from "./common/ConfirmationModal";
@@ -41,14 +42,16 @@ interface TaskControlsProps {
 }
 
 // List of statuses a user can apply to multiple tasks at once.
-// Using enum values ensures type safety across the codebase.
-const availableStatusesForBulkUpdate: TaskStatus[] = [
-  TaskStatus.TO_DO,
-  TaskStatus.IN_PROGRESS,
-  TaskStatus.COMPLETED,
-  TaskStatus.BLOCKED,
-  TaskStatus.CANCELLED,
-];
+// Populated from backend enums at runtime.
+const useAvailableStatuses = (): TaskStatus[] => {
+  const [statuses, setStatuses] = React.useState<TaskStatus[]>([]);
+  React.useEffect(() => {
+    getTaskStatuses()
+      .then((vals) => setStatuses(vals as TaskStatus[]))
+      .catch(() => setStatuses([]));
+  }, []);
+  return statuses;
+};
 
 const TaskControls: React.FC<TaskControlsProps> = ({
   groupBy,
@@ -67,6 +70,7 @@ const TaskControls: React.FC<TaskControlsProps> = ({
   const bulkDeleteTasks = useTaskStore((s) => s.bulkDeleteTasks);
   const bulkSetStatusTasks = useTaskStore((s) => s.bulkSetStatusTasks);
   const taskStoreLoading = useTaskStore((s) => s.loading);
+  const availableStatusesForBulkUpdate = useAvailableStatuses();
 
   const {
     isOpen: isDeleteConfirmOpen,

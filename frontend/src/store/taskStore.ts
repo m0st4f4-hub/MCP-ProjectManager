@@ -472,6 +472,14 @@ export const useTaskStore = create<TaskState>(
     const { selectedTaskIds, tasks } = get();
     if (selectedTaskIds.length === 0) return;
 
+    const validStatuses = await api.getTaskStatuses().catch(() => []);
+    if (!validStatuses.includes(status as string)) {
+      set({
+        mutationError: { type: "bulk", message: "Invalid status selected" },
+      });
+      return;
+    }
+
     const originalTasks: Task[] = [];
     selectedTaskIds.forEach((id: string) => {
       const [project_id, task_number] = id.split('-');

@@ -18,6 +18,7 @@ export const API_CONFIG = {
     MEMORY: "/memory",
     RULES: "/rules",
     MCP_TOOLS: "/mcp-tools",
+    ENUMS: "/enums",
   },
 } as const;
 

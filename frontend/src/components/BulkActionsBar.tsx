@@ -14,6 +14,8 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDownIcon, DeleteIcon } from "@chakra-ui/icons";
 import * as statusUtils from "@/lib/statusUtils";
+import { getTaskStatuses } from "@/services/api";
+import type { StatusID } from "@/lib/statusUtils";
 import AppIcon from "./common/AppIcon";
 import { typography } from "../tokens";
 
@@ -36,11 +38,21 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
   bulkSetStatusTasks,
   loading = false,
 }) => {
-  const availableStatuses = React.useMemo(() => {
-    return statusUtils.getAllStatusIds().filter((id) => {
-      const attrs = statusUtils.getStatusAttributes(id);
-      return !attrs?.isTerminal && !attrs?.isDynamic;
-    });
+  const [availableStatuses, setAvailableStatuses] = React.useState<StatusID[]>([]);
+
+  React.useEffect(() => {
+    getTaskStatuses()
+      .then((statuses) => {
+        setAvailableStatuses(
+          statuses.filter((id) => {
+            const attrs = statusUtils.getStatusAttributes(id as StatusID);
+            return !attrs?.isTerminal && !attrs?.isDynamic;
+          }) as StatusID[]
+        );
+      })
+      .catch(() => {
+        setAvailableStatuses([]);
+      });
   }, []);
 
   if (selectedTaskIds.length === 0 && allFilterableTaskIds.length === 0) {
