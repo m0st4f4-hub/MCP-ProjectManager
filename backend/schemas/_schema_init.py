@@ -32,6 +32,7 @@ from .project import (  # noqa: F401
 from .agent_handoff_criteria import (  # noqa: F401
     AgentHandoffCriteria,
     AgentHandoffCriteriaCreate,
+    AgentHandoffCriteriaUpdate,
 )
 from .project_template import (  # noqa: F401
     ProjectTemplate,
