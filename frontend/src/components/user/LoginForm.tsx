@@ -8,7 +8,9 @@ import {
   Button,
   Heading,
   Text,
+  useToast,
 } from "@chakra-ui/react";
+import { useRouter } from "next/navigation";
 import { login } from "@/services/api/users";
 import { LoginRequest, TokenResponse } from "@/types/user";
 import { useAuthStore } from "@/store/authStore";
@@ -19,6 +21,8 @@ const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const setToken = useAuthStore((state) => state.setToken);
+  const toast = useToast();
+  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -30,10 +34,19 @@ const LoginForm: React.FC = () => {
     try {
       const response: TokenResponse = await login(loginData);
       setToken(response.access_token);
-      alert("Login successful!");
+      localStorage.setItem("token", response.access_token);
+      router.push("/");
     } catch (err: any) {
       console.error("Login failed:", err);
-      setError(err.message || "An error occurred during login.");
+      const message = err.message || "An error occurred during login.";
+      setError(message);
+      toast({
+        title: "Login failed",
+        description: message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -42,7 +55,9 @@ const LoginForm: React.FC = () => {
   return (
     <Box p={8} maxWidth="500px" borderWidth={1} borderRadius={8} boxShadow="lg">
       <VStack spacing={4} as="form" onSubmit={handleSubmit}>
-        <Heading as="h2" size="xl">Login</Heading>
+        <Heading as="h2" size="xl">
+          Login
+        </Heading>
         <FormControl id="username">
           <FormLabel>Username</FormLabel>
           <Input
@@ -61,7 +76,13 @@ const LoginForm: React.FC = () => {
             required
           />
         </FormControl>
-        <Button type="submit" colorScheme="blue" size="lg" width="full" isLoading={isLoading}>
+        <Button
+          type="submit"
+          colorScheme="blue"
+          size="lg"
+          width="full"
+          isLoading={isLoading}
+        >
           Login
         </Button>
         {error && <Text color="red.500">{error}</Text>}
@@ -70,4 +91,4 @@ const LoginForm: React.FC = () => {
   );
 };
 
-export default LoginForm; 
+export default LoginForm;
