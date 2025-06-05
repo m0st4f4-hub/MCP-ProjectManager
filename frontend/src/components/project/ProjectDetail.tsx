@@ -1,12 +1,21 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getProjectById, deleteProject, archiveProject, unarchiveProject } from '@/services/api/projects';
+import {
+  getProjectById,
+  deleteProject,
+  archiveProject,
+  unarchiveProject,
+} from '@/services/api/projects';
 import { Project } from '@/types/project';
-import { generateProjectManagerPlanningPrompt, PlanningRequestData, PlanningResponseData } from '@/services/api/planning';
+import {
+  generateProjectManagerPlanningPrompt,
+  PlanningRequestData,
+  PlanningResponseData,
+} from '@/services/api/planning';
 import ProjectMembers from './ProjectMembers';
-import ProjectFiles from './ProjectFiles';
+import ProjectFileUpload from './ProjectFileUpload';
 import { getAllTasksForProject } from '@/services/api/tasks';
 import { Task } from '@/types/task';
 import TaskItem from '@/components/task/TaskItem';
@@ -42,7 +51,13 @@ const ProjectDetail: React.FC = () => {
   const fetchTasks = async () => {
     if (!projectId) return;
     try {
-      const data = await getAllTasksForProject(projectId, undefined, undefined, 0, 100);
+      const data = await getAllTasksForProject(
+        projectId,
+        undefined,
+        undefined,
+        0,
+        100
+      );
       setTasks(data);
     } catch (err) {
       setTasksError('Failed to fetch tasks');
@@ -101,7 +116,8 @@ const ProjectDetail: React.FC = () => {
     setPlanningError(null);
     try {
       const data: PlanningRequestData = { goal: planningGoal };
-      const response: PlanningResponseData = await generateProjectManagerPlanningPrompt(data);
+      const response: PlanningResponseData =
+        await generateProjectManagerPlanningPrompt(data);
       setPlanningPrompt(response.prompt);
     } catch (err) {
       setPlanningError('Failed to generate planning prompt');
@@ -157,7 +173,7 @@ const ProjectDetail: React.FC = () => {
         </div>
       )}
 
-      <ProjectFiles projectId={project.id} />
+      <ProjectFileUpload projectId={project.id} />
 
       <h2>Planning Prompt Generator</h2>
       <div>
@@ -168,7 +184,10 @@ const ProjectDetail: React.FC = () => {
           value={planningGoal}
           onChange={(e) => setPlanningGoal(e.target.value)}
         />
-        <button onClick={handleGeneratePlanningPrompt} disabled={planningLoading || !planningGoal}>
+        <button
+          onClick={handleGeneratePlanningPrompt}
+          disabled={planningLoading || !planningGoal}
+        >
           {planningLoading ? 'Generating...' : 'Generate Prompt'}
         </button>
       </div>
