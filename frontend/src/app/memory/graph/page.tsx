@@ -2,7 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { Box, Spinner } from '@chakra-ui/react';
-import ForceGraph2D from 'react-force-graph-2d';
+import dynamic from 'next/dynamic';
+const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), {
+  ssr: false,
+});
 import { memoryApi } from '@/services/api';
 import type { KnowledgeGraph } from '@/types/memory';
 
