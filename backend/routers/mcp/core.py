@@ -19,6 +19,7 @@ from ....services.project_template_service import ProjectTemplateService
 from ....schemas.project_template import ProjectTemplateCreate
 from ....services.rules_service import RulesService
 from ....services.agent_handoff_service import AgentHandoffService
+from ....models.agent_capability import AgentCapability
 from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate, TaskUpdate
 from ....schemas import AgentRuleCreate
@@ -402,7 +403,10 @@ async def mcp_remove_project_file(
                 "file_memory_entity_id": file_memory_entity_id
             }
         )
-        return {"success": True, "message": "Project file association removed successfully"}
+        return {
+            "success": True,
+            "message": "Project file association removed successfully",
+        }
     except Exception as e:
         logger.error(f"MCP remove project file failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -422,7 +426,10 @@ async def mcp_create_project_template(
         service = ProjectTemplateService(db)
         existing = service.get_template_by_name(template_data.name)
         if existing:
-            raise HTTPException(status_code=400, detail="Project template already exists")
+            raise HTTPException(
+                status_code=400,
+                detail="Project template already exists",
+            )
         template = service.create_template(template_data)
         AuditLogService(db).log_action(
             action="project_template_created",
@@ -457,7 +464,11 @@ async def mcp_list_project_templates(
                     "id": t.id,
                     "name": t.name,
                     "description": t.description,
-                    "template_data": json.loads(t.template_data) if isinstance(t.template_data, str) else t.template_data,
+                    "template_data": (
+                        json.loads(t.template_data)
+                        if isinstance(t.template_data, str)
+                        else t.template_data
+                    ),
                     "created_at": t.created_at.isoformat(),
                 }
                 for t in templates
@@ -738,7 +749,11 @@ async def mcp_list_tools():
                     "name": route.operation_id,
                     "path": route.path,
                     "method": list(route.methods)[0] if route.methods else "GET",
-                    "description": route.summary or route.description or "No description available"
+                    "description": (
+                        route.summary
+                        or route.description
+                        or "No description available"
+                    ),
                 }
                 tool_list.append(tool_info)
         return {"success": True, "tools": tool_list}
@@ -877,4 +892,101 @@ async def mcp_delete_handoff_criteria(
         raise
     except Exception as e:
         logger.error(f"MCP delete handoff criteria failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/role/capability/add",
+    tags=["mcp-tools"],
+    operation_id="add_agent_capability_tool",
+)
+async def mcp_add_agent_capability(
+    agent_role_id: str,
+    capability: str,
+    description: Optional[str] = None,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Add a capability to an agent role."""
+    try:
+        new_cap = AgentCapability(
+            agent_role_id=agent_role_id,
+            capability=capability,
+            description=description,
+        )
+        db.add(new_cap)
+        db.commit()
+        db.refresh(new_cap)
+        return {
+            "success": True,
+            "capability": {
+                "id": new_cap.id,
+                "agent_role_id": new_cap.agent_role_id,
+                "capability": new_cap.capability,
+                "description": new_cap.description,
+                "is_active": new_cap.is_active,
+            },
+        }
+    except Exception as e:
+        logger.error(f"MCP add agent capability failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/role/capability/list",
+    tags=["mcp-tools"],
+    operation_id="list_agent_capabilities_tool",
+)
+async def mcp_list_agent_capabilities(
+    agent_role_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List capabilities for an agent role."""
+    try:
+        query = db.query(AgentCapability)
+        if agent_role_id:
+            query = query.filter(AgentCapability.agent_role_id == agent_role_id)
+        caps = query.all()
+        return {
+            "success": True,
+            "capabilities": [
+                {
+                    "id": cap.id,
+                    "agent_role_id": cap.agent_role_id,
+                    "capability": cap.capability,
+                    "description": cap.description,
+                    "is_active": cap.is_active,
+                }
+                for cap in caps
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list agent capabilities failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/role/capability/remove",
+    tags=["mcp-tools"],
+    operation_id="remove_agent_capability_tool",
+)
+async def mcp_remove_agent_capability(
+    capability_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Remove a capability from an agent role."""
+    try:
+        cap = (
+            db.query(AgentCapability)
+            .filter(AgentCapability.id == capability_id)
+            .first()
+        )
+        if not cap:
+            raise HTTPException(status_code=404, detail="Capability not found")
+        db.delete(cap)
+        db.commit()
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP remove agent capability failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -78,6 +78,11 @@ alembic revision --autogenerate -m "description"
 alembic upgrade head
 ```
 
+### MCP Tools
+- `add_agent_capability_tool` – add a capability to an agent role.
+- `list_agent_capabilities_tool` – list capabilities for a role.
+- `remove_agent_capability_tool` – remove a capability by ID.
+
 ## 📊 System Status
 
 ### ✅ **COMPLETED ALIGNMENTS**

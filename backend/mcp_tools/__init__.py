@@ -16,6 +16,9 @@ __all__ = [
     'create_handoff_criteria_tool',
     'list_handoff_criteria_tool',
     'delete_handoff_criteria_tool',
+    'add_agent_capability_tool',
+    'list_agent_capabilities_tool',
+    'remove_agent_capability_tool',
     'create_project_template_tool',
     'list_project_templates_tool',
     'delete_project_template_tool'
