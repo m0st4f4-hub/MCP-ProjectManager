@@ -23,6 +23,7 @@ from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate, TaskUpdate
 from ....schemas import AgentRuleCreate
 from ....schemas.universal_mandate import UniversalMandateCreate
+from .... import models
 from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
@@ -770,6 +771,73 @@ async def mcp_create_mandate(
         return {"success": True, "mandate": new_mandate.model_dump()}
     except Exception as e:
         logger.error(f"MCP create mandate failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/rule/mandate/list",
+    tags=["mcp-tools"],
+    operation_id="list_mandates_tool",
+)
+async def mcp_list_mandates(
+    active_only: bool = True,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List universal mandates."""
+    try:
+        query = db.query(models.UniversalMandate)
+        if active_only:
+            query = query.filter(models.UniversalMandate.is_active.is_(True))
+        mandates = query.order_by(models.UniversalMandate.priority.desc()).all()
+        return {
+            "success": True,
+            "mandates": [
+                {
+                    "id": m.id,
+                    "title": m.title,
+                    "description": m.description,
+                    "priority": m.priority,
+                    "is_active": m.is_active,
+                }
+                for m in mandates
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list mandates failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/rule/mandate/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_mandate_tool",
+)
+async def mcp_delete_mandate(
+    mandate_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a universal mandate."""
+    try:
+        mandate = (
+            db.query(models.UniversalMandate)
+            .filter(models.UniversalMandate.id == mandate_id)
+            .first()
+        )
+        if not mandate:
+            raise HTTPException(status_code=404, detail="Mandate not found")
+        db.delete(mandate)
+        db.commit()
+        AuditLogService(db).log_action(
+            action="universal_mandate_deleted",
+            entity_type="universal_mandate",
+            entity_id=mandate_id,
+            changes={},
+        )
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP delete mandate failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
