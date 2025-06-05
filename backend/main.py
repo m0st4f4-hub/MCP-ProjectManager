@@ -57,6 +57,7 @@ def include_app_routers(app: FastAPI):
         project_templates,
         audit_logs,
         workflows,
+        enums
     )
     from .routers.admin import router as admin_router
     from .routers.users.auth.auth import router as auth_router
@@ -78,6 +79,7 @@ def include_app_routers(app: FastAPI):
     )
     app.include_router(audit_logs.router, prefix="/api/audit-logs", tags=["audit-logs"])
     app.include_router(workflows.router, prefix="/api/workflows", tags=["workflows"])
+    app.include_router(enums.router, prefix="/api", tags=["enums"])
 
 
 @asynccontextmanager

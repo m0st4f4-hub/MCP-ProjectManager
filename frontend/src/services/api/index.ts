@@ -19,3 +19,4 @@ export * from './error_protocols';
 export * from './agent_capabilities';
 export * from './user_roles';
 export * from './metrics';
+export * from './enumApi';

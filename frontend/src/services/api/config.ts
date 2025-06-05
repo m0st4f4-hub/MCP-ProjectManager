@@ -21,6 +21,7 @@ export const API_CONFIG = {
     MCP_TOOLS: "/mcp-tools",
     PROJECT_TEMPLATES: "/project-templates/",
     MCP_EVENTS: "/mcp/events",
+    ENUMS: "/enums",
     VERIFICATION_REQUIREMENTS: "/verification-requirements",
   },
 } as const;
