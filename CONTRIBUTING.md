@@ -118,6 +118,11 @@ pytest
 
 All tests and linters must pass locally before submitting a PR.
 
+The CI pipeline also runs `prettier --check`, `npm run lint`, and `flake8`.
+Coverage thresholds are enforced: `pytest --cov-fail-under=90` and
+`vitest --coverage.v8 --coverage-threshold=90`. Coverage artifacts are uploaded
+only when these checks succeed.
+
 ---
 
 ## 🤝 Thank You
