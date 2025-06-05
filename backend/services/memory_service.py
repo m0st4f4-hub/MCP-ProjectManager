@@ -390,3 +390,9 @@ class MemoryService:
         self, query: str, limit: int = 10
     ) -> List[models.MemoryEntity]:
         return self.get_memory_entities(name=query, limit=limit)
+
+    def get_knowledge_graph(self) -> Dict[str, List[Any]]:
+        """Return all entities and relations as a simple graph structure."""
+        entities = self.db.query(models.MemoryEntity).all()
+        relations = self.db.query(models.MemoryRelation).all()
+        return {"entities": entities, "relations": relations}
