@@ -1,4 +1,4 @@
-.PHONY: setup-backend setup-frontend test lint dev
+.PHONY: setup-backend setup-frontend setup test lint dev
 
 setup-backend:
 	python -m venv backend/.venv
@@ -20,4 +20,7 @@ lint:
 	cd frontend && npm run lint
 
 dev:
-	python start_system.py
+        python start_system.py
+
+setup:
+        bash init_backend.sh
