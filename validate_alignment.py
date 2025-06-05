@@ -339,6 +339,71 @@ class FeatureAlignmentValidator:
                     )
                 )
 
+                # Test ingestion endpoints
+                async with session.post(
+                    f"{self.backend_url}/api/memory/ingest-text",
+                    json={"text": "integration check"},
+                    headers={"Authorization": f"Bearer {self.auth_token}"},
+                ) as resp:
+                    if resp.status == 201:
+                        data = await resp.json()
+                        valid = (
+                            isinstance(data.get("id"), int)
+                            and data.get("entity_type") == "text"
+                        )
+                        results.append(
+                            (
+                                "Ingest text",
+                                valid,
+                                ("✅" if valid else "❌")
+                                + " POST /api/memory/ingest-text - Status: "
+                                + str(resp.status),
+                            )
+                        )
+                    else:
+                        results.append(
+                            (
+                                "Ingest text",
+                                False,
+                                (
+                                    "❌ POST /api/memory/ingest-text - "
+                                    f"Status: {resp.status}"
+                                ),
+                            )
+                        )
+
+                async with session.post(
+                    f"{self.backend_url}/api/memory/ingest-url",
+                    json={"url": "http://example.com"},
+                    headers={"Authorization": f"Bearer {self.auth_token}"},
+                ) as resp:
+                    if resp.status == 201:
+                        data = await resp.json()
+                        valid = (
+                            isinstance(data.get("id"), int)
+                            and data.get("entity_type") == "url"
+                        )
+                        results.append(
+                            (
+                                "Ingest url",
+                                valid,
+                                ("✅" if valid else "❌")
+                                + " POST /api/memory/ingest-url - Status: "
+                                + str(resp.status),
+                            )
+                        )
+                    else:
+                        results.append(
+                            (
+                                "Ingest url",
+                                False,
+                                (
+                                    "❌ POST /api/memory/ingest-url - "
+                                    f"Status: {resp.status}"
+                                ),
+                            )
+                        )
+
         except Exception as e:
             results.append(("Memory features validation", False, f"Error: {e}"))
 
