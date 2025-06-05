@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import AddProjectTemplateForm from '@/components/forms/AddProjectTemplateForm';
+import TemplateForm from '@/components/templates/TemplateForm';
 import { useTemplateStore } from '@/store/templateStore';
 
 const NewTemplatePage: React.FC = () => {
@@ -14,7 +14,7 @@ const NewTemplatePage: React.FC = () => {
   };
 
   return (
-    <AddProjectTemplateForm
+    <TemplateForm
       onSubmit={handleSubmit}
       onCancel={() => router.push('/templates')}
     />
