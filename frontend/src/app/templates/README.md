@@ -8,9 +8,12 @@ This directory contains pages for managing project templates.
 - `[templateId]/delete/page.tsx` – Deletes a template then redirects back to the list.
 
 <!-- File List Start -->
+
 ## File List
 
 - `page.tsx`
+- `new/page.tsx`
+- `[templateId]/edit/page.tsx`
+- `[templateId]/delete/page.tsx`
 
 <!-- File List End -->
-
