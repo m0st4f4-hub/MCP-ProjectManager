@@ -15,6 +15,7 @@ from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
 from ....services.rules_service import RulesService
+from ....services.agent_handoff_service import AgentHandoffService
 from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate
 from ....schemas import AgentRuleCreate
@@ -25,6 +26,7 @@ from ....schemas.memory import (
     MemoryObservationCreate,
     MemoryRelationCreate
 )
+from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
@@ -47,6 +49,12 @@ def get_project_file_service(
     db: Session = Depends(get_db_session),
 ) -> ProjectFileAssociationService:
     return ProjectFileAssociationService(db)
+
+
+def get_agent_handoff_service(
+    db: Session = Depends(get_db_session),
+) -> AgentHandoffService:
+    return AgentHandoffService(db)
 
 
 @router.post(
@@ -705,4 +713,85 @@ async def mcp_create_agent_rule(
         return {"success": True, "rule": new_rule.model_dump()}
     except Exception as e:
         logger.error(f"MCP create agent rule failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/handoff/create",
+    tags=["mcp-tools"],
+    operation_id="create_handoff_criteria_tool",
+)
+async def mcp_create_handoff_criteria(
+    criteria: AgentHandoffCriteriaCreate,
+    service: AgentHandoffService = Depends(get_agent_handoff_service),
+):
+    """MCP Tool: Create agent handoff criteria."""
+    try:
+        created = service.create_criteria(criteria)
+        return {
+            "success": True,
+            "criteria": {
+                "id": created.id,
+                "agent_role_id": created.agent_role_id,
+                "criteria": created.criteria,
+                "description": created.description,
+                "target_agent_role": created.target_agent_role,
+                "is_active": created.is_active,
+            },
+        }
+    except Exception as e:
+        logger.error(f"MCP create handoff criteria failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/handoff/list",
+    tags=["mcp-tools"],
+    operation_id="list_handoff_criteria_tool",
+)
+async def mcp_list_handoff_criteria(
+    agent_role_id: Optional[str] = Query(None),
+    service: AgentHandoffService = Depends(get_agent_handoff_service),
+):
+    """MCP Tool: List agent handoff criteria."""
+    try:
+        items = service.list_criteria(agent_role_id)
+        return {
+            "success": True,
+            "criteria": [
+                {
+                    "id": c.id,
+                    "agent_role_id": c.agent_role_id,
+                    "criteria": c.criteria,
+                    "description": c.description,
+                    "target_agent_role": c.target_agent_role,
+                    "is_active": c.is_active,
+                }
+                for c in items
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list handoff criteria failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/handoff/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_handoff_criteria_tool",
+)
+async def mcp_delete_handoff_criteria(
+    criteria_id: str,
+    service: AgentHandoffService = Depends(get_agent_handoff_service),
+):
+    """MCP Tool: Delete agent handoff criteria."""
+    try:
+        success = service.delete_criteria(criteria_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Criteria not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP delete handoff criteria failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
