@@ -185,3 +185,7 @@ export interface MCPToolInfo {
   parameters: Record<string, any>;
   example?: Record<string, any>;
 }
+
+export interface MCPToolMetrics {
+  [tool: string]: number;
+}

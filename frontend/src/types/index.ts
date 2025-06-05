@@ -15,6 +15,7 @@ export * from "./handoff";
 =======
 export * from "./verification_requirement";
 export * from "./error_protocol";
+export type { MCPToolMetrics } from "./mcp";
 >>>>>>> dbf07afe89e4a68f816243b7e80701b4e1995167
 
 // Common types used across the application

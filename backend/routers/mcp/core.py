@@ -3,10 +3,11 @@ MCP Core Tools Router - Functionality for Project and Task MCP integration.
 Provides MCP tool definitions.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Dict
 import logging
+from collections import defaultdict
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -34,6 +35,29 @@ from ....schemas.error_protocol import ErrorProtocolCreate
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
+
+# In-memory counters for MCP tool invocations
+tool_counters: Dict[str, int] = defaultdict(int)
+
+
+@router.middleware("http")
+async def count_tool_usage(request: Request, call_next):
+    """Middleware to count MCP tool invocations."""
+    path = request.url.path
+    # Remove router prefix if present
+    if path.startswith("/api/mcp/"):
+        sub_path = path[len("/api/mcp/"):]
+    else:
+        sub_path = path.lstrip("/")
+
+    if sub_path.startswith("mcp-tools/") and not sub_path.startswith(
+        "mcp-tools/metrics"
+    ):
+        tool_name = sub_path[len("mcp-tools/"):]
+        tool_counters[tool_name] += 1
+
+    response = await call_next(request)
+    return response
 
 
 def get_db_session():
@@ -634,7 +658,7 @@ async def mcp_search_memory(
     tags=["mcp-tools"],
     operation_id="search_graph_tool",
 )
-async def mcp_search_graph(
+async def mcp_search_graph(  # noqa: F811
     query: str,
     limit: int = 10,
     memory_service: MemoryService = Depends(get_memory_service),
@@ -664,7 +688,7 @@ async def mcp_search_graph(
     tags=["mcp-tools"],
     operation_id="search_graph_tool",
 )
-async def mcp_search_graph(
+async def mcp_search_graph(  # noqa: F811
     query: str,
     limit: int = 10,
     memory_service: MemoryService = Depends(get_memory_service),
@@ -750,6 +774,16 @@ async def mcp_list_tools():
                 "description": description,
             })
     return {"success": True, "tools": tools}
+
+
+@router.get(
+    "/mcp-tools/metrics",
+    tags=["mcp-tools"],
+    operation_id="mcp_tools_metrics",
+)
+async def mcp_tools_metrics():
+    """Return invocation counts for each MCP tool."""
+    return {"success": True, "metrics": dict(tool_counters)}
 
 
 @router.post(
