@@ -192,6 +192,10 @@ def delete_prompt_template(self, template_id: str) -> bool:
     """Delete an agent prompt template by ID."""
     return crud_rules.delete_agent_prompt_template(self.db, template_id)
 
+def delete_universal_mandate(self, mandate_id: str) -> bool:
+    """Delete a universal mandate by ID."""
+    return crud_rules.delete_universal_mandate(self.db, mandate_id)
+
 def initialize_default_rules(self):
         """Initialize default rules for the system"""
         self._create_universal_mandates()
