@@ -44,7 +44,7 @@ const MCPMetrics: React.FC = () => {
         const raw = await metricsApi.raw();
         setHttpMetrics(parseMetrics(raw));
       } catch (err) {
-        console.error("Failed to fetch HTTP metrics", err);
+        logger.error("Failed to fetch HTTP metrics", err);
       }
     };
     load();
