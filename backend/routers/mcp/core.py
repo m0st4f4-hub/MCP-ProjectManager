@@ -378,3 +378,49 @@ async def mcp_search_memory(
     except Exception as e:
         logger.error(f"MCP search memory failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/memory/get-content",
+    tags=["mcp-tools"],
+    operation_id="get_memory_content_tool",
+)
+async def mcp_get_memory_content(
+    entity_id: int,
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """MCP Tool: Retrieve memory entity content."""
+    try:
+        content = memory_service.get_file_content(entity_id)
+        return {"success": True, "content": content}
+    except HTTPException as e:
+        logger.error(
+            f"MCP get memory content failed with HTTP exception: {e.detail}"
+        )
+        raise e
+    except Exception as e:
+        logger.error(f"MCP get memory content failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/memory/get-metadata",
+    tags=["mcp-tools"],
+    operation_id="get_memory_metadata_tool",
+)
+async def mcp_get_memory_metadata(
+    entity_id: int,
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """MCP Tool: Retrieve memory entity metadata."""
+    try:
+        metadata = memory_service.get_file_metadata(entity_id)
+        return {"success": True, "metadata": metadata}
+    except HTTPException as e:
+        logger.error(
+            f"MCP get memory metadata failed with HTTP exception: {e.detail}"
+        )
+        raise e
+    except Exception as e:
+        logger.error(f"MCP get memory metadata failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
