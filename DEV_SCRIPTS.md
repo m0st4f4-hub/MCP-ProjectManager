@@ -40,5 +40,16 @@ frontend or manage the full stack.
   python start_system.py
   ```
 
+## `backend/check_routes.py`
+- **Purpose:** Enumerate FastAPI routes for debugging.
+- **What it does:**
+  - Imports the FastAPI app and lists all registered routes.
+  - Supports a `--json` option to output structured route data.
+  - Exits with code `1` if the app fails to load.
+- **Usage:**
+  ```bash
+  python backend/check_routes.py [--json]
+  ```
+
 These scripts simplify local development by automating common setup and startup
 steps. See `DEV_LAUNCHER_GUIDE.md` for more launcher details.
