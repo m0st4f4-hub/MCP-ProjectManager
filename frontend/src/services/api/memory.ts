@@ -9,6 +9,7 @@ import type {
   MemoryEntityFilters,
   MemoryObservation,
   MemoryObservationCreateData,
+  MemoryObservationUpdateData,
   MemoryRelation,
   MemoryRelationCreateData,
   MemoryRelationUpdateData,
@@ -121,6 +122,24 @@ export const memoryApi = {
       buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, '/observations'),
       {
         method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+    return response.data;
+  },
+
+  // Update an existing observation
+  updateObservation: async (
+    observationId: number,
+    data: MemoryObservationUpdateData
+  ): Promise<MemoryObservation> => {
+    const response = await request<{ data: MemoryObservation }>(
+      buildApiUrl(
+        API_CONFIG.ENDPOINTS.MEMORY,
+        `/observations/${observationId}`
+      ),
+      {
+        method: 'PUT',
         body: JSON.stringify(data),
       }
     );
