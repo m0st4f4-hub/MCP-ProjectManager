@@ -129,6 +129,7 @@ npm run type-check
 ```bash
 python final_integration.py --mode all
 ```
+This runs a comprehensive validation including checks for project template and agent rule features.
 
 ---
 
