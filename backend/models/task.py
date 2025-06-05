@@ -10,7 +10,8 @@ from sqlalchemy import (
     Text,
     PrimaryKeyConstraint,
     DateTime,
-    Enum
+    Enum,
+    Index
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
@@ -25,15 +26,18 @@ class Task(Base, BaseModel, ArchivedMixin):
     __tablename__ = "tasks"
     __table_args__ = (
         PrimaryKeyConstraint('project_id', 'task_number', name='pk_tasks'),
+        Index('ix_tasks_created_at', 'created_at'),
+        Index('ix_tasks_agent_id', 'agent_id'),
+        Index('ix_tasks_project_id', 'project_id'),
         {"sqlite_autoincrement": True},
     )
 
-    project_id: Mapped[str] = mapped_column(String(32), ForeignKey("projects.id"))
+    project_id: Mapped[str] = mapped_column(String(32), ForeignKey("projects.id"), index=True)
     task_number: Mapped[int] = mapped_column(Integer)
     title: Mapped[str] = mapped_column(String, index=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     agent_id: Mapped[Optional[str]] = mapped_column(
-        String(32), ForeignKey("agents.id"), nullable=True)
+        String(32), ForeignKey("agents.id"), nullable=True, index=True)
     status: Mapped[TaskStatusEnum] = mapped_column(Enum(TaskStatusEnum), default=TaskStatusEnum.TO_DO)
     assigned_to: Mapped[Optional[str]] = mapped_column(String(32), ForeignKey("users.id"), nullable=True)
     start_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
