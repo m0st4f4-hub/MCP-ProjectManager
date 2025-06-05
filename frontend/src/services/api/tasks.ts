@@ -384,34 +384,11 @@ export const getAllTasksForProject = async (
 export const deleteTask = async (
   project_id: string,
   task_number: number,
-): Promise<Task> => {
-  const rawTask = await request<RawTask>(
+): Promise<boolean> => {
+  return request<boolean>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}`),
     { method: "DELETE" },
   );
-  if (!rawTask) {
-    throw new Error(
-      `Task ${project_id}/${task_number} deleted, but backend did not return the task object.`,
-    );
-  }
-  const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
-  return {
-    ...rawTask,
-    id: `${rawTask.project_id}-${rawTask.task_number}`, // Computed ID for frontend compatibility
-    project_id: String(rawTask.project_id),
-    task_number: Number(rawTask.task_number),
-    title: String(rawTask.title || ""),
-    description: rawTask.description ? String(rawTask.description) : null,
-    status: statusId,
-    agent_id: rawTask.agent_id ? String(rawTask.agent_id) : null,
-    agent_name: rawTask.agent_name ? String(rawTask.agent_name) : null,
-    agent_status: rawTask.agent_status ? String(rawTask.agent_status) : undefined,
-    created_at: String(rawTask.created_at || new Date().toISOString()),
-    updated_at: String(rawTask.updated_at || new Date().toISOString()),
-    is_archived: !!rawTask.is_archived,
-    subtasks: rawTask.subtasks || [],
-    dependencies: rawTask.dependencies || [],
-  } as Task;
 };
 
 // --- Task Comments API ---

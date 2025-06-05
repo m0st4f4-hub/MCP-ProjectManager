@@ -105,12 +105,11 @@ export const updateAgentById = async (
   };
 };
 
-export const deleteAgentById = async (agent_id: string): Promise<null> => {
-  await request<null>(
+export const deleteAgentById = async (agent_id: string): Promise<boolean> => {
+  return request<boolean>(
     buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, `/${agent_id}`),
     { method: "DELETE" },
   );
-  return null;
 };
 
 export const archiveAgent = async (agentId: string): Promise<AgentArchiveResponse> => {

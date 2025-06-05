@@ -47,7 +47,7 @@ async def update_capability(
     return updated
 
 
-@router.delete("/capabilities/{capability_id}")
+@router.delete("/capabilities/{capability_id}", response_model=DataResponse[bool])
 async def delete_capability(
     capability_id: str,
     service: AgentCapabilityService = Depends(get_service),
@@ -55,4 +55,4 @@ async def delete_capability(
     success = await service.delete_capability(capability_id)
     if not success:
         raise HTTPException(status_code=404, detail="Capability not found")
-    return {"message": "Capability deleted successfully"}
+    return DataResponse[bool](data=True, message="Capability deleted successfully")

@@ -38,7 +38,7 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
 
 @router.post(
     "/{project_id}/tasks/",
-    response_model=DataResponse[Task],
+    response_model=DataResponse[bool],
     summary="Create Task in Project",
     tags=["Tasks"],
     operation_id="projects_tasks_create_task"
@@ -190,8 +190,8 @@ async def read_task(
         )
 
         return DataResponse[Task](
-            data=Task.model_validate(db_task),
-            message=f"Task  #{task_number} retrieved successfully"
+            data=db_task,
+            message=f"Task #{task_number} retrieved successfully"
         )
     except EntityNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -342,7 +342,7 @@ async def update_task(
 
 @router.delete(
     "/{project_id}/tasks/{task_number}",
-    response_model=DataResponse[Task],
+    response_model=DataResponse[bool],
     summary="Delete Task",
     tags=["Tasks"],
     operation_id="projects_tasks_delete_task_by_project_and_number"
@@ -356,12 +356,14 @@ async def delete_task(
     current_user: UserModel = Depends(get_current_active_user),
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
-    """Delete a task by project and task number."""
+    """Delete a task by project ID and task number."""
     try:
-        db_task = await task_service.delete_task(
+        success = await task_service.delete_task(
             project_id=uuid.UUID(project_id),
             task_number=task_number
         )
+        if not success:
+            raise EntityNotFoundError("Task", task_number)
 
         await audit_log_service.create_log(
             action="delete_task",
@@ -372,9 +374,9 @@ async def delete_task(
             }
         )
 
-        return DataResponse[Task](
-            data=Task.model_validate(db_task),
-            message=f"Task  #{task_number} deleted successfully"
+        return DataResponse[bool](
+            data=True,
+            message=f"Task #{task_number} deleted successfully"
         )
     except EntityNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))

@@ -195,7 +195,7 @@ async def get_task_successors_endpoint(
 
 @router.delete(
     "/{project_id}/tasks/{task_number}/dependencies/{predecessor_project_id}/{predecessor_task_number}",
-    response_model=DataResponse[dict],
+    response_model=DataResponse[bool],
     summary="Remove Task Dependency",
     tags=["Task Dependencies"],
     operation_id="projects_tasks_remove_task_dependency"
@@ -221,8 +221,8 @@ async def remove_task_dependency_endpoint(
         )
         if not success:
             raise HTTPException(status_code=404, detail="Task dependency not found")
-        return DataResponse[dict](
-            data={"success": success},
+        return DataResponse[bool](
+            data=True,
             message="Task dependency removed successfully"
         )
     except EntityNotFoundError as e:

@@ -100,4 +100,4 @@ async def test_update_and_delete_workflow():
 
         resp = await client.delete(f"/workflows/{wf.id}")
         assert resp.status_code == 200
-        assert resp.json()["data"]["message"] == "Workflow deleted"
+        assert resp.json()["data"] is True

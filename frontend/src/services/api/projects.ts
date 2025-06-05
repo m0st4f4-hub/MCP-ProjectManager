@@ -120,21 +120,11 @@ export const updateProject = async (
 };
 
 // Delete a project
-export const deleteProject = async (project_id: string): Promise<Project> => {
-  const rawProject = await request<RawProject>(
+export const deleteProject = async (project_id: string): Promise<boolean> => {
+  return request<boolean>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}`),
     { method: 'DELETE' }
   );
-  return {
-    ...rawProject,
-    id: String(rawProject.id),
-    name: String(rawProject.name || ''),
-    description: rawProject.description ? String(rawProject.description) : null,
-    is_archived: !!rawProject.is_archived,
-    created_at: String(rawProject.created_at || new Date().toISOString()),
-    task_count:
-      typeof rawProject.task_count === 'number' ? rawProject.task_count : 0,
-  };
 };
 
 // --- Project Archive/Unarchive ---

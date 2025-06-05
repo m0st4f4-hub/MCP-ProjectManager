@@ -85,8 +85,8 @@ export const memoryApi = {
   },
 
   // Delete a memory entity
-  deleteEntity: async (entityId: number): Promise<void> => {
-    await request(buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/${entityId}`), {
+  deleteEntity: async (entityId: number): Promise<boolean> => {
+    return request<boolean>(buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/${entityId}`), {
       method: 'DELETE',
     });
   },
@@ -172,8 +172,8 @@ export const memoryApi = {
   },
 
   // Delete an observation
-  deleteObservation: async (observationId: number): Promise<void> => {
-    await request(
+  deleteObservation: async (observationId: number): Promise<boolean> => {
+    return request<boolean>(
       buildApiUrl(
         API_CONFIG.ENDPOINTS.MEMORY,
         `/observations/${observationId}`
@@ -237,8 +237,8 @@ export const memoryApi = {
   updateRelation,
 
   // Delete a relation
-  deleteRelation: async (relationId: number): Promise<void> => {
-    await request(
+  deleteRelation: async (relationId: number): Promise<boolean> => {
+    return request<boolean>(
       buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
       {
         method: 'DELETE',

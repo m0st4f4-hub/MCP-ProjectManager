@@ -60,7 +60,7 @@ def update_handoff_criteria(
     return db_obj
 
 
-@router.delete("/{criteria_id}")
+@router.delete("/{criteria_id}", response_model=DataResponse[bool])
 def delete_handoff_criteria(
     criteria_id: str,
     db: Session = Depends(get_db),
@@ -70,4 +70,4 @@ def delete_handoff_criteria(
     success = service.delete_criteria(criteria_id)
     if not success:
         raise HTTPException(status_code=404, detail="Criteria not found")
-    return {"message": "Criteria deleted successfully"}
+    return DataResponse[bool](data=True, message="Criteria deleted successfully")

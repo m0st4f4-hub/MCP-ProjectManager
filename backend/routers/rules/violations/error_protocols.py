@@ -52,9 +52,9 @@ async def update_error_protocol(
     return updated
 
 
-@router.delete("/error-protocols/{protocol_id}")
+@router.delete("/error-protocols/{protocol_id}", response_model=DataResponse[bool])
 async def delete_error_protocol(protocol_id: str, service: AgentErrorProtocolService = Depends(get_service)):
     success = await service.delete_protocol(protocol_id)
     if not success:
         raise HTTPException(status_code=404, detail="Error protocol not found")
-    return {"message": "Error protocol deleted successfully"}
+    return DataResponse[bool](data=True, message="Error protocol deleted successfully")

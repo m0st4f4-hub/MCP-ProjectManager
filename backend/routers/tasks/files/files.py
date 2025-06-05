@@ -129,7 +129,7 @@ async def get_task_file_association_by_file_memory_entity_id_endpoint(
 
 @router.delete(
     "/{project_id}/tasks/{task_number}/files/{file_memory_entity_id}",
-    response_model=DataResponse[dict],
+    response_model=DataResponse[bool],
     summary="Disassociate File from Task by File Memory Entity ID",
     tags=["Task Files"],
     operation_id="projects_tasks_disassociate_file_from_task_by_file_memory_entity_id"
@@ -152,10 +152,10 @@ async def disassociate_file_from_task_by_file_memory_entity_id_endpoint(
     )
     if not success:
     raise HTTPException(status_code=404, detail="Task file association not found")
-    return DataResponse[dict](
-    data={"success": success},
-    message="File disassociated from task successfully"
-    )
+    return DataResponse[bool](
+            data=True,
+            message="File disassociated from task successfully"
+        )
     except EntityNotFoundError as e:
     raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

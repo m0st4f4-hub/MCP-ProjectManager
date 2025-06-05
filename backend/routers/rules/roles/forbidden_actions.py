@@ -63,7 +63,7 @@ async def create_forbidden_action_endpoint(
 
 @router.delete(
     "/forbidden-actions/{action_id}",
-    response_model=DataResponse[dict],
+    response_model=DataResponse[bool],
     summary="Delete Forbidden Action",
     operation_id="delete_forbidden_action",
 )
@@ -74,7 +74,7 @@ async def delete_forbidden_action_endpoint(
     success = await service.delete_forbidden_action(action_id)
     if not success:
         raise HTTPException(status_code=404, detail="Forbidden action not found")
-    return DataResponse[dict](
-        data={"message": "Forbidden action removed"},
+    return DataResponse[bool](
+        data=True,
         message="Forbidden action removed",
     )

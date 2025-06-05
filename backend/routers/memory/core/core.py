@@ -93,15 +93,20 @@ def update_memory_entity_endpoint(
     return db_entity
 
 
-@router.delete("/{entity_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{entity_id}", response_model=DataResponse[bool])
 def delete_memory_entity_endpoint(
     entity_id: int = Path(...),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    success = memory_service.delete_entity(entity_id)
-    if not success:
-        raise EntityNotFoundError("MemoryEntity", entity_id)
-    return {"message": "Memory entity deleted successfully"}
+    try:
+        success = memory_service.delete_entity(entity_id)
+        if not success:
+            raise EntityNotFoundError("MemoryEntity", entity_id)
+        return DataResponse[bool](data=True, message="Memory entity deleted successfully")
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 # =============================
 # Ingestion Inputs

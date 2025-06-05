@@ -63,8 +63,8 @@ export const commentsApi = {
   },
 
   // Delete a comment
-  delete: async (commentId: string): Promise<void> => {
-    await request(
+  delete: async (commentId: string): Promise<boolean> => {
+    return request<boolean>(
       buildApiUrl(API_CONFIG.ENDPOINTS.COMMENTS, `/${commentId}`),
       {
         method: "DELETE",

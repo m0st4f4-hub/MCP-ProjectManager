@@ -130,7 +130,7 @@ async def update_user(
         raise HTTPException(status_code=500, detail="User update failed")
     return updated_user
 
-@router.delete("/{user_id}", response_model=DataResponse[User],
+@router.delete("/{user_id}", response_model=DataResponse[bool],
     dependencies=[Depends(RoleChecker([UserRoleEnum.ADMIN]))])  # Protect endpoint
 async def delete_user(
     user_id: str,
@@ -145,8 +145,8 @@ async def delete_user(
         deleted_user = user_service.delete_user(user_id=user_id)
         if deleted_user is None:
             raise HTTPException(status_code=500, detail="User deletion failed")  # Return standardized response
-        return DataResponse[User](
-            data=User.model_validate(deleted_user),
+        return DataResponse[bool](
+            data=True,
             message=f"User '{deleted_user.username}' deleted successfully"
         )
     except EntityNotFoundError as e:

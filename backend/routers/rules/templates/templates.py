@@ -50,7 +50,7 @@ def update_prompt_template(
     return result
 
 
-@router.delete("/{template_id}")
+@router.delete("/{template_id}", response_model=DataResponse[bool])
 
 
 def delete_prompt_template(
@@ -61,4 +61,4 @@ def delete_prompt_template(
     success = crud_rules.delete_agent_prompt_template(db, template_id)
     if not success:
         raise HTTPException(status_code=404, detail="Prompt template not found")
-    return {"message": "Prompt template deleted successfully"}
+    return DataResponse[bool](data=True, message="Prompt template deleted successfully")

@@ -11,11 +11,11 @@ import {
  * Fully typed, portable, and encapsulated logic.
  */
 export async function deleteTemplate(
-  templateId: string
-): Promise<{ message: string }> {
-  return request<{ message: string }>(
-    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECT_TEMPLATES, `/${templateId}`),
-    { method: 'DELETE' }
+  templateId: string,
+): Promise<boolean> {
+  return request<boolean>(
+    buildApiUrl("/project-templates/", `/${templateId}`),
+    { method: "DELETE" },
   );
 }
 

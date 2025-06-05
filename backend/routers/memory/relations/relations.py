@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, status, Query, Path
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from fastapi import HTTPException
 
 from ....database import get_sync_db as get_db
 from ....services.memory_service import MemoryService  # Assuming relation management is part of memory service
 from ....schemas.memory import MemoryRelation, MemoryRelationCreate
 from ....services.exceptions import EntityNotFoundError, DuplicateEntityError
+from ....schemas.response import DataResponse
 
 router = APIRouter()
 
@@ -81,7 +83,7 @@ def update_relation(
     """Update an existing memory relation."""
     return memory_service.update_memory_relation(relation_id, relation)
 
-@router.delete("/relations/{relation_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/relations/{relation_id}", response_model=DataResponse[bool])
 
 
 def delete_relation(
@@ -89,7 +91,15 @@ def delete_relation(
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """Delete a memory relation."""
-    success = memory_service.delete_memory_relation(relation_id)
-    if not success:
-        raise EntityNotFoundError("MemoryRelation", relation_id)
-    return {"message": "Memory relation deleted successfully"}
+    try:
+        success = memory_service.delete_memory_relation(relation_id)
+        if not success:
+            raise EntityNotFoundError("MemoryRelation", relation_id)
+        return DataResponse[bool](data=True, message="Memory relation deleted successfully")
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}",
+        )

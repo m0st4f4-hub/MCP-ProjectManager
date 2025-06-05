@@ -252,9 +252,9 @@ async def update_project(
         )
 
 
-@router.delete(
+@router
     "/{project_id}",
-    response_model=DataResponse[Project],
+    response_model=DataResponse[bool],
     summary="Delete Project",
     operation_id="delete_project_by_id",
 )
@@ -268,8 +268,8 @@ async def delete_project(
         if db_project is None:
             # Use EntityNotFoundError from services
             raise EntityNotFoundError("Project", project_id)
-        return DataResponse[Project](
-            data=Project.model_validate(db_project),  # Return the deleted project data
+        return DataResponse[bool](
+            data=True,
             message="Project deleted successfully"
         )
     except EntityNotFoundError as e:
