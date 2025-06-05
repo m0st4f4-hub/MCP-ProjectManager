@@ -1,23 +1,26 @@
-import { z } from "zod";
-import { Task } from "./task";
-import { SortDirection } from "./index";
+import { z } from 'zod';
+import { Task } from './task';
+import { SortDirection } from './index';
 
 // Project Member Role Enum matching backend ProjectMemberRole
 export enum ProjectMemberRole {
-  OWNER = "owner",
-  MEMBER = "member", 
-  VIEWER = "viewer"
+  OWNER = 'owner',
+  MEMBER = 'member',
+  VIEWER = 'viewer',
 }
 
 // Base Project schema for validation
 export const projectSchema = z.object({
   id: z.string(),
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, 'Name is required'),
   description: z.string().nullable().optional(),
   created_by: z.string().nullable().optional(),
   task_count: z.number().optional(),
-  created_at: z.string(),
-  updated_at: z.string().optional(),
+  created_at: z.string().datetime({ message: 'Invalid ISO datetime string' }),
+  updated_at: z
+    .string()
+    .datetime({ message: 'Invalid ISO datetime string' })
+    .optional(),
   is_archived: z.boolean().optional(),
   completed_task_count: z.number().optional(),
 });
@@ -26,16 +29,18 @@ export const projectSchema = z.object({
 export type Project = z.infer<typeof projectSchema>;
 
 // Schema for creating a new project
-export const projectCreateSchema = projectSchema.omit({
-  id: true,
-  created_at: true,
-  updated_at: true,
-  task_count: true,
-  completed_task_count: true,
-  created_by: true,
-}).extend({
-  template_id: z.string().optional(),
-});
+export const projectCreateSchema = projectSchema
+  .omit({
+    id: true,
+    created_at: true,
+    updated_at: true,
+    task_count: true,
+    completed_task_count: true,
+    created_by: true,
+  })
+  .extend({
+    template_id: z.string().optional(),
+  });
 
 export type ProjectCreateData = z.infer<typeof projectCreateSchema>;
 
@@ -56,20 +61,20 @@ export interface ProjectWithMeta extends Project {
   completedTaskCount?: number;
   completed_task_count?: number; // Backend compatibility
   progress?: number;
-  status?: "not_started" | "in_progress" | "completed";
+  status?: 'not_started' | 'in_progress' | 'completed';
 }
 
 // Project filter options
 export interface ProjectFilters {
   search?: string;
-  status?: "all" | "active" | "completed";
+  status?: 'all' | 'active' | 'completed';
   agentId?: string | null;
   is_archived?: boolean | null;
   projectId?: string | null;
 }
 
 // Project sort options
-export type ProjectSortField = "created_at" | "name" | "progress" | "status";
+export type ProjectSortField = 'created_at' | 'name' | 'progress' | 'status';
 
 export interface ProjectSortOptions {
   field: ProjectSortField;
@@ -116,8 +121,11 @@ export type ProjectMemberUpdateData = z.infer<typeof projectMemberUpdateSchema>;
 
 export const projectMemberSchema = projectMemberBaseSchema.extend({
   id: z.string(),
-  created_at: z.string(),
-  updated_at: z.string().optional(),
+  created_at: z.string().datetime({ message: 'Invalid ISO datetime string' }),
+  updated_at: z
+    .string()
+    .datetime({ message: 'Invalid ISO datetime string' })
+    .optional(),
 });
 
 export type ProjectMember = z.infer<typeof projectMemberSchema>;
