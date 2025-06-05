@@ -6,3 +6,4 @@
 export * from './task.factory'
 export * from './user.factory'
 export * from './project.factory'
+export * from './universalMandate.factory'
