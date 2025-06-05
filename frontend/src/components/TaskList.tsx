@@ -25,12 +25,15 @@ import TaskLoading from "./TaskLoading";
 import TaskError from "./TaskError";
 import NoTasks from "./NoTasks";
 import TaskPagination from "./task/TaskPagination";
+import useTaskPolling from "@/hooks/useTaskPolling";
 
 import { applyAllFilters, groupTasksByStatus } from "./TaskList.utils";
 
 type ViewMode = "list" | "kanban";
 
 const TaskList: React.FC = () => {
+  // Start polling for task updates while this component is mounted
+  useTaskPolling();
   const tasks = useTaskStore((state) => state.tasks);
   const loading = useTaskStore((state) => state.loading);
   const error = useTaskStore((state) => state.error);

@@ -46,8 +46,6 @@ import { TaskCreateData } from "../types";
 export default function Home() {
   const error = useTaskStore((state: TaskState) => state.error);
   const fetchTasks = useTaskStore((state: TaskState) => state.fetchTasks);
-  const startPolling = useTaskStore((state: TaskState) => state.startPolling);
-  const stopPolling = useTaskStore((state: TaskState) => state.stopPolling);
   const fetchProjects = useProjectStore(
     (state: ProjectState) => state.fetchProjects,
   );
@@ -102,13 +100,9 @@ export default function Home() {
   };
 
   useEffect(() => {
-    startPolling();
     fetchAgents(0, 100); // Add default skip and limit parameters
     fetchProjects();
-    return () => {
-      stopPolling();
-    };
-  }, [startPolling, stopPolling, fetchAgents, fetchProjects]);
+  }, [fetchAgents, fetchProjects]);
 
   useEffect(() => {
     if (error) {
