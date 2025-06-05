@@ -261,12 +261,26 @@ export const memoryApi = {
   },
 
   // --- Knowledge Graph APIs ---
-  // Get the full knowledge graph
-  getKnowledgeGraph: async (): Promise<KnowledgeGraph> => {
-    const response = await request<{ data: KnowledgeGraph }>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, '/graph')
+  // Get the knowledge graph with optional filters
+  getKnowledgeGraph: async (
+    filters?: {
+      entity_type?: string;
+      relation_type?: string;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<KnowledgeGraph> => {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      });
+    }
+    return await request<KnowledgeGraph>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/graph?${params.toString()}`)
     );
-    return response.data;
   },
 
   // Search the knowledge graph

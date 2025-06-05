@@ -179,7 +179,7 @@ cd backend
 - ✅ **User Roles API**: Assign, list, and remove roles via `/api/v1/users/{user_id}/roles`.
 - ✅ **Agent Capability API**: Manage capabilities through `/api/v1/rules/roles/capabilities`.
 - ✅ **Forbidden Action API**: Manage actions via `/api/v1/rules/roles/forbidden-actions`.
-- ✅ **Knowledge Graph Endpoint**: Retrieve the full graph at `/api/v1/memory/entities/graph`.
+- ✅ **Knowledge Graph Endpoint**: Retrieve the graph at `/api/v1/memory/entities/graph` with optional `entity_type`, `relation_type`, `limit`, and `offset` query parameters for pagination.
 
 ### Server Won't Start
 1. Make sure you're in the correct directory (`D:\mcp\task-manager`)

@@ -244,6 +244,38 @@ class MemoryService:
             .first()
         )
 
+    async def get_knowledge_graph(
+        self,
+        entity_type: Optional[str] = None,
+        relation_type: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Dict[str, Any]:
+        nodes = []
+        edges = []
+
+        # Fetch entities based on entity_type and pagination
+        entities_query = self.db.query(models.MemoryEntity)
+        if entity_type:
+            entities_query = entities_query.filter(models.MemoryEntity.type == entity_type)
+        all_entities = await entities_query.offset(offset).limit(limit).all()
+
+        # Fetch relations based on relation_type and pagination
+        relations_query = self.db.query(models.MemoryRelation)
+        if relation_type:
+            relations_query = relations_query.filter(models.MemoryRelation.type == relation_type)
+        all_relations = await relations_query.offset(offset).limit(limit).all()
+
+        # Map entities to nodes
+        for entity in all_entities:
+            nodes.append({"id": entity.id, "label": entity.name or str(entity.id), "type": entity.type})
+
+        # Map relations to edges
+        for relation in all_relations:
+            edges.append({"id": relation.id, "source": relation.from_entity_id, "target": relation.to_entity_id, "label": relation.type})
+
+        return {"nodes": nodes, "edges": edges}
+
     async def get_memory_entities(
         self,
         type: Optional[str] = None,
@@ -255,41 +287,43 @@ class MemoryService:
         if type:
             query = query.filter(models.MemoryEntity.type == type)
         if name:
-            query = query.filter(models.MemoryEntity.name.ilike(f"%{name}%"))
+            query = query.filter(models.MemoryEntity.name == name)
         return await query.offset(skip).limit(limit).all()
 
     async def get_memory_entities_by_type(
         self, entity_type: str, skip: int = 0, limit: int = 100
     ) -> List[models.MemoryEntity]:
-        return await self.db.query(models.MemoryEntity).filter(models.MemoryEntity.type == entity_type).offset(skip).limit(limit).all()
+        return await self.db.query(models.MemoryEntity).filter(
+            models.MemoryEntity.type == entity_type
+        ).offset(skip).limit(limit).all()
 
     async def delete_memory_entity(self, entity_id: int) -> bool:
-        entity = await self.get_memory_entity_by_id(entity_id)
-        if not entity:
+        db_entity = await self.get_memory_entity_by_id(entity_id)
+        if not db_entity:
             return False
-        await self.db.delete(entity)
+        await self.db.delete(db_entity)
         await self.db.commit()
         return True
 
     async def add_observation_to_entity(
         self, entity_id: int, observation: MemoryObservationCreate
     ) -> models.MemoryObservation:
-        db_entity = await self.get_memory_entity_by_id(entity_id)
-        if db_entity is None:
-            raise EntityNotFoundError("MemoryEntity", entity_id)
-
-        db_observation = models.MemoryObservation(
-            entity_id=entity_id,
-            content=observation.content,
-            source=observation.source,
-            metadata_=observation.metadata_,
-            timestamp=observation.timestamp
-        )
-        self.db.add(db_observation)
-        await self.db.commit()
-        await self.db.refresh(db_observation)
-        logger.info(f"Added observation to entity {entity_id}: {db_observation.id}")
-        return db_observation
+        try:
+            db_observation = models.MemoryObservation(
+                entity_id=entity_id,
+                content=observation.content,
+                metadata_=observation.metadata_,
+                created_by_user_id=observation.created_by_user_id
+            )
+            self.db.add(db_observation)
+            await self.db.commit()
+            await self.db.refresh(db_observation)
+            logger.info(f"Added observation {db_observation.id} to entity {entity_id}")
+            return db_observation
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Error adding observation to entity {entity_id}: {e}")
+            raise ServiceError("Error adding observation to entity")
 
     async def get_observations(
         self,
@@ -299,70 +333,53 @@ class MemoryService:
         limit: int = 100,
     ) -> List[models.MemoryObservation]:
         query = self.db.query(models.MemoryObservation)
-        if entity_id is not None:
+        if entity_id:
             query = query.filter(models.MemoryObservation.entity_id == entity_id)
         if search_query:
-            query = query.filter(
-                models.MemoryObservation.content.ilike(f"%{search_query}%")
-            )
+            query = query.filter(models.MemoryObservation.content.ilike(f'%{search_query}%'))
         return await query.offset(skip).limit(limit).all()
 
     async def update_observation(
         self, observation_id: int, observation_update: MemoryObservationCreate
     ) -> Optional[models.MemoryObservation]:
-        db_observation = await self.db.query(models.MemoryObservation).get(observation_id)
+        db_observation = await self.db.query(models.MemoryObservation).filter(models.MemoryObservation.id == observation_id).first()
         if not db_observation:
-            raise EntityNotFoundError("MemoryObservation", observation_id)
-
-        db_observation.entity_id = observation_update.entity_id
-        db_observation.content = observation_update.content
-        db_observation.source = getattr(observation_update, "source", None)
-        db_observation.metadata_ = observation_update.metadata_
-        if hasattr(observation_update, "timestamp"):
-            db_observation.timestamp = observation_update.timestamp
-
+            return None
+        for key, value in observation_update.model_dump(exclude_unset=True).items():
+            setattr(db_observation, key, value)
         await self.db.commit()
         await self.db.refresh(db_observation)
-        logger.info(f"Updated memory observation: {observation_id}")
+        logger.info(f"Updated observation {observation_id}")
         return db_observation
 
     async def delete_observation(self, observation_id: int) -> bool:
-        db_observation = await self.db.query(models.MemoryObservation).get(observation_id)
-        if db_observation:
-            await self.db.delete(db_observation)
-            await self.db.commit()
-            logger.info(f"Deleted memory observation: {observation_id}")
-            return True
-        return False
+        db_observation = await self.db.query(models.MemoryObservation).filter(models.MemoryObservation.id == observation_id).first()
+        if not db_observation:
+            return False
+        await self.db.delete(db_observation)
+        await self.db.commit()
+        logger.info(f"Deleted observation {observation_id}")
+        return True
 
     async def create_memory_relation(
         self, relation: MemoryRelationCreate
     ) -> models.MemoryRelation:
-        from_entity = await self.get_memory_entity_by_id(relation.from_entity_id)
-        to_entity = await self.get_memory_entity_by_id(relation.to_entity_id)
-        if not from_entity:
-            raise EntityNotFoundError("MemoryEntity", relation.from_entity_id)
-        if not to_entity:
-            raise EntityNotFoundError("MemoryEntity", relation.to_entity_id)
-
         try:
             db_relation = models.MemoryRelation(
                 from_entity_id=relation.from_entity_id,
                 to_entity_id=relation.to_entity_id,
-                relation_type=relation.relation_type,
-                metadata_=relation.metadata_
+                type=relation.type,
+                metadata_=relation.metadata_,
+                created_by_user_id=relation.created_by_user_id
             )
             self.db.add(db_relation)
             await self.db.commit()
             await self.db.refresh(db_relation)
-            logger.info(f"Created new memory relation: {db_relation.id}")
+            logger.info(f"Created new memory relation: {db_relation.from_entity_id}-{db_relation.to_entity_id}-{db_relation.type}")
             return db_relation
         except IntegrityError:
             await self.db.rollback()
-            raise DuplicateEntityError(
-                "MemoryRelation",
-                f"{relation.from_entity_id}-{relation.to_entity_id}-{relation.relation_type}"
-            )
+            raise DuplicateEntityError("MemoryRelation", f"{relation.from_entity_id}-{relation.to_entity_id}-{relation.type}")
         except Exception as e:
             await self.db.rollback()
             logger.error(f"Error creating memory relation: {e}")
@@ -371,43 +388,30 @@ class MemoryService:
     async def update_memory_relation(
         self, relation_id: int, relation_update: MemoryRelationCreate
     ) -> models.MemoryRelation:
-        """Update an existing memory relation."""
-        db_relation = await self.db.query(models.MemoryRelation).get(relation_id)
-        if db_relation is None:
+        db_relation = await self.db.query(models.MemoryRelation).filter(models.MemoryRelation.id == relation_id).first()
+        if not db_relation:
             raise EntityNotFoundError("MemoryRelation", relation_id)
 
-        # Validate referenced entities exist
-        from_entity = await self.get_memory_entity_by_id(relation_update.from_entity_id)
-        if from_entity is None:
-            raise EntityNotFoundError("MemoryEntity", relation_update.from_entity_id)
-        to_entity = await self.get_memory_entity_by_id(relation_update.to_entity_id)
-        if to_entity is None:
-            raise EntityNotFoundError("MemoryEntity", relation_update.to_entity_id)
-
-        db_relation.from_entity_id = relation_update.from_entity_id
-        db_relation.to_entity_id = relation_update.to_entity_id
-        db_relation.relation_type = relation_update.relation_type
-        db_relation.metadata_ = relation_update.metadata_
+        for key, value in relation_update.model_dump(exclude_unset=True).items():
+            setattr(db_relation, key, value)
 
         try:
             await self.db.commit()
             await self.db.refresh(db_relation)
+            logger.info(f"Updated memory relation {relation_id}")
             return db_relation
         except IntegrityError:
             await self.db.rollback()
-            raise DuplicateEntityError(
-                "MemoryRelation",
-                f"{relation_update.from_entity_id}-{relation_update.to_entity_id}-{relation_update.relation_type}"
-            )
+            raise DuplicateEntityError("MemoryRelation", f"{relation_update.from_entity_id}-{relation_update.to_entity_id}-{relation_update.type}")
         except Exception as e:
             await self.db.rollback()
-            logger.error(f"Error updating memory relation: {e}")
+            logger.error(f"Error updating memory relation {relation_id}: {e}")
             raise ServiceError("Error updating memory relation")
 
     async def get_memory_relation(
         self, relation_id: int
     ) -> Optional[models.MemoryRelation]:
-        return await self.db.query(models.MemoryRelation).get(relation_id)
+        return await self.db.query(models.MemoryRelation).filter(models.MemoryRelation.id == relation_id).first()
 
     async def get_relations_for_entity(
         self, entity_id: int, relation_type: Optional[str] = None
@@ -417,23 +421,26 @@ class MemoryService:
             (models.MemoryRelation.to_entity_id == entity_id)
         )
         if relation_type:
-            query = query.filter(models.MemoryRelation.relation_type == relation_type)
+            query = query.filter(models.MemoryRelation.type == relation_type)
         return await query.all()
 
     async def delete_memory_relation(
         self, relation_id: int
     ) -> bool:
-        relation = await self.get_memory_relation(relation_id)
-        if relation:
-            await self.db.delete(relation)
-            await self.db.commit()
-            logger.info(f"Deleted memory relation: {relation_id}")
+        db_relation = await self.db.query(models.MemoryRelation).filter(models.MemoryRelation.id == relation_id).first()
+        if not db_relation:
+            return False
+        await self.db.delete(db_relation)
+        await self.db.commit()
+        logger.info(f"Deleted memory relation {relation_id}")
         return True
 
     async def get_memory_relations_by_type(
         self, relation_type: str, skip: int = 0, limit: int = 100
     ) -> List[models.MemoryRelation]:
-        return await self.db.query(models.MemoryRelation).filter(models.MemoryRelation.relation_type == relation_type).offset(skip).limit(limit).all()
+        return await self.db.query(models.MemoryRelation).filter(
+            models.MemoryRelation.type == relation_type
+        ).offset(skip).limit(limit).all()
 
     async def get_memory_relations_between_entities(
         self,
@@ -448,20 +455,14 @@ class MemoryService:
             models.MemoryRelation.to_entity_id == to_entity_id
         )
         if relation_type:
-            query = query.filter(models.MemoryRelation.relation_type == relation_type)
+            query = query.filter(models.MemoryRelation.type == relation_type)
         return await query.offset(skip).limit(limit).all()
 
     async def search_memory_entities(
         self, query: str, limit: int = 10
     ) -> List[models.MemoryEntity]:
-        return await self.db.query(models.MemoryEntity).filter(models.MemoryEntity.content.ilike(f"%{query}%")).limit(limit).all()
-
-    def get_knowledge_graph(self) -> Dict[str, Any]:
-        entities = self.get_memory_entities()
-        relations = self.get_memory_relations()
-
-        graph = {
-            "entities": [entity.to_dict() for entity in entities],
-            "relations": [relation.to_dict() for relation in relations],
-        }
-        return graph
+        # Implement search logic here, e.g., using ilike on content or name
+        return await self.db.query(models.MemoryEntity).filter(
+            (models.MemoryEntity.content.ilike(f'%{query}%')) |
+            (models.MemoryEntity.name.ilike(f'%{query}%'))
+        ).limit(limit).all()

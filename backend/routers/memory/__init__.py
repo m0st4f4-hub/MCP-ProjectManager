@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from ...database import get_sync_db as get_db
 from ...services.memory_service import MemoryService
@@ -62,24 +63,33 @@ async def ingest_text_root(
 
 
 @router.post("/ingest/upload", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
-def ingest_upload_root(
+async def ingest_upload_root(
     file: UploadFile = File(...),
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
 ):
     """Upload a file and ingest it into the knowledge graph."""
     try:
-        return memory_service.ingest_file(file, user_id=current_user.id)
+        return await memory_service.ingest_file(file, user_id=current_user.id)
     except Exception as e:  # pragma: no cover - pass through any service errors
         raise HTTPException(status_code=500, detail=f"Failed to ingest file: {e}")
 
 
 @router.get("/graph", response_model=KnowledgeGraph)
-def get_knowledge_graph(
+async def get_knowledge_graph(
     memory_service: MemoryService = Depends(get_memory_service),
+    entity_type: Optional[str] = Query(None),
+    relation_type: Optional[str] = Query(None),
+    limit: int = Query(100, ge=1),
+    offset: int = Query(0, ge=0),
 ):
-    """Retrieve the entire knowledge graph."""
+    """Retrieve the knowledge graph with optional filters."""
     try:
-        return memory_service.get_knowledge_graph()
+        return await memory_service.get_knowledge_graph(
+            entity_type=entity_type,
+            relation_type=relation_type,
+            limit=limit,
+            offset=offset,
+        )
     except Exception as e:  # pragma: no cover - pass through any service errors
         raise HTTPException(status_code=500, detail=f"Failed to retrieve graph: {e}")
