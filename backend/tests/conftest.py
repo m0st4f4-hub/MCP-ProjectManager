@@ -83,6 +83,12 @@ def test_app(async_db_session: AsyncSession):
         test_app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["Tasks"])
     except Exception as e:
         print(f"Error including tasks router: {e}")
+
+    try:
+        from backend.routers import workflows
+        test_app.include_router(workflows.router, prefix="/api/v1/workflows", tags=["Workflows"])
+    except Exception as e:
+        print(f"Error including workflows router: {e}")
     
     # Include auth router
     try:

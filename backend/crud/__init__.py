@@ -9,8 +9,9 @@ __all__ = [
 "project_file_associations",
 "task_file_associations",
 "memory",
-"audit_logs",
-"comments",
-"rules",  # Expose rules
-"users"  # Expose users
+    "audit_logs",
+    "comments",
+    "rules",  # Expose rules
+    "users",  # Expose users
+    "workflows"
 ]  # This makes 'crud' a Python package

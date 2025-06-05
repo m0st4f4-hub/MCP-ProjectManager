@@ -18,3 +18,4 @@ export * from './verification_requirements';
 export * from './error_protocols';
 export * from './agent_capabilities';
 export * from './user_roles';
+export * from './workflows';
