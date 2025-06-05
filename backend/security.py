@@ -2,6 +2,9 @@
 Security utilities for the application.
 """
 from fastapi import HTTPException, Request, status
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from datetime import datetime, timedelta
 from typing import Dict
 import asyncio
@@ -121,6 +124,7 @@ class LoginAttemptTracker:
 # Global instances
 rate_limiter = RateLimiter()
 login_tracker = LoginAttemptTracker()
+limiter = Limiter(key_func=get_remote_address)
 
 # OAuth configuration
 oauth = OAuth()

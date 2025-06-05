@@ -1,6 +1,9 @@
 import logging
 import logging.config
 from fastapi import FastAPI, Request, Response, Depends, status
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -11,6 +14,7 @@ from .database import get_db, Base, engine
 from .middleware import init_middleware
 from .app_factory import create_app as factory_create_app
 from .schemas import _schema_init  # noqa: F401
+from .security import limiter
 
 # Optional MCP integration
 try:
@@ -114,6 +118,10 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_middleware(SlowAPIMiddleware)
 
     init_middleware(app)
     include_app_routers(app)

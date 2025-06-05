@@ -60,6 +60,12 @@ flake8 .
 Fix any issues reported. The helper script `comprehensive_flake8_fixer.py` can
 automatically clean common violations.
 
+## 🛡️ Rate Limiting
+
+The API uses **slowapi** to enforce per-endpoint rate limits. Login endpoints
+are limited to `5` requests per minute and memory ingestion endpoints allow up
+to `10` requests per minute. Exceeding these limits results in a `429` error.
+
 ## 📁 Project Structure
 
 ```

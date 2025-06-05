@@ -12,6 +12,7 @@ aiosqlite
 aiohttp
 prometheus-client
 authlib
+slowapi
 
 # For CI/Dev
 flake8
