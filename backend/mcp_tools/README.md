@@ -7,6 +7,7 @@ Key files:
 *   `task_tools.py`: MCP-specific tools for interacting with tasks.
 *   `memory_tools.py`: MCP-specific tools for interacting with the Memory Service.
 *   `project_tools.py`: MCP-specific tools for interacting with projects.
+*   `verification_requirement_tools.py`: Manage agent verification requirements.
 *   `__init__.py`: Initializes the mcp_tools package.
 
 ## Architecture Diagram
@@ -25,6 +26,7 @@ graph TD
 - `memory_tools.py`
 - `project_tools.py`
 - `task_tools.py`
+- `verification_requirement_tools.py`
 
 <!-- File List End -->
 
