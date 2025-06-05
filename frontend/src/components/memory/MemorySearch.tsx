@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -10,13 +10,13 @@ import {
   Spinner,
   Text,
   Link,
-} from "@chakra-ui/react";
-import NextLink from "next/link";
-import { mcpApi } from "@/services/api";
-import type { MemoryEntity } from "@/types/memory";
+} from '@chakra-ui/react';
+import NextLink from 'next/link';
+import { memoryApi } from '@/services/api';
+import type { MemoryEntity } from '@/types/memory';
 
 const MemorySearch: React.FC = () => {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [results, setResults] = useState<MemoryEntity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,18 +27,23 @@ const MemorySearch: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const resp = await mcpApi.memory.searchGraph(query);
-      const data = (resp as any).data as MemoryEntity[];
+      const data = await memoryApi.searchGraph(query);
       setResults(data || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Search failed");
+      setError(err instanceof Error ? err.message : 'Search failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box as="form" onSubmit={handleSearch} p={4} borderWidth="1px" borderRadius="md">
+    <Box
+      as="form"
+      onSubmit={handleSearch}
+      p={4}
+      borderWidth="1px"
+      borderRadius="md"
+    >
       <Input
         placeholder="Search memory"
         value={query}
@@ -46,7 +51,12 @@ const MemorySearch: React.FC = () => {
         mb={2}
         data-testid="memory-search-input"
       />
-      <Button type="submit" isLoading={loading} mb={4} data-testid="memory-search-button">
+      <Button
+        type="submit"
+        isLoading={loading}
+        mb={4}
+        data-testid="memory-search-button"
+      >
         Search
       </Button>
       {error && (
