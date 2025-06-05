@@ -171,7 +171,13 @@ export const removeTaskDependency = async (
 };
 
 // Fetch all tasks
-export const getTasks = async (projectId: string, filters?: TaskFilters, sortOptions?: TaskSortOptions): Promise<Task[]> => {
+export const getTasks = async (
+  projectId: string,
+  filters?: TaskFilters,
+  sortOptions?: TaskSortOptions,
+  skip = 0,
+  limit = 100,
+): Promise<Task[]> => {
   const queryParams = new URLSearchParams();
   if (filters?.agentId) queryParams.append("agent_id", filters.agentId);
   if (filters?.status && filters.status !== "all")
@@ -180,6 +186,9 @@ export const getTasks = async (projectId: string, filters?: TaskFilters, sortOpt
   if (filters?.is_archived !== undefined && filters.is_archived !== null) {
     queryParams.append("is_archived", String(filters.is_archived));
   }
+  // Add pagination and sorting parameters if provided
+  queryParams.append("skip", String(skip));
+  queryParams.append("limit", String(limit));
   // Add sorting parameters if provided
   if (sortOptions) {
     if (sortOptions.field) queryParams.append("sort_by", sortOptions.field);
@@ -211,7 +220,12 @@ export const getTasks = async (projectId: string, filters?: TaskFilters, sortOpt
 };
 
 // Fetch all tasks across all projects
-export const getAllTasks = async (filters?: TaskFilters, sortOptions?: TaskSortOptions): Promise<Task[]> => {
+export const getAllTasks = async (
+  filters?: TaskFilters,
+  sortOptions?: TaskSortOptions,
+  skip = 0,
+  limit = 100,
+): Promise<Task[]> => {
   const queryParams = new URLSearchParams();
   if (filters?.agentId) queryParams.append("agent_id", filters.agentId);
   if (filters?.status && filters.status !== "all")
@@ -220,6 +234,8 @@ export const getAllTasks = async (filters?: TaskFilters, sortOptions?: TaskSortO
   if (filters?.is_archived !== undefined && filters.is_archived !== null) {
     queryParams.append("is_archived", String(filters.is_archived));
   }
+  queryParams.append("skip", String(skip));
+  queryParams.append("limit", String(limit));
   // Add sorting parameters if provided
   if (sortOptions) {
     if (sortOptions.field) queryParams.append("sort_by", sortOptions.field);

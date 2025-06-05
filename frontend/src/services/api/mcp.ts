@@ -21,6 +21,7 @@ import type {
   MCPProjectTemplateDeleteRequest,
   MCPToolInfo,
 } from '@/types/mcp';
+import type { ProjectFileAssociation } from './projects';
 
 export const mcpApi = {
   // --- Project MCP Tools ---
@@ -274,6 +275,29 @@ export const mcpApi = {
       );
     },
 
+    list: async (
+      projectId: string,
+      skip = 0,
+      limit = 100
+    ): Promise<ProjectFileAssociation[]> => {
+      const params = new URLSearchParams();
+      params.append('project_id', projectId);
+      params.append('skip', String(skip));
+      params.append('limit', String(limit));
+      const response = await request<{
+        files: { project_id: string; file_memory_entity_id: number }[];
+      }>(
+        buildApiUrl(
+          API_CONFIG.ENDPOINTS.MCP_TOOLS,
+          `/project/file/list?${params.toString()}`
+        )
+      );
+      return response.files.map((f) => ({
+        project_id: f.project_id,
+        file_id: String(f.file_memory_entity_id),
+      }));
+    },
+
     remove: async (
       data: MCPProjectFileRemoveRequest
     ): Promise<MCPToolResponse> => {
@@ -291,9 +315,9 @@ export const mcpApi = {
   rule: {
     createMandate: async (data: {
       title: string;
-      content: string;
+      description: string;
       priority?: number;
-      category?: string;
+      is_active?: boolean;
     }): Promise<MCPToolResponse> => {
       return await request<MCPToolResponse>(
         buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, '/rule/mandate/create'),
@@ -308,6 +332,7 @@ export const mcpApi = {
       agent_id: string;
       rule_type: string;
       rule_content: string;
+      is_active?: boolean;
     }): Promise<MCPToolResponse> => {
       return await request<MCPToolResponse>(
         buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, '/rule/agent/create'),

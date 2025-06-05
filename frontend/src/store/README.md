@@ -13,7 +13,7 @@ These stores centralize application state and logic for handling data related to
   - Defines a `BaseState` interface including `loading` (boolean), `error` (string | null), and a `clearError` function.
   - The `createBaseStore` factory function initializes new stores with this base state, user-defined initial data, and an actions creator function.
   - Supports optional state persistence via `zustand/middleware/persist`, configured with a store name and version.
-  - Includes a `handleApiError` utility to standardize error message extraction.
+  - Includes an `extractErrorMessage` utility to standardize error message extraction.
   - Provides a `withLoading` higher-order function that wraps asynchronous operations (like API calls) to automatically manage the `loading` and `error` states within the store.
 
 ### `projectStore.ts`
@@ -64,6 +64,7 @@ These stores centralize application state and logic for handling data related to
 These stores are fundamental to the application's reactivity and data flow, providing a structured way to manage and interact with backend data on the client side.
 
 ## Architecture Diagram
+
 ```mermaid
 graph TD
     user((User)) -->|interacts with| frontend(Frontend)
@@ -73,6 +74,7 @@ graph TD
 ```
 
 <!-- File List Start -->
+
 ## File List
 
 - `agentStore.ts`
@@ -81,6 +83,6 @@ graph TD
 - `index.ts`
 - `projectStore.ts`
 - `taskStore.ts`
+- `memoryStore.ts`
 
 <!-- File List End -->
-

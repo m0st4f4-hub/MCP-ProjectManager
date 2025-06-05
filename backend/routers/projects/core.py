@@ -14,7 +14,6 @@ from ....schemas.project import Project, ProjectCreate, ProjectUpdate
 from ....schemas.api_responses import (
     DataResponse,
     ListResponse,
-    PaginationParams,
 )
 # Import service exceptions
 from ....services.exceptions import (
@@ -103,7 +102,8 @@ async def create_project(
     dependencies=[Depends(get_current_active_user)],
 )
 async def get_project_list(
-    pagination: PaginationParams = Depends(),
+    skip: int = Query(0, ge=0, description="Number of records to skip."),
+    limit: int = Query(100, gt=0, description="Maximum records to return."),
     search: Optional[str] = None,
     project_status: Optional[str] = None,
     is_archived: Optional[bool] = Query(
@@ -114,28 +114,32 @@ async def get_project_list(
         ),
     ),
     project_service: ProjectService = Depends(get_project_service),
-    current_user: UserModel = Depends(get_current_active_user)
+    current_user: UserModel = Depends(get_current_active_user),
 ):
     """Retrieves a list of projects."""
     try:  # Get all projects matching filters for total count
         all_matching_projects = await project_service.get_projects(
-            skip=0, limit=None,  # Fetch all for count
-            search=search, status=project_status, is_archived=is_archived
+            skip=0,
+            limit=None,
+            search=search,
+            status=project_status,
+            is_archived=is_archived,
         )
-        total = len(all_matching_projects)  # Get paginated projects
+        total = len(all_matching_projects)
         projects = await project_service.get_projects(
-            skip=pagination.offset,
-            limit=pagination.page_size,  # Use page_size for actual data
-            search=search, status=project_status, is_archived=is_archived
-        )  # Convert SQLAlchemy models to Pydantic models
-        pydantic_projects = [Project.model_validate(
-            project) for project in projects]  # Return standardized response
+            skip=skip,
+            limit=limit,
+            search=search,
+            status=project_status,
+            is_archived=is_archived,
+        )
+        pydantic_projects = [Project.model_validate(project) for project in projects]
         return ListResponse[Project](
             data=pydantic_projects,
             total=total,
-            page=pagination.page,
-            page_size=pagination.page_size,
-            has_more=pagination.offset + len(projects) < total,
+            page=skip // limit + 1,
+            page_size=limit,
+            has_more=skip + len(projects) < total,
             message=f"Retrieved {len(projects)} projects"
         )
     except Exception as e:  # Log unexpected errors

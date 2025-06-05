@@ -1,16 +1,21 @@
-import { StoreApi } from "zustand";
+import { StoreApi } from 'zustand';
 import {
   Agent,
   AgentCreateData,
   AgentUpdateData,
   AgentFilters,
   AgentSortOptions,
-} from "@/types/agent";
-import { createBaseStore, BaseState, withLoading } from "./baseStore";
-import * as api from "@/services/api";
+} from '@/types/agent';
+import { createBaseStore, BaseState, withLoading } from './baseStore';
+import { handleApiError } from '@/lib/apiErrorHandler';
+import * as api from '@/services/api';
 
 type AgentActions = {
-  fetchAgents: (skip: number, limit: number, filters?: AgentFilters) => Promise<void>;
+  fetchAgents: (
+    skip: number,
+    limit: number,
+    filters?: AgentFilters
+  ) => Promise<void>;
   addAgent: (agentData: AgentCreateData) => Promise<void>;
   removeAgent: (id: string) => Promise<void>;
   editAgent: (id: string, agentData: AgentUpdateData) => Promise<void>;
@@ -36,11 +41,11 @@ const initialAgentData: Omit<AgentState, keyof BaseState | keyof AgentActions> =
     editingAgent: null,
     isEditModalOpen: false,
     sortOptions: {
-      field: "created_at",
-      direction: "desc",
+      field: 'created_at',
+      direction: 'desc',
     },
     filters: {
-      status: "all",
+      status: 'all',
       is_archived: false,
     },
   };
@@ -60,7 +65,7 @@ function shallowEqual<T extends object>(a: T, b: T): boolean {
 // Improved upsertAgents: preserve references for unchanged items
 const upsertAgents = (
   fetchedAgents: Agent[],
-  existingAgents: Agent[],
+  existingAgents: Agent[]
 ): Agent[] => {
   const agentMap = new Map(existingAgents.map((agent) => [agent.id, agent]));
   const result: Agent[] = [];
@@ -85,14 +90,21 @@ const areAgentsEqual = (a: Agent[], b: Agent[]): boolean => {
 };
 
 const agentActionsCreator = (
-  set: StoreApi<AgentState>["setState"],
-  get: StoreApi<AgentState>["getState"],
+  set: StoreApi<AgentState>['setState'],
+  get: StoreApi<AgentState>['getState']
 ): AgentActions => ({
-  fetchAgents: async (skip: number = 0, limit: number = 100, filters?: AgentFilters) => {
+  fetchAgents: async (
+    skip: number = 0,
+    limit: number = 100,
+    filters?: AgentFilters
+  ) => {
     set({ loading: true, error: null });
     try {
       const effectiveFilters = filters || get().filters;
-      console.log("[AgentStore] Fetching agents with effective filters:", effectiveFilters);
+      console.log(
+        '[AgentStore] Fetching agents with effective filters:',
+        effectiveFilters
+      );
       const fetchedAgents = await api.getAgents(
         skip,
         limit,
@@ -112,9 +124,10 @@ const agentActionsCreator = (
       });
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch agents";
+        err instanceof Error ? err.message : 'Failed to fetch agents';
       set({ error: errorMessage, loading: false });
-      console.error("Error fetching agents:", err);
+      handleApiError(err, 'Failed to fetch agents');
+      console.error('Error fetching agents:', err);
     }
   },
   addAgent: async (agentData: AgentCreateData) => {
@@ -128,14 +141,15 @@ const agentActionsCreator = (
           ({
             agents: sortAgents([newAgent, ...state.agents], state.sortOptions),
             loading: false,
-          }) as Partial<AgentState>,
+          }) as Partial<AgentState>
       );
       console.log(`[Store] Agent added to state.`);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Failed to add agent";
+        err instanceof Error ? err.message : 'Failed to add agent';
       set({ error: errorMessage, loading: false });
-      console.error("[Store] Error adding agent:", err);
+      handleApiError(err, 'Failed to add agent');
+      console.error('[Store] Error adding agent:', err);
       throw err;
     }
   },
@@ -150,8 +164,9 @@ const agentActionsCreator = (
       console.log(`[Store] Agent ${id} removed locally (API call skipped).`);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Failed to remove agent";
+        err instanceof Error ? err.message : 'Failed to remove agent';
       set({ error: errorMessage });
+      handleApiError(err, 'Failed to remove agent');
       console.error(`[Store] Error removing agent ${id}:`, err);
       throw err;
     }
@@ -164,11 +179,11 @@ const agentActionsCreator = (
           ({
             agents: sortAgents(
               state.agents.map((agent) => (agent.id === id ? updated : agent)),
-              state.sortOptions,
+              state.sortOptions
             ),
             editingAgent: null,
             isEditModalOpen: false,
-          }) as Partial<AgentState>,
+          }) as Partial<AgentState>
       );
     });
   },
@@ -184,7 +199,7 @@ const agentActionsCreator = (
         ({
           sortOptions: options,
           agents: sortAgents(state.agents, options),
-        }) as Partial<AgentState>,
+        }) as Partial<AgentState>
     );
   },
   setFilters: (filters: AgentFilters) => {
@@ -196,18 +211,18 @@ const agentActionsCreator = (
 export const useAgentStore = createBaseStore<AgentState, AgentActions>(
   initialAgentData,
   agentActionsCreator,
-  { name: "agent-store", persist: true },
+  { name: 'agent-store', persist: true }
 );
 
 const sortAgents = (agents: Agent[], options: AgentSortOptions): Agent[] => {
   return [...agents].sort((a, b) => {
-    if (options.field === "created_at") {
+    if (options.field === 'created_at') {
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-      return options.direction === "asc" ? dateA - dateB : dateB - dateA;
+      return options.direction === 'asc' ? dateA - dateB : dateB - dateA;
     }
-    if (options.field === "name") {
-      return options.direction === "asc"
+    if (options.field === 'name') {
+      return options.direction === 'asc'
         ? a.name.localeCompare(b.name)
         : b.name.localeCompare(a.name);
     }

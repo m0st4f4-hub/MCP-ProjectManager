@@ -1,5 +1,6 @@
-import { create, StoreApi } from "zustand";
-import { persist } from "zustand/middleware";
+import { create, StoreApi } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { handleApiError } from '@/lib/apiErrorHandler';
 
 // Base state structure
 export interface BaseState {
@@ -29,14 +30,14 @@ export const createBaseStore = <
 >(
   initialData: Omit<TState, keyof BaseState | keyof TActions>,
   actionsCreator: (
-    set: StoreApi<TState>["setState"],
-    get: StoreApi<TState>["getState"],
+    set: StoreApi<TState>['setState'],
+    get: StoreApi<TState>['getState']
   ) => TActions,
-  options: BaseStoreOptions,
+  options: BaseStoreOptions
 ) => {
   const store = (
-    set: StoreApi<TState>["setState"],
-    get: StoreApi<TState>["getState"],
+    set: StoreApi<TState>['setState'],
+    get: StoreApi<TState>['getState']
   ): TState =>
     ({
       ...(baseStateDefaults as BaseState),
@@ -47,27 +48,28 @@ export const createBaseStore = <
 
   if (options.persist) {
     return create(
-      persist(store, { name: options.name, version: options.version || 1 }),
+      persist(store, { name: options.name, version: options.version || 1 })
     );
   }
   return create(store);
 };
 
 // Error handling utility (from diff)
-export const handleApiError = (error: unknown): string => {
+export const extractErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {
     return error.message;
   }
-  if (typeof error === "string") {
+  if (typeof error === 'string') {
     return error;
   }
-  return "An unexpected error occurred";
+  return 'An unexpected error occurred';
 };
 
 // Loading state utility (modified to align with new withLoading structure)
 export const withLoading = async <T>(
-  set: StoreApi<BaseState>["setState"], // Changed to StoreApi<BaseState>['setState']
+  set: StoreApi<BaseState>['setState'],
   asyncFn: () => Promise<T>,
+  errorTitle = 'API Error'
 ): Promise<T | void> => {
   set({ loading: true, error: null });
   try {
@@ -75,9 +77,10 @@ export const withLoading = async <T>(
     set({ loading: false }); // set loading false before returning
     return result; // return result
   } catch (err: unknown) {
-    const errorMessage = handleApiError(err); // Use handleApiError
+    const errorMessage = extractErrorMessage(err);
     set({ loading: false, error: errorMessage });
-    // console.error("Operation failed:", errorMessage, err); // console.error moved to calling action
+    handleApiError(err, errorTitle);
+    // console.error("Operation failed:", errorMessage, err);
     throw err; // Rethrow error so calling action can also catch it if needed
   }
   // finally is not strictly needed if all paths set loading false
