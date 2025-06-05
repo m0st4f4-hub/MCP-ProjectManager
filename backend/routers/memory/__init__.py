@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 
 from ...database import get_sync_db as get_db
@@ -22,16 +22,23 @@ def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
 
 @router.get("/graph")
 def get_memory_graph(
+    response: Response,
     memory_service: MemoryService = Depends(get_memory_service),
 ):
     """Retrieve the full knowledge graph."""
     try:
-        return memory_service.get_knowledge_graph()
+        graph = memory_service.get_knowledge_graph()
+        response.headers["Cache-Control"] = "public, max-age=60"
+        return graph
     except Exception as e:  # pragma: no cover - pass through any service errors
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 
-@router.post("/ingest-url", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/ingest-url",
+    response_model=MemoryEntity,
+    status_code=status.HTTP_201_CREATED,
+)
 def ingest_url_root(
     ingest_input: UrlIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
@@ -44,7 +51,11 @@ def ingest_url_root(
         raise HTTPException(status_code=500, detail=f"Failed to ingest url: {e}")
 
 
-@router.post("/ingest-text", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/ingest-text",
+    response_model=MemoryEntity,
+    status_code=status.HTTP_201_CREATED,
+)
 def ingest_text_root(
     ingest_input: TextIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
@@ -63,10 +74,13 @@ def ingest_text_root(
 
 @router.get("/graph", response_model=KnowledgeGraph)
 def get_knowledge_graph(
+    response: Response,
     memory_service: MemoryService = Depends(get_memory_service),
 ):
     """Retrieve the entire knowledge graph."""
     try:
-        return memory_service.get_knowledge_graph()
+        graph = memory_service.get_knowledge_graph()
+        response.headers["Cache-Control"] = "public, max-age=60"
+        return graph
     except Exception as e:  # pragma: no cover - pass through any service errors
         raise HTTPException(status_code=500, detail=f"Failed to retrieve graph: {e}")

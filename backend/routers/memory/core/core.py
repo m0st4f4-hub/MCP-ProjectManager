@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Path, Response
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
@@ -27,11 +27,14 @@ def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
 
 @router.get("/graph")
 def get_memory_graph(
+    response: Response,
     memory_service: MemoryService = Depends(get_memory_service),
 ):
     """Retrieve the entire knowledge graph."""
     try:
-        return memory_service.get_knowledge_graph()
+        graph = memory_service.get_knowledge_graph()
+        response.headers["Cache-Control"] = "public, max-age=60"
+        return graph
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 

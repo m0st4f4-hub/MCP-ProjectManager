@@ -62,13 +62,17 @@ class DummyGraphService:
 
 dummy_user = types.SimpleNamespace(id="user1")
 
+
 def override_user():
     return dummy_user
 
+
 dummy_service = DummyGraphService()
+
 
 def override_service():
     return dummy_service
+
 
 app = FastAPI()
 app.include_router(router)
@@ -79,9 +83,13 @@ app.dependency_overrides[get_current_active_user] = override_user
 
 @pytest.mark.asyncio
 async def test_get_graph_endpoint():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
         resp = await client.get("/entities/graph")
         assert resp.status_code == 200
+        assert "Cache-Control" in resp.headers
         data = resp.json()
         assert len(data["entities"]) == 2
         assert len(data["relations"]) == 1
@@ -91,9 +99,13 @@ async def test_get_graph_endpoint():
 
 @pytest.mark.asyncio
 async def test_get_graph_root_endpoint():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
         resp = await client.get("/graph")
         assert resp.status_code == 200
+        assert "Cache-Control" in resp.headers
         data = resp.json()
         assert len(data["entities"]) == 2
         assert len(data["relations"]) == 1

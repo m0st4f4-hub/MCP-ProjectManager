@@ -2,6 +2,8 @@ from typing import List, Optional, Dict, Any
 import logging
 import os
 import httpx
+import time
+from threading import Lock
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -13,8 +15,6 @@ from ..schemas.memory import (
     MemoryEntityUpdate,
     MemoryObservationCreate,
     MemoryRelationCreate,
-    MemoryEntity,
-    MemoryRelation,
 )
 from ..schemas.file_ingest import FileIngestInput
 from ..crud.memory import (
@@ -27,6 +27,11 @@ from ..crud.memory import (
 from ..services.exceptions import EntityNotFoundError
 
 logger = logging.getLogger(__name__)
+
+GRAPH_CACHE_TTL = 60  # seconds
+_graph_cache: Optional[Dict[str, Any]] = None
+_graph_cache_ts: float = 0.0
+_graph_cache_lock = Lock()
 
 
 class MemoryService:
@@ -410,9 +415,12 @@ class MemoryService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=(
-                    f"Relation of type '{relation_update.relation_type}' already exists "
-                    f"between entity {relation_update.from_entity_id} "
-                    f"and entity {relation_update.to_entity_id}"
+                    "Relation of type '{0}' already exists between entity {1} "
+                    "and entity {2}".format(
+                        relation_update.relation_type,
+                        relation_update.from_entity_id,
+                        relation_update.to_entity_id,
+                    )
                 ),
             )
         except Exception as e:
@@ -491,6 +499,12 @@ class MemoryService:
         )
 
     def get_knowledge_graph(self) -> Dict[str, List[Dict[str, Any]]]:
+        global _graph_cache, _graph_cache_ts
+        now = time.time()
+        with _graph_cache_lock:
+            if _graph_cache is not None and now - _graph_cache_ts < GRAPH_CACHE_TTL:
+                return _graph_cache
+
         nodes = []
         edges = []
 
@@ -515,4 +529,8 @@ class MemoryService:
                 "description": relation.metadata_,
                 "metadata": relation.metadata_
             })
-        return {"nodes": nodes, "edges": edges}
+        result = {"nodes": nodes, "edges": edges}
+        with _graph_cache_lock:
+            _graph_cache = result
+            _graph_cache_ts = now
+        return result
