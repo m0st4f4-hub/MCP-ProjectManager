@@ -19,27 +19,43 @@ class CommentService:
         self.db = db
 
     def get_comment(self, comment_id: str) -> Optional[models.Comment]:
-        # Delegate to CRUD
+        """Fetch a single comment.
+
+        :param comment_id: Identifier of the comment
+        :returns: The ``Comment`` object or ``None``
+        """
         return get_comment(self.db, comment_id)
 
     def get_comments_by_task(self, task_project_id: Union[str, uuid.UUID], task_number: int) -> List[models.Comment]:
-        """
-        Retrieve comments for a task. Delegate to CRUD.
+        """Return comments for a specific task.
+
+        :param task_project_id: Project ID of the task
+        :param task_number: Task number
+        :returns: List of associated ``Comment`` objects
         """
         return get_comments_by_task(self.db, task_project_id, task_number)
 
     def create_comment(self, comment_create: CommentCreate) -> models.Comment:
-        # Service layer orchestrates data preparation and calls CRUD.
-        # Validation is now handled in the CRUD layer.
-        # The schema should be fully prepared *before* calling the service function.
-        # The service now just passes the schema to CRUD.
-        # Delegate to CRUD create function
+        """Create a new comment.
+
+        :param comment_create: Comment data
+        :returns: The created ``Comment``
+        """
         return create_comment(self.db, comment_create)
 
     def update_comment(self, comment_id: str, comment_update: CommentUpdate) -> Optional[models.Comment]:
-        # Delegate to CRUD update function
+        """Update an existing comment.
+
+        :param comment_id: Identifier of the comment
+        :param comment_update: Fields to update
+        :returns: The updated ``Comment`` or ``None``
+        """
         return update_comment(self.db, comment_id, comment_update)
 
     def delete_comment(self, comment_id: str) -> bool:
-        # Delegate to CRUD delete function
+        """Remove a comment.
+
+        :param comment_id: Identifier of the comment
+        :returns: ``True`` if deleted
+        """
         return delete_comment(self.db, comment_id)

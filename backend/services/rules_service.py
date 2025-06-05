@@ -11,17 +11,24 @@ import json
 import uuid
 
 class RulesService:
-    """Service for managing agent rules and behavior"""
+    """Service for managing agent rules and behavior."""
 
-def __init__(self, db: Session):
+    def __init__(self, db: Session):
+        """Initialize the service with a database session."""
         self.db = db
 
-def get_agent_prompt(self, agent_name: str, task_context: Dict[str, Any] = None, available_tools: List[Dict[str, Any]] = None) -> str:
-        """Get the rules-based prompt for an agent"""
+    def get_agent_prompt(self, agent_name: str, task_context: Dict[str, Any] = None, available_tools: List[Dict[str, Any]] = None) -> str:
+        """Generate the full prompt for an agent.
+
+        :param agent_name: Target agent name
+        :param task_context: Context of the current task
+        :param available_tools: Tools available to the agent
+        :returns: Prompt text including rules
+        """
         return crud_rules.generate_agent_prompt_from_rules(self.db, agent_name, task_context, available_tools)
 
-def validate_agent_task(self, agent_name: str, task_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate if an agent can perform a task according to rules"""
+    def validate_agent_task(self, agent_name: str, task_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate if an agent can perform a task according to rules."""
         violations_data = crud_rules.validate_task_against_agent_rules(self.db, agent_name, task_data)
 
         logged_violations = []
@@ -47,10 +54,22 @@ def validate_agent_task(self, agent_name: str, task_data: Dict[str, Any]) -> Dic
             "agent_name": agent_name
         }
 
-def log_agent_action(self, agent_name: str, action_type: str, action_description: str = None,
+    def log_agent_action(self, agent_name: str, action_type: str, action_description: str = None,
                         task_project_id: Union[str, uuid.UUID] = None, task_number: Optional[int] = None, success: bool = True, error_message: str = None,
                         action_data: Dict[str, Any] = None, duration_seconds: Optional[int] = None) -> AgentBehaviorLog:
-        """Log an agent action for behavior tracking"""  # Get agent role ID
+        """Log an agent action for behavior tracking.
+
+        :param agent_name: Name of the acting agent
+        :param action_type: Type of action performed
+        :param action_description: Optional description
+        :param task_project_id: Related project ID
+        :param task_number: Related task number
+        :param success: Whether the action succeeded
+        :param error_message: Error details if any
+        :param action_data: Additional data for the log
+        :param duration_seconds: Duration of the action
+        :returns: The created ``AgentBehaviorLog``
+        """
         agent_role = crud_rules.get_agent_role_by_name(self.db, agent_name)
         if not agent_role:  # Create a default agent role if it doesn't exist
             from ..schemas import AgentRoleCreate
@@ -77,10 +96,21 @@ def log_agent_action(self, agent_name: str, action_type: str, action_description
 
         return crud_rules.log_agent_behavior(self.db, behavior_log)
 
-def log_rule_violation(self, agent_name: str, violation_type: str, description: str,
+    def log_rule_violation(self, agent_name: str, violation_type: str, description: str,
                             violated_rule_category: str, violated_rule_identifier: str,
                             task_project_id: Union[str, uuid.UUID] = None, task_number: Optional[int] = None, severity: str = "medium") -> AgentRuleViolation:
-        """Log a rule violation by an agent, including details about the violated rule."""  # Get agent role ID
+        """Log a rule violation by an agent.
+
+        :param agent_name: Name of the violating agent
+        :param violation_type: The type of violation
+        :param description: Description of the violation
+        :param violated_rule_category: Category of the violated rule
+        :param violated_rule_identifier: Identifier of the rule
+        :param task_project_id: Related project ID
+        :param task_number: Related task number
+        :param severity: Severity level
+        :returns: The logged ``AgentRuleViolation``
+        """  # Get agent role ID
         agent_role = crud_rules.get_agent_role_by_name(self.db, agent_name)
         if not agent_role:  # Create a default agent role if it doesn't exist
             from ..schemas import AgentRoleCreate
@@ -107,7 +137,12 @@ def log_rule_violation(self, agent_name: str, violation_type: str, description: 
         return crud_rules.log_rule_violation(self.db, violation)
 
 def check_agent_capabilities(self, agent_name: str, required_capabilities: List[str]) -> Dict[str, Any]:
-        """Check if agent has required capabilities"""
+        """Check if an agent possesses a set of capabilities.
+
+        :param agent_name: Name of the agent
+        :param required_capabilities: Capabilities to verify
+        :returns: Mapping describing available and missing capabilities
+        """
         agent_role = crud_rules.get_agent_role_with_details(self.db, agent_name)
         if not agent_role:
             return {
@@ -126,7 +161,7 @@ def check_agent_capabilities(self, agent_name: str, required_capabilities: List[
         }
 
 def get_handoff_recommendations(self, agent_name: str, current_task_state: str) -> List[Dict[str, str]]:
-        """Get handoff recommendations based on agent rules"""
+        """Suggest task handoffs based on agent rules."""
         agent_role = crud_rules.get_agent_role_with_details(self.db, agent_name)
         if not agent_role:
             return []
@@ -144,7 +179,7 @@ def get_handoff_recommendations(self, agent_name: str, current_task_state: str) 
         return recommendations
 
 def enforce_verification_requirements(self, agent_name: str, completed_actions: List[str]) -> Dict[str, Any]:
-        """Check if agent has completed required verifications"""
+        """Ensure mandatory verifications were performed."""
         agent_role = crud_rules.get_agent_role_with_details(self.db, agent_name)
         if not agent_role:
             return {"verification_complete": True, "missing_verifications": []}
@@ -169,7 +204,7 @@ def enforce_verification_requirements(self, agent_name: str, completed_actions: 
         }
 
 def get_error_protocol(self, agent_name: str, error_type: str) -> Optional[str]:
-        """Get error handling protocol for an agent and error type"""
+        """Return the error protocol for a specific agent and error type."""
         agent_role = crud_rules.get_agent_role_with_details(self.db, agent_name)
         if not agent_role:
             return None
@@ -184,17 +219,17 @@ def get_error_protocol(self, agent_name: str, error_type: str) -> Optional[str]:
         return None
 
 def get_universal_mandates_for_prompt(self) -> List[str]:
-        """Get universal mandates formatted for agent prompts"""
+        """Return universal mandate strings for prompts."""
         mandates = crud_rules.get_universal_mandates(self.db)
         return [f"**{mandate.title}**: {mandate.description}" for mandate in mandates]
 
 def initialize_default_rules(self):
-        """Initialize default rules for the system"""
+        """Create any missing default rules in the system."""
         self._create_universal_mandates()
         self._create_default_agent_roles()
 
 def _create_universal_mandates(self):
-        """Create default universal mandates"""
+        """Seed the database with default universal mandates."""
         from ..schemas.universal_mandate import UniversalMandateCreate
 
         default_mandates = [
@@ -235,7 +270,7 @@ def _create_universal_mandates(self):
                 crud_rules.create_universal_mandate(self.db, mandate)
 
 def _create_default_agent_roles(self):
-        """Create default agent roles"""
+        """Seed the database with default agent roles."""
         from ..schemas.agent_role import AgentRoleCreate
 
         default_roles = [

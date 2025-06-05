@@ -24,14 +24,12 @@ class AuditLogService:
         user_id: Optional[str] = None,
         details: Optional[Dict[str, Any]] = None
     ) -> AuditLogModel:
-        """Helper method to create an audit log entry.
+        """Create an audit log entry.
 
-        Args:
-            action: Description of the action.
-            user_id: ID of the user performing the action (if any).
-            details: JSON-serializable dictionary of action details.
-        Returns:
-            The created AuditLog database model instance.
+        :param action: Description of the action
+        :param user_id: ID of the acting user, if any
+        :param details: Optional details about the event
+        :returns: The created ``AuditLog`` model
         """
         audit_log_create = AuditLogCreate(
             user_id=user_id,
@@ -44,7 +42,11 @@ class AuditLogService:
         return audit_log_create
 
     async def get_log(self, audit_log_id: str) -> Optional[AuditLogModel]:
-        """Retrieve a single audit log entry by its ID."""
+        """Retrieve a single audit log entry.
+
+        :param audit_log_id: ID of the log to fetch
+        :returns: The ``AuditLog`` instance or ``None``
+        """
         return await audit_log_crud.get_audit_log(db=self.db, audit_log_id=audit_log_id)
 
     async def get_logs(
@@ -54,7 +56,14 @@ class AuditLogService:
         user_id: Optional[str] = None,
         action_filter: Optional[str] = None
     ) -> List[AuditLogModel]:
-        """Retrieve audit logs with optional filtering and pagination."""
+        """Return multiple audit logs.
+
+        :param skip: Number of records to skip
+        :param limit: Maximum number of records
+        :param user_id: Filter logs for a specific user
+        :param action_filter: Filter by action string
+        :returns: A list of ``AuditLog`` records
+        """
         return await audit_log_crud.get_audit_logs(
             db=self.db,
             skip=skip,
@@ -68,7 +77,12 @@ class AuditLogService:
         audit_log_id: str,
         audit_log_update: AuditLogUpdate
     ) -> Optional[AuditLogModel]:
-        """Update an audit log entry."""
+        """Update an audit log entry.
+
+        :param audit_log_id: ID of the log to update
+        :param audit_log_update: Fields to modify
+        :returns: The updated ``AuditLog`` or ``None``
+        """
         return await audit_log_crud.update_audit_log(
             db=self.db,
             audit_log_id=audit_log_id,
@@ -76,7 +90,11 @@ class AuditLogService:
         )
 
     async def delete_log(self, audit_log_id: str) -> Optional[AuditLogModel]:
-        """Delete an audit log entry."""
+        """Delete an audit log entry.
+
+        :param audit_log_id: ID of the log to remove
+        :returns: The deleted ``AuditLog`` or ``None``
+        """
         return await audit_log_crud.delete_audit_log(
             db=self.db,
             audit_log_id=audit_log_id
@@ -88,7 +106,13 @@ class AuditLogService:
         action: str,
         details: Optional[Dict[str, Any]] = None
     ) -> AuditLogModel:
-        """Convenience method to log user actions."""
+        """Record an action performed by a user.
+
+        :param user_id: Acting user ID
+        :param action: Action description
+        :param details: Optional action details
+        :returns: The created ``AuditLog``
+        """
         return await self.create_log(
             action=action,
             user_id=user_id,
@@ -100,7 +124,12 @@ class AuditLogService:
         action: str,
         details: Optional[Dict[str, Any]] = None
     ) -> AuditLogModel:
-        """Convenience method to log system actions."""
+        """Record a system generated action.
+
+        :param action: Action description
+        :param details: Optional action details
+        :returns: The created ``AuditLog``
+        """
         return await self.create_log(
             action=action,
             user_id=None,  # System actions don't have a user

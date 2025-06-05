@@ -39,19 +39,13 @@ class TaskService:
         self, project_id: UUID, task_number: int,
         is_archived: Optional[bool] = False
         ) -> models.Task:
-        """
-        Get a task by project ID and task number.
+        """Retrieve a task by project ID and task number.
 
-        Args:
-        project_id: The project ID
-        task_number: The task number
-        is_archived: Filter by archived status
-
-        Returns:
-        The task
-
-        Raises:
-        EntityNotFoundError: If the task is not found
+        :param project_id: The project identifier
+        :param task_number: Sequential number of the task
+        :param is_archived: Include archived tasks if ``True``
+        :returns: The ``Task`` instance
+        :raises EntityNotFoundError: If the task does not exist
         """
         task = await crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
         if not task:
@@ -106,20 +100,14 @@ class TaskService:
         task: TaskCreate,
         agent_id: Optional[str] = None
         ) -> Task:
-        """
-        Create a new task for a project.
+        """Create a new task for a project.
 
-        Args:
-        project_id: The project ID
-        task: The task data
-        agent_id: Optional agent ID to assign
-
-        Returns:
-        The created task ORM model.
-
-        Raises:
-        EntityNotFoundError: If the project or agent is not found
-        ValidationError: If the task data is invalid
+        :param project_id: ID of the project owning the task
+        :param task: Task creation payload
+        :param agent_id: Optional agent assignment
+        :returns: The created ``Task`` model
+        :raises EntityNotFoundError: If the project or agent is not found
+        :raises ValidationError: If validation fails
         """
         try:  # Use transaction context manager
             async with service_transaction(self.db, "create_task") as tx_db:
@@ -182,20 +170,14 @@ class TaskService:
         task_number: int,
         task_update: TaskUpdate,
         ) -> models.Task:
-        """
-        Update a task by project ID and task number.
+        """Update a task.
 
-        Args:
-        project_id: The project ID
-        task_number: The task number
-        task_update: The update data
-
-        Returns:
-        The updated task
-
-        Raises:
-        EntityNotFoundError: If the task is not found
-        ValidationError: If the update data is invalid
+        :param project_id: Project identifier
+        :param task_number: Task number within the project
+        :param task_update: Fields to modify
+        :returns: The updated ``Task``
+        :raises EntityNotFoundError: If the task is not found
+        :raises ValidationError: If update validation fails
         """  # Check if task exists
         existing_task = await crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
         if not existing_task:
@@ -216,18 +198,12 @@ class TaskService:
                 raise ValidationError(f"Error updating task: {str(e)}")
 
     async def delete_task(self, project_id: UUID, task_number: int) -> models.Task:
-        """
-        Delete a task by project ID and task number.
+        """Delete a task by project ID and task number.
 
-        Args:
-        project_id: The project ID
-        task_number: The task number
-
-        Returns:
-        The deleted task data
-
-        Raises:
-        EntityNotFoundError: If the task is not found
+        :param project_id: Project identifier
+        :param task_number: Task number
+        :returns: The deleted ``Task`` data
+        :raises EntityNotFoundError: If the task is not found
         """  # Check if task exists
         existing_task = await crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
         if not existing_task:

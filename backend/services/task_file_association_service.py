@@ -18,20 +18,15 @@ class TaskFileAssociationService:
         self.db = db
 
     def get_association(self, task_project_id: str, task_task_number: int, file_memory_entity_id: int) -> Optional[models.TaskFileAssociation]:
-        # Delegate to CRUD
+        """Retrieve a single file association for a task."""
         return get_task_file_association(self.db, task_project_id, task_task_number, file_memory_entity_id)
 
     def get_files_for_task(self, task_project_id: str, task_task_number: int) -> List[models.TaskFileAssociation]:
-        """
-        Retrieve files associated with a task. Delegate to CRUD.
-        """
+        """Return files associated with a task."""
         return get_files_for_task(self.db, task_project_id, task_task_number)
 
     def associate_file_with_task(self, task_project_id: str, task_task_number: int, file_memory_entity_id: int) -> Optional[models.TaskFileAssociation]:
-        # Service layer should primarily orchestrate and call CRUD.
-        # Validation for entity existence should ideally happen before this service call,
-        # or be handled within the CRUD create function (which it now is for association existence).
-        # Create schema and delegate to CRUD create function
+        """Associate a file with a task."""
         task_file_create_schema = schemas.TaskFileAssociationCreate(
             task_project_id=task_project_id,
             task_task_number=task_task_number,
@@ -40,7 +35,7 @@ class TaskFileAssociationService:
         return create_task_file_association(self.db, task_file_create_schema)
 
     def disassociate_file_from_task(self, task_project_id: str, task_task_number: int, file_memory_entity_id: int) -> bool:
-        # Delegate to CRUD delete function
+        """Remove a file from a task."""
         return delete_task_file_association(self.db, task_project_id, task_task_number, file_memory_entity_id)
 
     def associate_multiple_files_with_task(

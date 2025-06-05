@@ -17,6 +17,7 @@ class TaskDependencyService:
         self.db = db
 
     def get_dependency(self, predecessor_task_project_id: UUID, predecessor_task_number: int, successor_task_project_id: UUID, successor_task_number: int) -> Optional[models.TaskDependency]:
+        """Retrieve a specific task dependency."""
         return self.db.query(models.TaskDependency).filter(
             models.TaskDependency.predecessor_task_project_id == str(predecessor_task_project_id),
             models.TaskDependency.predecessor_task_number == predecessor_task_number,
@@ -25,7 +26,7 @@ class TaskDependencyService:
         ).first()
 
     def get_dependencies_for_task(self, task_project_id: UUID, task_number: int) -> List[models.TaskDependency]:
-        # Get dependencies where this task is either the predecessor or the successor
+        """Return dependencies where the task is predecessor or successor."""
         return (
             self.db.query(models.TaskDependency)
             .filter(
@@ -38,7 +39,7 @@ class TaskDependencyService:
         )
 
     def get_predecessor_tasks(self, task_project_id: UUID, task_number: int) -> List[models.TaskDependency]:
-        # Get dependencies where this task is the successor (i.e., get its predecessors)
+        """Return dependencies where the task is the successor."""
         return (
             self.db.query(models.TaskDependency)
             .options(joinedload(models.TaskDependency.predecessor_task))
@@ -50,7 +51,7 @@ class TaskDependencyService:
         )
 
     def get_successor_tasks(self, task_project_id: UUID, task_number: int) -> List[models.TaskDependency]:
-        # Get dependencies where this task is the predecessor (i.e., get its successors)
+        """Return dependencies where the task is the predecessor."""
         return (
             self.db.query(models.TaskDependency)
             .options(joinedload(models.TaskDependency.successor_task))
@@ -62,7 +63,7 @@ class TaskDependencyService:
         )
 
     async def add_dependency(self, predecessor_task_project_id: UUID, predecessor_task_number: int, successor_task_project_id: UUID, successor_task_number: int, dependency_type: str) -> Optional[models.TaskDependency]:
-        # Use the CRUD function for creation and validation
+        """Create a dependency between two tasks."""
         task_dependency = TaskDependencyCreate(
             predecessor_project_id=str(predecessor_task_project_id),
             predecessor_task_number=predecessor_task_number,
@@ -113,9 +114,7 @@ class TaskDependencyService:
         return existing_dependency is not None
 
     def remove_dependency(self, predecessor_task_project_id: UUID, predecessor_task_number: int, successor_task_project_id: UUID, successor_task_number: int) -> bool:
-        # Assuming a function exists in CRUD to delete by these identifiers
-        # You'll likely need to fetch the TaskDependency first to get its ID
-        # For now, a simplified version:
+        """Remove a dependency between two tasks."""
         dependency_to_remove = (
             self.db.query(models.TaskDependency)
             .filter(
@@ -139,7 +138,12 @@ async def create_task_dependency(
     db: AsyncSession,
     task_dependency: TaskDependencyCreate
 ):
-    """Create a new task dependency in the database."""
+    """Create a new task dependency in the database.
+
+    :param db: Database session
+    :param task_dependency: Dependency information
+    :returns: The created ``TaskDependency`` ORM object
+    """
     # Ensure field names match the TaskDependency model
     db_task_dependency = models.TaskDependency(
         predecessor_project_id=task_dependency.predecessor_project_id,
@@ -157,6 +161,7 @@ async def create_task_dependency(
 
 # Function to get task dependencies by dependent task ID
 def get_task_dependencies_by_dependent_id(db: Session, dependent_task_id: int):
+    """Fetch dependencies for a given dependent task."""
     logger.info(f"Getting task dependencies for dependent task ID: {dependent_task_id}")
     return (
         db.query(models.TaskDependency)
@@ -167,6 +172,7 @@ def get_task_dependencies_by_dependent_id(db: Session, dependent_task_id: int):
 
 # Function to get task dependencies by dependency task ID
 def get_task_dependencies_by_dependency_id(db: Session, dependency_task_id: int):
+    """Fetch tasks that depend on a specific task."""
     logger.info(f"Getting tasks that depend on task ID: {dependency_task_id}")
     return (
         db.query(models.TaskDependency)
@@ -181,6 +187,7 @@ def delete_task_dependency(
     dependent_task_id: int,
     dependency_task_id: int
 ):
+    """Remove a task dependency."""
     logger.info(f"Deleting task dependency: {dependent_task_id} depends on {dependency_task_id}")
     db_task_dependency = (
         db.query(models.TaskDependency)

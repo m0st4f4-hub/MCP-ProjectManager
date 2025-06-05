@@ -33,17 +33,11 @@ class UserService:
         self.db = db
 
     async def get_user(self, user_id: str) -> models.User:  # Make async
-        """
-        Get a user by ID.
+        """Retrieve a user by ID.
 
-        Args:
-            user_id: The user ID
-
-        Returns:
-            The user
-
-        Raises:
-            EntityNotFoundError: If the user is not found
+        :param user_id: Identifier of the user
+        :returns: The ``User`` model
+        :raises EntityNotFoundError: If the user is not found
         """
         user = await get_user(self.db, user_id)  # Await CRUD call
         if not user:
@@ -54,24 +48,16 @@ class UserService:
         return await get_user_by_username(self.db, username)  # Await CRUD call
 
     async def get_users(self, skip: int = 0, limit: int = 100) -> List[models.User]:  # Make async
-        """
-        Retrieve all users with pagination. Delegate to CRUD.
-        """
+        """Return all users with pagination."""
         return await get_users(self.db, skip=skip, limit=limit)  # Await CRUD call
 
     async def create_user(self, user_create: UserCreate) -> models.User:  # Make async
-        """
-        Create a new user.
+        """Create a new user.
 
-        Args:
-            user_create: The user data
-
-        Returns:
-            The created user
-
-        Raises:
-            DuplicateEntityError: If the username already exists
-            ValidationError: If the user data is invalid
+        :param user_create: User creation payload
+        :returns: The created ``User``
+        :raises DuplicateEntityError: If the username already exists
+        :raises ValidationError: If the user data is invalid
         """  # Check if username already exists at the service layer
         if await username_exists(self.db, user_create.username):  # Await username_exists  # Use the proper service exception
             raise DuplicateEntityError("User", user_create.username)  # Use transaction context manager  # Need to check if service_transaction works with AsyncSession or needs an async version  # For now, assuming it might need adjustment, will read utils next.  # Keeping the structure for now, but it might change.  # with service_transaction(self.db, "create_user") as tx_db:  # This might need adjustment for async
@@ -89,18 +75,12 @@ class UserService:
         return await delete_user(self.db, user_id)  # Await CRUD call
 
     async def authenticate_user(self, username: str, password: str) -> models.User:  # Make async
-        """
-        Authenticate a user by username and password.
+        """Authenticate a user by username and password.
 
-        Args:
-            username: The username
-            password: The password
-
-        Returns:
-            The authenticated user
-
-        Raises:
-            AuthorizationError: If authentication fails
+        :param username: Username credential
+        :param password: Password credential
+        :returns: The authenticated ``User``
+        :raises AuthorizationError: If authentication fails
         """
         user = await crud_authenticate_user(self.db, username, password)  # Await CRUD call
         if not user:

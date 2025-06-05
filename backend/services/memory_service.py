@@ -32,30 +32,65 @@ class MemoryService:
         self.db = db
 
     def create_entity(self, entity_data: MemoryEntityCreate) -> models.MemoryEntity:
+        """Create a memory entity record.
+
+        :param entity_data: Data describing the new entity
+        :returns: The created ``MemoryEntity``
+        """
         return create_memory_entity(self.db, entity_data)
 
     def get_entity(self, entity_id: int) -> Optional[models.MemoryEntity]:
+        """Retrieve a memory entity by ID.
+
+        :param entity_id: Entity identifier
+        :returns: The ``MemoryEntity`` or ``None``
+        """
         return get_memory_entity(self.db, entity_id)
 
     def get_memory_entity_by_id(self, entity_id: int) -> Optional[models.MemoryEntity]:
+        """Alias for :meth:`get_entity`."""
         return self.get_entity(entity_id)
 
     def get_entities(
         self, skip: int = 0, limit: int = 100
     ) -> List[models.MemoryEntity]:
+        """List memory entities.
+
+        :param skip: Records to skip
+        :param limit: Maximum number of records
+        :returns: List of ``MemoryEntity`` objects
+        """
         return get_memory_entities(self.db, skip, limit)
 
     def update_entity(
         self, entity_id: int, entity_update: MemoryEntityUpdate
     ) -> Optional[models.MemoryEntity]:
+        """Update a memory entity.
+
+        :param entity_id: Identifier of the entity
+        :param entity_update: Fields to update
+        :returns: The updated ``MemoryEntity`` or ``None``
+        """
         return update_memory_entity(self.db, entity_id, entity_update)
 
     def delete_entity(self, entity_id: int) -> bool:
+        """Delete a memory entity.
+
+        :param entity_id: Identifier of the entity
+        :returns: ``True`` if deleted
+        """
         return delete_memory_entity(self.db, entity_id)
 
     def ingest_file(
         self, ingest_input: FileIngestInput, user_id: Optional[str] = None
     ) -> models.MemoryEntity:
+        """Create a memory entity from a local file.
+
+        :param ingest_input: Input describing the file
+        :param user_id: ID of the user initiating ingestion
+        :returns: The created ``MemoryEntity``
+        :raises HTTPException: If ingestion fails
+        """
         file_path = ingest_input.file_path
         try:
             if not os.path.exists(file_path):
@@ -116,6 +151,13 @@ class MemoryService:
     def ingest_url(
         self, url: str, user_id: Optional[str] = None
     ) -> models.MemoryEntity:
+        """Create a memory entity from a URL.
+
+        :param url: URL to fetch
+        :param user_id: ID of the ingesting user
+        :returns: The created ``MemoryEntity``
+        :raises HTTPException: If the request fails
+        """
         try:
             response = httpx.get(url)
             response.raise_for_status()
@@ -141,6 +183,14 @@ class MemoryService:
         user_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> models.MemoryEntity:
+        """Create a memory entity from raw text.
+
+        :param text: Text content
+        :param user_id: ID of the ingesting user
+        :param metadata: Optional metadata for the entity
+        :returns: The created ``MemoryEntity``
+        :raises HTTPException: If ingestion fails
+        """
         try:
             entity_create = MemoryEntityCreate(
                 entity_type="text",
@@ -159,12 +209,24 @@ class MemoryService:
             )
 
     def get_file_content(self, entity_id: int) -> str:
+        """Return stored file contents for an entity.
+
+        :param entity_id: Memory entity identifier
+        :returns: The stored content string
+        :raises EntityNotFoundError: If the entity does not exist
+        """
         entity = self.get_entity(entity_id)
         if not entity:
             raise EntityNotFoundError("MemoryEntity", entity_id)
         return entity.content or ""
 
     def get_file_metadata(self, entity_id: int) -> Dict[str, Any]:
+        """Return metadata for a file entity.
+
+        :param entity_id: Memory entity identifier
+        :returns: Metadata dictionary
+        :raises HTTPException: If the entity does not exist
+        """
         entity = self.get_entity(entity_id)
         if not entity:
             raise HTTPException(
@@ -174,6 +236,12 @@ class MemoryService:
         return entity.entity_metadata or {}
 
     def create_memory_entity(self, entity: MemoryEntityCreate) -> models.MemoryEntity:
+        """Persist a memory entity using the ORM.
+
+        :param entity: Entity definition
+        :returns: The created ``MemoryEntity``
+        :raises HTTPException: If creation fails or duplicates exist
+        """
         try:
             db_entity = models.MemoryEntity(
                 type=entity.type,
@@ -201,6 +269,7 @@ class MemoryService:
             )
 
     def get_memory_entity_by_name(self, name: str) -> Optional[models.MemoryEntity]:
+        """Retrieve an entity by its name."""
         return (
             self.db.query(models.MemoryEntity)
             .filter(models.MemoryEntity.name == name)
@@ -214,6 +283,14 @@ class MemoryService:
         skip: int = 0,
         limit: int = 100,
     ) -> List[models.MemoryEntity]:
+        """Query memory entities with optional filters.
+
+        :param type: Filter by entity type
+        :param name: Filter by name substring
+        :param skip: Records to skip
+        :param limit: Maximum number of records
+        :returns: List of ``MemoryEntity`` objects
+        """
         query = self.db.query(models.MemoryEntity)
         if type:
             query = query.filter(models.MemoryEntity.type == type)
@@ -224,6 +301,7 @@ class MemoryService:
     def get_memory_entities_by_type(
         self, entity_type: str, skip: int = 0, limit: int = 100
     ) -> List[models.MemoryEntity]:
+        """Return entities of a specific type."""
         return (
             self.db.query(models.MemoryEntity)
             .filter(models.MemoryEntity.type == entity_type)
@@ -233,6 +311,11 @@ class MemoryService:
         )
 
     def delete_memory_entity(self, entity_id: int) -> Optional[models.MemoryEntity]:
+        """Remove an entity from the database.
+
+        :param entity_id: Identifier of the entity
+        :returns: The deleted entity or ``None``
+        """
         db_entity = self.get_entity(entity_id)
         if db_entity:
             self.db.delete(db_entity)
@@ -243,6 +326,7 @@ class MemoryService:
     def add_observation_to_entity(
         self, entity_id: int, observation: MemoryObservationCreate
     ) -> models.MemoryObservation:
+        """Attach an observation to an entity."""
         db_entity = self.get_memory_entity_by_id(entity_id)
         if db_entity is None:
             raise HTTPException(
@@ -270,6 +354,7 @@ class MemoryService:
         skip: int = 0,
         limit: int = 100,
     ) -> List[models.MemoryObservation]:
+        """Retrieve observations with optional filters."""
         query = self.db.query(models.MemoryObservation)
         if entity_id is not None:
             query = query.filter(models.MemoryObservation.entity_id == entity_id)
@@ -282,6 +367,7 @@ class MemoryService:
     def create_memory_relation(
         self, relation: MemoryRelationCreate
     ) -> models.MemoryRelation:
+        """Create a relation between two entities."""
         from_entity = self.get_memory_entity_by_id(relation.from_entity_id)
         to_entity = self.get_memory_entity_by_id(relation.to_entity_id)
         if not from_entity:
@@ -332,6 +418,7 @@ class MemoryService:
     def get_memory_relation(
         self, relation_id: int
     ) -> Optional[models.MemoryRelation]:
+        """Fetch a single memory relation by ID."""
         return (
             self.db.query(models.MemoryRelation)
             .filter(models.MemoryRelation.id == relation_id)
@@ -341,6 +428,7 @@ class MemoryService:
     def get_relations_for_entity(
         self, entity_id: int, relation_type: Optional[str] = None
     ) -> List[models.MemoryRelation]:
+        """Get relations linked to an entity."""
         query = self.db.query(models.MemoryRelation).filter(
             (models.MemoryRelation.from_entity_id == entity_id) |
             (models.MemoryRelation.to_entity_id == entity_id)
@@ -352,6 +440,7 @@ class MemoryService:
     def delete_memory_relation(
         self, relation_id: int
     ) -> Optional[models.MemoryRelation]:
+        """Delete a memory relation by ID."""
         db_relation = self.get_memory_relation(relation_id)
         if db_relation:
             self.db.delete(db_relation)
@@ -362,6 +451,7 @@ class MemoryService:
     def get_memory_relations_by_type(
         self, relation_type: str, skip: int = 0, limit: int = 100
     ) -> List[models.MemoryRelation]:
+        """List relations filtered by type."""
         return (
             self.db.query(models.MemoryRelation)
             .filter(models.MemoryRelation.relation_type == relation_type)
@@ -378,6 +468,7 @@ class MemoryService:
         skip: int = 0,
         limit: int = 100,
     ) -> List[models.MemoryRelation]:
+        """Get relations between two specific entities."""
         query = self.db.query(models.MemoryRelation).filter(
             models.MemoryRelation.from_entity_id == from_entity_id,
             models.MemoryRelation.to_entity_id == to_entity_id
@@ -389,4 +480,5 @@ class MemoryService:
     def search_memory_entities(
         self, query: str, limit: int = 10
     ) -> List[models.MemoryEntity]:
+        """Search entities by name."""
         return self.get_memory_entities(name=query, limit=limit)

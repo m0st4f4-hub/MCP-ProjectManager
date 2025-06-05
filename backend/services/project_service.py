@@ -55,19 +55,13 @@ class ProjectService:
         # Convert to async method and use await
     async def get_project(
         self, project_id: str, is_archived: Optional[bool] = False
-        ) -> models.Project:
-        """
-        Retrieve a project by ID.
+    ) -> models.Project:
+        """Retrieve a project by ID.
 
-        Args:
-            project_id: The project ID
-            is_archived: Filter by archived status
-
-        Returns:
-            The project object
-
-        Raises:
-        EntityNotFoundError: If the project is not found
+        :param project_id: The project identifier
+        :param is_archived: Filter by archived status
+        :returns: The ``Project`` object
+        :raises EntityNotFoundError: If no project is found
         """
         # Await the async CRUD call
         project = await get_project(self.db, project_id, is_archived)
@@ -76,8 +70,14 @@ class ProjectService:
         return project  # Convert to async method and use await
     async def get_project_by_name(
         self, name: str, is_archived: Optional[bool] = False
-        ) -> Optional[models.Project]:  # Delegate to CRUD and await
-        return await get_project_by_name(self.db, name, is_archived)  # Convert to async method and use await
+        ) -> Optional[models.Project]:
+        """Retrieve a project by name.
+
+        :param name: Name of the project
+        :param is_archived: Filter by archived status
+        :returns: The ``Project`` or ``None``
+        """
+        return await get_project_by_name(self.db, name, is_archived)
     async def get_projects(
         self,
         skip: int = 0,
@@ -85,14 +85,21 @@ class ProjectService:
         search: Optional[str] = None,
         status: Optional[str] = None,
         is_archived: Optional[bool] = False
-        ) -> List[models.Project]:  # Delegate to CRUD and await
-        return await get_projects(self.db, skip, search, status, is_archived)  # Convert to async method and use await
+        ) -> List[models.Project]:
+        """List projects with optional filters."""
+        return await get_projects(self.db, skip, search, status, is_archived)
     async def create_project(
         self, project: ProjectCreate, created_by_user_id: Optional[str] = None
-        ) -> models.Project:
+    ) -> models.Project:
+        """Create a new project, optionally from a template.
+
+        :param project: Project creation data
+        :param created_by_user_id: ID of the user creating the project
+        :returns: The newly created ``Project``
+        :raises DuplicateEntityError: If the name already exists
+        :raises EntityNotFoundError: If the template referenced does not exist
         """
-        Create a new project, optionally using a template.
-        """  # Check if project name already exists (await the async method)
+        # Check if project name already exists (await the async method)
         existing_project = await self.get_project_by_name(project.name, is_archived=None)
         if existing_project:
             raise DuplicateEntityError("Project", project.name)
@@ -183,20 +190,14 @@ class ProjectService:
     async def update_project(
         self, project_id: str, project_update: ProjectUpdate
         ) -> models.Project:
-        """
-        Update a project by ID.
+        """Update a project by ID.
 
-        Args:
-        project_id: The project ID
-        project_update: The update data
-
-        Returns:
-        The updated project
-
-        Raises:
-        EntityNotFoundError: If the project is not found
-        DuplicateEntityError: If the new name already exists
-        ValidationError: If the update data is invalid
+        :param project_id: Target project identifier
+        :param project_update: Fields to update
+        :returns: The updated ``Project``
+        :raises EntityNotFoundError: If the project is not found
+        :raises DuplicateEntityError: If the new name already exists
+        :raises ValidationError: If the update is invalid
         """  # Check if project exists (await the async method)
         existing_project = await self.get_project(project_id, is_archived=None)
         if not existing_project:
@@ -219,17 +220,11 @@ class ProjectService:
                     raise
                 raise ValidationError(f"Error updating project: {str(e)}")  # Convert to async method and use await
     async def delete_project(self, project_id: str) -> models.Project:
-        """
-        Delete a project by ID.
+        """Delete a project by ID.
 
-        Args:
-        project_id: The project ID
-
-        Returns:
-        The deleted project
-
-        Raises:
-        EntityNotFoundError: If the project is not found
+        :param project_id: Project identifier
+        :returns: The deleted ``Project``
+        :raises EntityNotFoundError: If the project does not exist
         """  # Check if project exists (await the async method)
         existing_project = await self.get_project(project_id, is_archived=None)
         if not existing_project:
@@ -244,26 +239,34 @@ class ProjectService:
             return deleted_project  # Convert to async method and use await
     async def add_member_to_project(
         self, project_id: str, user_id: str, role: str
-        ) -> Optional[models.ProjectMember]:  # Delegate to CRUD and await  # Create the schema object here or expect it as input if service is higher level
+        ) -> Optional[models.ProjectMember]:
+        """Add a member to a project."""
         project_member_schema = ProjectMemberCreate(project_id=project_id, user_id=user_id, role=role)
-        return await add_project_member(self.db, project_member_schema)  # Convert to async method and use await
+        return await add_project_member(self.db, project_member_schema)
     async def remove_member_from_project(
         self, project_id: str, user_id: str
-        ) -> bool:  # Delegate to CRUD and await
-        return await remove_project_member(self.db, project_id, user_id)  # Convert to async method and use await
+        ) -> bool:
+        """Remove a member from a project."""
+        return await remove_project_member(self.db, project_id, user_id)
     async def get_project_members(self, project_id: str) -> List[models.ProjectMember]:  # Delegate to CRUD and await
-        return await get_project_members(self.db, project_id)  # Convert to async method and use await
+        """List all members for a project."""
+        return await get_project_members(self.db, project_id)
     async def associate_file_with_project(
         self, project_id: str, file_memory_entity_id: int
-        ) -> Optional[models.ProjectFileAssociation]:  # Delegate to CRUD in project_file_associations and await
-        return await associate_file_with_project(self.db, project_id, file_memory_entity_id)  # Convert to async method and use await
+        ) -> Optional[models.ProjectFileAssociation]:
+        """Link a file entity to a project."""
+        return await associate_file_with_project(self.db, project_id, file_memory_entity_id)
     async def disassociate_file_from_project(
         self, project_id: str, file_memory_entity_id: int
-        ) -> bool:  # Delegate to CRUD in project_file_associations and await
-        return await disassociate_file_from_project(self.db, project_id, file_memory_entity_id)  # Convert to async method and use await
+        ) -> bool:
+        """Remove a file association from a project."""
+        return await disassociate_file_from_project(self.db, project_id, file_memory_entity_id)
     async def get_project_files(self, project_id: str) -> List[models.ProjectFileAssociation]:  # Delegate to CRUD in project_file_associations and await
-        return await get_project_files(self.db, project_id)  # Convert to async method and use await
+        """Return file associations for a project."""
+        return await get_project_files(self.db, project_id)
     async def get_project_file_association(self, project_id: str, file_memory_entity_id: int) -> Optional[models.ProjectFileAssociation]:  # Delegate to CRUD in project_file_associations and await
-        return await get_project_file_association(self.db, project_id, file_memory_entity_id)  # Convert to async method and use await
+        """Retrieve a specific project-file association."""
+        return await get_project_file_association(self.db, project_id, file_memory_entity_id)
     async def get_tasks_by_project(self, project_id: str, search: Optional[str] = None, status: Optional[str] = None, is_archived: Optional[bool] = False) -> List[models.Task]:  # Delegate to CRUD and await
+        """List tasks for a project with optional filters."""
         return await get_tasks_by_project(self.db, project_id, search, status, is_archived)

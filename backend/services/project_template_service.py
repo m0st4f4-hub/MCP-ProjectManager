@@ -15,7 +15,11 @@ class ProjectTemplateService:
         self.db = db
 
     def create_template(self, template: ProjectTemplateCreate) -> ProjectTemplateModel:
-        """Create a new project template."""
+        """Create a new project template.
+
+        :param template: Template data
+        :returns: The created ``ProjectTemplate`` model
+        """
         return project_template_crud.create_project_template(self.db, template)
 
     def get_template(self, template_id: str) -> Optional[ProjectTemplateModel]:
@@ -23,13 +27,13 @@ class ProjectTemplateService:
         return project_template_crud.get_project_template(self.db, template_id)
 
     def get_template_by_name(self, name: str) -> Optional[ProjectTemplateModel]:
-        """Retrieve a single project template by name."""
+        """Retrieve a project template by its name."""
         return project_template_crud.get_project_template_by_name(self.db, name)
 
     def get_templates(
         self, skip: int = 0, limit: int = 100
     ) -> List[ProjectTemplateModel]:
-        """Retrieve multiple project templates."""
+        """List project templates with pagination."""
         return project_template_crud.get_project_templates(
             self.db, skip, limit
         )
@@ -37,7 +41,12 @@ class ProjectTemplateService:
     def update_template(
         self, template_id: str, template_update: ProjectTemplateUpdate
     ) -> Optional[ProjectTemplateModel]:
-        """Update a project template by ID."""
+        """Update a project template.
+
+        :param template_id: Identifier of the template
+        :param template_update: Fields to modify
+        :returns: The updated template or ``None``
+        """
         return project_template_crud.update_project_template(
             self.db, template_id, template_update
         )

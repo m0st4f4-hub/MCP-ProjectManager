@@ -20,17 +20,36 @@ class AgentService:
     def get_agent(
         self, agent_id: str, is_archived: Optional[bool] = False
     ) -> Optional[models.Agent]:
+        """Retrieve a single agent.
+
+        :param agent_id: ID of the agent to fetch
+        :param is_archived: Include archived agents if ``True``
+        :returns: The matching ``Agent`` or ``None``
+        """
         return get_agent(self.db, agent_id, is_archived=is_archived)
 
     def get_agent_by_name(
         self, name: str, is_archived: Optional[bool] = False
     ) -> Optional[models.Agent]:
+        """Retrieve an agent by name.
+
+        :param name: Agent name
+        :param is_archived: Include archived agents if ``True``
+        :returns: The matching ``Agent`` or ``None``
+        """
         return get_agent_by_name(self.db, name, is_archived=is_archived)
 
     def get_agents(self) -> List[models.Agent]:
+        """Return all agents."""
         return get_agents(self.db)
 
     def create_agent(self, agent: AgentCreate) -> models.Agent:
+        """Create a new agent.
+
+        :param agent: Agent data
+        :returns: The created ``Agent``
+        :raises ValueError: If the agent name already exists
+        """
         if agent_name_exists(self.db, agent.name):
             raise ValueError(f"Agent name '{agent.name}' already exists")
         return create_agent(self.db, agent)
@@ -38,6 +57,13 @@ class AgentService:
     def update_agent(
         self, agent_id: str, agent_update: AgentUpdate
     ) -> Optional[models.Agent]:
+        """Update an existing agent.
+
+        :param agent_id: ID of the agent to update
+        :param agent_update: Fields to update
+        :returns: The updated ``Agent`` or ``None`` if not found
+        :raises ValueError: If the new name already exists
+        """
         db_agent = get_agent(self.db, agent_id, is_archived=None)
         if not db_agent:
             return None
@@ -53,10 +79,20 @@ class AgentService:
         return update_agent(self.db, agent_id, agent_update)
 
     def delete_agent(self, agent_id: str) -> Optional[models.Agent]:
+        """Delete an agent.
+
+        :param agent_id: Agent identifier
+        :returns: The deleted ``Agent`` or ``None``
+        """
         result = delete_agent(self.db, agent_id)
         return result
 
     def archive_agent(self, agent_id: str) -> Optional[models.Agent]:
+        """Archive an agent without deleting it.
+
+        :param agent_id: Agent identifier
+        :returns: The archived ``Agent`` or ``None`` if not found
+        """
         agent = get_agent(self.db, agent_id, is_archived=None)
         if not agent:
             return None
@@ -68,6 +104,11 @@ class AgentService:
         return agent
 
     def unarchive_agent(self, agent_id: str) -> Optional[models.Agent]:
+        """Restore an archived agent.
+
+        :param agent_id: Agent identifier
+        :returns: The unarchived ``Agent`` or ``None`` if not found
+        """
         agent = get_agent(self.db, agent_id, is_archived=None)
         if not agent:
             return None
@@ -81,6 +122,12 @@ class AgentService:
     def add_rule_to_agent(
         self, agent_id: str, rule_id: str
     ) -> Optional[models.AgentRule]:
+        """Attach a rule to an agent.
+
+        :param agent_id: Target agent ID
+        :param rule_id: Rule identifier
+        :returns: The created ``AgentRule`` or ``None`` if the agent is missing
+        """
         agent = get_agent(self.db, agent_id)
         if not agent:
             return None
@@ -98,6 +145,12 @@ class AgentService:
         return db_agent_rule
 
     def remove_rule_from_agent(self, agent_id: str, rule_id: str) -> bool:
+        """Remove a rule from an agent.
+
+        :param agent_id: Target agent ID
+        :param rule_id: Rule identifier
+        :returns: ``True`` if removed
+        """
         db_agent_rule = self.db.query(models.AgentRule).filter(
             models.AgentRule.agent_id == agent_id,
             models.AgentRule.rule_id == rule_id
@@ -109,6 +162,11 @@ class AgentService:
         return False
 
     def get_agent_rules(self, agent_id: str) -> List[models.AgentRule]:
+        """List all rules assigned to an agent.
+
+        :param agent_id: Target agent ID
+        :returns: List of ``AgentRule`` objects
+        """
         return (
             self.db.query(models.AgentRule)
             .filter(models.AgentRule.agent_id == agent_id)
