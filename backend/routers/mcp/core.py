@@ -14,7 +14,6 @@ from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
-from ....services.project_template_service import ProjectTemplateService
 from ....schemas.project_template import ProjectTemplateCreate
 from ....services.rules_service import RulesService
 from ....services.agent_handoff_service import AgentHandoffService
@@ -406,18 +405,9 @@ async def mcp_create_project_template(
 ):
     """MCP Tool: Create a new project template."""
     try:
-        template_service = ProjectTemplateService(db)
-        template = template_service.create_project_template(template_data)
-        return {
-            "success": True,
-            "template": {
-                "id": template.id,
-                "name": template.name,
-                "description": template.description,
-                "content": template.content,
-                "created_at": template.created_at.isoformat(),
-            },
-        }
+        from ...mcp_tools.project_template_tools import create_project_template_tool
+
+        return await create_project_template_tool(template_data, db)
     except Exception as e:
         logger.error(f"MCP create project template failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -435,21 +425,9 @@ async def mcp_list_project_templates(
 ):
     """MCP Tool: List all project templates."""
     try:
-        template_service = ProjectTemplateService(db)
-        templates = template_service.get_project_templates(skip=skip, limit=limit)
-        return {
-            "success": True,
-            "templates": [
-                {
-                    "id": t.id,
-                    "name": t.name,
-                    "description": t.description,
-                    "content": t.content,
-                    "created_at": t.created_at.isoformat(),
-                }
-                for t in templates
-            ],
-        }
+        from ...mcp_tools.project_template_tools import list_project_templates_tool
+
+        return await list_project_templates_tool(skip, limit, db)
     except Exception as e:
         logger.error(f"MCP list project templates failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -466,11 +444,9 @@ async def mcp_delete_project_template(
 ):
     """MCP Tool: Delete a project template."""
     try:
-        template_service = ProjectTemplateService(db)
-        success = template_service.delete_project_template(template_id)
-        if not success:
-            raise HTTPException(status_code=404, detail="Template not found")
-        return {"success": True, "message": "Template deleted successfully"}
+        from ...mcp_tools.project_template_tools import delete_project_template_tool
+
+        return await delete_project_template_tool(template_id, db)
     except Exception as e:
         logger.error(f"MCP delete project template failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

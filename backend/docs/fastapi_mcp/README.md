@@ -105,6 +105,16 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/template/list` (GET)
 - `/mcp-tools/template/delete` (POST)
 
+### Project Template Tools
+
+Use these routes to manage reusable project templates.
+
+```python
+from backend.mcp_tools.project_template_tools import create_project_template_tool
+
+await create_project_template_tool(template_data, db=session)
+```
+
 ### Forbidden Action Tools
 
 Use these routes to restrict actions for specific agent roles. Create new
