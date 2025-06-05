@@ -1,9 +1,6 @@
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_
+from sqlalchemy.orm import Session
 from .. import models
-import uuid
 from typing import List, Optional
-from fastapi import HTTPException
 from ..schemas.agent import AgentCreate, AgentUpdate
 from backend.crud.agents import (
     create_agent,
@@ -20,10 +17,14 @@ class AgentService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_agent(self, agent_id: str, is_archived: Optional[bool] = False) -> Optional[models.Agent]:
+    def get_agent(
+        self, agent_id: str, is_archived: Optional[bool] = False
+    ) -> Optional[models.Agent]:
         return get_agent(self.db, agent_id, is_archived=is_archived)
 
-    def get_agent_by_name(self, name: str, is_archived: Optional[bool] = False) -> Optional[models.Agent]:
+    def get_agent_by_name(
+        self, name: str, is_archived: Optional[bool] = False
+    ) -> Optional[models.Agent]:
         return get_agent_by_name(self.db, name, is_archived=is_archived)
 
     def get_agents(self) -> List[models.Agent]:
@@ -34,15 +35,21 @@ class AgentService:
             raise ValueError(f"Agent name '{agent.name}' already exists")
         return create_agent(self.db, agent)
 
-    def update_agent(self, agent_id: str, agent_update: AgentUpdate) -> Optional[models.Agent]:
+    def update_agent(
+        self, agent_id: str, agent_update: AgentUpdate
+    ) -> Optional[models.Agent]:
         db_agent = get_agent(self.db, agent_id, is_archived=None)
         if not db_agent:
             return None
 
         update_data = agent_update.model_dump(exclude_unset=True)
         if "name" in update_data and update_data["name"] != db_agent.name:
-            if agent_name_exists(self.db, update_data["name"], exclude_agent_id=agent_id):
-                raise ValueError(f"Agent name '{update_data['name']}' already exists")
+            if agent_name_exists(
+                self.db, update_data["name"], exclude_agent_id=agent_id
+            ):
+                raise ValueError(
+                    f"Agent name '{update_data['name']}' already exists"
+                )
         return update_agent(self.db, agent_id, agent_update)
 
     def delete_agent(self, agent_id: str) -> Optional[models.Agent]:
@@ -71,7 +78,9 @@ class AgentService:
         self.db.refresh(agent)
         return agent
 
-    def add_rule_to_agent(self, agent_id: str, rule_id: str) -> Optional[models.AgentRule]:
+    def add_rule_to_agent(
+        self, agent_id: str, rule_id: str
+    ) -> Optional[models.AgentRule]:
         agent = get_agent(self.db, agent_id)
         if not agent:
             return None
@@ -100,4 +109,8 @@ class AgentService:
         return False
 
     def get_agent_rules(self, agent_id: str) -> List[models.AgentRule]:
-        return self.db.query(models.AgentRule).filter(models.AgentRule.agent_id == agent_id).all()
+        return (
+            self.db.query(models.AgentRule)
+            .filter(models.AgentRule.agent_id == agent_id)
+            .all()
+        )
