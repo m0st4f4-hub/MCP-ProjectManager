@@ -9,5 +9,6 @@ export * from "./comments";
 export * from "./rules";
 export * from "./mcp";
 export * from "./users";
+export * from "./user_roles";
 export * from "./audit_logs";
 export * from "./project_templates";
