@@ -28,10 +28,19 @@ def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
 @router.get("/graph")
 def get_memory_graph(
     memory_service: MemoryService = Depends(get_memory_service),
+    entity_type: Optional[str] = Query(None),
+    relation_type: Optional[str] = Query(None),
+    limit: int = Query(100, ge=1),
+    offset: int = Query(0, ge=0),
 ):
-    """Retrieve the entire knowledge graph."""
+    """Retrieve the knowledge graph with optional filters."""
     try:
-        return memory_service.get_knowledge_graph()
+        return memory_service.get_knowledge_graph(
+            entity_type=entity_type,
+            relation_type=relation_type,
+            limit=limit,
+            offset=offset,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 

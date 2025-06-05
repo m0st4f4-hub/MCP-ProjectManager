@@ -490,29 +490,27 @@ class MemoryService:
             .all()
         )
 
-    def get_knowledge_graph(self) -> Dict[str, List[Dict[str, Any]]]:
-        nodes = []
-        edges = []
+    def get_knowledge_graph(
+        self,
+        entity_type: Optional[str] = None,
+        relation_type: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Dict[str, List[Any]]:
+        """Retrieve entities and relations with optional filters."""
 
-        entities = self.db.query(models.MemoryEntity).all()
-        relations = self.db.query(models.MemoryRelation).all()
+        entity_query = self.db.query(models.MemoryEntity)
+        if entity_type:
+            entity_query = entity_query.filter(
+                models.MemoryEntity.entity_type == entity_type
+            )
+        entities = entity_query.offset(offset).limit(limit).all()
 
-        for entity in entities:
-            nodes.append({
-                "id": entity.id,
-                "type": entity.type,
-                "name": entity.name,
-                "description": entity.description,
-                "metadata": entity.metadata_
-            })
+        relation_query = self.db.query(models.MemoryRelation)
+        if relation_type:
+            relation_query = relation_query.filter(
+                models.MemoryRelation.relation_type == relation_type
+            )
+        relations = relation_query.offset(offset).limit(limit).all()
 
-        for relation in relations:
-            edges.append({
-                "id": relation.id,
-                "from": relation.from_entity_id,
-                "to": relation.to_entity_id,
-                "type": relation.relation_type,
-                "description": relation.metadata_,
-                "metadata": relation.metadata_
-            })
-        return {"nodes": nodes, "edges": edges}
+        return {"entities": entities, "relations": relations}

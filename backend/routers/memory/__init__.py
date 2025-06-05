@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from ...database import get_sync_db as get_db
 from ...services.memory_service import MemoryService
@@ -53,9 +54,18 @@ def ingest_text_root(
 @router.get("/graph", response_model=KnowledgeGraph)
 def get_knowledge_graph(
     memory_service: MemoryService = Depends(get_memory_service),
+    entity_type: Optional[str] = Query(None),
+    relation_type: Optional[str] = Query(None),
+    limit: int = Query(100, ge=1),
+    offset: int = Query(0, ge=0),
 ):
-    """Retrieve the entire knowledge graph."""
+    """Retrieve the knowledge graph with optional filters."""
     try:
-        return memory_service.get_knowledge_graph()
+        return memory_service.get_knowledge_graph(
+            entity_type=entity_type,
+            relation_type=relation_type,
+            limit=limit,
+            offset=offset,
+        )
     except Exception as e:  # pragma: no cover - pass through any service errors
         raise HTTPException(status_code=500, detail=f"Failed to retrieve graph: {e}")
