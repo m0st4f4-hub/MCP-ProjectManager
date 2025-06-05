@@ -27,6 +27,14 @@ class DummyService:
                 return True
         return False
 
+    def update_user_role(self, user_id: str, current_role_name: str, new_role_name: str):
+        roles = self.roles.get(user_id, [])
+        for r in roles:
+            if r.role_name == current_role_name:
+                r.role_name = new_role_name
+                return r
+        return None
+
 
 dummy_service = DummyService()
 
@@ -53,7 +61,14 @@ async def test_role_lifecycle():
         assert resp.status_code == 200
         assert len(resp.json()["data"]) == 1
 
-        resp = await client.delete("/123/roles/admin")
+        resp = await client.put(
+            "/123/roles/admin",
+            json={"role_name": UserRoleEnum.MANAGER.value},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["data"]["role_name"] == UserRoleEnum.MANAGER.value
+
+        resp = await client.delete("/123/roles/manager")
         assert resp.status_code == 200
 
         resp = await client.get("/123/roles/")
@@ -64,4 +79,14 @@ async def test_role_lifecycle():
 async def test_remove_missing_role():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         resp = await client.delete("/999/roles/manager")
+        assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_update_missing_role():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.put(
+            "/999/roles/manager",
+            json={"role_name": UserRoleEnum.ADMIN.value},
+        )
         assert resp.status_code == 404

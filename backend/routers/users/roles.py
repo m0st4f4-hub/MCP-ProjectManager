@@ -25,7 +25,7 @@ def assign_role(
     if role_data.user_id and role_data.user_id != user_id:
         role_data.user_id = user_id
     try:
-        role = service.assign_role_to_user(user_id, role_data.role_name)
+        role = service.assign_role_to_user(user_id, role_data.role_name.value)
         return DataResponse[user_schemas.UserRole](
             data=user_schemas.UserRole.model_validate(role),
             message="Role assigned successfully",
@@ -50,6 +50,28 @@ def list_roles(
         has_more=False,
         message=f"Retrieved {len(pydantic_roles)} roles",
     )
+
+
+@router.put("/{role}", response_model=DataResponse[user_schemas.UserRole])
+def update_role(
+    user_id: str,
+    role: UserRoleEnum,
+    role_update: user_schemas.UserRoleUpdate,
+    service: UserRoleService = Depends(get_role_service),
+):
+    """Update a role for a user."""
+    try:
+        updated = service.update_user_role(user_id, role.value, role_update.role_name.value)
+        if not updated:
+            raise EntityNotFoundError("UserRole", role.value)
+        return DataResponse[user_schemas.UserRole](
+            data=user_schemas.UserRole.model_validate(updated),
+            message="Role updated successfully",
+        )
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as exc:  # pragma: no cover - unexpected errors
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 @router.delete("/{role}", response_model=DataResponse[bool])
