@@ -23,10 +23,25 @@ describe("authStore", () => {
       token: "xyz",
       setToken: useAuthStore.getState().setToken,
       clearToken: useAuthStore.getState().clearToken,
+      logout: useAuthStore.getState().logout,
     });
     act(() => {
       useAuthStore.getState().clearToken();
     });
     expect(useAuthStore.getState().token).toBeNull();
+  });
+
+  it("logout clears stored token", () => {
+    useAuthStore.setState({
+      token: "xyz",
+      setToken: useAuthStore.getState().setToken,
+      clearToken: useAuthStore.getState().clearToken,
+      logout: useAuthStore.getState().logout,
+    });
+    act(() => {
+      useAuthStore.getState().logout();
+    });
+    expect(useAuthStore.getState().token).toBeNull();
+    expect(localStorage.getItem("token")).toBeNull();
   });
 });
