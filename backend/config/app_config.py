@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     DEBUG: bool = False  # Add debug setting
+    CORS_ORIGINS: str = "*"  # Comma-separated list of allowed CORS origins
     
     # Rate limiting settings
     RATE_LIMIT_PER_MINUTE: int = 60
@@ -41,6 +42,8 @@ def __init__(self, **kwargs):
             self.SECRET_KEY = self.SECRET_KEY.strip()
         if hasattr(self, 'ALGORITHM'):
             self.ALGORITHM = self.ALGORITHM.strip()
+        if hasattr(self, 'CORS_ORIGINS') and isinstance(self.CORS_ORIGINS, str):
+            self.CORS_ORIGINS = self.CORS_ORIGINS.strip()
 
 settings = Settings()
 

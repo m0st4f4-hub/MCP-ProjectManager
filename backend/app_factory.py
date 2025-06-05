@@ -14,6 +14,7 @@ from sqlalchemy import text
 
 from .database import get_db, Base, engine
 from .middleware import init_middleware
+from .config import settings
 
 try:
     from fastapi_mcp import FastApiMCP
@@ -284,9 +285,15 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    origins_raw = settings.CORS_ORIGINS
+    if origins_raw and origins_raw != "*":
+        origins = [o.strip() for o in origins_raw.split(",") if o.strip()]
+    else:
+        origins = ["*"]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

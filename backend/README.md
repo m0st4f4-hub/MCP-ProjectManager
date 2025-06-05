@@ -104,10 +104,12 @@ SECRET_KEY=mysecretkey
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 DEBUG=True
+CORS_ORIGINS=http://localhost:3000
 ```
 `DATABASE_URL` is read by `database.py` and `init_db.py`. Set it to a
 SQLAlchemy-compatible URL (e.g., a custom SQLite file path or PostgreSQL URI)
 to override the default `sql_app.db`.
+`CORS_ORIGINS` accepts a comma-separated list of allowed origins for the CORS middleware.
 
 ### Database
 
