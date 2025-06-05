@@ -93,8 +93,8 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/memory/add-observation` (POST)
 - `/mcp-tools/memory/add-relation` (POST)
 - `/mcp-tools/memory/search` (GET)
-- `/mcp-tools/rule/forbidden/add` (POST)
-- `/mcp-tools/rule/forbidden/list` (GET)
+- `/mcp-tools/forbidden-action/create` (POST)
+- `/mcp-tools/forbidden-action/list` (GET)
 - `/mcp-tools/handoff/create` (POST)
 - `/mcp-tools/handoff/list` (GET)
 - `/mcp-tools/handoff/delete` (DELETE)
@@ -104,6 +104,23 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/template/create` (POST)
 - `/mcp-tools/template/list` (GET)
 - `/mcp-tools/template/delete` (POST)
+
+### Forbidden Action Tools
+
+Use these routes to restrict actions for specific agent roles. Create new
+forbidden actions with `/mcp-tools/forbidden-action/create` and list all
+entries via `/mcp-tools/forbidden-action/list`.
+
+```python
+from backend.mcp_tools.forbidden_action_tools import create_forbidden_action_tool
+
+await create_forbidden_action_tool(
+    agent_role_id="manager",
+    action="deploy_production",
+    reason="Only ops may deploy",
+    db=session,
+)
+```
 
 ### Agent Handoff Tools
 
