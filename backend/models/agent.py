@@ -3,17 +3,26 @@ Core agent models.
 """
 
 from sqlalchemy import String, Boolean, ForeignKey, Text
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List
 
+from .agent_capability import AgentCapability
+from .agent_error_protocol import AgentErrorProtocol
+from .agent_forbidden_action import AgentForbiddenAction
+from .agent_handoff_criteria import AgentHandoffCriteria
+from .agent_verification_requirement import AgentVerificationRequirement
 from .base import Base, BaseModel, ArchivedMixin, generate_uuid
+from .task import Task
+from .workflow import AgentPromptTemplate, WorkflowStep
 
 
 class Agent(Base, BaseModel, ArchivedMixin):
     """Represents an agent that can be assigned to tasks."""
     __tablename__ = "agents"
 
-    id: Mapped[str] = mapped_column(String(32), primary_key=True, index=True, default=generate_uuid)
+    id: Mapped[str] = mapped_column(
+        String(32), primary_key=True, index=True, default=generate_uuid
+    )
     name: Mapped[str] = mapped_column(String, index=True, unique=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
 
@@ -47,14 +56,23 @@ class AgentRole(Base, BaseModel):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     capabilities: Mapped[List["AgentCapability"]] = relationship(
-        back_populates="agent_role", cascade="all, delete-orphan")
+        back_populates="agent_role", cascade="all, delete-orphan"
+    )
     forbidden_actions: Mapped[List["AgentForbiddenAction"]] = relationship(
-        back_populates="agent_role", cascade="all, delete-orphan")
-    verification_requirements: Mapped[List["AgentVerificationRequirement"]] = relationship(
-        back_populates="agent_role", cascade="all, delete-orphan")
+        back_populates="agent_role", cascade="all, delete-orphan"
+    )
+    verification_requirements: Mapped[List["AgentVerificationRequirement"]] = (
+        relationship(back_populates="agent_role", cascade="all, delete-orphan")
+    )
     handoff_criteria: Mapped[List["AgentHandoffCriteria"]] = relationship(
-        back_populates="agent_role", cascade="all, delete-orphan")
+        back_populates="agent_role", cascade="all, delete-orphan"
+    )
     error_protocols: Mapped[List["AgentErrorProtocol"]] = relationship(
-        back_populates="agent_role", cascade="all, delete-orphan")
-    workflow_steps: Mapped[List["WorkflowStep"]] = relationship(back_populates="agent_role")
-    prompt_templates: Mapped[List["AgentPromptTemplate"]] = relationship(back_populates="agent_role")
+        back_populates="agent_role", cascade="all, delete-orphan"
+    )
+    workflow_steps: Mapped[List["WorkflowStep"]] = relationship(
+        back_populates="agent_role"
+    )
+    prompt_templates: Mapped[List["AgentPromptTemplate"]] = relationship(
+        back_populates="agent_role"
+    )
