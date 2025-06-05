@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 import logging
+import json
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -14,9 +15,12 @@ from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
+from ....services.project_template_service import ProjectTemplateService
+from ....schemas.project_template import ProjectTemplateCreate
 from ....services.rules_service import RulesService
+from ....services.agent_handoff_service import AgentHandoffService
 from ....schemas.project import ProjectCreate
-from ....schemas.task import TaskCreate
+from ....schemas.task import TaskCreate, TaskUpdate
 from ....schemas import AgentRuleCreate
 from ....schemas.universal_mandate import UniversalMandateCreate
 from ....mcp_tools.forbidden_action_tools import (
@@ -29,6 +33,7 @@ from ....schemas.memory import (
     MemoryObservationCreate,
     MemoryRelationCreate
 )
+from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
@@ -51,6 +56,12 @@ def get_project_file_service(
     db: Session = Depends(get_db_session),
 ) -> ProjectFileAssociationService:
     return ProjectFileAssociationService(db)
+
+
+def get_agent_handoff_service(
+    db: Session = Depends(get_db_session),
+) -> AgentHandoffService:
+    return AgentHandoffService(db)
 
 
 @router.post(
@@ -242,8 +253,8 @@ async def mcp_update_task(
         audit_service.log_action(
             action="task_updated",
             entity_type="task",
-            entity_id=f"{project_id}-{task_number}",
-            changes=task_update.model_dump(exclude_unset=True)
+            entity_id=f"{task.project_id}-{task.task_number}",
+            changes=task_update.dict(exclude_unset=True)
         )
 
         return {
@@ -255,9 +266,12 @@ async def mcp_update_task(
                 "description": task.description,
                 "status": task.status,
                 "agent_id": task.agent_id,
-                "updated_at": task.updated_at.isoformat() if task.updated_at else None
+                "created_at": task.created_at.isoformat(),
+                "updated_at": task.updated_at.isoformat()
             }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"MCP update task failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -276,28 +290,20 @@ async def mcp_delete_task(
     """MCP Tool: Delete a task."""
     try:
         task_service = TaskService(db)
-        task = task_service.delete_task(
-            project_id=project_id,
-            task_number=task_number
-        )
+        success = task_service.delete_task(project_id, task_number)
+        if not success:
+            raise HTTPException(status_code=404, detail="Task not found")
+
         audit_service = AuditLogService(db)
         audit_service.log_action(
             action="task_deleted",
             entity_type="task",
-            entity_id=f"{project_id}-{task_number}",
-            changes=None
+            entity_id=f"{project_id}-{task_number}"
         )
 
-        return {
-            "success": True,
-            "task": {
-                "project_id": task.project_id,
-                "task_number": task.task_number,
-                "title": task.title,
-                "description": task.description,
-                "status": task.status
-            }
-        }
+        return {"success": True, "message": "Task deleted successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"MCP delete task failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -313,23 +319,19 @@ async def mcp_add_project_file(
     file_memory_entity_id: int,
     service: ProjectFileAssociationService = Depends(get_project_file_service),
 ):
-    """MCP Tool: Associate a file (memory entity) with a project."""
+    """MCP Tool: Associate a file (from memory) with a project."""
     try:
-        project_file = service.add_project_file_association(
-            project_id=project_id,
-            file_memory_entity_id=file_memory_entity_id
-        )
-        audit_service = AuditLogService(service.db)
-        audit_service.log_action(
-            action="project_file_added",
-            entity_type="project_file",
-            entity_id=f"{project_id}-{file_memory_entity_id}",
-            changes={
-                "project_id": project_id,
-                "file_memory_entity_id": file_memory_entity_id
-            }
-        )
-        return {"success": True, "project_file_id": project_file.id}
+        association = service.add_file_to_project(project_id, file_memory_entity_id)
+        return {
+            "success": True,
+            "association": {
+                "project_id": association.project_id,
+                "memory_entity_id": association.memory_entity_id,
+                "associated_at": association.associated_at.isoformat(),
+            },
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"MCP add project file failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -348,22 +350,17 @@ async def mcp_list_project_files(
 ):
     """MCP Tool: List files associated with a project."""
     try:
-        project_files = service.get_project_file_associations(
-            project_id=project_id,
-            skip=skip,
-            limit=limit
-        )
+        associations = service.get_files_for_project(project_id, skip, limit)
         return {
             "success": True,
-            "project_files": [
+            "files": [
                 {
-                    "id": pf.id,
-                    "project_id": pf.project_id,
-                    "file_memory_entity_id": pf.file_memory_entity_id,
-                    "created_at": pf.created_at.isoformat()
+                    "project_id": assoc.project_id,
+                    "memory_entity_id": assoc.memory_entity_id,
+                    "associated_at": assoc.associated_at.isoformat(),
                 }
-                for pf in project_files
-            ]
+                for assoc in associations
+            ],
         }
     except Exception as e:
         logger.error(f"MCP list project files failed: {e}")
@@ -380,25 +377,99 @@ async def mcp_remove_project_file(
     file_memory_entity_id: int,
     service: ProjectFileAssociationService = Depends(get_project_file_service),
 ):
-    """MCP Tool: Remove a file (memory entity) association from a project."""
+    """MCP Tool: Disassociate a file from a project."""
     try:
-        service.remove_project_file_association(
-            project_id=project_id,
-            file_memory_entity_id=file_memory_entity_id
-        )
-        audit_service = AuditLogService(service.db)
-        audit_service.log_action(
-            action="project_file_removed",
-            entity_type="project_file",
-            entity_id=f"{project_id}-{file_memory_entity_id}",
-            changes={
-                "project_id": project_id,
-                "file_memory_entity_id": file_memory_entity_id
-            }
-        )
-        return {"success": True, "message": "Project file association removed successfully"}
+        success = service.remove_file_from_project(project_id, file_memory_entity_id)
+        if not success:
+            raise HTTPException(
+                status_code=404, detail="File association not found"
+            )
+        return {"success": True, "message": "File removed from project successfully"}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"MCP remove project file failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/template/create",
+    tags=["mcp-tools"],
+    operation_id="create_project_template_tool",
+)
+async def mcp_create_project_template(
+    template_data: ProjectTemplateCreate,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a new project template."""
+    try:
+        template_service = ProjectTemplateService(db)
+        template = template_service.create_project_template(template_data)
+        return {
+            "success": True,
+            "template": {
+                "id": template.id,
+                "name": template.name,
+                "description": template.description,
+                "content": template.content,
+                "created_at": template.created_at.isoformat(),
+            },
+        }
+    except Exception as e:
+        logger.error(f"MCP create project template failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/template/list",
+    tags=["mcp-tools"],
+    operation_id="list_project_templates_tool",
+)
+async def mcp_list_project_templates(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List all project templates."""
+    try:
+        template_service = ProjectTemplateService(db)
+        templates = template_service.get_project_templates(skip=skip, limit=limit)
+        return {
+            "success": True,
+            "templates": [
+                {
+                    "id": t.id,
+                    "name": t.name,
+                    "description": t.description,
+                    "content": t.content,
+                    "created_at": t.created_at.isoformat(),
+                }
+                for t in templates
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list project templates failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/template/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_project_template_tool",
+)
+async def mcp_delete_project_template(
+    template_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a project template."""
+    try:
+        template_service = ProjectTemplateService(db)
+        success = template_service.delete_project_template(template_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Template not found")
+        return {"success": True, "message": "Template deleted successfully"}
+    except Exception as e:
+        logger.error(f"MCP delete project template failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -411,32 +482,22 @@ async def mcp_add_memory_entity(
     entity_data: MemoryEntityCreate,
     memory_service: MemoryService = Depends(get_memory_service)
 ):
-    """MCP Tool: Add entity to knowledge graph."""
+    """MCP Tool: Add a new entity to memory."""
     try:
-        entity = memory_service.create_memory_entity(entity=entity_data)
-
-        if hasattr(entity_data, "observations") and entity_data.observations:
-            for obs_content in entity_data.observations:
-                memory_service.add_observation_to_entity(
-                    entity_id=entity.id,
-                    observation=MemoryObservationCreate(
-                        content=obs_content,
-                        source="mcp_tool",
-                    ),
-                )
-
+        entity = memory_service.create_entity(entity_data)
         return {
             "success": True,
             "entity": {
                 "id": entity.id,
                 "name": entity.name,
                 "type": entity.type,
-                "description": entity.description
+                "metadata": entity.metadata,
+                "created_at": entity.created_at.isoformat(),
+                "updated_at": entity.updated_at.isoformat()
             }
         }
-    except HTTPException as e:
-        logger.error(f"MCP add memory entity failed with HTTP exception: {e.detail}")
-        raise e
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"MCP add memory entity failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -454,24 +515,22 @@ async def mcp_update_memory_entity(
 ):
     """MCP Tool: Update an existing memory entity."""
     try:
-        entity = memory_service.get_memory_entity_by_id(entity_id)
+        entity = memory_service.update_entity(entity_id, entity_update)
         if not entity:
             raise HTTPException(status_code=404, detail="Entity not found")
-
-        updated_entity = memory_service.update_memory_entity(
-            entity_id=entity_id,
-            update=entity_update
-        )
-
         return {
             "success": True,
             "entity": {
-                "id": updated_entity.id,
-                "name": updated_entity.name,
-                "type": updated_entity.type,
-                "description": updated_entity.description
+                "id": entity.id,
+                "name": entity.name,
+                "type": entity.type,
+                "metadata": entity.metadata,
+                "created_at": entity.created_at.isoformat(),
+                "updated_at": entity.updated_at.isoformat()
             }
         }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"MCP update memory entity failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -487,25 +546,20 @@ async def mcp_add_memory_observation(
     observation_data: MemoryObservationCreate,
     memory_service: MemoryService = Depends(get_memory_service)
 ):
-    """MCP Tool: Add observation to entity."""
+    """MCP Tool: Add an observation to a memory entity."""
     try:
-        entity = memory_service.get_memory_entity_by_id(entity_id)
-        if not entity:
-            raise HTTPException(status_code=404, detail="Entity not found")
-
-        observation = memory_service.add_observation_to_entity(
-            entity_id=entity_id,
-            observation=observation_data
-        )
-
+        observation = memory_service.create_observation(entity_id, observation_data)
         return {
             "success": True,
             "observation": {
                 "id": observation.id,
+                "entity_id": observation.entity_id,
                 "content": observation.content,
-                "source": observation.source
+                "created_at": observation.created_at.isoformat()
             }
         }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"MCP add memory observation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -520,35 +574,22 @@ async def mcp_add_memory_relation(
     relation_data: MemoryRelationCreate,
     memory_service: MemoryService = Depends(get_memory_service)
 ):
-    """MCP Tool: Add relation to knowledge graph."""
+    """MCP Tool: Add a relation between two memory entities."""
     try:
-        from_entity = memory_service.get_memory_entity_by_id(
-            relation_data.from_entity_id
-        )
-        to_entity = memory_service.get_memory_entity_by_id(
-            relation_data.to_entity_id
-        )
-
-        if not from_entity or not to_entity:
-            raise HTTPException(
-                status_code=404,
-                detail="One or both entities not found",
-            )
-
-        relation = memory_service.create_memory_relation(relation=relation_data)
-
+        relation = memory_service.create_relation(relation_data)
         return {
             "success": True,
             "relation": {
                 "id": relation.id,
-                "from_entity_id": relation.from_entity_id,
-                "to_entity_id": relation.to_entity_id,
-                "relation_type": relation.relation_type
+                "source_entity_id": relation.source_entity_id,
+                "target_entity_id": relation.target_entity_id,
+                "type": relation.type,
+                "metadata": relation.metadata,
+                "created_at": relation.created_at.isoformat()
             }
         }
-    except HTTPException as e:
-        logger.error(f"MCP add memory relation failed with HTTP exception: {e.detail}")
-        raise e
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"MCP add memory relation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -564,19 +605,20 @@ async def mcp_search_memory(
     limit: int = 10,
     memory_service: MemoryService = Depends(get_memory_service)
 ):
-    """MCP Tool: Search memory entities."""
+    """MCP Tool: Search memory for entities matching a query."""
     try:
-        results = memory_service.search_memory_entities(query, limit=limit)
-
+        results = memory_service.search_entities(query, limit)
         return {
             "success": True,
             "results": [
                 {
-                    "id": r.id,
-                    "type": r.type,
-                    "name": r.name,
-                    "description": r.description
-                } for r in results
+                    "id": entity.id,
+                    "name": entity.name,
+                    "type": entity.type,
+                    "metadata": entity.metadata,
+                    "score": score
+                }
+                for entity, score in results
             ]
         }
     except Exception as e:
@@ -593,15 +635,12 @@ async def mcp_get_memory_content(
     entity_id: int,
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    """MCP Tool: Retrieve memory entity content."""
+    """MCP Tool: Get the content of a memory entity."""
     try:
-        content = memory_service.get_file_content(entity_id)
+        content = memory_service.get_entity_content(entity_id)
         return {"success": True, "content": content}
-    except HTTPException as e:
-        logger.error(
-            f"MCP get memory content failed with HTTP exception: {e.detail}"
-        )
-        raise e
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
     except Exception as e:
         logger.error(f"MCP get memory content failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -616,15 +655,12 @@ async def mcp_get_memory_metadata(
     entity_id: int,
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    """MCP Tool: Retrieve memory entity metadata."""
+    """MCP Tool: Get the metadata of a memory entity."""
     try:
-        metadata = memory_service.get_file_metadata(entity_id)
+        metadata = memory_service.get_entity_metadata(entity_id)
         return {"success": True, "metadata": metadata}
-    except HTTPException as e:
-        logger.error(
-            f"MCP get memory metadata failed with HTTP exception: {e.detail}"
-        )
-        raise e
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
     except Exception as e:
         logger.error(f"MCP get memory metadata failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -637,21 +673,17 @@ async def mcp_get_memory_metadata(
 )
 async def mcp_list_tools():
     """MCP Tool: List all available MCP tools."""
-    try:
-        tool_list = []
-        for route in router.routes:
-            if hasattr(route, "operation_id") and route.operation_id.endswith("_tool"):
-                tool_info = {
-                    "name": route.operation_id,
-                    "path": route.path,
-                    "method": list(route.methods)[0] if route.methods else "GET",
-                    "description": route.summary or route.description or "No description available"
-                }
-                tool_list.append(tool_info)
-        return {"success": True, "tools": tool_list}
-    except Exception as e:
-        logger.error(f"MCP list tools failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    tools = []
+    for route in router.routes:
+        if hasattr(route, "name") and route.name.startswith("mcp_"):
+            tools.append({
+                "name": route.name,
+                "path": route.path,
+                "description": route.description.split('\n')[0] if route.description else "No description"
+            })
+    return {"success": True, "tools": tools}
+
+
 @router.post(
     "/mcp-tools/rule/mandate/create",
     tags=["mcp-tools"],
@@ -661,22 +693,20 @@ async def mcp_create_mandate(
     mandate: UniversalMandateCreate,
     db: Session = Depends(get_db_session),
 ):
-async def mcp_create_mandate(
-    mandate: UniversalMandateCreate,
-    db: Session = Depends(get_db_session),
-):
     """MCP Tool: Create a new universal mandate."""
     try:
         rules_service = RulesService(db)
-        new_mandate = rules_service.create_universal_mandate(mandate)
-        audit_service = AuditLogService(db)
-        audit_service.log_action(
-            action="mandate_created",
-            entity_type="universal_mandate",
-            entity_id=new_mandate.id,
-            changes=mandate.model_dump(exclude_unset=True)
-        )
-        return {"success": True, "mandate": new_mandate.model_dump()}
+        created_mandate = rules_service.create_universal_mandate(mandate)
+        return {
+            "success": True,
+            "mandate": {
+                "id": created_mandate.id,
+                "name": created_mandate.name,
+                "description": created_mandate.description,
+                "rules": created_mandate.rules,
+                "created_at": created_mandate.created_at.isoformat(),
+            },
+        }
     except Exception as e:
         logger.error(f"MCP create mandate failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -691,26 +721,27 @@ async def mcp_create_agent_rule(
     rule: AgentRuleCreate,
     db: Session = Depends(get_db_session),
 ):
-async def mcp_create_agent_rule(
-    rule: AgentRuleCreate,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: Create a new agent-specific rule."""
+    """MCP Tool: Create a new agent rule."""
     try:
         rules_service = RulesService(db)
-        new_rule = rules_service.create_agent_rule(rule)
-        audit_service = AuditLogService(db)
-        audit_service.log_action(
-            action="agent_rule_created",
-            entity_type="agent_rule",
-            entity_id=new_rule.id,
-            changes=rule.model_dump(exclude_unset=True)
-        )
-        return {"success": True, "rule": new_rule.model_dump()}
+        created_rule = rules_service.create_agent_rule(rule)
+        return {
+            "success": True,
+            "rule": {
+                "id": created_rule.id,
+                "agent_id": created_rule.agent_id,
+                "rule": created_rule.rule,
+                "created_at": created_rule.created_at.isoformat(),
+            },
+        }
     except Exception as e:
         logger.error(f"MCP create agent rule failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# Add the new tool routes
+router.include_router(add_forbidden_action_tool.router)
+router.include_router(list_forbidden_actions_tool.router)
 
 @router.post(
     "/mcp-tools/rule/forbidden/add",
@@ -723,9 +754,13 @@ async def mcp_add_forbidden_action(
     reason: Optional[str] = None,
     db: Session = Depends(get_db_session),
 ):
-    """MCP Tool: Add a forbidden action to an agent role."""
-    return await add_forbidden_action_tool(agent_role_id, action, reason, db)
-
+    """MCP Tool: Add a forbidden action for an agent role."""
+    rules_service = RulesService(db)
+    forbidden_action = rules_service.add_forbidden_action(agent_role_id, action, reason)
+    return {
+        "success": True,
+        "forbidden_action": forbidden_action.as_dict() # Assuming as_dict() method
+    }
 
 @router.get(
     "/mcp-tools/rule/forbidden/list",
@@ -738,5 +773,90 @@ async def mcp_list_forbidden_actions(
     limit: int = 100,
     db: Session = Depends(get_db_session),
 ):
-    """MCP Tool: List forbidden actions for an agent role."""
-    return await list_forbidden_actions_tool(agent_role_id, skip, limit, db)
+    """MCP Tool: List forbidden actions, optionally filtered by agent role ID."""
+    rules_service = RulesService(db)
+    actions = rules_service.get_forbidden_actions(agent_role_id, skip, limit)
+    return {
+        "success": True,
+        "forbidden_actions": [action.as_dict() for action in actions] # Assuming as_dict()
+    }
+
+@router.post(
+    "/mcp-tools/handoff/create",
+    tags=["mcp-tools"],
+    operation_id="create_handoff_criteria_tool",
+)
+async def mcp_create_handoff_criteria(
+    criteria: AgentHandoffCriteriaCreate,
+    service: AgentHandoffService = Depends(get_agent_handoff_service),
+):
+    """MCP Tool: Create new agent handoff criteria."""
+    try:
+        created_criteria = service.create_criteria(criteria)
+        return {
+            "success": True,
+            "criteria": {
+                "id": created_criteria.id,
+                "agent_role_id": created_criteria.agent_role_id,
+                "handoff_to_agent_role_id": created_criteria.handoff_to_agent_role_id,
+                "priority": created_criteria.priority,
+                "criteria_config": created_criteria.criteria_config,
+                "created_at": created_criteria.created_at.isoformat(),
+                "updated_at": created_criteria.updated_at.isoformat()
+            }
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        logger.error(f"MCP create handoff criteria tool failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get(
+    "/mcp-tools/handoff/list",
+    tags=["mcp-tools"],
+    operation_id="list_handoff_criteria_tool",
+)
+async def mcp_list_handoff_criteria(
+    agent_role_id: Optional[str] = Query(None),
+    service: AgentHandoffService = Depends(get_agent_handoff_service),
+):
+    """MCP Tool: List agent handoff criteria."""
+    try:
+        criteria_list = service.get_criteria_by_agent_role(agent_role_id) if agent_role_id else service.get_all_criteria()
+        return {
+            "success": True,
+            "criteria": [
+                {
+                    "id": c.id,
+                    "agent_role_id": c.agent_role_id,
+                    "handoff_to_agent_role_id": c.handoff_to_agent_role_id,
+                    "priority": c.priority,
+                    "criteria_config": c.criteria_config,
+                    "created_at": c.created_at.isoformat(),
+                    "updated_at": c.updated_at.isoformat()
+                }
+                for c in criteria_list
+            ]
+        }
+    except Exception as e:
+        logger.error(f"MCP list handoff criteria tool failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete(
+    "/mcp-tools/handoff/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_handoff_criteria_tool",
+)
+async def mcp_delete_handoff_criteria(
+    criteria_id: str,
+    service: AgentHandoffService = Depends(get_agent_handoff_service),
+):
+    """MCP Tool: Delete agent handoff criteria."""
+    try:
+        success = service.delete_criteria(criteria_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Handoff criteria not found")
+        return {"success": True, "message": "Handoff criteria deleted successfully"}
+    except Exception as e:
+        logger.error(f"MCP delete handoff criteria tool failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

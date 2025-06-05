@@ -17,6 +17,8 @@ import type {
   MCPProjectMemberRemoveRequest,
   MCPProjectFileAddRequest,
   MCPProjectFileRemoveRequest,
+  MCPProjectTemplateCreateRequest,
+  MCPProjectTemplateDeleteRequest,
   MCPToolInfo,
 } from '@/types/mcp';
 import type { ProjectFileAssociation } from './projects';
@@ -47,6 +49,46 @@ export const mcpApi = {
     delete: async (data: MCPProjectDeleteRequest): Promise<MCPToolResponse> => {
       return await request<MCPToolResponse>(
         buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, '/project/delete'),
+        {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }
+      );
+    },
+  },
+
+  // --- Project Template MCP Tools ---
+  projectTemplate: {
+    create: async (
+      data: MCPProjectTemplateCreateRequest
+    ): Promise<MCPToolResponse> => {
+      return await request<MCPToolResponse>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, '/template/create'),
+        {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }
+      );
+    },
+
+    list: async (skip = 0, limit = 100): Promise<MCPToolResponse> => {
+      const params = new URLSearchParams({
+        skip: String(skip),
+        limit: String(limit),
+      });
+      return await request<MCPToolResponse>(
+        buildApiUrl(
+          API_CONFIG.ENDPOINTS.MCP_TOOLS,
+          `/template/list?${params.toString()}`
+        )
+      );
+    },
+
+    delete: async (
+      data: MCPProjectTemplateDeleteRequest
+    ): Promise<MCPToolResponse> => {
+      return await request<MCPToolResponse>(
+        buildApiUrl(API_CONFIG.ENDPOINTS.MCP_TOOLS, '/template/delete'),
         {
           method: 'POST',
           body: JSON.stringify(data),

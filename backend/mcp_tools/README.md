@@ -7,6 +7,9 @@ Key files:
 *   `task_tools.py`: MCP-specific tools for interacting with tasks.
 *   `memory_tools.py`: MCP-specific tools for interacting with the Memory Service.
 *   `project_tools.py`: MCP-specific tools for interacting with projects.
+*   `project_file_tools.py`: Associate memory files with projects.
+*   `rule_tools.py`: Tools for managing agent rules and mandates.
+*   `agent_handoff_tools.py`: Tools for managing agent handoff criteria.
 *   `__init__.py`: Initializes the mcp_tools package.
 
 ## Architecture Diagram
@@ -25,6 +28,9 @@ graph TD
 - `memory_tools.py`
 - `project_tools.py`
 - `task_tools.py`
+- `project_file_tools.py`
+- `rule_tools.py`
+- `agent_handoff_tools.py`
 
 <!-- File List End -->
 
