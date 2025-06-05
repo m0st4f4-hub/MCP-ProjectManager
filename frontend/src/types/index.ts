@@ -9,6 +9,7 @@ export * from "./rules";
 export * from "./mcp";
 export * from "./project_template";
 export * from "./agent_prompt_template";
+export * from "./verification_requirement";
 
 // Common types used across the application
 // Canonical shared sort direction type for all entities
