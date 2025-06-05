@@ -1,10 +1,12 @@
-import { request } from "./request";
-import { AuditLog, AuditLogFilters } from "@/types/audit_log";
-import { buildApiUrl, API_CONFIG } from "./config";
+import { request } from './request';
+import { AuditLog, AuditLogFilters } from '@/types/audit_log';
+import { buildApiUrl, API_CONFIG } from './config';
 
 // Fetch a single audit log entry by ID
 export const getAuditLogById = async (logId: string): Promise<AuditLog> => {
-  return request<AuditLog>(buildApiUrl(API_CONFIG.ENDPOINTS.AUDIT_LOGS, `/${logId}`));
+  return request<AuditLog>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.AUDIT_LOGS, `/${logId}`)
+  );
 };
 
 // Fetch audit log entries by Entity
@@ -15,10 +17,13 @@ export const getAuditLogsByEntity = async (
   limit: number = 100
 ): Promise<AuditLog[]> => {
   const queryParams = new URLSearchParams();
-  queryParams.append("skip", String(skip));
-  queryParams.append("limit", String(limit));
+  queryParams.append('skip', String(skip));
+  queryParams.append('limit', String(limit));
   const queryString = queryParams.toString();
-  const url = buildApiUrl(API_CONFIG.ENDPOINTS.AUDIT_LOGS, `/entity/${entityType}/${entityId}${queryString ? `?${queryString}` : ""}`);
+  const url = buildApiUrl(
+    API_CONFIG.ENDPOINTS.AUDIT_LOGS,
+    `/entity/${entityType}/${entityId}${queryString ? `?${queryString}` : ''}`
+  );
   return request<AuditLog[]>(url);
 };
 
@@ -29,13 +34,23 @@ export const getAuditLogsByUser = async (
   limit: number = 100
 ): Promise<AuditLog[]> => {
   const queryParams = new URLSearchParams();
-  queryParams.append("skip", String(skip));
-  queryParams.append("limit", String(limit));
+  queryParams.append('skip', String(skip));
+  queryParams.append('limit', String(limit));
   const queryString = queryParams.toString();
-  const url = buildApiUrl(API_CONFIG.ENDPOINTS.AUDIT_LOGS, `/user/${userId}${queryString ? `?${queryString}` : ""}`);
+  const url = buildApiUrl(
+    API_CONFIG.ENDPOINTS.AUDIT_LOGS,
+    `/user/${userId}${queryString ? `?${queryString}` : ''}`
+  );
   return request<AuditLog[]>(url);
 };
 
 // Note: The backend also has a POST /audit_logs/ endpoint,
 // but creating audit logs is typically handled internally by the backend
 // when events occur, not directly by the frontend via a user action.
+
+// Delete an audit log entry by ID
+export const deleteLog = async (id: string): Promise<void> => {
+  await request<void>(buildApiUrl(API_CONFIG.ENDPOINTS.AUDIT_LOGS, `/${id}`), {
+    method: 'DELETE',
+  });
+};

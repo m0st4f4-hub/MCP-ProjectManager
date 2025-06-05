@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TestWrapper } from '@/__tests__/utils/test-utils';
 import AuditLogListForEntity from '../AuditLogListForEntity';
+import { getAuditLogsByEntity, deleteLog } from '@/services/api/audit_logs';
 
 vi.mock('@chakra-ui/react', async () => {
   const actual = await vi.importActual('@chakra-ui/react');
@@ -13,6 +14,14 @@ vi.mock('@chakra-ui/react', async () => {
   };
 });
 
+vi.mock('@/services/api/audit_logs', () => ({
+  getAuditLogsByEntity: vi.fn(),
+  deleteLog: vi.fn(),
+}));
+
+const getAuditLogsByEntityMock = getAuditLogsByEntity as unknown as vi.Mock;
+const deleteLogMock = deleteLog as unknown as vi.Mock;
+
 describe('AuditLogListForEntity', () => {
   const user = userEvent.setup();
 
@@ -20,49 +29,33 @@ describe('AuditLogListForEntity', () => {
     vi.clearAllMocks();
   });
 
-  it('should render without crashing', () => {
-    render(
-      <TestWrapper>
-        <AuditLogListForEntity />
-      </TestWrapper>
-    );
-    expect(document.body).toBeInTheDocument();
-  });
+  it('deletes log on button click', async () => {
+    const logs = [
+      {
+        id: '1',
+        action: 'A',
+        user_id: 'u1',
+        timestamp: new Date().toISOString(),
+        details: {},
+      },
+    ];
+    getAuditLogsByEntityMock.mockResolvedValueOnce(logs);
 
-  it('should handle props correctly', () => {
-    const props = { 
-      testId: 'test-component',
-      'data-testid': 'test-component'
-    };
-    
     render(
       <TestWrapper>
-        <AuditLogListForEntity {...props} />
+        <AuditLogListForEntity entityType="task" entityId="1" />
       </TestWrapper>
     );
-    
-    const component = screen.queryByTestId('test-component');
-    expect(component || document.body).toBeInTheDocument();
-  });
 
-  it('should handle user interactions', async () => {
-    render(
-      <TestWrapper>
-        <AuditLogListForEntity />
-      </TestWrapper>
-    );
-    
-    const buttons = screen.queryAllByRole('button');
-    const inputs = screen.queryAllByRole('textbox');
-    
-    if (buttons.length > 0) {
-      await user.click(buttons[0]);
-    }
-    
-    if (inputs.length > 0) {
-      await user.type(inputs[0], 'test input');
-    }
-    
-    expect(document.body).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('A')).toBeInTheDocument();
+    });
+
+    const deleteButton = screen.getByRole('button', { name: /delete/i });
+    await user.click(deleteButton);
+
+    await waitFor(() => {
+      expect(deleteLogMock).toHaveBeenCalledWith('1');
+    });
   });
 });

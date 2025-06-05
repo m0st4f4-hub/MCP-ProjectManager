@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   VStack,
@@ -12,9 +12,12 @@ import {
   Th,
   Td,
   TableContainer,
-} from "@chakra-ui/react";
-import { getAuditLogsByEntity } from "@/services/api/audit_logs";
-import { AuditLog } from "@/types/audit_log";
+  IconButton,
+  useToast,
+} from '@chakra-ui/react';
+import { getAuditLogsByEntity, deleteLog } from '@/services/api/audit_logs';
+import { DeleteIcon } from '@chakra-ui/icons';
+import { AuditLog } from '@/types/audit_log';
 
 interface AuditLogListForEntityProps {
   entityType: string; // e.g., 'project', 'task'
@@ -28,6 +31,7 @@ const AuditLogListForEntity: React.FC<AuditLogListForEntityProps> = ({
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -38,8 +42,8 @@ const AuditLogListForEntity: React.FC<AuditLogListForEntityProps> = ({
         const auditLogs = await getAuditLogsByEntity(entityType, entityId);
         setLogs(auditLogs);
       } catch (err: any) {
-        console.error("Failed to fetch audit logs:", err);
-        setError(err.message || "An error occurred while fetching audit logs.");
+        console.error('Failed to fetch audit logs:', err);
+        setError(err.message || 'An error occurred while fetching audit logs.');
       } finally {
         setIsLoading(false);
       }
@@ -70,7 +74,9 @@ const AuditLogListForEntity: React.FC<AuditLogListForEntityProps> = ({
   return (
     <Box p={4}>
       <VStack spacing={4} align="stretch">
-        <Heading as="h3" size="lg">Audit Logs for {entityType} {entityId}</Heading>
+        <Heading as="h3" size="lg">
+          Audit Logs for {entityType} {entityId}
+        </Heading>
 
         {logs.length === 0 ? (
           <Text>No audit logs found for this entity.</Text>
@@ -83,6 +89,7 @@ const AuditLogListForEntity: React.FC<AuditLogListForEntityProps> = ({
                   <Th>Action</Th>
                   <Th>User ID</Th>
                   <Th>Details</Th>
+                  <Th>Delete</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -90,15 +97,49 @@ const AuditLogListForEntity: React.FC<AuditLogListForEntityProps> = ({
                   <Tr key={log.id}>
                     <Td>{new Date(log.timestamp).toLocaleString()}</Td>
                     <Td>{log.action}</Td>
-                    <Td>{log.user_id || "System"}</Td>
+                    <Td>{log.user_id || 'System'}</Td>
                     <Td>
                       {log.details ? (
                         <Text fontSize="sm">
                           {JSON.stringify(log.details, null, 2)}
                         </Text>
                       ) : (
-                        "N/A"
+                        'N/A'
                       )}
+                    </Td>
+                    <Td>
+                      <IconButton
+                        aria-label="Delete"
+                        icon={<DeleteIcon />}
+                        size="sm"
+                        variant="ghost"
+                        onClick={async () => {
+                          try {
+                            await deleteLog(log.id);
+                            setLogs((prev) =>
+                              prev.filter((l) => l.id !== log.id)
+                            );
+                            toast({
+                              title: 'Log deleted.',
+                              status: 'info',
+                              duration: 3000,
+                              isClosable: true,
+                            });
+                          } catch (err: any) {
+                            console.error('Failed to delete audit log:', err);
+                            toast({
+                              title: 'Deletion failed.',
+                              description:
+                                err instanceof Error
+                                  ? err.message
+                                  : 'Could not delete log.',
+                              status: 'error',
+                              duration: 5000,
+                              isClosable: true,
+                            });
+                          }
+                        }}
+                      />
                     </Td>
                   </Tr>
                 ))}
@@ -111,4 +152,4 @@ const AuditLogListForEntity: React.FC<AuditLogListForEntityProps> = ({
   );
 };
 
-export default AuditLogListForEntity; 
+export default AuditLogListForEntity;
