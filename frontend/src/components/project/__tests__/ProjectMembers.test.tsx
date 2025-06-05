@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TestWrapper } from '@/__tests__/utils/test-utils';
 import ProjectMembers from '../ProjectMembers';
+import { getProjectMembers } from '@/services/api/projects';
+import { mcpApi } from '@/services/api/mcp';
 
 vi.mock('@chakra-ui/react', async () => {
   const actual = await vi.importActual('@chakra-ui/react');
@@ -13,17 +15,37 @@ vi.mock('@chakra-ui/react', async () => {
   };
 });
 
+vi.mock('@/services/api/projects', () => ({
+  getProjectMembers: vi.fn(),
+}));
+
+vi.mock('@/services/api/mcp', () => ({
+  mcpApi: {
+    projectMember: {
+      add: vi.fn(),
+      remove: vi.fn(),
+    },
+  },
+}));
+
 describe('ProjectMembers', () => {
   const user = userEvent.setup();
+  const getMembersMock = getProjectMembers as unknown as vi.Mock;
+  const addMock = mcpApi.projectMember.add as unknown as vi.Mock;
+  const removeMock = mcpApi.projectMember.remove as unknown as vi.Mock;
+  const projectId = 'p1';
 
   beforeEach(() => {
     vi.clearAllMocks();
+    getMembersMock.mockResolvedValue([]);
+    addMock.mockResolvedValue({ success: true });
+    removeMock.mockResolvedValue({ success: true });
   });
 
   it('should render without crashing', () => {
     render(
       <TestWrapper>
-        <ProjectMembers />
+        <ProjectMembers projectId={projectId} />
       </TestWrapper>
     );
     expect(document.body).toBeInTheDocument();
@@ -37,7 +59,7 @@ describe('ProjectMembers', () => {
     
     render(
       <TestWrapper>
-        <ProjectMembers {...props} />
+        <ProjectMembers projectId={projectId} {...props} />
       </TestWrapper>
     );
     
@@ -46,23 +68,27 @@ describe('ProjectMembers', () => {
   });
 
   it('should handle user interactions', async () => {
+    getMembersMock.mockResolvedValueOnce([]);
     render(
       <TestWrapper>
-        <ProjectMembers />
+        <ProjectMembers projectId={projectId} />
       </TestWrapper>
     );
-    
-    const buttons = screen.queryAllByRole('button');
-    const inputs = screen.queryAllByRole('textbox');
-    
-    if (buttons.length > 0) {
-      await user.click(buttons[0]);
-    }
-    
-    if (inputs.length > 0) {
-      await user.type(inputs[0], 'test input');
-    }
-    
-    expect(document.body).toBeInTheDocument();
+
+    await waitFor(() => expect(getMembersMock).toHaveBeenCalled());
+
+    await user.type(screen.getByLabelText(/user id/i), 'u2');
+    await user.selectOptions(screen.getByLabelText(/role/i), 'member');
+    await user.click(screen.getByRole('button', { name: /add member/i }));
+
+    await waitFor(() => expect(addMock).toHaveBeenCalledWith({ project_id: projectId, user_id: 'u2', role: 'member' }));
+
+    getMembersMock.mockResolvedValueOnce([
+      { project_id: projectId, user_id: 'u2', role: 'member', id: '1', created_at: '' },
+    ]);
+
+    await user.click(screen.getByRole('button', { name: /remove/i }));
+
+    await waitFor(() => expect(removeMock).toHaveBeenCalledWith({ project_id: projectId, user_id: 'u2' }));
   });
 });
