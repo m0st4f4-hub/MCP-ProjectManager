@@ -1,4 +1,4 @@
-import { Task } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task";
 
 export const generatePromptForTasks = (
   promptTasks: Task[],
@@ -71,3 +71,23 @@ export const getUnassignedTaskPrompt = (tasks: Task[]): string =>
     "unassigned tasks",
     "unassigned task",
   );
+
+export const STATUS_PROMPT_MAP: Record<TaskStatus, (tasks: Task[]) => string> = {
+  [TaskStatus.TO_DO]: getPendingTaskPrompt,
+  [TaskStatus.IN_PROGRESS]: getInProgressTaskPrompt,
+  [TaskStatus.IN_REVIEW]: getInProgressTaskPrompt,
+  [TaskStatus.EXECUTION_IN_PROGRESS]: getInProgressTaskPrompt,
+  [TaskStatus.CONTEXT_ACQUIRED]: getInProgressTaskPrompt,
+  [TaskStatus.PLANNING_COMPLETE]: getInProgressTaskPrompt,
+  [TaskStatus.IN_PROGRESS_AWAITING_SUBTASK]: getInProgressTaskPrompt,
+  [TaskStatus.PENDING_RECOVERY_ATTEMPT]: getInProgressTaskPrompt,
+  [TaskStatus.PENDING_VERIFICATION]: getInProgressTaskPrompt,
+  [TaskStatus.BLOCKED]: getBlockedTaskPrompt,
+  [TaskStatus.CANCELLED]: getFailedTaskPrompt,
+  [TaskStatus.VERIFICATION_FAILED]: getFailedTaskPrompt,
+  [TaskStatus.FAILED]: getFailedTaskPrompt,
+  [TaskStatus.COMPLETED]: getCompletedTaskPrompt,
+  [TaskStatus.VERIFICATION_COMPLETE]: getCompletedTaskPrompt,
+  [TaskStatus.COMPLETED_AWAITING_PROJECT_MANAGER]: getCompletedTaskPrompt,
+  [TaskStatus.COMPLETED_HANDOFF]: getCompletedTaskPrompt,
+};

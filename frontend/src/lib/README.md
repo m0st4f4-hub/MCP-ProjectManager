@@ -84,6 +84,17 @@ Defines the structure and provides a list of available MCP (Multi-Context Person
       - Planning: `generate_planning_prompt`
     - Each tool definition specifies its HTTP method, path, parameters (including their type, whether they are required, and if they are path, query, or body parameters), and a brief description.
 
+### `promptUtils.ts`
+
+Utility helpers for generating short text prompts summarizing tasks.
+
+- **Functions**:
+  - `getCompletedTaskPrompt`, `getPendingTaskPrompt`, `getInProgressTaskPrompt`,
+    `getBlockedTaskPrompt`, `getFailedTaskPrompt`, `getUnassignedTaskPrompt` –
+    wrap `generatePromptForTasks` with preset verbs and nouns.
+  - `STATUS_PROMPT_MAP`: Maps each `TaskStatus` value to the corresponding prompt
+    generator function.
+
 ## Architecture Diagram
 ```mermaid
 graph TD
