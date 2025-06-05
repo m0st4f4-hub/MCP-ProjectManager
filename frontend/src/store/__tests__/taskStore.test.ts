@@ -61,20 +61,14 @@ describe('taskStore', () => {
       await useTaskStore.getState().fetchTasks();
     });
 
-<<<<<<< HEAD
     expect(mockedApi.getAllTasks).toHaveBeenCalledWith(
       initialState.filters,
       initialState.sortOptions,
       0,
       100,
-    )
-    expect(useTaskStore.getState().tasks).toEqual(tasks)
-  })
-=======
-    expect(mockedApi.getAllTasks).toHaveBeenCalled();
+    );
     expect(useTaskStore.getState().tasks).toEqual(tasks);
   });
->>>>>>> codex/implement-persist-middleware-for-task-store
 
   it('addTask adds task and calls API', async () => {
     const newTask = {
