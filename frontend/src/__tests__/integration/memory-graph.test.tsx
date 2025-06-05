@@ -11,6 +11,11 @@ vi.mock('react-force-graph', () => ({
   ForceGraph2D: (props: any) => <div data-testid="graph" {...props} />,
 }));
 
+vi.mock('next/dynamic', () => ({
+  __esModule: true,
+  default: () => (props: any) => <div data-testid="graph" {...props} />,
+}));
+
 beforeEach(() => {
   server.use(
     http.get(`${API_BASE_URL}/api/memory/graph`, () =>

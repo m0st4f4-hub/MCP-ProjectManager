@@ -18,7 +18,7 @@ const MemoryGraph: React.FC = () => {
     memoryApi
       .getKnowledgeGraph()
       .then((g) => setGraph(g))
-      .catch((e) => setError(e instanceof Error ? e.message : 'Error'));
+      .catch(() => setError('Failed to load memory graph'));
   }, []);
 
   if (error) {
