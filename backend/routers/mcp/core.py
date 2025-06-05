@@ -1,5 +1,3 @@
-# Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
-
 """
 MCP Core Tools Router - Functionality for Project and Task MCP integration.
 Provides MCP tool definitions.
@@ -7,9 +5,8 @@ Provides MCP tool definitions.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Optional
+from typing import Optional
 import logging
-import json
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -17,8 +14,11 @@ from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
+from ....services.rules_service import RulesService
 from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate
+from ....schemas import AgentRuleCreate
+from ....schemas.universal_mandate import UniversalMandateCreate
 from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
@@ -305,12 +305,14 @@ async def mcp_add_memory_entity(
     """MCP Tool: Add entity to knowledge graph."""
     try:
         entity = memory_service.create_memory_entity(entity=entity_data)
-        
-        if hasattr(entity_data, 'observations') and entity_data.observations:
+        if hasattr(entity_data, "observations") and entity_data.observations:
             for obs_content in entity_data.observations:
                 memory_service.add_observation_to_entity(
                     entity_id=entity.id,
-                    observation=MemoryObservationCreate(content=obs_content, source="mcp_tool")
+                    observation=MemoryObservationCreate(
+                        content=obs_content,
+                        source="mcp_tool",
+                    ),
                 )
 
         return {
@@ -410,11 +412,18 @@ async def mcp_add_memory_relation(
 ):
     """MCP Tool: Add relation to knowledge graph."""
     try:
-        from_entity = memory_service.get_memory_entity_by_id(relation_data.from_entity_id)
-        to_entity = memory_service.get_memory_entity_by_id(relation_data.to_entity_id)
+        from_entity = memory_service.get_memory_entity_by_id(
+            relation_data.from_entity_id
+        )
+        to_entity = memory_service.get_memory_entity_by_id(
+            relation_data.to_entity_id
+        )
 
         if not from_entity or not to_entity:
-            raise HTTPException(status_code=404, detail="One or both entities not found")
+            raise HTTPException(
+                status_code=404,
+                detail="One or both entities not found",
+            )
 
         relation = memory_service.create_memory_relation(relation=relation_data)
 
@@ -509,3 +518,59 @@ async def mcp_get_memory_metadata(
     except Exception as e:
         logger.error(f"MCP get memory metadata failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/rule/mandate/create",
+    tags=["mcp-tools"],
+    operation_id="create_mandate_tool",
+)
+async def mcp_create_mandate(
+    mandate: UniversalMandateCreate,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a universal mandate."""
+    try:
+        service = RulesService(db)
+        created = service.create_universal_mandate(mandate)
+        return {
+            "success": True,
+            "mandate": {
+                "id": created.id,
+                "title": created.title,
+                "description": created.description,
+                "priority": created.priority,
+                "is_active": created.is_active,
+            },
+        }
+    except Exception as exc:
+        logger.error(f"MCP create mandate failed: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@router.post(
+    "/mcp-tools/rule/agent/create",
+    tags=["mcp-tools"],
+    operation_id="create_agent_rule_tool",
+)
+async def mcp_create_agent_rule(
+    rule: AgentRuleCreate,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create an agent rule."""
+    try:
+        service = RulesService(db)
+        created = service.create_agent_rule(rule)
+        return {
+            "success": True,
+            "agent_rule": {
+                "id": created.id,
+                "agent_id": created.agent_id,
+                "rule_type": created.rule_type,
+                "rule_content": created.rule_content,
+                "is_active": created.is_active,
+            },
+        }
+    except Exception as exc:
+        logger.error(f"MCP create agent rule failed: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
