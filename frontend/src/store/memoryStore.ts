@@ -1,5 +1,10 @@
 import { StoreApi } from 'zustand';
-import { createBaseStore, BaseState, handleApiError } from './baseStore';
+import {
+  createBaseStore,
+  BaseState,
+  extractErrorMessage,
+} from './baseStore';
+import { handleApiError } from '@/lib/apiErrorHandler';
 import { memoryApi } from '@/services/api';
 import type { MemoryEntity, MemoryEntityFilters } from '@/types/memory';
 
@@ -37,7 +42,9 @@ const actionsCreator = (
       });
       set({ entities: resp.data, loading: false });
     } catch (err) {
-      set({ error: handleApiError(err), loading: false });
+      const msg = extractErrorMessage(err);
+      set({ error: msg, loading: false });
+      handleApiError(err);
     }
   },
   ingestFile: async (filePath: string) => {
@@ -49,7 +56,9 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
-      set({ ingestionError: handleApiError(err), ingestionLoading: false });
+      const msg = extractErrorMessage(err);
+      set({ ingestionError: msg, ingestionLoading: false });
+      handleApiError(err);
       throw err;
     }
   },
@@ -62,7 +71,9 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
-      set({ ingestionError: handleApiError(err), ingestionLoading: false });
+      const msg = extractErrorMessage(err);
+      set({ ingestionError: msg, ingestionLoading: false });
+      handleApiError(err);
       throw err;
     }
   },
@@ -75,7 +86,9 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
-      set({ ingestionError: handleApiError(err), ingestionLoading: false });
+      const msg = extractErrorMessage(err);
+      set({ ingestionError: msg, ingestionLoading: false });
+      handleApiError(err);
       throw err;
     }
   },
@@ -88,7 +101,9 @@ const actionsCreator = (
         loading: false,
       }));
     } catch (err) {
-      set({ error: handleApiError(err), loading: false });
+      const msg = extractErrorMessage(err);
+      set({ error: msg, loading: false });
+      handleApiError(err);
       throw err;
     }
   },

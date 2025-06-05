@@ -21,7 +21,7 @@ describe('handleApiError', () => {
   });
 
   it('handles ApiError instances', () => {
-    handleApiError(new ApiError('Boom', 500), 'Oops');
+    const msg = handleApiError(new ApiError('Boom', 500), 'Oops');
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Oops',
@@ -29,19 +29,30 @@ describe('handleApiError', () => {
         status: 'error',
       })
     );
+    expect(msg).toBe('Boom');
   });
 
   it('handles Error objects', () => {
-    handleApiError(new Error('Fail'));
+    const msg = handleApiError(new Error('Fail'));
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({ description: 'Fail' })
     );
+    expect(msg).toBe('Fail');
   });
 
   it('handles string messages', () => {
-    handleApiError('Nope');
+    const msg = handleApiError('Nope');
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({ description: 'Nope' })
     );
+    expect(msg).toBe('Nope');
+  });
+
+  it('returns default message for unknown error', () => {
+    const msg = handleApiError(123 as any, 'Bad');
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ description: 'An unexpected error occurred.' })
+    );
+    expect(msg).toBe('An unexpected error occurred.');
   });
 });

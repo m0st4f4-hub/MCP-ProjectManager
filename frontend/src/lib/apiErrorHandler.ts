@@ -7,7 +7,7 @@ export function handleApiError(
   error: unknown,
   title = 'API Error',
   options?: Partial<UseToastOptions>
-): void {
+): string {
   let description = 'An unexpected error occurred.';
   if (error instanceof ApiError) {
     description = error.message;
@@ -25,4 +25,5 @@ export function handleApiError(
     isClosable: true,
     ...options,
   });
+  return description;
 }

@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { getProjectById, updateProject, getAllTasksForProject } from "@/services/api";
+import {
+  getProjectById,
+  updateProject,
+  getAllTasksForProject,
+} from "@/services/api";
+import { handleApiError } from "@/lib/apiErrorHandler";
 import { Project, ProjectUpdateData, Task } from "@/types";
 
 export interface UseProjectDataResult {
@@ -35,6 +40,7 @@ export const useProjectData = (projectId: string): UseProjectDataResult => {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to load project";
       setError(message);
+      handleApiError(err, "Failed to load project");
     } finally {
       setLoading(false);
     }
@@ -55,6 +61,7 @@ export const useProjectData = (projectId: string): UseProjectDataResult => {
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to update project";
         setError(message);
+        handleApiError(err, "Failed to update project");
         throw err;
       } finally {
         setLoading(false);
