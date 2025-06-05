@@ -13,6 +13,8 @@ __all__ = [
     'add_project_file_tool',
     'list_project_files_tool',
     'remove_project_file_tool',
+    'add_forbidden_action_tool',
+    'list_forbidden_actions_tool',
     'create_handoff_criteria_tool',
     'list_handoff_criteria_tool',
     'delete_handoff_criteria_tool',
