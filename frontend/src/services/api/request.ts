@@ -13,6 +13,14 @@ export class ApiError extends Error {
   }
 }
 
+/** Error type for network failures */
+export class NetworkError extends ApiError {
+  constructor(message: string, url: string) {
+    super(message, 0, url);
+    this.name = 'NetworkError';
+  }
+}
+
 // Helper to normalize status string to a known StatusID
 export const normalizeToStatusID = (
   backendStatus: string | null | undefined,
@@ -71,7 +79,7 @@ export async function request<T>(
       headers,
     });
   } catch (err) {
-    throw new ApiError((err as Error).message || 'Network Error', 0, url);
+    throw new NetworkError((err as Error).message || 'Network Error', url);
   }
 
   if (!response.ok) {
