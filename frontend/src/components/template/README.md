@@ -7,3 +7,11 @@ This directory contains components for managing project templates in the UI.
 
 Additional form components for creating and editing templates reside in
 `frontend/src/components/forms/`.
+
+<!-- File List Start -->
+## File List
+
+- `TemplateList.tsx`
+
+<!-- File List End -->
+

@@ -44,7 +44,7 @@ describe('ProjectFiles', () => {
       </TestWrapper>
     );
     await waitFor(() =>
-      expect(mcpApi.projectFile.list).toHaveBeenCalledTimes(1)
+      expect(mcpApi.projectFile.list).toHaveBeenCalledWith('p1', 0, 10)
     );
     const input = screen.getByPlaceholderText('/path/to/file.txt');
     await user.type(input, '/tmp/file.txt');
@@ -71,7 +71,7 @@ describe('ProjectFiles', () => {
       </TestWrapper>
     );
     await waitFor(() =>
-      expect(mcpApi.projectFile.list).toHaveBeenCalledTimes(1)
+      expect(mcpApi.projectFile.list).toHaveBeenCalledWith('p1', 0, 10)
     );
     await user.click(screen.getByRole('button', { name: /delete/i }));
     await waitFor(() =>

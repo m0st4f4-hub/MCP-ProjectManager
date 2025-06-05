@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from ...database import get_sync_db as get_db
 from ...services.memory_service import MemoryService
-from ...schemas.memory import MemoryEntity
+from ...schemas.memory import MemoryEntity, KnowledgeGraph
 from ...auth import get_current_active_user
 from ...models import User as UserModel
 from .core.core import (
@@ -48,3 +48,14 @@ def ingest_text_root(
         )
     except Exception as e:  # pragma: no cover - pass through any service errors
         raise HTTPException(status_code=500, detail=f"Failed to ingest text: {e}")
+
+
+@router.get("/graph", response_model=KnowledgeGraph)
+def get_knowledge_graph(
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """Retrieve the entire knowledge graph."""
+    try:
+        return memory_service.get_knowledge_graph()
+    except Exception as e:  # pragma: no cover - pass through any service errors
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve graph: {e}")
