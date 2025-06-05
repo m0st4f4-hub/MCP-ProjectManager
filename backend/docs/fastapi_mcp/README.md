@@ -102,6 +102,13 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/error-protocol/list` (GET)
 - `/mcp-tools/error-protocol/remove` (DELETE)
 
+### Error Protocol Tools
+
+Use these routes to manage custom strategies for handling agent errors. Create a
+protocol with `/mcp-tools/error-protocol/add`, list protocols via
+`/mcp-tools/error-protocol/list`, and remove a protocol using
+`/mcp-tools/error-protocol/remove`.
+
 ### Agent Handoff Tools
 
 Use these routes to manage when one agent role should hand off control to
