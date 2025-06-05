@@ -1,6 +1,5 @@
-"""
-Schemas package - contains Pydantic models for API requests/responses.
-"""
+"""Schemas package - contains Pydantic models for API requests/responses."""
+# flake8: noqa
 
 # Import and export project schemas
 from .project import (
@@ -95,3 +94,8 @@ from .error_protocol import (
     ErrorProtocol,
 )
 
+from .agent_verification_requirement import (
+    AgentVerificationRequirementBase,
+    AgentVerificationRequirementCreate,
+    AgentVerificationRequirement,
+)
