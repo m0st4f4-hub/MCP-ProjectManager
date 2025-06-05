@@ -7,16 +7,16 @@ Provides MCP tool definitions.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Optional
+from typing import Optional
 import logging
-import json
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
 from ....services.task_service import TaskService
+from ....services.project_member_service import ProjectMemberService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
-from ....schemas.project import ProjectCreate
+from ....schemas.project import ProjectCreate, ProjectMemberCreate
 from ....schemas.task import TaskCreate
 from ....schemas.memory import (
     MemoryEntityCreate,
@@ -206,6 +206,103 @@ async def mcp_list_tasks(
     except Exception as e:
         logger.error(f"MCP list tasks failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/project-members/add",
+    tags=["mcp-tools"],
+    operation_id="add_project_member_tool",
+)
+async def mcp_add_project_member(
+    member_data: ProjectMemberCreate,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Add a member to a project."""
+    try:
+        member_service = ProjectMemberService(db)
+        member = await member_service.add_member_to_project(
+            project_id=member_data.project_id,
+            user_id=member_data.user_id,
+            role=member_data.role,
+        )
+        return {
+            "success": True,
+            "member": {
+                "project_id": member.project_id,
+                "user_id": member.user_id,
+                "role": member.role,
+                "created_at": member.created_at.isoformat(),
+            },
+        }
+    except HTTPException as exc:
+        logger.error(
+            f"MCP add project member failed with HTTP exception: {exc.detail}"
+        )
+        raise exc
+    except Exception as exc:
+        logger.error(f"MCP add project member failed: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@router.get(
+    "/mcp-tools/project-members/list",
+    tags=["mcp-tools"],
+    operation_id="list_project_members_tool",
+)
+async def mcp_list_project_members(
+    project_id: str,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List members of a project."""
+    try:
+        member_service = ProjectMemberService(db)
+        members = await member_service.get_members_by_project(
+            project_id, skip=skip, limit=limit
+        )
+        return {
+            "success": True,
+            "members": [
+                {
+                    "project_id": m.project_id,
+                    "user_id": m.user_id,
+                    "role": m.role,
+                    "created_at": m.created_at.isoformat(),
+                }
+                for m in members
+            ],
+        }
+    except Exception as exc:
+        logger.error(f"MCP list project members failed: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@router.delete(
+    "/mcp-tools/project-members/remove",
+    tags=["mcp-tools"],
+    operation_id="remove_project_member_tool",
+)
+async def mcp_remove_project_member(
+    project_id: str,
+    user_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Remove a member from a project."""
+    try:
+        member_service = ProjectMemberService(db)
+        success = await member_service.remove_member_from_project(project_id, user_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Project member not found")
+        return {"success": True}
+    except HTTPException as exc:
+        logger.error(
+            f"MCP remove project member failed with HTTP exception: {exc.detail}"
+        )
+        raise exc
+    except Exception as exc:
+        logger.error(f"MCP remove project member failed: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 @router.post(
