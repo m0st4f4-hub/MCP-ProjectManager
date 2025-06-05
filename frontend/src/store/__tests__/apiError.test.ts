@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { request, ApiError } from "@/services/api/request";
+import { request, ApiError, NetworkError } from "@/services/api/request";
 import { getTasks } from "@/services/api/tasks";
 import { server } from "@/__tests__/mocks/server";
 import { http, HttpResponse } from "msw";
@@ -22,14 +22,14 @@ describe("ApiError handling", () => {
     });
   });
 
-  it("request wraps network errors in ApiError", async () => {
+  it("request wraps network errors in NetworkError", async () => {
     server.use(
       http.get(API_URL, () => {
         throw new Error("Network fail");
       }),
     );
 
-    await expect(request(API_URL)).rejects.toBeInstanceOf(ApiError);
+    await expect(request(API_URL)).rejects.toBeInstanceOf(NetworkError);
   });
 
   it("service functions propagate ApiError", async () => {
