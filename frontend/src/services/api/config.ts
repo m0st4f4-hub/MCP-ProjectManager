@@ -18,6 +18,7 @@ export const API_CONFIG = {
     MEMORY: "/memory",
     RULES: "/rules",
     MCP_TOOLS: "/mcp-tools",
+    MCP_EVENTS: "/mcp/events",
     VERIFICATION_REQUIREMENTS: "/verification-requirements",
   },
 } as const;

@@ -38,6 +38,18 @@ Run `npm run type-check` to ensure the TypeScript codebase compiles without erro
 
 At the repository root there is a matching `type-check` script that simply invokes the frontend command, allowing you to execute the check from either location.
 
+### Server Events
+
+The frontend can subscribe to real-time updates from the backend using Server-Sent Events. The stream is exposed at `${NEXT_PUBLIC_API_BASE_URL}/api/mcp/events`.
+
+Use the `useServerEvents` hook to handle events:
+
+```tsx
+useServerEvents((event) => {
+  console.log('server event', event);
+});
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

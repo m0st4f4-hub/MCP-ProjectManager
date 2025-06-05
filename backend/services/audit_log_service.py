@@ -11,7 +11,7 @@ from backend.crud import audit_logs as audit_log_crud
 from backend.models.audit import AuditLog as AuditLogModel
 from backend.schemas.audit_log import AuditLogCreate, AuditLogUpdate
 
-from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession
+from .event_bus import publish
 
 
 class AuditLogService:
@@ -39,9 +39,17 @@ class AuditLogService:
             details=details
         )
         # Create the audit log entry using the CRUD function
-        # Pass the async session to the CRUD function
-        await audit_log_crud.create_audit_log(self.db, audit_log_create)
-        return audit_log_create
+        db_log = await audit_log_crud.create_audit_log(self.db, audit_log_create)
+
+        publish({
+            "type": "audit_log",
+            "action": action,
+            "user_id": user_id,
+            "details": details or {},
+            "id": db_log.id,
+        })
+
+        return db_log
 
     async def get_log(self, audit_log_id: str) -> Optional[AuditLogModel]:
         """Retrieve a single audit log entry by its ID."""

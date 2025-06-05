@@ -4,11 +4,14 @@ Provides MCP tool definitions.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import Optional, List, Dict, Any
 import logging
 from functools import wraps
 from collections import defaultdict
+import asyncio
+import json
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -16,6 +19,7 @@ from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
+from ....services.event_bus import subscribe, unsubscribe
 from ....schemas.project_template import ProjectTemplateCreate
 from ....services.rules_service import RulesService
 from ....services.agent_handoff_service import AgentHandoffService
@@ -66,9 +70,27 @@ def track_tool_usage(name: str):
             tool_counters[name] += 1
             return await func(*args, **kwargs)
 
-        return wrapper
+    return wrapper
 
     return decorator
+
+
+@router.get("/events")
+async def mcp_events():
+    """Stream server events via Server-Sent Events."""
+    queue = await subscribe()
+
+    async def event_generator():
+        try:
+            while True:
+                event = await queue.get()
+                yield f"data: {json.dumps(event)}\n\n"
+        except asyncio.CancelledError:
+            pass
+        finally:
+            unsubscribe(queue)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 def get_db_session():
