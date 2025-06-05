@@ -1,10 +1,6 @@
-<<<<<<< HEAD
 # Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
 
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
-=======
-from fastapi import APIRouter, Depends, HTTPException, status, Request
->>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import timedelta
@@ -13,17 +9,8 @@ from backend.database import get_db
 from backend.services.user_service import UserService
 from backend.services.audit_log_service import AuditLogService
 from backend.services.exceptions import AuthorizationError
-<<<<<<< HEAD
 from backend.config import ACCESS_TOKEN_EXPIRE_MINUTES, OAUTH_REDIRECT_URI, REFRESH_TOKEN_EXPIRE_MINUTES
-from backend.auth import (
-    create_access_token,
-    create_refresh_token,
-    verify_refresh_token,
-)
-=======
-from backend.config import ACCESS_TOKEN_EXPIRE_MINUTES, OAUTH_REDIRECT_URI
-from backend.auth import create_access_token
->>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
+from backend.auth import create_access_token, create_refresh_token, verify_refresh_token
 from backend.security import login_tracker, oauth
 from backend.schemas.user import UserCreate
 from backend.enums import UserRoleEnum
@@ -69,10 +56,7 @@ async def login_for_access_token_form(
         form_data.password,
         user_service,
         audit_log_service,
-<<<<<<< HEAD
         response,
-=======
->>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
     )
 
 
@@ -89,7 +73,6 @@ async def login_for_access_token_json(
         login_data.password,
         user_service,
         audit_log_service,
-<<<<<<< HEAD
         response,
     )
 
@@ -119,20 +102,12 @@ async def logout(response: Response):
     return {"success": True}
 
 
-=======
-    )
-
-
->>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
 async def _authenticate_user(
     username: str,
     password: str,
     user_service: UserService,
     audit_log_service: AuditLogService,
-<<<<<<< HEAD
     response: Response,
-=======
->>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
 ):
     """Common authentication logic with brute force protection."""
     try:
@@ -149,18 +124,17 @@ async def _authenticate_user(
             access_token = create_access_token(
                 data={"sub": user.username}, expires_delta=access_token_expires
             )
-<<<<<<< HEAD
-            refresh_token = create_refresh_token(data={"sub": user.username})
-            response.set_cookie(
-                key="refresh_token",
-                value=refresh_token,
-                httponly=True,
-                samesite="lax",
+            refresh_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+            refresh_token = create_refresh_token(
+                data={"sub": user.username}, expires_delta=refresh_expires
             )
-            
-=======
-
->>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7
+            response.set_cookie(
+                "refresh_token",
+                refresh_token,
+                httponly=True,
+                secure=True,
+                max_age=int(refresh_expires.total_seconds()),
+            )
             await audit_log_service.create_log(
                 action="login_success",
                 user_id=user.id,
@@ -170,21 +144,14 @@ async def _authenticate_user(
         else:
             # Record failed login
             await login_tracker.record_attempt(username, success=False)
-            raise AuthorizationError("Invalid credentials")
-
-    except AuthorizationError:
-        # Record failed login
+            raise HTTPException(status_code=400, detail="Incorrect username or password")
+    except AuthorizationError as e:
         await login_tracker.record_attempt(username, success=False)
-
         await audit_log_service.create_log(
             action="login_failure",
-            details={"username": username, "reason": "Incorrect username or password"}
+            details={"username": username, "reason": str(e)}
         )
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise HTTPException(status_code=401, detail=str(e))
 
 
 @router.get("/oauth/login")
@@ -226,15 +193,4 @@ async def oauth_callback(
     )
 
     access_token = create_access_token(data={"sub": user.username})
-<<<<<<< HEAD
-    refresh_token = create_refresh_token(data={"sub": user.username}) # Also create refresh token for OAuth
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        samesite="lax",
-    )
-    return {"access_token": access_token, "token_type": "bearer", "refresh_token": refresh_token}
-=======
     return {"access_token": access_token, "token_type": "bearer"}
->>>>>>> bf4a7d52e3eecd055f048d6266da2e237e1079e7

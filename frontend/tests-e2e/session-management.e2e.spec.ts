@@ -35,6 +35,12 @@ class SessionPage {
     return await this.page.evaluate(() => localStorage.getItem('auth_token'));
   }
 
+  async getRefreshCookie() {
+    const cookies = await this.page.context().cookies();
+    const cookie = cookies.find((c) => c.name === 'refresh_token');
+    return cookie ? cookie.value : null;
+  }
+
   async getAuthTokenExpiryTime() {
     return await this.page.evaluate(() => localStorage.getItem('token_expiry'));
   }
@@ -69,6 +75,9 @@ test.describe('Session Management', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
+        headers: {
+          'set-cookie': 'refresh_token=test_cookie; HttpOnly; Secure; Path=/'
+        },
         body: JSON.stringify({
           access_token: 'mock_token_123',
           token_type: 'bearer',
@@ -97,11 +106,15 @@ test.describe('Session Management', () => {
 
   test('should store authentication token after login', async () => {
     await sessionPage.login('testuser', 'password');
-    
+
     // Verify token is stored in localStorage
     const token = await sessionPage.getAuthToken();
     expect(token).toBe('mock_token_123');
-    
+
+    // Refresh cookie should be set
+    const cookie = await sessionPage.getRefreshCookie();
+    expect(cookie).not.toBeNull();
+
     // Verify user is redirected to dashboard
     await expect(sessionPage.page).toHaveURL(/.*dashboard/);
   });
@@ -118,6 +131,9 @@ test.describe('Session Management', () => {
     // Verify token is removed
     const token = await sessionPage.getAuthToken();
     expect(token).toBeNull();
+
+    const cookie = await sessionPage.getRefreshCookie();
+    expect(cookie).toBeNull();
     
     // Verify redirected to login page
     await expect(sessionPage.page).toHaveURL(/.*login/);
@@ -135,6 +151,10 @@ test.describe('Session Management', () => {
     // Verify token was refreshed
     const newToken = await sessionPage.getAuthToken();
     expect(newToken).toBe('refreshed_token_456');
+
+    // Cookie should still be present
+    const cookie = await sessionPage.getRefreshCookie();
+    expect(cookie).not.toBeNull();
     
     // Verify still on a protected page
     await expect(sessionPage.page).toHaveURL(/.*projects/);
@@ -163,6 +183,9 @@ test.describe('Session Management', () => {
     // Token should be cleared
     const token = await sessionPage.getAuthToken();
     expect(token).toBeNull();
+
+    const cookie = await sessionPage.getRefreshCookie();
+    expect(cookie).toBeNull();
   });
 
   test('should handle session timeout gracefully', async () => {

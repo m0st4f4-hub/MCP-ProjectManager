@@ -1,4 +1,5 @@
 import { StatusID } from '@/lib/statusUtils';
+import { buildApiUrl, API_CONFIG } from './config';
 
 /** Error type thrown when API requests fail */
 export class ApiError extends Error {
@@ -42,6 +43,32 @@ export const normalizeToStatusID = (
   return 'To Do';
 };
 
+async function refreshAccessToken(): Promise<string | null> {
+  try {
+    const response = await fetch(
+      buildApiUrl(API_CONFIG.ENDPOINTS.AUTH, '/refresh'),
+      {
+        method: 'POST',
+        credentials: 'include',
+      }
+    );
+    if (!response.ok) {
+      return null;
+    }
+    const data = await response.json();
+    if (data && data.access_token) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', data.access_token);
+      }
+      return data.access_token as string;
+    }
+    return null;
+  } catch (err) {
+    console.error('Failed to refresh token', err);
+    return null;
+  }
+}
+
 // Helper function to handle API requests
 export async function request<T>(
   url: string,
@@ -69,9 +96,18 @@ export async function request<T>(
     response = await fetch(url, {
       ...options,
       headers,
+      credentials: 'include',
     });
   } catch (err) {
     throw new ApiError((err as Error).message || 'Network Error', 0, url);
+  }
+
+  if (response.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      (headers as Record<string, string>).Authorization = `Bearer ${refreshed}`;
+      response = await fetch(url, { ...options, headers, credentials: 'include' });
+    }
   }
 
   if (!response.ok) {

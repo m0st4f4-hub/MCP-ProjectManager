@@ -96,11 +96,14 @@ test.describe('User Flows', () => {
     // Set up mock API responses for consistent testing
     await page.route('**/api/v1/auth/login', async (route) => {
       const requestBody = JSON.parse(route.request().postData());
-      
+
       if (requestBody.username === 'testuser' && requestBody.password === 'password') {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
+          headers: {
+            'set-cookie': 'refresh_token=test_cookie; HttpOnly; Secure; Path=/'
+          },
           body: JSON.stringify({
             access_token: 'mock_valid_token',
             token_type: 'bearer',
@@ -259,10 +262,13 @@ test.describe('User Flows', () => {
       await page.route('**/api/v1/auth/login', async (route) => {
         const requestBody = JSON.parse(route.request().postData());
         const isManager = requestBody.username === 'manager';
-        
+
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
+          headers: {
+            'set-cookie': 'refresh_token=test_cookie; HttpOnly; Secure; Path=/'
+          },
           body: JSON.stringify({
             access_token: isManager ? 'manager_token' : 'user_token',
             token_type: 'bearer',
@@ -330,6 +336,9 @@ test.describe('User Flows', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
+        headers: {
+          'set-cookie': 'refresh_token=test_cookie; HttpOnly; Secure; Path=/'
+        },
         body: JSON.stringify({
           access_token: 'session_test_token',
           token_type: 'bearer',
@@ -428,6 +437,9 @@ test.describe('User Flows', () => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
+          headers: {
+            'set-cookie': 'refresh_token=test_cookie; HttpOnly; Secure; Path=/'
+          },
           body: JSON.stringify({
             access_token: 'multi_device_token',
             token_type: 'bearer',
