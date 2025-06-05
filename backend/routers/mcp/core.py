@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 import logging
+import json
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -14,10 +15,12 @@ from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
+from ....services.project_template_service import ProjectTemplateService
+from ....schemas.project_template import ProjectTemplateCreate
 from ....services.rules_service import RulesService
 from ....services.agent_handoff_service import AgentHandoffService
 from ....schemas.project import ProjectCreate
-from ....schemas.task import TaskCreate
+from ....schemas.task import TaskCreate, TaskUpdate
 from ....schemas import AgentRuleCreate
 from ....schemas.universal_mandate import UniversalMandateCreate
 from ....schemas.memory import (
@@ -258,7 +261,6 @@ async def mcp_update_task(
                 "title": task.title,
                 "description": task.description,
                 "status": task.status,
-                "agent_id": task.agent_id,
                 "updated_at": task.updated_at.isoformat() if task.updated_at else None
             }
         }
@@ -403,6 +405,93 @@ async def mcp_remove_project_file(
         return {"success": True, "message": "Project file association removed successfully"}
     except Exception as e:
         logger.error(f"MCP remove project file failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/template/create",
+    tags=["mcp-tools"],
+    operation_id="create_project_template_tool",
+)
+async def mcp_create_project_template(
+    template_data: ProjectTemplateCreate,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a new project template."""
+    try:
+        service = ProjectTemplateService(db)
+        existing = service.get_template_by_name(template_data.name)
+        if existing:
+            raise HTTPException(status_code=400, detail="Project template already exists")
+        template = service.create_template(template_data)
+        AuditLogService(db).log_action(
+            action="project_template_created",
+            entity_type="project_template",
+            entity_id=template.id,
+            changes={"name": template.name, "description": template.description},
+        )
+        return {"success": True, "template_id": template.id}
+    except Exception as e:
+        logger.error(f"MCP create project template failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/template/list",
+    tags=["mcp-tools"],
+    operation_id="list_project_templates_tool",
+)
+async def mcp_list_project_templates(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List project templates."""
+    try:
+        service = ProjectTemplateService(db)
+        templates = service.get_templates(skip=skip, limit=limit)
+        return {
+            "success": True,
+            "templates": [
+                {
+                    "id": t.id,
+                    "name": t.name,
+                    "description": t.description,
+                    "template_data": json.loads(t.template_data) if isinstance(t.template_data, str) else t.template_data,
+                    "created_at": t.created_at.isoformat(),
+                }
+                for t in templates
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list project templates failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/template/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_project_template_tool",
+)
+async def mcp_delete_project_template(
+    template_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a project template."""
+    try:
+        service = ProjectTemplateService(db)
+        success = service.delete_template(template_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Project template not found")
+        AuditLogService(db).log_action(
+            action="project_template_deleted",
+            entity_type="project_template",
+            entity_id=template_id,
+            changes={},
+        )
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"MCP delete project template failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -656,15 +745,13 @@ async def mcp_list_tools():
     except Exception as e:
         logger.error(f"MCP list tools failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post(
     "/mcp-tools/rule/mandate/create",
     tags=["mcp-tools"],
     operation_id="create_mandate_tool",
 )
-async def mcp_create_mandate(
-    mandate: UniversalMandateCreate,
-    db: Session = Depends(get_db_session),
-):
 async def mcp_create_mandate(
     mandate: UniversalMandateCreate,
     db: Session = Depends(get_db_session),
@@ -675,10 +762,10 @@ async def mcp_create_mandate(
         new_mandate = rules_service.create_universal_mandate(mandate)
         audit_service = AuditLogService(db)
         audit_service.log_action(
-            action="mandate_created",
+            action="universal_mandate_created",
             entity_type="universal_mandate",
             entity_id=new_mandate.id,
-            changes=mandate.model_dump(exclude_unset=True)
+            changes=new_mandate.model_dump(exclude_unset=True)
         )
         return {"success": True, "mandate": new_mandate.model_dump()}
     except Exception as e:
@@ -695,11 +782,7 @@ async def mcp_create_agent_rule(
     rule: AgentRuleCreate,
     db: Session = Depends(get_db_session),
 ):
-async def mcp_create_agent_rule(
-    rule: AgentRuleCreate,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: Create a new agent-specific rule."""
+    """MCP Tool: Create a new agent rule."""
     try:
         rules_service = RulesService(db)
         new_rule = rules_service.create_agent_rule(rule)
@@ -708,7 +791,7 @@ async def mcp_create_agent_rule(
             action="agent_rule_created",
             entity_type="agent_rule",
             entity_id=new_rule.id,
-            changes=rule.model_dump(exclude_unset=True)
+            changes=new_rule.model_dump(exclude_unset=True)
         )
         return {"success": True, "rule": new_rule.model_dump()}
     except Exception as e:
