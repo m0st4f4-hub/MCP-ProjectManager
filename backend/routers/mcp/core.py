@@ -1057,3 +1057,64 @@ async def mcp_list_forbidden_actions(
     except Exception as e:
         logger.error(f"MCP list forbidden actions failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/user-role/assign",
+    tags=["mcp-tools"],
+    operation_id="assign_role_tool",
+)
+async def mcp_assign_role(
+    user_id: str,
+    role_name: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Assign a role to a user."""
+    try:
+        from ...mcp_tools.user_role_tools import assign_role_tool
+
+        return await assign_role_tool(user_id, role_name, db)
+    except Exception as e:
+        logger.error(f"MCP assign role failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/user-role/list",
+    tags=["mcp-tools"],
+    operation_id="list_roles_tool",
+)
+async def mcp_list_roles(
+    user_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List roles assigned to a user."""
+    try:
+        from ...mcp_tools.user_role_tools import list_roles_tool
+
+        return await list_roles_tool(user_id, db)
+    except Exception as e:
+        logger.error(f"MCP list roles failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/user-role/remove",
+    tags=["mcp-tools"],
+    operation_id="remove_role_tool",
+)
+async def mcp_remove_role(
+    user_id: str,
+    role_name: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Remove a role from a user."""
+    try:
+        from ...mcp_tools.user_role_tools import remove_role_tool
+
+        return await remove_role_tool(user_id, role_name, db)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP remove role failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
