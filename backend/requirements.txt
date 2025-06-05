@@ -12,6 +12,7 @@ aiosqlite
 aiohttp
 httpx
 authlib
+slowapi
 
 # For CI/Dev
 flake8

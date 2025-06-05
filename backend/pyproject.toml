@@ -22,6 +22,7 @@ aiosqlite = "*"
 aiohttp = "*"
 httpx = "*"
 authlib = "*"
+slowapi = "*"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "*"
