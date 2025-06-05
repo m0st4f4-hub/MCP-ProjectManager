@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { act } from 'react-dom/test-utils'
 import { useProjectStore } from '../projectStore'
 import { useTaskStore } from '../taskStore'
 import * as api from '@/services/api'
@@ -32,7 +33,9 @@ describe('projectStore', () => {
     const projects = [{ id: 'p1', name: 'Project 1', created_at: '2024-01-01' }]
     mockedApi.getProjects.mockResolvedValueOnce(projects)
 
-    await useProjectStore.getState().fetchProjects()
+    await act(async () => {
+      await useProjectStore.getState().fetchProjects()
+    })
 
     expect(mockedApi.getProjects).toHaveBeenCalled()
     expect(useProjectStore.getState().projects).toEqual(projects)
@@ -44,7 +47,9 @@ describe('projectStore', () => {
     useProjectStore.setState({ ...initialState, projects: [{ id: 'p1', name: 'Project 1', created_at: '2024-01-01' }] } as any)
     mockedApi.deleteProject.mockResolvedValueOnce({} as any)
 
-    await useProjectStore.getState().removeProject('p1')
+    await act(async () => {
+      await useProjectStore.getState().removeProject('p1')
+    })
 
     expect(mockedApi.deleteProject).toHaveBeenCalledWith('p1')
     expect(removeTasksMock).toHaveBeenCalledWith('p1')
