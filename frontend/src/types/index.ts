@@ -12,6 +12,7 @@ export * from './project_template';
 export * from './agent_prompt_template';
 export * from './handoff';
 export * from './verification_requirement';
+export * from './error_protocol';
 
 // Common types used across the application
 // Canonical shared sort direction type for all entities

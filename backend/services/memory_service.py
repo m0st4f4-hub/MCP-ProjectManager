@@ -281,6 +281,42 @@ class MemoryService:
             )
         return query.offset(skip).limit(limit).all()
 
+    def update_observation(
+        self, observation_id: int, observation_update: MemoryObservationCreate
+    ) -> Optional[models.MemoryObservation]:
+        db_observation = (
+            self.db.query(models.MemoryObservation)
+            .filter(models.MemoryObservation.id == observation_id)
+            .first()
+        )
+        if not db_observation:
+            return None
+
+        db_observation.entity_id = observation_update.entity_id
+        db_observation.content = observation_update.content
+        db_observation.source = getattr(observation_update, "source", None)
+        db_observation.metadata_ = observation_update.metadata_
+        if hasattr(observation_update, "timestamp"):
+            db_observation.timestamp = observation_update.timestamp
+
+        self.db.commit()
+        self.db.refresh(db_observation)
+        logger.info(f"Updated memory observation: {observation_id}")
+        return db_observation
+
+    def delete_observation(self, observation_id: int) -> bool:
+        db_observation = (
+            self.db.query(models.MemoryObservation)
+            .filter(models.MemoryObservation.id == observation_id)
+            .first()
+        )
+        if db_observation:
+            self.db.delete(db_observation)
+            self.db.commit()
+            logger.info(f"Deleted memory observation: {observation_id}")
+            return True
+        return False
+
     def create_memory_relation(
         self, relation: MemoryRelationCreate
     ) -> models.MemoryRelation:
@@ -391,18 +427,36 @@ class MemoryService:
     def search_memory_entities(
         self, query: str, limit: int = 10
     ) -> List[models.MemoryEntity]:
-        return self.get_memory_entities(name=query, limit=limit)
+        return (
+            self.db.query(models.MemoryEntity)
+            .filter(models.MemoryEntity.content.ilike(f"%{query}%"))
+            .limit(limit)
+            .all()
+        )
 
     def get_knowledge_graph(self) -> Dict[str, List[Dict[str, Any]]]:
-        """Return all memory entities and relations as a graph structure."""
+        nodes = []
+        edges = []
+
         entities = self.db.query(models.MemoryEntity).all()
         relations = self.db.query(models.MemoryRelation).all()
 
-        pydantic_entities = [
-            MemoryEntity.model_validate(e).model_dump() for e in entities
-        ]
-        pydantic_relations = [
-            MemoryRelation.model_validate(r).model_dump() for r in relations
-        ]
+        for entity in entities:
+            nodes.append({
+                "id": entity.id,
+                "type": entity.type,
+                "name": entity.name,
+                "description": entity.description,
+                "metadata": entity.metadata_
+            })
 
-        return {"entities": pydantic_entities, "relations": pydantic_relations}
+        for relation in relations:
+            edges.append({
+                "id": relation.id,
+                "from": relation.from_entity_id,
+                "to": relation.to_entity_id,
+                "type": relation.relation_type,
+                "description": relation.metadata_,
+                "metadata": relation.metadata_
+            })
+        return {"nodes": nodes, "edges": edges}
