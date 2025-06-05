@@ -39,6 +39,8 @@ node dev_start.js
 - **✅ Agent System**: Rules-based agents with capabilities and constraints
 - **✅ Memory System**: Knowledge graph for file and content management
 - **✅ Audit Logging**: Complete action tracking and history
+- **✅ MCP Tools**: Built-in agent tools for tasks, projects, project files, and memory operations are provided via `backend/mcp_tools/`.
+
 
 ## 🌐 System Endpoints
 

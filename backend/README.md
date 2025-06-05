@@ -39,13 +39,15 @@ backend\.venv\Scripts\pytest.exe backend\tests\test_projects_crud.py backend\tes
 # Run specific test files
 backend\.venv\Scripts\pytest.exe backend\tests\test_comments_crud.py -v
 backend\.venv\Scripts\pytest.exe backend\tests\test_audit_logs_crud.py -v
+backend\.venv\Scripts\pytest.exe backend\tests\test_memory_ingestion.py -v
+backend\.venv\Scripts\pytest.exe backend\tests\test_memory_endpoints.py -v
 ```
 
 ### Run All Working Tests
 
 ```bash
 # From the project root
-backend\.venv\Scripts\pytest.exe backend\tests\test_async_example.py backend\tests\test_projects_crud.py backend\tests\test_tasks_crud.py backend\tests\test_agents_crud.py backend\tests\test_comments_crud.py backend\tests\test_audit_logs_crud.py -v
+backend\.venv\Scripts\pytest.exe backend\tests\test_async_example.py backend\tests\test_projects_crud.py backend\tests\test_tasks_crud.py backend\tests\test_agents_crud.py backend\tests\test_comments_crud.py backend\tests\test_audit_logs_crud.py -v backend\tests\test_memory_ingestion.py backend\tests\test_memory_endpoints.py
 ```
 
 ## 🧺 Linting
@@ -154,6 +156,10 @@ cd backend
 - ✅ **Task Listing**: Global task listing available at `/api/v1/tasks` with optional `project_id` and pagination. Project-specific listing at `/api/v1/projects/{project_id}/tasks`.
 - ✅ **Task Comments**: API for listing and adding comments to tasks is fully functional.
 - ✅ **Project Members**: API for managing project members (add, remove, list) is fully functional.
+- ✅ **Memory Ingestion Endpoints**: `/api/memory/entities/ingest/file`, `/api/memory/entities/ingest/url`, and `/api/memory/entities/ingest/text` allow adding files, URLs, and text snippets to the knowledge graph.
+- ✅ **Memory Content & Metadata**: `/api/memory/entities/{entity_id}/content` and `/api/memory/entities/{entity_id}/metadata` expose stored file content and metadata.
+- ✅ **Memory Observations & Relations**: Endpoints under `/api/memory/observations` and `/api/memory/relations` support adding observations and defining relationships between entities.
+- ✅ **Project Template API**: CRUD endpoints at `/api/templates` manage reusable project templates.
 ## 🔍 Troubleshooting
 
 ### Server Won't Start

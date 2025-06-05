@@ -62,6 +62,10 @@ This frontend application provides a modern and responsive user interface for ma
 *   **Task File Associations:** View and manage files linked to specific tasks, leveraging the backend Memory service.
 *   **Responsive Design:** The UI is built with Chakra UI, providing a responsive layout that adapts to different screen sizes.
 *   **Themeability:** Supports light and dark modes.
+*   **Agents Page**: `/agents` renders the `AgentManager` UI for managing agents.
+*   **Template Pages**: `/templates` lists templates, `/templates/new` creates one, and dynamic routes under `/templates/[templateId]` allow editing or deleting.
+*   **MCP Dev Tools**: `/mcp-dev-tools` exposes developer tools for the MCP integration.
+
 
 ---
 
@@ -98,7 +102,7 @@ While significant progress has been made, particularly with the `TaskItem` compo
 ### Verification Status:
 
 *   **Static Analysis (Lint, Type Check, Build):** PASSING (after recent fixes).
-*   **Automated Tests:** Currently, no "test" script is configured in `package.json` for the frontend. Adding comprehensive unit and integration tests is highly recommended.
+*   **Automated Tests:** Run `npm run test` or `npm run test:integration` to execute Vitest suites including the new template navigation tests.
 *   **Browser-Based Audits (Accessibility, Performance, etc.):** Currently unavailable due to issues with the browser connector server. Restoring this capability is important for ongoing UI quality assurance.
 
 ### Recommendations:
@@ -165,4 +169,10 @@ graph TD
 - `vitest.config.ts`
 
 <!-- File List End -->
+## Running Tests
+Run `npm run test` to execute all frontend tests. To focus on the template pages and other integration suites run:
+```bash
+npm run test:integration
+```
+
 
