@@ -52,6 +52,10 @@ export const memoryRelationCreateSchema = memoryRelationBaseSchema;
 
 export type MemoryRelationCreateData = z.infer<typeof memoryRelationCreateSchema>;
 
+export const memoryRelationUpdateSchema = memoryRelationBaseSchema.partial();
+
+export type MemoryRelationUpdateData = z.infer<typeof memoryRelationUpdateSchema>;
+
 export const memoryRelationSchema = memoryRelationBaseSchema.extend({
   id: z.number(),
   created_at: z.string(),

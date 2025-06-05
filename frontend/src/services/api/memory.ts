@@ -11,6 +11,7 @@ import type {
   MemoryObservationCreateData,
   MemoryRelation,
   MemoryRelationCreateData,
+  MemoryRelationUpdateData,
   MemoryRelationFilters,
   KnowledgeGraph,
 } from "@/types/memory";
@@ -151,6 +152,21 @@ export const memoryApi = {
       buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, "/relations"),
       {
         method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+    return response.data;
+  },
+
+  // Update an existing relation
+  updateRelation: async (
+    relationId: number,
+    data: MemoryRelationUpdateData
+  ): Promise<MemoryRelation> => {
+    const response = await request<{ data: MemoryRelation }>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
+      {
+        method: "PUT",
         body: JSON.stringify(data),
       }
     );
