@@ -62,6 +62,8 @@ This frontend application provides a modern and responsive user interface for ma
 *   **Task File Associations:** View and manage files linked to specific tasks, leveraging the backend Memory service.
 *   **Responsive Design:** The UI is built with Chakra UI, providing a responsive layout that adapts to different screen sizes.
 *   **Themeability:** Supports light and dark modes.
+*   **Agent Forbidden Actions:** Interface for creating and listing forbidden actions via MCP tools.
+*   **Agent Handoff Criteria:** Manage handoff criteria between agents using the new MCP endpoints.
 
 ---
 
@@ -165,4 +167,6 @@ graph TD
 - `vitest.config.ts`
 
 <!-- File List End -->
+
+
 
