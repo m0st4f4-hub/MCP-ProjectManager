@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -16,9 +16,9 @@ import type { Task, TaskCreateData } from "@/types";
 import { TaskStatus } from "@/types";
 
 const TaskRunner: React.FC = () => {
-  const [projectId, setProjectId] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [projectId, setProjectId] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ const TaskRunner: React.FC = () => {
         description,
         status: TaskStatus.TO_DO,
       };
-      const newTask = await createTask(projectId, taskData);
+      const newTask: Task = await createTask(projectId, taskData);
       setTask(newTask);
     } catch (err) {
       setError((err as Error).message);
