@@ -1,6 +1,8 @@
 'use client';
 import React, { useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
+import { Button } from '@chakra-ui/react';
 import EditProjectTemplateForm from '@/components/forms/EditProjectTemplateForm';
 import { useTemplateStore } from '@/store/templateStore';
 
@@ -33,11 +35,21 @@ const EditTemplatePage: React.FC = () => {
   };
 
   return (
-    <EditProjectTemplateForm
-      template={template}
-      onSubmit={handleSubmit}
-      onCancel={() => router.push('/templates')}
-    />
+    <>
+      <EditProjectTemplateForm
+        template={template}
+        onSubmit={handleSubmit}
+        onCancel={() => router.push('/templates')}
+      />
+      <Button
+        as={Link}
+        href={`/templates/${templateId}/delete`}
+        colorScheme="red"
+        mt={4}
+      >
+        Delete Template
+      </Button>
+    </>
   );
 };
 

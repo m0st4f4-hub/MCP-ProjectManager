@@ -13,7 +13,6 @@ import {
   Th,
   Thead,
   Tr,
-  useToast,
 } from '@chakra-ui/react';
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import { useTemplateStore } from '@/store/templateStore';
@@ -21,26 +20,10 @@ import { useTemplateStore } from '@/store/templateStore';
 const TemplateList: React.FC = () => {
   const templates = useTemplateStore((s) => s.templates);
   const fetchTemplates = useTemplateStore((s) => s.fetchTemplates);
-  const removeTemplate = useTemplateStore((s) => s.removeTemplate);
-  const toast = useToast();
 
   useEffect(() => {
     fetchTemplates();
   }, [fetchTemplates]);
-
-  const handleDelete = async (id: string) => {
-    try {
-      await removeTemplate(id);
-      toast({ title: 'Template deleted', status: 'success', duration: 3000 });
-    } catch (err) {
-      toast({
-        title: 'Error deleting template',
-        description: err instanceof Error ? err.message : String(err),
-        status: 'error',
-        duration: 5000,
-      });
-    }
-  };
 
   return (
     <Box p="4">
@@ -73,10 +56,11 @@ const TemplateList: React.FC = () => {
                   mr="2"
                 />
                 <IconButton
+                  as={Link}
+                  href={`/templates/${t.id}/delete`}
                   aria-label="Delete"
                   icon={<DeleteIcon />}
                   size="sm"
-                  onClick={() => handleDelete(t.id)}
                 />
               </Td>
             </Tr>
