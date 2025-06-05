@@ -11,6 +11,7 @@ python-jose
 aiosqlite
 aiohttp
 httpx
+authlib
 
 # For CI/Dev
 flake8
