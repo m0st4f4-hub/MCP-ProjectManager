@@ -39,6 +39,7 @@ node dev_start.js
 - **✅ Agent System**: Rules-based agents with capabilities and constraints
 - **✅ Memory System**: Knowledge graph for file and content management
 - **✅ Audit Logging**: Complete action tracking and history
+- **✅ Workflow Management**: Create, list and delete workflows via MCP tools
 
 ## 🌐 System Endpoints
 

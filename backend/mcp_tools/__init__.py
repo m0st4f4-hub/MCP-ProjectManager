@@ -12,5 +12,8 @@ __all__ = [
     'search_memory_tool',
     'add_project_file_tool',
     'list_project_files_tool',
-    'remove_project_file_tool'
+    'remove_project_file_tool',
+    'create_workflow_tool',
+    'list_workflows_tool',
+    'delete_workflow_tool'
 ]
