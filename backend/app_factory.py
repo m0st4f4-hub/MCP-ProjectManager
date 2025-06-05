@@ -14,6 +14,7 @@ from sqlalchemy import text
 
 from .database import get_db, Base, engine
 from .middleware import init_middleware
+from backend.config.settings import settings
 
 try:
     from fastapi_mcp import FastApiMCP
@@ -336,7 +337,7 @@ def create_app() -> FastAPI:
     include_app_routers(app)
     _rebuild_pydantic_models()
 
-    if FastApiMCP is not None:
+    if FastApiMCP is not None and settings.mcp_enabled:
         mcp = FastApiMCP(
             app,
             name="Task Manager MCP",

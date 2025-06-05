@@ -9,6 +9,7 @@ from typing import Dict, Any
 
 from .database import get_db, Base, engine
 from .middleware import init_middleware
+from backend.config.settings import settings
 
 # Optional MCP integration
 try:
@@ -108,7 +109,7 @@ def create_app() -> FastAPI:
 
     _rebuild_models()
 
-    if FastApiMCP is not None:
+    if FastApiMCP is not None and settings.mcp_enabled:
         mcp = FastApiMCP(
             app,
             name="Task Manager MCP",
@@ -223,4 +224,4 @@ def _define_custom_routes(app: FastAPI):
         }
 
 
-app = FastAPI()
+app = create_app()
