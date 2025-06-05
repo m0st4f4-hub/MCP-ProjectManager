@@ -5,7 +5,7 @@ MCP Core Tools Router - Functionality for Project and Task MCP integration.
 Provides MCP tool definitions.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
 import logging
@@ -40,6 +40,19 @@ def get_db_session():
 
 def get_memory_service(db: Session = Depends(get_db_session)) -> MemoryService:
     return MemoryService(db)
+
+
+@router.get(
+    "/mcp-tools/list",
+    tags=["mcp-tools"],
+    operation_id="list_mcp_tools",
+)
+async def list_mcp_tools(request: Request) -> Dict[str, List[str]]:
+    """Return names of registered MCP tools."""
+    mcp_instance = getattr(request.app.state, "mcp_instance", None)
+    tool_dict = getattr(mcp_instance, "tools", {}) if mcp_instance else {}
+    tools = list(tool_dict.keys()) if isinstance(tool_dict, dict) else []
+    return {"tools": tools}
 
 
 @router.post(

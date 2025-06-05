@@ -64,6 +64,15 @@ mcp.mount()
 
 That's it! Your auto-generated MCP server is now available at `https://app.base.url/mcp`.
 
+### Listing available tools
+
+After mounting the MCP server you can query `/mcp-tools/list` to see
+which tools are currently registered by `FastApiMCP`:
+
+```bash
+curl http://localhost:8000/api/mcp/mcp-tools/list
+```
+
 ## Documentation, Examples and Advanced Usage
 
 FastAPI-MCP provides [comprehensive documentation](https://fastapi-mcp.tadata.com/). Additionaly, check out the [examples directory](examples) for code samples demonstrating these features in action.
