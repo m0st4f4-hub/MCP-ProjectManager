@@ -17,6 +17,7 @@ import { shallow } from "zustand/shallow";
 import debounce from "lodash.debounce";
 import { useProjectStore } from "./projectStore";
 import { useAgentStore } from "./agentStore";
+import { handleApiError } from "@/lib/apiErrorHandler";
 
 // Improved upsertTasks: preserve references for unchanged items
 const upsertTasks = (tasksToUpsert: Task[], existingTasks: Task[]): Task[] => {
@@ -211,6 +212,7 @@ export const useTaskStore = create<TaskState>(
       } else {
         set({ pollingError: errorMessage, isPolling: false });
       }
+      handleApiError(error, "Failed to fetch tasks");
       console.error("Fetch Tasks Error:", error);
     }
   },
@@ -239,6 +241,7 @@ export const useTaskStore = create<TaskState>(
       let errorMessage = "Failed to fetch projects and agents";
       if (error instanceof Error) errorMessage = error.message;
       else if (typeof error === "string") errorMessage = error;
+      handleApiError(error, "Failed to fetch projects and agents");
       console.error("Error fetching projects and agents:", errorMessage, error);
     }
   },
@@ -300,6 +303,7 @@ export const useTaskStore = create<TaskState>(
         mutationError: { type: "add", message: errorMessage },
         loading: false,
       });
+      handleApiError(error, "Failed to add task");
       console.error("Error adding task:", error);
       throw error;
     }
@@ -347,6 +351,7 @@ export const useTaskStore = create<TaskState>(
         },
         loading: false,
       });
+      handleApiError(error, "Failed to update task");
       console.error("Error updating task:", error);
       throw error;
     }
@@ -377,6 +382,7 @@ export const useTaskStore = create<TaskState>(
         mutationError: { type: "delete", message: errorMessage },
         loading: false,
       });
+      handleApiError(error, "Failed to delete task");
       console.error("Error deleting task:", error);
       throw error;
     }
@@ -465,6 +471,7 @@ export const useTaskStore = create<TaskState>(
         mutationError: { type: "bulk", message: errorMessage },
         loading: false,
       });
+      handleApiError(error, "Failed to bulk delete tasks");
       console.error("Bulk Delete Error:", error);
     }
   },
@@ -519,6 +526,7 @@ export const useTaskStore = create<TaskState>(
           draft.mutationError = { type: "bulk", message: errorMessage };
         }),
       );
+      handleApiError(error, "Failed to bulk update task statuses");
       console.error("Bulk Set Status Error:", error);
     }
   },
@@ -576,6 +584,7 @@ export const useTaskStore = create<TaskState>(
         },
         loading: false,
       });
+      handleApiError(error, "Failed to archive task");
       console.error("Archive Task Error:", error);
       throw error;
     }
@@ -618,6 +627,7 @@ export const useTaskStore = create<TaskState>(
         },
         loading: false,
       });
+      handleApiError(error, "Failed to unarchive task");
       console.error("Unarchive Task Error:", error);
       throw error;
     }

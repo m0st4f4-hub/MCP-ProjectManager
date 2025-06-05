@@ -16,6 +16,7 @@ import {
 import { produce } from "immer";
 import { debounce } from "lodash";
 import { useTaskStore } from "./taskStore";
+import { handleApiError } from "@/lib/apiErrorHandler";
 
 let debouncedFetchProjects: (() => void) | null = null;
 
@@ -131,6 +132,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       } else {
         set({ pollingError: message, isPolling: false });
       }
+      handleApiError(err, "Failed to fetch projects");
       console.error("Fetch Projects Error:", err);
     }
   },
@@ -149,6 +151,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const message =
         err instanceof Error ? err.message : "Failed to add project";
       set({ error: message, loading: false });
+      handleApiError(err, "Failed to add project");
       console.error("Add Project Error:", err);
       throw err;
     }
@@ -178,6 +181,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const message =
         err instanceof Error ? err.message : "Failed to update project";
       set({ error: message, loading: false });
+      handleApiError(err, "Failed to update project");
       console.error("Edit Project Error:", err);
       throw err;
     }
@@ -199,6 +203,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const message =
         err instanceof Error ? err.message : "Failed to delete project";
       set({ error: message, loading: false });
+      handleApiError(err, "Failed to delete project");
       console.error("Remove Project Error:", err);
       throw err;
     }
@@ -222,6 +227,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const message =
         err instanceof Error ? err.message : "Failed to archive project";
       set({ error: message, loading: false });
+      handleApiError(err, "Failed to archive project");
       console.error("Archive Project Error:", err);
       throw err;
     }
@@ -245,6 +251,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const message =
         err instanceof Error ? err.message : "Failed to unarchive project";
       set({ error: message, loading: false });
+      handleApiError(err, "Failed to unarchive project");
       console.error("Unarchive Project Error:", err);
       throw err;
     }

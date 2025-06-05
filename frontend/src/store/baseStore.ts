@@ -1,5 +1,6 @@
 import { create, StoreApi } from "zustand";
 import { persist } from "zustand/middleware";
+import { handleApiError } from "@/lib/apiErrorHandler";
 
 // Base state structure
 export interface BaseState {
@@ -54,7 +55,7 @@ export const createBaseStore = <
 };
 
 // Error handling utility (from diff)
-export const handleApiError = (error: unknown): string => {
+export const extractErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {
     return error.message;
   }
@@ -75,7 +76,8 @@ export const withLoading = async <T>(
     set({ loading: false }); // set loading false before returning
     return result; // return result
   } catch (err: unknown) {
-    const errorMessage = handleApiError(err); // Use handleApiError
+    const errorMessage = extractErrorMessage(err);
+    handleApiError(err);
     set({ loading: false, error: errorMessage });
     // console.error("Operation failed:", errorMessage, err); // console.error moved to calling action
     throw err; // Rethrow error so calling action can also catch it if needed
