@@ -6,6 +6,7 @@ export * from "./audit_log";
 export * from "./memory";
 export * from "./comment";
 export * from "./rules";
+export * from "./error_protocol";
 export * from "./mcp";
 export * from "./project_template";
 export * from "./agent_prompt_template";
