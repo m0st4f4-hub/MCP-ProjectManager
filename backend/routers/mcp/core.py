@@ -19,6 +19,10 @@ from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate
 from ....schemas import AgentRuleCreate
 from ....schemas.universal_mandate import UniversalMandateCreate
+from ....mcp_tools.forbidden_action_tools import (
+    add_forbidden_action_tool,
+    list_forbidden_actions_tool,
+)
 from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
@@ -706,3 +710,33 @@ async def mcp_create_agent_rule(
     except Exception as e:
         logger.error(f"MCP create agent rule failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/rule/forbidden/add",
+    tags=["mcp-tools"],
+    operation_id="add_forbidden_action_tool",
+)
+async def mcp_add_forbidden_action(
+    agent_role_id: str,
+    action: str,
+    reason: Optional[str] = None,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Add a forbidden action to an agent role."""
+    return await add_forbidden_action_tool(agent_role_id, action, reason, db)
+
+
+@router.get(
+    "/mcp-tools/rule/forbidden/list",
+    tags=["mcp-tools"],
+    operation_id="list_forbidden_actions_tool",
+)
+async def mcp_list_forbidden_actions(
+    agent_role_id: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List forbidden actions for an agent role."""
+    return await list_forbidden_actions_tool(agent_role_id, skip, limit, db)

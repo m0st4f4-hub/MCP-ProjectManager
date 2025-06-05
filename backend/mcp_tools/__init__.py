@@ -12,5 +12,7 @@ __all__ = [
     'search_memory_tool',
     'add_project_file_tool',
     'list_project_files_tool',
-    'remove_project_file_tool'
+    'remove_project_file_tool',
+    'add_forbidden_action_tool',
+    'list_forbidden_actions_tool'
 ]

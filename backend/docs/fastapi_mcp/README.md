@@ -93,6 +93,8 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/memory/add-observation` (POST)
 - `/mcp-tools/memory/add-relation` (POST)
 - `/mcp-tools/memory/search` (GET)
+- `/mcp-tools/rule/forbidden/add` (POST)
+- `/mcp-tools/rule/forbidden/list` (GET)
 
 ## Development and Contributing
 
