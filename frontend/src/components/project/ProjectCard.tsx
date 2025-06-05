@@ -143,7 +143,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             onDelete={onDelete}
             onCopyGet={onCopyGet}
             onOpenCliPrompt={onOpenCliPrompt}
-            disableActions={project.is_archived && projectToDeleteId === project.id}
+            disableActions={!!(project.is_archived && projectToDeleteId === project.id)}
           />
         </Flex>
         <Text fontSize="sm" color={project.description ? 'textSecondary' : 'textPlaceholder'} fontWeight="normal" lineHeight="condensed" noOfLines={2} title={displayDescription} fontStyle={project.description ? undefined : 'italic'}>
