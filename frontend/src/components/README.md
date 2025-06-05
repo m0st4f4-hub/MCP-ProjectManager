@@ -162,10 +162,10 @@ graph TD
 - `BulkActionsBar.tsx`
 - `ClientOnly.tsx`
 - `Dashboard.tsx`
+- `ErrorBoundary.tsx`
 - `LoadingSkeleton.tsx`
 - `MCPDevTools.tsx`
 - `NoTasks.tsx`
-- `ProjectList.tsx`
 - `SettingsContent.tsx`
 - `TaskAgentTag.tsx`
 - `TaskControls.tsx`
@@ -183,4 +183,6 @@ graph TD
 - `useTaskListState.ts`
 
 <!-- File List End -->
+
+
 
