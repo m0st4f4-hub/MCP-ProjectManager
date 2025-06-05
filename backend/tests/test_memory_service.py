@@ -6,6 +6,8 @@ from fastapi import HTTPException
 
 from backend.services.memory_service import MemoryService
 from backend.schemas.file_ingest import FileIngestInput
+from fastapi import UploadFile
+from io import BytesIO
 
 
 def test_delete_memory_entity_no_error():
@@ -90,3 +92,23 @@ async def test_ingest_large_file(tmp_path):
 
     entity = service.create_entity.call_args.args[0]
     assert entity.content == content
+
+
+@pytest.mark.asyncio
+async def test_ingest_file_upload():
+    """ingest_file should handle UploadFile correctly."""
+    file_bytes = b"hello upload"
+    upload = UploadFile(filename="upload.txt", file=BytesIO(file_bytes))
+
+    session = MagicMock()
+    service = MemoryService(session)
+    created = MagicMock()
+    service.create_entity = MagicMock(return_value=created)
+
+    result = await service.ingest_file(upload, user_id="u9")
+
+    service.create_entity.assert_called_once()
+    entity = service.create_entity.call_args.args[0]
+    assert entity.content == "hello upload"
+    assert entity.source == "file_upload"
+    assert result == created

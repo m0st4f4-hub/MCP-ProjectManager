@@ -95,7 +95,10 @@ export async function request<T>(
   }
 
   const method = options.method?.toUpperCase();
-  if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+  if (
+    (method === 'POST' || method === 'PUT' || method === 'PATCH') &&
+    !(options.body instanceof FormData)
+  ) {
     (headers as Record<string, string>)['Content-Type'] = 'application/json';
   }
 

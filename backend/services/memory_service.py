@@ -5,6 +5,8 @@ import httpx
 import aiofiles
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status, UploadFile
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from .. import models
@@ -54,13 +56,62 @@ class MemoryService:
         return await delete_memory_entity(self.db, entity_id)
 
     async def ingest_file(
-        self, ingest_input: Union[FileIngestInput, str], user_id: Optional[str] = None
+        self,
+        ingest_input: Union[FileIngestInput, UploadFile, str],
+        user_id: Optional[str] = None,
     ) -> models.MemoryEntity:
-        if isinstance(ingest_input, FileIngestInput):
+        file_path = None
+        upload: Optional[UploadFile] = None
+        if isinstance(ingest_input, UploadFile):
+            upload = ingest_input
+        elif isinstance(ingest_input, FileIngestInput):
             file_path = ingest_input.file_path
         else:
-            file_path = ingest_input
+            file_path = str(ingest_input)
+
         try:
+            if upload is not None:
+                filename = upload.filename
+                content_bytes = await upload.read()
+                extension = os.path.splitext(filename)[1].lower()
+                file_info = {
+                    "filename": filename,
+                    "path": None,
+                    "size": len(content_bytes),
+                    "modified_time": None,
+                    "extension": extension,
+                }
+                if extension in [
+                    ".txt",
+                    ".md",
+                    ".py",
+                    ".js",
+                    ".json",
+                    ".yml",
+                    ".yaml",
+                    ".xml",
+                    ".csv",
+                ]:
+                    try:
+                        file_content = content_bytes.decode("utf-8")
+                    except UnicodeDecodeError:
+                        file_content = content_bytes.decode("latin-1")
+                else:
+                    file_content = f"Binary file: {filename}"
+                entity_create = MemoryEntityCreate(
+                    entity_type="file",
+                    content=file_content,
+                    entity_metadata=file_info,
+                    source="file_upload",
+                    source_metadata={"filename": filename},
+                    created_by_user_id=user_id,
+                )
+                return await self.create_entity(entity_create)
+            if file_path is None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="file_path is required",
+                )
             if not os.path.exists(file_path):
                 logger.error(
                     f"File not found during ingestion: {file_path}"

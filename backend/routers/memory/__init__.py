@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 
 from ...database import get_sync_db as get_db
@@ -59,6 +59,19 @@ async def ingest_text_root(
         )
     except Exception as e:  # pragma: no cover - pass through any service errors
         raise HTTPException(status_code=500, detail=f"Failed to ingest text: {e}")
+
+
+@router.post("/ingest/upload", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
+def ingest_upload_root(
+    file: UploadFile = File(...),
+    memory_service: MemoryService = Depends(get_memory_service),
+    current_user: UserModel = Depends(get_current_active_user),
+):
+    """Upload a file and ingest it into the knowledge graph."""
+    try:
+        return memory_service.ingest_file(file, user_id=current_user.id)
+    except Exception as e:  # pragma: no cover - pass through any service errors
+        raise HTTPException(status_code=500, detail=f"Failed to ingest file: {e}")
 
 
 @router.get("/graph", response_model=KnowledgeGraph)

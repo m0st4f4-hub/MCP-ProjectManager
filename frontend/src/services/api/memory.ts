@@ -103,6 +103,20 @@ export const memoryApi = {
     return response.data;
   },
 
+  // Upload and ingest a file
+  uploadFile: async (file: File): Promise<MemoryEntity> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await request<MemoryEntityResponse>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, '/ingest/upload'),
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+    return response.data;
+  },
+
   // Ingest content directly from a URL
   ingestUrl: async (url: string): Promise<MemoryEntity> => {
     const response = await request<MemoryEntityResponse>(
