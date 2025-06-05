@@ -74,3 +74,9 @@ class MemoryRelation(MemoryRelationBase):
     to_entity: Optional[MemoryEntity] = Field(None, description="The target memory entity.")
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class KnowledgeGraph(BaseModel):
+    """Schema representing the entire knowledge graph."""
+    entities: List[MemoryEntity]
+    relations: List[MemoryRelation]
