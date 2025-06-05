@@ -79,4 +79,10 @@ from .agent_handoff_criteria import (
     AgentHandoffCriteriaCreate,
     AgentHandoffCriteria,
 )
+from .agent_error_protocol import (
+    AgentErrorProtocolBase,
+    AgentErrorProtocolCreate,
+    AgentErrorProtocolUpdate,
+    AgentErrorProtocol,
+)
 from .file_ingest import FileIngestInput
