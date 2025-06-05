@@ -93,9 +93,21 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/memory/add-observation` (POST)
 - `/mcp-tools/memory/add-relation` (POST)
 - `/mcp-tools/memory/search` (GET)
+- `/mcp-tools/memory/search-graph` (GET)
+- `/mcp-tools/rule/forbidden/add` (POST)
+- `/mcp-tools/rule/forbidden/list` (GET)
 - `/mcp-tools/handoff/create` (POST)
 - `/mcp-tools/handoff/list` (GET)
 - `/mcp-tools/handoff/delete` (DELETE)
+- `/mcp-tools/error-protocol/add` (POST)
+- `/mcp-tools/error-protocol/list` (GET)
+- `/mcp-tools/error-protocol/remove` (DELETE)
+
+### Agent Handoff Tools
+
+Use these routes to manage when one agent role should hand off control to
+another. Create new rules with `/mcp-tools/handoff/create`, list all criteria
+via `/mcp-tools/handoff/list`, and remove a rule using `/mcp-tools/handoff/delete`.
 
 ## Development and Contributing
 
