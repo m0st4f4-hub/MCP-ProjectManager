@@ -24,6 +24,9 @@ graph TD
 - `templates-navigation.test.tsx`
 - `validate-frontend.test.ts`
 - `validate-testing-framework.test.ts`
+- `project_templates.api.test.ts`
+- `audit_logs.api.test.ts`
+- `project_file_association.api.test.ts`
 
 <!-- File List End -->
 

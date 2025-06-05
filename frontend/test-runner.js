@@ -55,7 +55,7 @@ async function runUnitTests() {
 async function runIntegrationTests() {
   console.log('🔗 Running Integration Tests...')
   try {
-    await runCommand('npm', ['run', 'test:run', '--', 'src/__tests__/integration'])
+    await runCommand('npm', ['run', 'test:integration'])
     console.log('✅ Integration tests completed successfully')
     return true
   } catch (error) {

@@ -19,6 +19,9 @@ graph TD
 ## File List
 
 - `test_project_task_flow.py`
+- `test_project_template_endpoints.py`
+- `test_audit_log_endpoints.py`
+- `test_project_file_associations.py`
 
 <!-- File List End -->
 
