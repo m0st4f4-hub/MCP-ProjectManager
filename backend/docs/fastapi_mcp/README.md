@@ -90,6 +90,15 @@ Before you get started, please see our [Contribution Guide](CONTRIBUTING.md).
 
 Join [MCParty Slack community](https://join.slack.com/t/themcparty/shared_invite/zt-30yxr1zdi-2FG~XjBA0xIgYSYuKe7~Xg) to connect with other MCP enthusiasts, ask questions, and share your experiences with FastAPI-MCP.
 
+## MCP Tools
+
+The MCP server exposes a small set of project utilities used by this repository:
+
+- `POST /mcp-tools/project/create`
+- `POST /mcp-tools/project/update`
+- `POST /mcp-tools/project/delete`
+- `GET /mcp-tools/projects/list`
+
 ## Requirements
 
 - Python 3.10+ (Recommended 3.12)

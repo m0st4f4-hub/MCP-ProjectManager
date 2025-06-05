@@ -7,16 +7,15 @@ Provides MCP tool definitions.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Optional
+from typing import Optional
 import logging
-import json
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
 from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
-from ....schemas.project import ProjectCreate
+from ....schemas.project import ProjectCreate, ProjectUpdate
 from ....schemas.task import TaskCreate
 from ....schemas.memory import (
     MemoryEntityCreate,
@@ -162,6 +161,99 @@ async def mcp_list_projects(
         }
     except Exception as e:
         logger.error(f"MCP list projects failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/project/update",
+    tags=["mcp-tools"],
+    operation_id="update_project_tool",
+)
+async def mcp_update_project(
+    project_id: str,
+    project_update: ProjectUpdate,
+    db: Session = Depends(get_db_session)
+):
+    """MCP Tool: Update an existing project."""
+    try:
+        project_service = ProjectService(db)
+        project = project_service.get_project(project_id)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        updated = project_service.update_project(project_id, project_update)
+        audit_service = AuditLogService(db)
+        audit_service.log_action(
+            action="project_updated",
+            entity_type="project",
+            entity_id=updated.id,
+            changes=project_update.model_dump(exclude_unset=True)
+        )
+
+        return {
+            "success": True,
+            "project": {
+                "id": updated.id,
+                "name": updated.name,
+                "description": updated.description,
+                "task_count": updated.task_count,
+                "is_archived": updated.is_archived,
+                "created_at": updated.created_at.isoformat(),
+                "updated_at": (
+                    updated.updated_at.isoformat()
+                    if updated.updated_at
+                    else None
+                ),
+            }
+        }
+    except Exception as e:
+        logger.error(f"MCP update project failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/project/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_project_tool",
+)
+async def mcp_delete_project(
+    project_id: str,
+    db: Session = Depends(get_db_session)
+):
+    """MCP Tool: Delete a project."""
+    try:
+        project_service = ProjectService(db)
+        project = project_service.get_project(project_id)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        deleted = project_service.delete_project(project_id)
+        audit_service = AuditLogService(db)
+        audit_service.log_action(
+            action="project_deleted",
+            entity_type="project",
+            entity_id=project_id,
+            changes={}
+        )
+
+        return {
+            "success": True,
+            "project": {
+                "id": deleted.id,
+                "name": deleted.name,
+                "description": deleted.description,
+                "task_count": deleted.task_count,
+                "is_archived": deleted.is_archived,
+                "created_at": deleted.created_at.isoformat(),
+                "updated_at": (
+                    deleted.updated_at.isoformat()
+                    if deleted.updated_at
+                    else None
+                ),
+            }
+        }
+    except Exception as e:
+        logger.error(f"MCP delete project failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
