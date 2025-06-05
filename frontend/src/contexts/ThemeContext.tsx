@@ -52,7 +52,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   // useLayoutEffect ensures the theme class and data-theme attribute are set on <html> before paint
   // This enables Chakra UI's color mode system and the TypeScript token system to pick up the correct theme instantly
   useLayoutEffect(() => {
-    console.log("[ThemeContext] Effect running. Theme:", theme); // DEBUG LOG
     // No need for isMounted check here as it runs client-side anyway
     // And we want the class applied immediately based on initial state.
     try {
@@ -77,12 +76,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   // toggleTheme switches between light and dark mode
   // This triggers a re-render and updates the DOM, enabling token-based theming
   const toggleTheme = () => {
-    console.log("[ThemeContext] toggleTheme called."); // DEBUG LOG
     setTheme((prevTheme) => {
       const newTheme = prevTheme === "light" ? "dark" : "light";
-      console.log(
-        `[ThemeContext] Changing theme from ${prevTheme} to ${newTheme}`,
-      ); // DEBUG LOG
       return newTheme;
     });
   };
