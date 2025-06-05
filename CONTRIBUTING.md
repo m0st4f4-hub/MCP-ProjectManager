@@ -56,6 +56,16 @@ npm run update-readmes
 
 This ensures all `README.md` files reflect up-to-date directory contents.
 
+### Sync TypeScript Enums
+
+If you modify `backend/enums.py`, regenerate the frontend enum file:
+
+```bash
+npm run generate
+```
+
+Commit the updated `frontend/src/types/generatedEnums.ts` along with your changes.
+
 ---
 
 ## 📐 Coding Standards
