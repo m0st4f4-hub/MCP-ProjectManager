@@ -69,7 +69,7 @@ export interface StatusAttributeObject {
 /* Canonical Status Map                                          */
 /* ────────────────────────────────────────────────────────────── */
 
-const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
+const STATUS_MAP = {
   /* ---------- TODO ---------- */
   "To Do": {
     id: "To Do",
@@ -257,6 +257,26 @@ const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
   },
 
   /* ---------- COMPLETED ---------- */
+  "Completed": {
+    id: "Completed",
+    displayName: "Completed",
+    category: "completed",
+    description: "Task finished successfully.",
+    colorScheme: "green",
+    icon: "CheckCircleIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
+  COMPLETED: {
+    id: "Completed",
+    displayName: "Completed",
+    category: "completed",
+    description: "Task finished successfully.",
+    colorScheme: "green",
+    icon: "CheckCircleIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
   "Verification Complete": {
     id: "Verification Complete",
     displayName: "Verification Complete",
@@ -322,6 +342,48 @@ const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
     dynamicDisplayNamePattern: "Handoff to: {value}",
   },
 
+  /* ---------- BLOCKED / CANCELLED ---------- */
+  "Blocked": {
+    id: "Blocked",
+    displayName: "Blocked",
+    category: "blocked",
+    description: "Task is blocked and cannot proceed.",
+    colorScheme: "red",
+    icon: "NotAllowedIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  BLOCKED: {
+    id: "Blocked",
+    displayName: "Blocked",
+    category: "blocked",
+    description: "Task is blocked and cannot proceed.",
+    colorScheme: "red",
+    icon: "NotAllowedIcon",
+    isTerminal: false,
+    isDynamic: false,
+  },
+  "Cancelled": {
+    id: "Cancelled",
+    displayName: "Cancelled",
+    category: "blocked",
+    description: "Task was cancelled before completion.",
+    colorScheme: "gray",
+    icon: "CloseIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
+  CANCELLED: {
+    id: "Cancelled",
+    displayName: "Cancelled",
+    category: "blocked",
+    description: "Task was cancelled before completion.",
+    colorScheme: "gray",
+    icon: "CloseIcon",
+    isTerminal: true,
+    isDynamic: false,
+  },
+
   /* ---------- FAILED / BLOCKED / TERMINAL ---------- */
   Failed: {
     id: "Failed",
@@ -363,7 +425,7 @@ const STATUS_MAP: Readonly<Record<StatusID, StatusAttributeObject>> = {
     isTerminal: false,
     isDynamic: false,
   },
-};
+} as const satisfies Readonly<Record<StatusID, StatusAttributeObject>>;
 
 /* ────────────────────────────────────────────────────────────── */
 /* Helper Functions                                              */
