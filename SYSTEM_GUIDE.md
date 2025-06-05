@@ -192,6 +192,11 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 - `routers/` - API route definitions
 - `services/` - Business logic layer
 
+### MCP Tools
+The `backend/mcp_tools/` package provides utility endpoints for agents.
+Recent additions include capability management tools for adding, listing, and
+removing agent capabilities.
+
 ## 📈 Performance Considerations
 
 ### Backend Optimizations
