@@ -46,7 +46,7 @@ This comprehensive testing framework ensures the reliability, performance, and c
 npm install
 
 # Ensure backend is running (for integration/E2E tests)
-python ../run_backend.py
+python ../scripts/start_test_backend.py
 ```
 
 ### Running Tests
@@ -66,6 +66,19 @@ npm run test-runner coverage      # Generate coverage report
 npm run test:watch               # Watch mode for unit tests
 npm run test:ui                  # Visual test interface
 npm run test:e2e:ui             # Playwright UI mode
+```
+
+### Backend Server Fixture
+
+Use the `backend_server` fixture from `backend/tests/conftest.py` to
+automatically start the FastAPI backend during tests. The fixture launches
+`scripts/start_test_backend.py` in a subprocess and shuts it down when the test
+session ends.
+
+```python
+@pytest.mark.usefixtures('backend_server')
+def test_api():
+    ...
 ```
 
 ## Test Structure
