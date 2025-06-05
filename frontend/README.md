@@ -38,6 +38,10 @@ Run `npm run type-check` to ensure the TypeScript codebase compiles without erro
 
 At the repository root there is a matching `type-check` script that simply invokes the frontend command, allowing you to execute the check from either location.
 
+### Updating README File Lists
+
+Run `npm run update-readmes` from the project root to refresh the `File List` sections across all README files. The script overwrites files in place, so review the diff and commit the changes. It automatically skips directories named `__tests__`.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

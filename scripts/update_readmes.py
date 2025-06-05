@@ -1,3 +1,11 @@
+"""Update README files with directory contents.
+
+This script walks the repository and injects a "File List" section into every
+`README.md` it finds. The operation overwrites README files in place, so run it
+only when you intend to commit the resulting changes. Directories named
+`__tests__` are skipped to avoid polluting docs with test fixtures.
+"""
+
 import os
 from pathlib import Path
 
@@ -7,6 +15,9 @@ START_MARK = "<!-- File List Start -->"
 END_MARK = "<!-- File List End -->"
 
 for dirpath, dirnames, filenames in os.walk(REPO_ROOT):
+    # Skip test directories entirely
+    dirnames[:] = [d for d in dirnames if d != "__tests__"]
+
     if "README.md" in filenames:
         readme_path = Path(dirpath) / "README.md"
         file_list = sorted(
