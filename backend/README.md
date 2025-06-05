@@ -155,7 +155,7 @@ cd backend
 - ✅ **Task Comments**: API for listing and adding comments to tasks is fully functional.
 - ✅ **Project Members**: API for managing project members (add, remove, list) is fully functional.
 - ✅ **Agent Handoff Criteria**: Endpoints under `/api/v1/rules/roles/handoff-criteria` allow creation, listing, and deletion of handoff criteria for agent roles.
-- ✅ **Forbidden Action MCP Tools**: MCP endpoints `/mcp-tools/forbidden-action/create` and `/mcp-tools/forbidden-action/list` enable managing forbidden actions.
+- ✅ **Forbidden Action MCP Tools**: MCP endpoints `/mcp-tools/forbidden-action/create`, `/mcp-tools/forbidden-action/list`, and `/mcp-tools/forbidden-action/delete` enable managing forbidden actions.
 ## 🔍 Troubleshooting
 
 ### Server Won't Start

@@ -34,6 +34,7 @@ from ....schemas.error_protocol import ErrorProtocolCreate
 from ....mcp_tools.forbidden_action_tools import (
     add_forbidden_action_tool,
     list_forbidden_actions_tool,
+    delete_forbidden_action_tool,
 )
 from ....schemas.universal_mandate import UniversalMandateCreate
 from .... import models
@@ -1028,6 +1029,25 @@ async def mcp_list_forbidden_actions(
         return await list_forbidden_actions_tool(agent_role_id, db)
     except Exception as e:
         logger.error(f"MCP list forbidden actions failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/forbidden-action/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_forbidden_action_tool",
+)
+async def mcp_delete_forbidden_action(
+    action_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a forbidden action."""
+    try:
+        return await delete_forbidden_action_tool(action_id, db)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP delete forbidden action failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

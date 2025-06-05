@@ -95,6 +95,7 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/memory/search` (GET)
 - `/mcp-tools/forbidden-action/create` (POST)
 - `/mcp-tools/forbidden-action/list` (GET)
+- `/mcp-tools/forbidden-action/delete` (DELETE)
 - `/mcp-tools/handoff/create` (POST)
 - `/mcp-tools/handoff/list` (GET)
 - `/mcp-tools/handoff/delete` (DELETE)
@@ -108,8 +109,9 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 ### Forbidden Action Tools
 
 Use these routes to restrict actions for specific agent roles. Create new
-forbidden actions with `/mcp-tools/forbidden-action/create` and list all
-entries via `/mcp-tools/forbidden-action/list`.
+forbidden actions with `/mcp-tools/forbidden-action/create`, list all
+entries via `/mcp-tools/forbidden-action/list`, and remove them using
+`/mcp-tools/forbidden-action/delete`.
 
 ```python
 from backend.mcp_tools.forbidden_action_tools import create_forbidden_action_tool

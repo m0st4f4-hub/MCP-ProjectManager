@@ -77,3 +77,29 @@ async def list_forbidden_actions_tool(
     except Exception as exc:  # pragma: no cover - unexpected DB failure
         logger.error(f"MCP list forbidden actions failed: {exc}")
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+async def delete_forbidden_action_tool(action_id: str, db: Session) -> dict:
+    """MCP Tool: Delete a forbidden action."""
+    try:
+        action = (
+            db.query(AgentForbiddenAction)
+            .filter(AgentForbiddenAction.id == action_id)
+            .first()
+        )
+        if not action:
+            raise HTTPException(status_code=404, detail="Forbidden action not found")
+        db.delete(action)
+        db.commit()
+        AuditLogService(db).log_action(
+            action="forbidden_action_deleted",
+            entity_type="agent_forbidden_action",
+            entity_id=action_id,
+            changes={},
+        )
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as exc:  # pragma: no cover - unexpected DB failure
+        logger.error(f"MCP delete forbidden action failed: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
