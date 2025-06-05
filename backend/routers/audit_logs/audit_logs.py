@@ -1,8 +1,12 @@
-# Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
+# Task ID: <taskId>
+# Agent Role: ImplementationSpecialist
+# Request ID: <requestId>
+# Project: task-manager
+# Timestamp: <timestamp>
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List
 
 from ....database import get_sync_db as get_db
 from ....services.audit_log_service import AuditLogService
@@ -26,13 +30,16 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
     summary="Create Audit Log Entry",
     operation_id="create_audit_log_entry"
 )
-
-
 def create_audit_log_entry_endpoint(
     log_entry: AuditLogCreate,
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
-    """Creates a new audit log entry."""  # Note: In a real application, creation would likely happen internally in services  # or endpoints when relevant actions occur, not typically via a direct public endpoint.  # This endpoint is included for completeness based on service methods.
+    """Creates a new audit log entry.
+
+    Note: In a real application, creation would likely happen internally in services
+    or endpoints when relevant actions occur, not typically via a direct public
+    endpoint. This endpoint is included for completeness based on service methods.
+    """
     try:
         return audit_log_service.create_log_entry(
             entity_type=log_entry.entity_type,
@@ -54,11 +61,10 @@ def create_audit_log_entry_endpoint(
     summary="Get Audit Log Entry by ID",
     operation_id="get_audit_log_entry_by_id"
 )
-
-
 def get_audit_log_entry_by_id_endpoint(
-    log_id: str = Path(...,
-        description="ID of the audit log entry to retrieve."),
+    log_id: str = Path(
+        ..., description="ID of the audit log entry to retrieve."
+    ),
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Retrieves a specific audit log entry by its ID."""
@@ -76,8 +82,6 @@ def get_audit_log_entry_by_id_endpoint(
     summary="Get Audit Log Entries by Entity",
     operation_id="get_audit_log_entries_by_entity"
 )
-
-
 def get_audit_log_entries_by_entity_endpoint(
     entity_type: str = Path(...,
         description="Type of the entity (e.g., 'project', 'task')."),
@@ -99,8 +103,6 @@ def get_audit_log_entries_by_entity_endpoint(
     summary="Get Audit Log Entries by User",
     operation_id="get_audit_log_entries_by_user"
 )
-
-
 def get_audit_log_entries_by_user_endpoint(
     user_id: str = Path(..., description="ID of the user."),
     skip: int = Query(0, description="Skip the first N entries."),
