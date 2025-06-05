@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getProjectById, deleteProject, archiveProject, unarchiveProject } from '@/services/api/projects';
+import { getProjectById, deleteProject, archiveProject, unarchiveProject, exportProject } from '@/services/api/projects';
 import { Project } from '@/types/project';
 import { generateProjectManagerPlanningPrompt, PlanningRequestData, PlanningResponseData } from '@/services/api/planning';
 import ProjectMembers from './ProjectMembers';
@@ -25,6 +25,22 @@ const ProjectDetail: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasksError, setTasksError] = useState<string | null>(null);
+  const handleExport = async () => {
+    if (!project) return;
+    try {
+      const data = await exportProject(project.id);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${project.name}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Failed to export project');
+      console.error(err);
+    }
+  };
 
   const fetchProject = async () => {
     if (!projectId) return;
@@ -131,6 +147,7 @@ const ProjectDetail: React.FC = () => {
         <button onClick={handleDelete}>Delete Project</button>
         <button onClick={handleArchive}>Archive Project</button>
         <button onClick={handleUnarchive}>Unarchive Project</button>
+        <button onClick={handleExport}>Download JSON</button>
       </div>
 
       <ProjectMembers projectId={project.id} />

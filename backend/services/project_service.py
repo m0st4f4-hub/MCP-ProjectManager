@@ -15,8 +15,8 @@ from ..schemas.project import (
     Project  # Import schema for ProjectTemplate
 )
 from ..schemas.project_template import ProjectTemplate  # Import task and project member schemas for template population
-from ..schemas.task import TaskCreate
-from ..schemas.project import ProjectMemberCreate  # Import CRUD operations
+from ..schemas.task import TaskCreate, Task
+from ..schemas.project import ProjectMemberCreate, ProjectMember
 from backend.crud.projects import (
     get_project,
     get_project_by_name,
@@ -275,3 +275,23 @@ class ProjectService:
         return await get_project_file_association(self.db, project_id, file_memory_entity_id)  # Convert to async method and use await
     async def get_tasks_by_project(self, project_id: str, search: Optional[str] = None, status: Optional[str] = None, is_archived: Optional[bool] = False) -> List[models.Task]:  # Delegate to CRUD and await
         return await get_tasks_by_project(self.db, project_id, search, status, is_archived)
+
+    async def export_project(self, project_id: str) -> dict:
+        """Return project details including tasks and members."""
+        stmt = select(models.Project).where(models.Project.id == project_id).options(
+            selectinload(models.Project.tasks),
+            selectinload(models.Project.project_members).selectinload(models.ProjectMember.user),
+        )
+        result = await self.db.execute(stmt)
+        db_project = result.scalar_one_or_none()
+        if not db_project:
+            raise EntityNotFoundError("Project", project_id)
+
+        project_data = Project.model_validate(db_project)
+        tasks = [Task.model_validate(t) for t in db_project.tasks]
+        members = [ProjectMember.model_validate(m) for m in db_project.project_members]
+        return {
+            "project": project_data,
+            "tasks": tasks,
+            "members": members,
+        }

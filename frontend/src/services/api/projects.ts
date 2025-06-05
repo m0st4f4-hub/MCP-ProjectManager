@@ -5,6 +5,7 @@ import {
   ProjectFilters,
   ProjectMember,
   ProjectMemberCreateData,
+  Task,
 } from '@/types';
 import { request } from './request';
 import { buildApiUrl, API_CONFIG } from './config';
@@ -254,5 +255,13 @@ export const disassociateFileFromProject = async (
     {
       method: 'DELETE',
     }
+  );
+};
+
+export const exportProject = async (
+  projectId: string,
+): Promise<{ project: Project; tasks: Task[]; members: ProjectMember[] }> => {
+  return request<{ project: Project; tasks: Task[]; members: ProjectMember[] }>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/export`),
   );
 };

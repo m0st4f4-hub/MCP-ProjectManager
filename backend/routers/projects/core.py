@@ -358,3 +358,30 @@ async def unarchive_project(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
+
+
+@router.get(
+    "/{project_id}/export",
+    response_model=DataResponse[dict],
+    summary="Export Project",
+    operation_id="export_project",
+)
+async def export_project(
+    project_id: str,
+    project_service: ProjectService = Depends(get_project_service),
+):
+    """Export a project's details including tasks and members."""
+    try:
+        export_data = await project_service.export_project(project_id)
+        return DataResponse[dict](
+            data=export_data,
+            message="Project exported successfully",
+        )
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        logging.error(f"Unexpected error in GET /projects/{project_id}/export: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error: {str(e)}",
+        )
