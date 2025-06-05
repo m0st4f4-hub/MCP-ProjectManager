@@ -30,6 +30,7 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { DeleteIcon } from '@chakra-ui/icons';
+import { parseDate } from '@/utils/date';
 import TaskStatusTag from "../common/TaskStatusTag";
 import TaskProjectTag from "../common/TaskProjectTag";
 import TaskAgentTag from "../TaskAgentTag";
@@ -488,7 +489,7 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
                {comments.map((comment) => (
                  <Box key={comment.id} p={3} borderWidth="1px" borderRadius="md" bg="gray.50">
                    <Text fontSize="sm" mb={1}><strong>{comment.user_id || "Unknown User"}:</strong> {comment.content}</Text>
-                   <Text fontSize="xs" color="gray.500">{new Date(comment.created_at).toLocaleString()}</Text>
+                   <Text fontSize="xs" color="gray.500">{parseDate(comment.created_at).toLocaleString()}</Text>
                  </Box>
                ))}
              </VStack>

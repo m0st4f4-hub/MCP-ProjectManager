@@ -15,6 +15,7 @@ import AppIcon from "../common/AppIcon";
 
 // Import tokens
 import { sizing, shadows, typography } from "../../tokens";
+import { parseDate } from "@/utils/date";
 
 interface ActivityItem {
   type: string;
@@ -125,7 +126,7 @@ const RecentActivityList: React.FC<RecentActivityListProps> = ({
                   fontSize={typography.fontSize.xs}
                   color="textSecondary"
                 >
-                  {item.date ? new Date(item.date).toLocaleString() : ""}
+                  {item.date ? parseDate(item.date).toLocaleString() : ""}
                 </Text>
               </Flex>
             </Box>

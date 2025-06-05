@@ -10,10 +10,11 @@ import {
 } from '@chakra-ui/react';
 import { CheckCircleIcon, RepeatClockIcon, TimeIcon } from '@chakra-ui/icons';
 import { format, formatRelative } from 'date-fns';
+import { parseDate } from '@/utils/date';
 import { ProjectWithMeta, Project } from '@/types';
 import { colorPrimitives } from '@/tokens/colors';
 import AppIcon from '../common/AppIcon';
-import ProjectMenu from './ProjectMenu';
+import ProjectCardMenu from './ProjectCardMenu';
 
 interface ProjectCardProps {
   project: ProjectWithMeta;
@@ -62,17 +63,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   onCopyGet,
   onOpenCliPrompt,
 }) => {
-  const {
-    colorScheme,
-    icon: StatusIcon,
-    fullText,
-  } = getProjectStatusInfo(project);
+  const { colorScheme, icon: StatusIcon, fullText } = getProjectStatusInfo(project);
   const displayTotalTasks = project.task_count ?? 0;
   const displayCompletedTasks = project.completed_task_count ?? 0;
-  const displayProgress =
-    displayTotalTasks > 0
-      ? (displayCompletedTasks / displayTotalTasks) * 100
-      : 0;
+  const displayProgress = displayTotalTasks > 0 ? (displayCompletedTasks / displayTotalTasks) * 100 : 0;
   const displayDescription = project.description || 'No description provided.';
 
   const cardBaseStyles: BoxProps = {
@@ -112,16 +106,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     },
   };
 
-  const currentCardStyles = project.is_archived
-    ? cardArchivedStyles
-    : cardActiveStyles;
+  const currentCardStyles = project.is_archived ? cardArchivedStyles : cardActiveStyles;
 
   return (
-    <Box
-      {...currentCardStyles}
-      role="group"
-      data-testid={`project-card-${project.id}`}
-    >
+    <Box {...currentCardStyles} role="group" data-testid={`project-card-${project.id}`}>
       {project.is_archived && (
         <Flex
           position="absolute"
@@ -143,26 +131,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <Text isTruncated>Archived</Text>
         </Flex>
       )}
-      <VStack
-        spacing="3"
-        align="stretch"
-        flexGrow={1}
-        opacity={project.is_archived ? 0.6 : 1}
-      >
+      <VStack spacing="3" align="stretch" flexGrow={1} opacity={project.is_archived ? 0.6 : 1}>
         <Flex justifyContent="space-between" alignItems="flex-start" mb={2}>
-          <Heading
-            as="h3"
-            size="md"
-            color={project.is_archived ? 'textDisabled' : 'textStrong'}
-            fontWeight="semibold"
-            noOfLines={2}
-            title={project.name}
-            flexGrow={1}
-            mr={2}
-          >
+          <Heading as="h3" size="md" color={project.is_archived ? 'textDisabled' : 'textStrong'} fontWeight="semibold" noOfLines={2} title={project.name} flexGrow={1} mr={2}>
             {project.name}
           </Heading>
-          <ProjectMenu
+          <ProjectCardMenu
             project={project}
             onEdit={onEdit}
             onArchive={onArchive}
@@ -170,34 +144,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             onDelete={onDelete}
             onCopyGet={onCopyGet}
             onOpenCliPrompt={onOpenCliPrompt}
-            disableActions={
-              !!(project.is_archived && projectToDeleteId === project.id)
-            }
+            disableActions={!!(project.is_archived && projectToDeleteId === project.id)}
           />
         </Flex>
-        <Text
-          fontSize="sm"
-          color={project.description ? 'textSecondary' : 'textPlaceholder'}
-          fontWeight="normal"
-          lineHeight="condensed"
-          noOfLines={2}
-          title={displayDescription}
-          fontStyle={project.description ? undefined : 'italic'}
-        >
+        <Text fontSize="sm" color={project.description ? 'textSecondary' : 'textPlaceholder'} fontWeight="normal" lineHeight="condensed" noOfLines={2} title={displayDescription} fontStyle={project.description ? undefined : 'italic'}>
           {displayDescription}
         </Text>
         <Flex justifyContent="space-between" alignItems="center" mt="1" mb="1">
-          <Badge
-            px="2.5"
-            py="0.5"
-            borderRadius="full"
-            fontSize="xs"
-            textTransform="capitalize"
-            display="inline-flex"
-            alignItems="center"
-            variant="subtle"
-            colorScheme={colorScheme}
-          >
+          <Badge px="2.5" py="0.5" borderRadius="full" fontSize="xs" textTransform="capitalize" display="inline-flex" alignItems="center" variant="subtle" colorScheme={colorScheme}>
             <AppIcon component={StatusIcon} mr="1.5" boxSize={3} />
             {fullText}
           </Badge>
@@ -206,21 +160,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           </Text>
         </Flex>
         {(displayTotalTasks > 0 || project.is_archived) && (
-          <Box
-            w="full"
-            bg={project.is_archived ? 'transparent' : 'borderDecorative'}
-            borderRadius="full"
-            h="1.5"
-            overflow="hidden"
-            mt={1}
-          >
+          <Box w="full" bg={project.is_archived ? 'transparent' : 'borderDecorative'} borderRadius="full" h="1.5" overflow="hidden" mt={1}>
             <Box
               bg={
                 project.is_archived
                   ? 'transparent'
                   : displayProgress === 100
-                    ? colorPrimitives.green[500]
-                    : 'primary'
+                  ? colorPrimitives.green[500]
+                  : 'primary'
               }
               h="full"
               w={`${displayProgress}%`}
@@ -229,23 +176,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             />
           </Box>
         )}
-        <Flex
-          justifyContent="space-between"
-          alignItems="center"
-          mt="auto"
-          pt="3"
-        >
+        <Flex justifyContent="space-between" alignItems="center" mt="auto" pt="3">
           <Text fontSize="xs" color="textSecondary">
-            Created:{' '}
-            {project.created_at
-              ? format(new Date(project.created_at), 'MMM d, yy')
-              : 'N/A'}
+            Created: {project.created_at ? format(parseDate(project.created_at), 'MMM d, yy') : 'N/A'}
           </Text>
           <Text fontSize="xs" color="textSecondary">
-            Updated:{' '}
-            {project.updated_at
-              ? formatRelative(new Date(project.updated_at), new Date())
-              : 'Never'}
+            Updated: {project.updated_at ? formatRelative(parseDate(project.updated_at), new Date()) : 'Never'}
           </Text>
         </Flex>
       </VStack>
