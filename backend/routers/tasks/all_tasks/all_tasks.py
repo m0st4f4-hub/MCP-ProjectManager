@@ -65,55 +65,61 @@ async def get_all_tasks(
 ):
     """Retrieve a list of all tasks in the system, with optional filtering and sorting."""
     try:
-    agent_id_val: Optional[str] = None
-    if agent_name:  # Assuming agent_service.get_agent_by_name is async if it involves DB IO
-    agent = await agent_service.get_agent_by_name(name=agent_name)
-    if agent:
-    agent_id_val = agent.id
-    else:  # If agent_name is specified but not found, return empty list as no tasks can match
-    return ListResponse[Task](
-    data=[],
-    total=0,
-    page=pagination.page,
-    page_size=pagination.page_size,
-    has_more=False,
-    message=f"No tasks found for agent '{agent_name}'"
-    )  # Get all tasks matching filters for total count (consider optimizing this if performance is an issue)  # Assuming get_tasks can also return a count or we have a separate count method
-    all_tasks = await task_service.get_tasks(
-    project_id=uuid.UUID(project_id) if project_id else None,  # Pass project_id if provided
-    skip=0, limit=None,  # Get all for count
-    agent_id=agent_id_val or agent_id,
-    search=search,
-    status=status,
-    is_archived=is_archived
-    )
-    total = len(all_tasks)  # Get paginated tasks
-    tasks = await task_service.get_tasks(
-    project_id=uuid.UUID(project_id) if project_id else None,  # Pass project_id if provided
-    skip=pagination.offset,
-    limit=pagination.page_size,  # Use page_size for limit
-    agent_id=agent_id_val or agent_id,
-    search=search,
-    status=status,
-    is_archived=is_archived,
-    sort_by=sort_by,
-    sort_direction=sort_direction
-    )  # Convert to Pydantic models
-    pydantic_tasks = [Task.model_validate(task) for task in tasks]  # Return standardized response
-    return ListResponse[Task](
-    data=pydantic_tasks,
-    total=total,
-    page=pagination.page,
-    page_size=pagination.page_size,
-    has_more=pagination.offset + len(pydantic_tasks) < total,
-    message=f"Retrieved {len(pydantic_tasks)} tasks" +
-    (f" for agent '{agent_name}' ({agent_id_val})" if agent_name and agent_id_val else "") +
-    (f" in project {project_id}" if project_id else "")
-    )
+        agent_id_val: Optional[str] = None
+        if agent_name:  # Assuming agent_service.get_agent_by_name is async if it involves DB IO
+            agent = await agent_service.get_agent_by_name(name=agent_name)
+            if agent:
+                agent_id_val = agent.id
+            else:  # If agent_name is specified but not found, return empty list as no tasks can match
+                return ListResponse[Task](
+                    data=[],
+                    total=0,
+                    page=pagination.page,
+                    page_size=pagination.page_size,
+                    has_more=False,
+                    message=f"No tasks found for agent '{agent_name}'"
+                )
+        all_tasks = await task_service.get_tasks(
+            project_id=uuid.UUID(project_id) if project_id else None,
+            skip=0,
+            limit=None,
+            agent_id=agent_id_val or agent_id,
+            search=search,
+            status=status,
+            is_archived=is_archived,
+        )
+        total = len(all_tasks)
+        # Get paginated tasks
+        tasks = await task_service.get_tasks(
+            project_id=uuid.UUID(project_id) if project_id else None,
+            skip=pagination.offset,
+            limit=pagination.page_size,
+            agent_id=agent_id_val or agent_id,
+            search=search,
+            status=status,
+            is_archived=is_archived,
+            sort_by=sort_by,
+            sort_direction=sort_direction,
+        )
+        # Convert to Pydantic models
+        pydantic_tasks = [Task.model_validate(task) for task in tasks]
+        # Return standardized response
+        return ListResponse[Task](
+            data=pydantic_tasks,
+            total=total,
+            page=pagination.page,
+            page_size=pagination.page_size,
+            has_more=pagination.offset + len(pydantic_tasks) < total,
+            message=(
+                f"Retrieved {len(pydantic_tasks)} tasks" +
+                (f" for agent '{agent_name}' ({agent_id_val})" if agent_name and agent_id_val else "") +
+                (f" in project {project_id}" if project_id else "")
+            )
+        )
     except ValueError as ve:
-    raise HTTPException(status_code=400, detail=f"Invalid UUID format for project_id or agent_id: {ve}")
+        raise HTTPException(status_code=400, detail=f"Invalid UUID format for project_id or agent_id: {ve}")
     except Exception as e:  # Consider logging the exception here
-    raise HTTPException(
-    status_code=500,
-    detail=f"Internal server error: {e}"
-    )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}"
+        )
