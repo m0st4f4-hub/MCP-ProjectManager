@@ -209,6 +209,90 @@ async def mcp_list_tasks(
 
 
 @router.post(
+    "/mcp-tools/task/update",
+    tags=["mcp-tools"],
+    operation_id="update_task_tool",
+)
+async def mcp_update_task(
+    project_id: str,
+    task_number: int,
+    task_update: TaskUpdate,
+    db: Session = Depends(get_db_session)
+):
+    """MCP Tool: Update an existing task."""
+    try:
+        task_service = TaskService(db)
+        task = task_service.update_task(
+            project_id=project_id,
+            task_number=task_number,
+            task_update=task_update
+        )
+        audit_service = AuditLogService(db)
+        audit_service.log_action(
+            action="task_updated",
+            entity_type="task",
+            entity_id=f"{project_id}-{task_number}",
+            changes=task_update.model_dump(exclude_unset=True)
+        )
+
+        return {
+            "success": True,
+            "task": {
+                "project_id": task.project_id,
+                "task_number": task.task_number,
+                "title": task.title,
+                "description": task.description,
+                "status": task.status,
+                "agent_id": task.agent_id,
+                "updated_at": task.updated_at.isoformat() if task.updated_at else None
+            }
+        }
+    except Exception as e:
+        logger.error(f"MCP update task failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/task/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_task_tool",
+)
+async def mcp_delete_task(
+    project_id: str,
+    task_number: int,
+    db: Session = Depends(get_db_session)
+):
+    """MCP Tool: Delete a task."""
+    try:
+        task_service = TaskService(db)
+        task = task_service.delete_task(
+            project_id=project_id,
+            task_number=task_number
+        )
+        audit_service = AuditLogService(db)
+        audit_service.log_action(
+            action="task_deleted",
+            entity_type="task",
+            entity_id=f"{project_id}-{task_number}",
+            changes=None
+        )
+
+        return {
+            "success": True,
+            "task": {
+                "project_id": task.project_id,
+                "task_number": task.task_number,
+                "title": task.title,
+                "description": task.description,
+                "status": task.status
+            }
+        }
+    except Exception as e:
+        logger.error(f"MCP delete task failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
     "/mcp-tools/memory/add-entity",
     tags=["mcp-tools"],
     operation_id="add_memory_entity_tool",
