@@ -10,6 +10,15 @@ import {
  * Thin REST wrapper for /project-templates endpoints.
  * Fully typed, portable, and encapsulated logic.
  */
+export async function deleteTemplate(
+  templateId: string,
+): Promise<{ message: string }> {
+  return request<{ message: string }>(
+    buildApiUrl("/project-templates/", `/${templateId}`),
+    { method: "DELETE" },
+  );
+}
+
 export const projectTemplatesApi = {
   /** Create a new project template */
   async create(data: ProjectTemplateCreateData): Promise<ProjectTemplate> {
@@ -42,9 +51,6 @@ export const projectTemplatesApi = {
   },
 
   /** Delete a project template */
-  async delete(templateId: string): Promise<{ message: string }> {
-    return request<{ message: string }>(buildApiUrl("/project-templates/", `/${templateId}`), {
-      method: "DELETE",
-    });
-  },
+  delete: deleteTemplate,
+  deleteTemplate,
 };
