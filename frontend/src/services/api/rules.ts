@@ -156,6 +156,37 @@ export const rulesApi = {
     },
   },
 
+  // --- Forbidden Actions APIs ---
+  forbiddenActions: {
+    // Add a forbidden action to a role
+    add: async (
+      roleId: string,
+      data: { action: string; reason?: string }
+    ): Promise<{ id: string; action: string; reason?: string; agent_role_id: string }> => {
+      return await request(
+        buildApiUrl(
+          API_CONFIG.ENDPOINTS.RULES,
+          `/roles/${roleId}/forbidden-actions`
+        ),
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        }
+      );
+    },
+
+    // Remove a forbidden action
+    remove: async (actionId: string): Promise<void> => {
+      await request(
+        buildApiUrl(
+          API_CONFIG.ENDPOINTS.RULES,
+          `/roles/forbidden-actions/${actionId}`
+        ),
+        { method: "DELETE" }
+      );
+    },
+  },
+
   // --- Rule Template APIs ---
   templates: {
     // Get all rule templates

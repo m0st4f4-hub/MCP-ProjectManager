@@ -8,6 +8,7 @@ export * from "./comment";
 export * from "./rules";
 export * from "./mcp";
 export * from "./project_template";
+export * from "./forbidden_action";
 export * from "./agent_prompt_template";
 
 // Common types used across the application
