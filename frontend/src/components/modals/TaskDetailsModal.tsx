@@ -35,6 +35,7 @@ import { useTaskStore } from "@/store/taskStore"; // To potentially get project/
 import { getDisplayableStatus, StatusID } from "@/lib/statusUtils"; // Added import
 import { DeleteIcon, DownloadIcon, RepeatClockIcon } from "@chakra-ui/icons";
 import AppIcon from "../common/AppIcon";
+import TaskFiles from "../task/TaskFiles";
 import { typography, sizing, shadows } from "@/tokens"; // Added tokens
 
 interface TaskDetailsModalProps {
@@ -438,6 +439,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                       : "N/A"}
                   </Text>
                 </Box>
+                <TaskFiles projectId={task.project_id} taskNumber={task.task_number} />
               </VStack>
             )}
           </ModalBody>
