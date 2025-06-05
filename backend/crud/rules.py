@@ -4,12 +4,16 @@ CRUD operations for rule management
 from typing import List, Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import Session, selectinload
 import uuid
 from datetime import datetime, UTC
 
 from .. import models
 from ..schemas import rules as schemas
+from ..schemas.agent_prompt_template import (
+    AgentPromptTemplateCreate,
+    AgentPromptTemplateUpdate,
+)
 
 async def create_agent_role(
     db: AsyncSession,
@@ -474,3 +478,70 @@ async def get_agent_prompt(
             prompt += f"Project: {task_context['project_info']}\n"
 
     return prompt
+
+
+# --- Prompt Template Operations ---
+
+def create_agent_prompt_template(
+    db: Session, template: AgentPromptTemplateCreate
+) -> models.AgentPromptTemplate:
+    """Create a new agent prompt template."""
+    db_template = models.AgentPromptTemplate(
+        id=str(uuid.uuid4()),
+        agent_role_id=template.agent_role_id,
+        template_name=template.template_name,
+        template_content=template.template_content,
+        context_requirements=template.context_requirements,
+        is_active=template.is_active,
+    )
+    db.add(db_template)
+    db.commit()
+    db.refresh(db_template)
+    return db_template
+
+
+def get_agent_prompt_template(
+    db: Session, agent_name: str, template_name: Optional[str] = None
+) -> Optional[models.AgentPromptTemplate]:
+    """Retrieve a prompt template for an agent role by name."""
+    query = (
+        db.query(models.AgentPromptTemplate)
+        .join(models.AgentRole)
+        .filter(models.AgentRole.name == agent_name)
+    )
+    if template_name:
+        query = query.filter(models.AgentPromptTemplate.template_name == template_name)
+    return query.first()
+
+
+def update_agent_prompt_template(
+    db: Session, template_id: str, template_update: AgentPromptTemplateUpdate
+) -> Optional[models.AgentPromptTemplate]:
+    """Update a prompt template."""
+    db_template = (
+        db.query(models.AgentPromptTemplate)
+        .filter(models.AgentPromptTemplate.id == template_id)
+        .first()
+    )
+    if not db_template:
+        return None
+    update_data = template_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_template, field, value)
+    db.commit()
+    db.refresh(db_template)
+    return db_template
+
+
+def delete_agent_prompt_template(db: Session, template_id: str) -> bool:
+    """Delete a prompt template."""
+    db_template = (
+        db.query(models.AgentPromptTemplate)
+        .filter(models.AgentPromptTemplate.id == template_id)
+        .first()
+    )
+    if not db_template:
+        return False
+    db.delete(db_template)
+    db.commit()
+    return True
