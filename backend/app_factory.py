@@ -9,6 +9,7 @@ from typing import Dict, Any
 
 from fastapi import FastAPI, Depends, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from .config.settings import settings as config_settings
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
@@ -297,7 +298,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=config_settings.allowed_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
