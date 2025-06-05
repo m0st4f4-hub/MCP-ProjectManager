@@ -59,6 +59,7 @@ async def test_task_crud_flow(authenticated_client, test_project):
 
     delete_resp = await authenticated_client.delete(f"/api/v1/tasks/{task_id}")
     assert delete_resp.status_code == 200
+    assert delete_resp.json()["data"] is True
 
     final_list = await authenticated_client.get(
         f"/api/v1/tasks/?project_id={test_project.id}"

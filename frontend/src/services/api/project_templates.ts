@@ -12,8 +12,8 @@ import {
  */
 export async function deleteTemplate(
   templateId: string,
-): Promise<{ message: string }> {
-  return request<{ message: string }>(
+): Promise<boolean> {
+  return request<boolean>(
     buildApiUrl("/project-templates/", `/${templateId}`),
     { method: "DELETE" },
   );

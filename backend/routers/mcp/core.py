@@ -320,10 +320,11 @@ async def mcp_update_task(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post(
+@router.delete(
     "/mcp-tools/task/delete",
     tags=["mcp-tools"],
     operation_id="delete_task_tool",
+    response_model=DataResponse[bool],
 )
 @track_tool_usage("delete_task_tool")
 async def mcp_delete_task(
@@ -345,7 +346,7 @@ async def mcp_delete_task(
             entity_id=f"{project_id}-{task_number}"
         )
 
-        return {"success": True, "message": "Task deleted successfully"}
+        return DataResponse[bool](data=True, message="Task deleted successfully")
     except HTTPException:
         raise
     except Exception as e:
@@ -413,10 +414,11 @@ async def mcp_list_project_files(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post(
+@router.delete(
     "/mcp-tools/project/remove-file",
     tags=["mcp-tools"],
     operation_id="remove_project_file_tool",
+    response_model=DataResponse[bool],
 )
 @track_tool_usage("remove_project_file_tool")
 async def mcp_remove_project_file(
@@ -431,7 +433,7 @@ async def mcp_remove_project_file(
             raise HTTPException(
                 status_code=404, detail="File association not found"
             )
-        return {"success": True, "message": "File removed from project successfully"}
+        return DataResponse[bool](data=True, message="File removed from project successfully")
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
@@ -916,6 +918,7 @@ async def mcp_list_handoff_criteria(
     "/mcp-tools/handoff/delete",
     tags=["mcp-tools"],
     operation_id="delete_handoff_criteria_tool",
+    response_model=DataResponse[bool],
 )
 @track_tool_usage("delete_handoff_criteria_tool")
 async def mcp_delete_handoff_criteria(
@@ -927,7 +930,7 @@ async def mcp_delete_handoff_criteria(
         success = service.delete_criteria(criteria_id)
         if not success:
             raise HTTPException(status_code=404, detail="Handoff criteria not found")
-        return {"success": True, "message": "Handoff criteria deleted successfully"}
+        return DataResponse[bool](data=True, message="Handoff criteria deleted successfully")
     except Exception as e:
         logger.error(f"MCP delete handoff criteria tool failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1001,6 +1004,7 @@ async def mcp_list_error_protocols(
     "/mcp-tools/error-protocol/remove",
     tags=["mcp-tools"],
     operation_id="remove_error_protocol_tool",
+    response_model=DataResponse[bool],
 )
 @track_tool_usage("remove_error_protocol_tool")
 async def mcp_remove_error_protocol(
@@ -1012,7 +1016,7 @@ async def mcp_remove_error_protocol(
         success = service.remove_protocol(protocol_id)
         if not success:
             raise HTTPException(status_code=404, detail="Error protocol not found")
-        return {"success": True}
+        return DataResponse[bool](data=True, message="Error protocol removed")
     except HTTPException:
         raise
     except Exception as e:
@@ -1110,6 +1114,7 @@ async def mcp_list_capabilities(
     "/mcp-tools/capability/delete",
     tags=["mcp-tools"],
     operation_id="delete_capability_tool",
+    response_model=DataResponse[bool],
 )
 async def mcp_delete_capability(
     capability_id: str,
@@ -1117,7 +1122,8 @@ async def mcp_delete_capability(
 ):
     """MCP Tool: Delete a capability."""
     try:
-        return await delete_capability_tool(capability_id, db)
+        await delete_capability_tool(capability_id, db)
+        return DataResponse[bool](data=True, message="Capability deleted")
     except HTTPException:
         raise
     except Exception as e:
@@ -1170,6 +1176,7 @@ async def mcp_list_roles(
     "/mcp-tools/user-role/remove",
     tags=["mcp-tools"],
     operation_id="remove_role_tool",
+    response_model=DataResponse[bool],
 )
 @track_tool_usage("remove_role_tool")
 async def mcp_remove_role(
@@ -1181,7 +1188,8 @@ async def mcp_remove_role(
     try:
         from ...mcp_tools.user_role_tools import remove_role_tool
 
-        return await remove_role_tool(user_id, role_name, db)
+        await remove_role_tool(user_id, role_name, db)
+        return DataResponse[bool](data=True, message="Role removed")
     except HTTPException:
         raise
     except Exception as e:

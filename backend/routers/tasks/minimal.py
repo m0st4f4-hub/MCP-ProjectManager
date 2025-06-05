@@ -56,7 +56,7 @@ async def update_task(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
-@router.delete("/{task_id}", response_model=DataResponse[Task])
+@router.delete("/{task_id}", response_model=DataResponse[bool])
 async def delete_task(
     task_id: str,
     db: AsyncSession = Depends(get_db)
@@ -77,7 +77,7 @@ async def delete_task(
         # Delete the task 
         await task_service.delete_task(project_id=project_id, task_number=task_number)
         
-        return DataResponse[Task](data=task_to_delete, message="Task deleted successfully")
+        return DataResponse[bool](data=True, message="Task deleted successfully")
     except HTTPException:
         raise
     except Exception as e:

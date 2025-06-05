@@ -55,6 +55,7 @@ async def test_role_lifecycle():
 
         resp = await client.delete("/123/roles/admin")
         assert resp.status_code == 200
+        assert resp.json()["data"] is True
 
         resp = await client.get("/123/roles/")
         assert resp.json()["data"] == []

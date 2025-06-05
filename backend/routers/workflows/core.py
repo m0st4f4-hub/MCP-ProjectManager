@@ -82,7 +82,7 @@ def update_workflow(
     )
 
 
-@router.delete("/{workflow_id}", response_model=DataResponse[dict])
+@router.delete("/{workflow_id}", response_model=DataResponse[bool])
 def delete_workflow(
     workflow_id: str,
     workflow_service: WorkflowService = Depends(get_workflow_service),
@@ -90,7 +90,7 @@ def delete_workflow(
     success = workflow_service.delete_workflow(workflow_id)
     if not success:
         raise HTTPException(status_code=404, detail="Workflow not found")
-    return DataResponse[dict](
-        data={"message": "Workflow deleted"},
+    return DataResponse[bool](
+        data=True,
         message="Workflow deleted",
     )

@@ -38,7 +38,7 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
 
 @router.post(
     "/{project_id}/tasks/",
-    response_model=DataResponse[Task],
+    response_model=DataResponse[bool],
     summary="Create Task in Project",
     tags=["Tasks"],
     operation_id="projects_tasks_create_task"
@@ -199,9 +199,9 @@ async def read_task(
             task_number=task_number
         )
 
-        return DataResponse[Task](
-            data=Task.model_validate(db_task),
-            message=f"Task  #{task_number} retrieved successfully"
+        return DataResponse[bool](
+            data=True,
+            message=f"Task  #{task_number} deleted successfully"
         )
     except EntityNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -382,8 +382,8 @@ async def delete_task(
             }
         )
 
-        return DataResponse[Task](
-            data=Task.model_validate(db_task),
+        return DataResponse[bool](
+            data=True,
             message=f"Task  #{task_number} deleted successfully"
         )
     except EntityNotFoundError as e:

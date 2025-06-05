@@ -16,8 +16,8 @@ export const userRolesApi = {
   async remove(
     userId: string,
     roleName: UserRole
-  ): Promise<{ message: string }> {
-    return request<{ message: string }>(
+  ): Promise<boolean> {
+    return request<boolean>(
       buildApiUrl(API_CONFIG.ENDPOINTS.USERS, `/${userId}/roles/${roleName}`),
       { method: 'DELETE' }
     );

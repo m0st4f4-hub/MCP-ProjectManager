@@ -99,7 +99,7 @@ async def update_comment_endpoint(
         message="Comment updated successfully"
     )
 
-@router.delete("/{comment_id}", response_model=DataResponse[dict], summary="Delete Comment", operation_id="delete_comment")
+@router.delete("/{comment_id}", response_model=DataResponse[bool], summary="Delete Comment", operation_id="delete_comment")
 
 
 async def delete_comment_endpoint(
@@ -110,7 +110,7 @@ async def delete_comment_endpoint(
     success = await delete_comment(db, comment_id=comment_id)
     if not success:
         raise HTTPException(status_code=404, detail="Comment not found")
-    return DataResponse[dict](
-        data={"message": "Comment deleted successfully"},
-        message="Comment deleted successfully"
-    )
+    return DataResponse[bool](
+            data=True,
+            message="Comment deleted successfully"
+        )

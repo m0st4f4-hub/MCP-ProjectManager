@@ -62,8 +62,8 @@ export const forbiddenActionsApi = {
   },
 
   /** Delete a forbidden action */
-  async delete(actionId: string): Promise<{ message: string }> {
-    return request<{ message: string }>(
+  async delete(actionId: string): Promise<boolean> {
+    return request<boolean>(
       buildApiUrl(
         API_CONFIG.ENDPOINTS.RULES,
         `/roles/forbidden-actions/${actionId}`

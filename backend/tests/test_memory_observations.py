@@ -78,7 +78,8 @@ async def test_update_and_delete_observation():
         assert resp.json()["content"] == "updated"
 
         resp = await client.delete(f"/observations/{obs_id}")
-        assert resp.status_code == 204
+        assert resp.status_code == 200
+        assert resp.json()["data"] is True
 
         resp = await client.delete(f"/observations/{obs_id}")
         assert resp.status_code == 404

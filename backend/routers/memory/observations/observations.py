@@ -72,7 +72,7 @@ def update_observation(
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 
-@router.delete("/observations/{observation_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/observations/{observation_id}", response_model=DataResponse[bool])
 
 
 def delete_observation(
@@ -84,7 +84,7 @@ def delete_observation(
         success = memory_service.delete_observation(observation_id)
         if not success:
             raise EntityNotFoundError("MemoryObservation", observation_id)
-        return {"message": "Memory observation deleted successfully"}
+        return DataResponse[bool](data=True, message="Memory observation deleted successfully")
     except EntityNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

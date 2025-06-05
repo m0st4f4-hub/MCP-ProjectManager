@@ -119,7 +119,7 @@ def update_relation(
             detail=f"Internal server error: {e}",
         )
 
-@router.delete("/relations/{relation_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/relations/{relation_id}", response_model=DataResponse[bool])
 
 
 def delete_relation(
@@ -131,7 +131,7 @@ def delete_relation(
         success = memory_service.delete_memory_relation(relation_id)
         if not success:
             raise EntityNotFoundError("MemoryRelation", relation_id)
-        return {"message": "Memory relation deleted successfully"}
+        return DataResponse[bool](data=True, message="Memory relation deleted successfully")
     except EntityNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
