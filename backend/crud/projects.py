@@ -6,7 +6,7 @@ from backend.schemas import Project
 from backend.models.project import Project as ProjectModel
 from backend.models.task import Task
 import uuid
-from typing import Optional
+from typing import Optional, List
 from .project_validation import project_name_exists
 import logging
 from sqlalchemy.orm import joinedload
@@ -155,9 +155,14 @@ async def get_project_by_name_async(db: AsyncSession, name: str,
                                 return project
 
 
-async def get_projects(db: AsyncSession, skip: int = 0,
-                        search: Optional[str] = None, status: Optional[str] = None,
-                        is_archived: Optional[bool] = False):
+async def get_projects(
+    db: AsyncSession,
+    skip: int = 0,
+    limit: Optional[int] = None,
+    search: Optional[str] = None,
+    status: Optional[str] = None,
+    is_archived: Optional[bool] = False,
+) -> List[ProjectModel]:
     stmt = select(ProjectModel)
     
     if search:
@@ -179,8 +184,10 @@ async def get_projects(db: AsyncSession, skip: int = 0,
     
     # Add joinedload for tasks to calculate count more efficiently
     stmt = stmt.options(joinedload(ProjectModel.tasks))
-    # Apply offset and order_by
+    # Apply offset, limit and order_by
     stmt = stmt.order_by(ProjectModel.name).offset(skip)
+    if limit is not None:
+        stmt = stmt.limit(limit)
 
     result = await db.execute(stmt)
     print(
