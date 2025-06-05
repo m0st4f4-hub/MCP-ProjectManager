@@ -89,18 +89,7 @@ async def get_all_tasks(
                     has_more=False,
                     message=f"No tasks found for agent '{agent_name}'"
                 )
-        all_tasks = await task_service.get_tasks(
-            project_id=uuid.UUID(project_id) if project_id else None,
-            skip=0,
-            limit=None,
-            agent_id=agent_id_val or agent_id,
-            search=search,
-            status=status,
-            is_archived=is_archived,
-        )
-        total = len(all_tasks)
-        # Get paginated tasks
-        tasks = await task_service.get_tasks(
+        tasks, total = await task_service.get_tasks(
             project_id=uuid.UUID(project_id) if project_id else None,
             skip=pagination.offset,
             limit=pagination.page_size,
