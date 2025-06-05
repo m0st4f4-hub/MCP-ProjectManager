@@ -95,9 +95,12 @@ graph TD
 - `AgentWorkloadChart.tsx`
 - `CreateProjectModal.tsx`
 - `DashboardError.tsx`
+- `DashboardHeader.tsx`
 - `DashboardLoading.tsx`
 - `DashboardSection.tsx`
+- `DashboardSidebar.tsx`
 - `DashboardStatsGrid.tsx`
+- `DashboardViews.tsx`
 - `EditProjectModal.tsx`
 - `ProjectProgressChart.tsx`
 - `RecentActivityList.tsx`
@@ -108,4 +111,6 @@ graph TD
 - `useDashboardData.ts`
 
 <!-- File List End -->
+
+
 

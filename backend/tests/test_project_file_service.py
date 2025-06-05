@@ -43,3 +43,15 @@ def test_associate_multiple_files_skips_existing():
         result = service.associate_multiple_files_with_project("p2", [1, 2])
         mock_create.assert_called_once()
         assert result == ["new"]
+
+
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_get_project_files_passes_pagination():
+    session = MagicMock()
+    service = ProjectFileAssociationService(session)
+    service.get_files_for_project = MagicMock(return_value=[])
+    await service.get_project_files("p1", skip=5, limit=10)
+    service.get_files_for_project.assert_called_once_with("p1", skip=5, limit=10)
