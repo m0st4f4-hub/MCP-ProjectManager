@@ -7,6 +7,7 @@ from ....services.agent_handoff_service import AgentHandoffService
 from ....schemas.agent_handoff_criteria import (
     AgentHandoffCriteria,
     AgentHandoffCriteriaCreate,
+    AgentHandoffCriteriaUpdate,
 )
 
 router = APIRouter()
@@ -22,6 +23,19 @@ def list_handoff_criteria(
     return service.list_criteria(agent_role_id)
 
 
+@router.get("/{criteria_id}", response_model=AgentHandoffCriteria)
+def get_handoff_criteria(
+    criteria_id: str,
+    db: Session = Depends(get_db),
+):
+    """Retrieve a single handoff criteria by ID."""
+    service = AgentHandoffService(db)
+    db_obj = service.get_criteria(criteria_id)
+    if not db_obj:
+        raise HTTPException(status_code=404, detail="Criteria not found")
+    return db_obj
+
+
 @router.post("/", response_model=AgentHandoffCriteria)
 def create_handoff_criteria(
     criteria: AgentHandoffCriteriaCreate,
@@ -30,6 +44,20 @@ def create_handoff_criteria(
     """Create new handoff criteria."""
     service = AgentHandoffService(db)
     return service.create_criteria(criteria)
+
+
+@router.put("/{criteria_id}", response_model=AgentHandoffCriteria)
+def update_handoff_criteria(
+    criteria_id: str,
+    criteria_update: AgentHandoffCriteriaUpdate,
+    db: Session = Depends(get_db),
+):
+    """Update existing handoff criteria."""
+    service = AgentHandoffService(db)
+    db_obj = service.update_criteria(criteria_id, criteria_update)
+    if not db_obj:
+        raise HTTPException(status_code=404, detail="Criteria not found")
+    return db_obj
 
 
 @router.delete("/{criteria_id}")
