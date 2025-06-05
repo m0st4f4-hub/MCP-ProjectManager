@@ -678,6 +678,36 @@ async def mcp_search_memory(
 
 
 @router.get(
+    "/mcp-tools/memory/search-graph",
+    tags=["mcp-tools"],
+    operation_id="search_graph_tool",
+)
+async def mcp_search_graph(
+    query: str,
+    limit: int = 10,
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """MCP Tool: Search memory graph."""
+    try:
+        results = memory_service.search_memory_entities(query, limit=limit)
+        return {
+            "success": True,
+            "results": [
+                {
+                    "id": r.id,
+                    "type": r.type,
+                    "name": r.name,
+                    "description": r.description,
+                }
+                for r in results
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP search graph failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
     "/mcp-tools/memory/get-content",
     tags=["mcp-tools"],
     operation_id="get_memory_content_tool",

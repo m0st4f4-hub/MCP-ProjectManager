@@ -15,7 +15,10 @@ from backend.crud.memory import (
     get_memory_entity_by_name,
 )
 from backend.services.memory_service import MemoryService
-from backend.schemas.memory import MemoryEntityCreate, MemoryObservationCreate
+from backend.schemas.memory import (
+    MemoryEntityCreate,
+    MemoryObservationCreate,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -123,6 +126,32 @@ async def search_memory_tool(
     }
     except Exception as e:
         logger.error(f"MCP search memory failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def search_graph_tool(
+    query: str,
+    limit: int = 10,
+    db: Session = None,
+) -> dict:
+    """MCP Tool: Search memory graph using MemoryService."""
+    try:
+        service = MemoryService(db)
+        results = service.search_memory_entities(query, limit=limit)
+        return {
+            "success": True,
+            "entities": [
+                {
+                    "id": e.id,
+                    "name": e.name,
+                    "type": e.type,
+                    "description": e.description,
+                }
+                for e in results
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP search graph failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
