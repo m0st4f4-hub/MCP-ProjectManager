@@ -12,5 +12,8 @@ __all__ = [
     'search_memory_tool',
     'add_project_file_tool',
     'list_project_files_tool',
-    'remove_project_file_tool'
+    'remove_project_file_tool',
+    'create_error_protocol_tool',
+    'list_error_protocols_tool',
+    'delete_error_protocol_tool'
 ]

@@ -7,6 +7,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 import logging
+import uuid
+
+from .... import models
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -705,4 +708,89 @@ async def mcp_create_agent_rule(
         return {"success": True, "rule": new_rule.model_dump()}
     except Exception as e:
         logger.error(f"MCP create agent rule failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/rule/error-protocol/create",
+    tags=["mcp-tools"],
+    operation_id="create_error_protocol_tool",
+)
+async def mcp_create_error_protocol(
+    role_id: str,
+    error_type: str,
+    protocol: str,
+    priority: int = 5,
+    is_active: bool = True,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a new error protocol."""
+    try:
+        new_protocol = models.AgentErrorProtocol(
+            id=str(uuid.uuid4()).replace("-", ""),
+            agent_role_id=role_id,
+            error_type=error_type,
+            protocol=protocol,
+            priority=priority,
+            is_active=is_active,
+        )
+        db.add(new_protocol)
+        db.commit()
+        db.refresh(new_protocol)
+        return {"success": True, "error_protocol": new_protocol.model_dump()}
+    except Exception as e:  # pragma: no cover - unexpected DB failure
+        logger.error(f"MCP create error protocol failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/rule/error-protocol/list",
+    tags=["mcp-tools"],
+    operation_id="list_error_protocols_tool",
+)
+async def mcp_list_error_protocols(
+    role_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List error protocols for a role."""
+    try:
+        protocols = (
+            db.query(models.AgentErrorProtocol)
+            .filter(models.AgentErrorProtocol.agent_role_id == role_id)
+            .all()
+        )
+        return {
+            "success": True,
+            "error_protocols": [p.model_dump() for p in protocols],
+        }
+    except Exception as e:  # pragma: no cover - unexpected DB failure
+        logger.error(f"MCP list error protocols failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/rule/error-protocol/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_error_protocol_tool",
+)
+async def mcp_delete_error_protocol(
+    protocol_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete an error protocol."""
+    try:
+        protocol = (
+            db.query(models.AgentErrorProtocol)
+            .filter(models.AgentErrorProtocol.id == protocol_id)
+            .first()
+        )
+        if not protocol:
+            raise HTTPException(status_code=404, detail="Error protocol not found")
+        db.delete(protocol)
+        db.commit()
+        return {"success": True, "message": "Error protocol deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:  # pragma: no cover - unexpected DB failure
+        logger.error(f"MCP delete error protocol failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

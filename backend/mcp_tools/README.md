@@ -7,6 +7,7 @@ Key files:
 *   `task_tools.py`: MCP-specific tools for interacting with tasks.
 *   `memory_tools.py`: MCP-specific tools for interacting with the Memory Service.
 *   `project_tools.py`: MCP-specific tools for interacting with projects.
+*   `error_protocol_tools.py`: Tools for managing agent error handling protocols.
 *   `__init__.py`: Initializes the mcp_tools package.
 
 ## Architecture Diagram
@@ -24,6 +25,7 @@ graph TD
 - `__init__.py`
 - `memory_tools.py`
 - `project_tools.py`
+- `error_protocol_tools.py`
 - `task_tools.py`
 
 <!-- File List End -->
