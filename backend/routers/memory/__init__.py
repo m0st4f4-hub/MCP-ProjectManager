@@ -20,6 +20,17 @@ def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
     return MemoryService(db)
 
 
+@router.get("/graph")
+def get_memory_graph(
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """Retrieve the full knowledge graph."""
+    try:
+        return memory_service.get_knowledge_graph()
+    except Exception as e:  # pragma: no cover - pass through any service errors
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+
+
 @router.post("/ingest-url", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
 def ingest_url_root(
     ingest_input: UrlIngestInput,
