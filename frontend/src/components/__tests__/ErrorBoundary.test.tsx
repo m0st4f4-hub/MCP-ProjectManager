@@ -15,4 +15,14 @@ describe('ErrorBoundary', () => {
     );
     expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong');
   });
+
+  it('renders custom fallback when provided', () => {
+    const Custom = () => <div data-testid="custom">Oops</div>;
+    render(
+      <ErrorBoundary fallback={<Custom />}>
+        <ProblemChild />
+      </ErrorBoundary>
+    );
+    expect(screen.getByTestId('custom')).toHaveTextContent('Oops');
+  });
 });

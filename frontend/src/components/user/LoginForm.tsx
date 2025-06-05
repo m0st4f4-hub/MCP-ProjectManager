@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Box,
   VStack,
@@ -9,18 +9,20 @@ import {
   Heading,
   Text,
   useToast,
-} from "@chakra-ui/react";
-import { useRouter } from "next/navigation";
-import { login } from "@/services/api/users";
-import { LoginRequest, TokenResponse } from "@/types/user";
-import { useAuthStore } from "@/store/authStore";
+} from '@chakra-ui/react';
+import { useRouter } from 'next/navigation';
+import { login } from '@/services/api/users';
+import { LoginRequest, TokenResponse } from '@/types/user';
+import { useAuthStore } from '@/store/authStore';
 
 const LoginForm: React.FC = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const token = useAuthStore((state) => state.token);
   const setToken = useAuthStore((state) => state.setToken);
+  const logout = useAuthStore((state) => state.logout);
   const toast = useToast();
   const router = useRouter();
 
@@ -34,16 +36,15 @@ const LoginForm: React.FC = () => {
     try {
       const response: TokenResponse = await login(loginData);
       setToken(response.access_token);
-      localStorage.setItem("token", response.access_token);
-      router.push("/");
+      router.push('/');
     } catch (err: any) {
-      console.error("Login failed:", err);
-      const message = err.message || "An error occurred during login.";
+      console.error('Login failed:', err);
+      const message = err.message || 'An error occurred during login.';
       setError(message);
       toast({
-        title: "Login failed",
+        title: 'Login failed',
         description: message,
-        status: "error",
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -51,6 +52,33 @@ const LoginForm: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  if (token) {
+    return (
+      <Box
+        p={8}
+        maxWidth="500px"
+        borderWidth={1}
+        borderRadius={8}
+        boxShadow="lg"
+      >
+        <VStack spacing={4}>
+          <Text>You are logged in.</Text>
+          <Button
+            colorScheme="red"
+            width="full"
+            onClick={() => {
+              logout();
+              router.push('/login');
+            }}
+            data-testid="logout-button"
+          >
+            Logout
+          </Button>
+        </VStack>
+      </Box>
+    );
+  }
 
   return (
     <Box p={8} maxWidth="500px" borderWidth={1} borderRadius={8} boxShadow="lg">
