@@ -1,7 +1,20 @@
 export * from "./colors";
-export * from "./fontFamily";
-export * from "./fontSize";
-export * from "./typography";
+export { fontFamily } from "./fontFamily";
+export type { FontFamily } from "./fontFamily";
+export { fontSize } from "./fontSize";
+export type { FontSize } from "./fontSize";
+export {
+  typography,
+  fontWeight,
+  lineHeight,
+  letterSpacing,
+} from "./typography";
+export type {
+  Typography,
+  FontWeight,
+  LineHeight,
+  LetterSpacing,
+} from "./typography";
 export * from "./sizing";
 export * from "./shadows";
 export * from "./zIndex";
