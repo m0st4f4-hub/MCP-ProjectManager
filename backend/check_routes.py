@@ -1,23 +1,49 @@
 #!/usr/bin/env python3
-"""Test script to check what endpoints are registered"""
+"""Enumerate FastAPI routes for debugging."""
 
-import sys
+from __future__ import annotations
+
+import argparse
+import json
 import os
-sys.path.insert(0, os.path.abspath('.'))
+import sys
 
-try:
-    from backend.main import app
-    print("App imported successfully")
+sys.path.insert(0, os.path.abspath("."))
 
-    # Print all routes
-    print("\nRegistered routes:")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="List registered FastAPI routes")
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output routes as a JSON array",
+    )
+    args = parser.parse_args()
+
+    try:
+        from backend.main import app
+    except Exception as e:  # pragma: no cover - simple utility
+        print(f"Error: {e}")
+        import traceback
+
+        traceback.print_exc()
+        sys.exit(1)
+
+    routes = []
     for route in app.routes:
-        if hasattr(route, 'path'):
-            methods = getattr(route, 'methods', ['GET'])
-            print(f"{methods} {route.path}")
+        if hasattr(route, "path"):
+            methods = list(getattr(route, "methods", ["GET"]))
+            routes.append({"path": route.path, "methods": methods})
 
-    print("\nDone")
-except Exception as e:
-    print(f"Error: {e}")
-    import traceback
-    traceback.print_exc()
+    if args.json:
+        print(json.dumps(routes, indent=2))
+    else:
+        print("App imported successfully")
+        print("\nRegistered routes:")
+        for r in routes:
+            print(f"{r['methods']} {r['path']}")
+        print("\nDone")
+
+
+if __name__ == "__main__":  # pragma: no cover - entry point
+    main()
