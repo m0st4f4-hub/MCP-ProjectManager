@@ -1,13 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Geist+Sans:wght@400;500;600;700&display=swap");
-@import "tailwindcss";
-
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@import url('https://fonts.googleapis.com/css2?family=Geist+Sans:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
 
 body {
-  font-family: var(--font-sans);
+  font-family: theme('fontFamily.sans');
 }
 
 h1,
@@ -16,7 +11,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-sans);
+  font-family: theme('fontFamily.sans');
 }
 
 a {
@@ -32,11 +27,11 @@ a {
 
 /* Add overrides after Tailwind imports */
 .chakra-modal__overlay {
-  background-color: var(--chakra-colors-overlayDefault);
+  @apply bg-overlayDefault;
 }
 
 .chakra-modal__content {
-  background-color: var(--chakra-colors-bgModal);
+  @apply bg-bgModal;
 }
 
 /* Existing global styles below if any */
