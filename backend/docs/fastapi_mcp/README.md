@@ -93,6 +93,7 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/memory/add-observation` (POST)
 - `/mcp-tools/memory/add-relation` (POST)
 - `/mcp-tools/memory/search` (GET)
+- `/mcp-tools/memory/search-graph` (GET)
 - `/mcp-tools/rule/forbidden/add` (POST)
 - `/mcp-tools/rule/forbidden/list` (GET)
 - `/mcp-tools/handoff/create` (POST)
@@ -101,6 +102,9 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/error-protocol/add` (POST)
 - `/mcp-tools/error-protocol/list` (GET)
 - `/mcp-tools/error-protocol/remove` (DELETE)
+- `/mcp-tools/user-role/assign` (POST)
+- `/mcp-tools/user-role/list` (GET)
+- `/mcp-tools/user-role/remove` (DELETE)
 
 ### Agent Handoff Tools
 
