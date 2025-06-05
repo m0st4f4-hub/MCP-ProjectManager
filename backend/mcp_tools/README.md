@@ -58,6 +58,7 @@ actions = await list_forbidden_actions_tool(agent_role_id="manager", db=session)
 - `agent_handoff_tools.py`
 - `forbidden_action_tools.py`
 - `error_protocol_tools.py`
+- `verification_requirement_tools.py`
 
 <!-- File List End -->
 

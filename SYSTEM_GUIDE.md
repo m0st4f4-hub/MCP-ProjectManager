@@ -39,6 +39,8 @@ node dev_start.js
 - **✅ Agent System**: Rules-based agents with capabilities and constraints
 - **✅ Memory System**: Knowledge graph for file and content management
 - **✅ Audit Logging**: Complete action tracking and history
+- **✅ Verification Requirement Tools**: Manage agent role verification
+  requirements via MCP (create, list, delete)
 
 ## 🌐 System Endpoints
 
