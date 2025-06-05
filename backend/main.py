@@ -1,14 +1,13 @@
 import logging
 import logging.config
 from fastapi import FastAPI, Request, Response, Depends, status
-from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from contextlib import asynccontextmanager
 from typing import Dict, Any
 
 from .database import get_db, Base, engine
-from .middleware import init_middleware
+from backend.app_factory import create_app
 
 # Optional MCP integration
 try:
@@ -82,47 +81,6 @@ async def lifespan(app: FastAPI):
     yield
 
     logger.info("Shutting down...")
-
-
-def create_app() -> FastAPI:
-    app = FastAPI(
-        title="Task Manager API",
-        version="2.0.0",
-        description="Task Manager with MCP integration",
-        openapi_url="/openapi.json",
-        docs_url=None,
-        redoc_url=None,
-        lifespan=lifespan
-    )
-
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    init_middleware(app)
-    include_app_routers(app)
-
-    _rebuild_models()
-
-    if FastApiMCP is not None:
-        mcp = FastApiMCP(
-            app,
-            name="Task Manager MCP",
-            description="MCP server for task manager",
-        )
-        mcp.mount()
-        app.state.mcp_instance = mcp
-    else:
-        class MockMCP:
-            tools = {}
-        app.state.mcp_instance = MockMCP()
-
-    _define_custom_routes(app)
-    return app
 
 
 def _rebuild_models():
@@ -223,4 +181,4 @@ def _define_custom_routes(app: FastAPI):
         }
 
 
-app = FastAPI()
+app = create_app()
