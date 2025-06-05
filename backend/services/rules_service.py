@@ -183,10 +183,21 @@ def get_error_protocol(self, agent_name: str, error_type: str) -> Optional[str]:
 
         return None
 
-def get_universal_mandates_for_prompt(self) -> List[str]:
+    def get_universal_mandates_for_prompt(self) -> List[str]:
         """Get universal mandates formatted for agent prompts"""
         mandates = crud_rules.get_universal_mandates(self.db)
         return [f"**{mandate.title}**: {mandate.description}" for mandate in mandates]
+
+def delete_prompt_template(self, template_id: str) -> bool:
+        """Delete an agent prompt template by ID."""
+        template = self.db.query(crud_rules.AgentPromptTemplate).filter(
+            crud_rules.AgentPromptTemplate.id == template_id
+        ).first()
+        if not template:
+            return False
+        self.db.delete(template)
+        self.db.commit()
+        return True
 
 def initialize_default_rules(self):
         """Initialize default rules for the system"""
