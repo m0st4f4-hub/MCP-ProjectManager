@@ -64,6 +64,7 @@ These stores centralize application state and logic for handling data related to
 These stores are fundamental to the application's reactivity and data flow, providing a structured way to manage and interact with backend data on the client side.
 
 ## Architecture Diagram
+
 ```mermaid
 graph TD
     user((User)) -->|interacts with| frontend(Frontend)
@@ -73,6 +74,7 @@ graph TD
 ```
 
 <!-- File List Start -->
+
 ## File List
 
 - `agentStore.ts`
@@ -81,6 +83,6 @@ graph TD
 - `index.ts`
 - `projectStore.ts`
 - `taskStore.ts`
+- `memoryStore.ts`
 
 <!-- File List End -->
-
