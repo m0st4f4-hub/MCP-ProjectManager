@@ -14,6 +14,7 @@ from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
+from ....services.user_role_service import UserRoleService
 from ....services.rules_service import RulesService
 from ....schemas.project import ProjectCreate
 from ....schemas.task import TaskCreate
@@ -395,6 +396,76 @@ async def mcp_remove_project_file(
         return {"success": True, "message": "Project file association removed successfully"}
     except Exception as e:
         logger.error(f"MCP remove project file failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/user-role/assign",
+    tags=["mcp-tools"],
+    operation_id="assign_role_tool",
+)
+async def mcp_assign_role(
+    user_id: str,
+    role_name: str,
+    db: Session = Depends(get_db_session),
+):
+    """Assign a role to a user."""
+    try:
+        service = UserRoleService(db)
+        role = service.assign_role_to_user(user_id, role_name)
+        return {
+            "success": True,
+            "role": {
+                "user_id": role.user_id,
+                "role_name": role.role_name,
+            },
+        }
+    except Exception as e:
+        logger.error(f"MCP assign role failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/user-role/list",
+    tags=["mcp-tools"],
+    operation_id="list_roles_tool",
+)
+async def mcp_list_roles(
+    user_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """List roles assigned to a user."""
+    try:
+        service = UserRoleService(db)
+        roles = service.get_user_roles(user_id)
+        return {
+            "success": True,
+            "roles": [
+                {"user_id": r.user_id, "role_name": r.role_name} for r in roles
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list roles failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/mcp-tools/user-role/remove",
+    tags=["mcp-tools"],
+    operation_id="remove_role_tool",
+)
+async def mcp_remove_role(
+    user_id: str,
+    role_name: str,
+    db: Session = Depends(get_db_session),
+):
+    """Remove a role from a user."""
+    try:
+        service = UserRoleService(db)
+        success = service.remove_role_from_user(user_id, role_name)
+        return {"success": success}
+    except Exception as e:
+        logger.error(f"MCP remove role failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
