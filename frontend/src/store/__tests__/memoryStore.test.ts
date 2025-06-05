@@ -81,4 +81,34 @@ describe('memoryStore', () => {
     expect(mockedApi.deleteEntity).toHaveBeenCalledWith(3);
     expect(useMemoryStore.getState().entities).toEqual([]);
   });
+
+  it('ingestUrl prepends entity', async () => {
+    const entity = {
+      id: 4,
+      entity_type: 'url',
+      content: 'http://a',
+      created_at: '2024',
+    };
+    mockedApi.ingestUrl.mockResolvedValueOnce(entity as any);
+
+    await act(async () => {
+      await useMemoryStore.getState().ingestUrl('http://a');
+    });
+
+    expect(mockedApi.ingestUrl).toHaveBeenCalledWith('http://a');
+    expect(useMemoryStore.getState().entities[0]).toEqual(entity);
+  });
+
+  it('ingestText handles errors', async () => {
+    const error = new Error('boom');
+    mockedApi.ingestText.mockRejectedValueOnce(error);
+
+    await expect(
+      act(async () => {
+        await useMemoryStore.getState().ingestText('hello');
+      })
+    ).rejects.toThrow('boom');
+
+    expect(useMemoryStore.getState().ingestionError).toBe('boom');
+  });
 });
