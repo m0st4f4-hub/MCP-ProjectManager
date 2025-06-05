@@ -161,11 +161,19 @@ export const memoryApi = {
   },
 
   // Get observations for an entity
-  getObservations: async (entityId: number): Promise<MemoryObservation[]> => {
+  getObservations: async (
+    entityId: number,
+    page = 1,
+    pageSize = 100
+  ): Promise<MemoryObservation[]> => {
+    const params = new URLSearchParams();
+    params.append('entity_id', String(entityId));
+    params.append('page', String(page));
+    params.append('pageSize', String(pageSize));
     const response = await request<{ data: MemoryObservation[] }>(
       buildApiUrl(
         API_CONFIG.ENDPOINTS.MEMORY,
-        `/entities/${entityId}/observations`
+        `/observations?${params.toString()}`
       )
     );
     return response.data;
