@@ -1,9 +1,11 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.orm import Session
 
 from ....database import get_sync_db as get_db
+from ....auth import get_current_active_user
+from ....models import User as UserModel
 from ....schemas.agent_forbidden_action import (
     AgentForbiddenAction,
     AgentForbiddenActionCreate,
@@ -25,8 +27,9 @@ def get_service(db: Session = Depends(get_db)) -> AgentForbiddenActionService:
     operation_id="list_forbidden_actions",
 )
 async def list_forbidden_actions_endpoint(
-    agent_role_id: str,
+    agent_role_id: str = Path(..., min_length=32, max_length=32),
     service: AgentForbiddenActionService = Depends(get_service),
+    current_user: UserModel = Depends(get_current_active_user),
 ):
     actions = await service.list_forbidden_actions(agent_role_id)
     return ListResponse[AgentForbiddenAction](
@@ -46,9 +49,10 @@ async def list_forbidden_actions_endpoint(
     operation_id="create_forbidden_action",
 )
 async def create_forbidden_action_endpoint(
-    agent_role_id: str,
+    agent_role_id: str = Path(..., min_length=32, max_length=32),
     action_data: AgentForbiddenActionCreate,
     service: AgentForbiddenActionService = Depends(get_service),
+    current_user: UserModel = Depends(get_current_active_user),
 ):
     action = await service.create_forbidden_action(
         agent_role_id,
@@ -68,8 +72,9 @@ async def create_forbidden_action_endpoint(
     operation_id="delete_forbidden_action",
 )
 async def delete_forbidden_action_endpoint(
-    action_id: str,
+    action_id: str = Path(..., min_length=32, max_length=32),
     service: AgentForbiddenActionService = Depends(get_service),
+    current_user: UserModel = Depends(get_current_active_user),
 ):
     success = await service.delete_forbidden_action(action_id)
     if not success:
