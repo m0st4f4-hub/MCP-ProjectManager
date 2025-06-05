@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import EditProjectTemplateForm from '@/components/forms/EditProjectTemplateForm';
 import { useTemplateStore } from '@/store/templateStore';
+import { Button } from '@chakra-ui/react';
 
 const EditTemplatePage: React.FC = () => {
   const params = useParams();
@@ -33,11 +34,20 @@ const EditTemplatePage: React.FC = () => {
   };
 
   return (
-    <EditProjectTemplateForm
-      template={template}
-      onSubmit={handleSubmit}
-      onCancel={() => router.push('/templates')}
-    />
+    <>
+      <EditProjectTemplateForm
+        template={template}
+        onSubmit={handleSubmit}
+        onCancel={() => router.push('/templates')}
+      />
+      <Button
+        mt="4"
+        colorScheme="red"
+        onClick={() => router.push(`/templates/${templateId}/delete`)}
+      >
+        Delete Template
+      </Button>
+    </>
   );
 };
 
