@@ -1,4 +1,5 @@
 'use client';
+import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Input, List, ListItem, useToast } from '@chakra-ui/react';
@@ -31,7 +32,7 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
       setFiles(data);
     } catch (err) {
       setError('Failed to fetch project files');
-      console.error(err);
+      logger.error(err);
     } finally {
       setLoading(false);
     }
@@ -60,7 +61,7 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
       });
       fetchFiles();
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       toast({
         title: 'Upload failed',
         status: 'error',
@@ -80,7 +81,7 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
       });
       fetchFiles();
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       toast({
         title: 'Remove failed',
         status: 'error',

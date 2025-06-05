@@ -1,4 +1,5 @@
 "use client";
+import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from "react";
 import {
@@ -70,7 +71,7 @@ const AgentList: React.FC = () => {
       });
       onAddClose();
     } catch (error) {
-      console.error("[AgentList] Failed to add agent:", error);
+      logger.error("[AgentList] Failed to add agent:", error);
       toast({
         title: "Error Adding Agent",
         description:
@@ -96,7 +97,7 @@ const AgentList: React.FC = () => {
       });
       onEditClose();
     } catch (error) {
-      console.error("[AgentList] Failed to edit agent:", error);
+      logger.error("[AgentList] Failed to edit agent:", error);
       toast({
         title: "Error Editing Agent",
         description:

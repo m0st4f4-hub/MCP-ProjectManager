@@ -1,4 +1,5 @@
 "use client";
+import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from "react";
 import { Box, Table, Thead, Tbody, Tr, Th, Td } from "@chakra-ui/react";
@@ -13,7 +14,7 @@ const MCPMetrics: React.FC = () => {
         const data = await mcpApi.metrics();
         setMetrics(data);
       } catch (err) {
-        console.error("Failed to fetch metrics", err);
+        logger.error("Failed to fetch metrics", err);
       }
     };
     load();

@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import { useEffect, useState, useCallback } from "react";
 import { handleApiError } from "@/lib/apiErrorHandler";
 import { Project } from "@/types/project";
@@ -21,7 +22,7 @@ export function useDashboardData() {
       setAllProjects(projectsFromApi || []);
       setAllTasks(tasksFromApi || []);
     } catch (error) {
-      console.error(
+      logger.error(
         "Error fetching all projects/tasks for dashboard totals:",
         error,
       );

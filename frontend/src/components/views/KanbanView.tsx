@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import React, { useRef, useMemo, useState } from "react";
 import {
   Box,
@@ -120,7 +121,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({
   // Log received filteredTasks
   // useEffect(() => { // REMOVE
   //     if (typeof console !== 'undefined') {
-  //         console.log('[KanbanView.tsx] Received filteredTasks:', filteredTasks.length, filteredTasks);
+  //         logger.info('[KanbanView.tsx] Received filteredTasks:', filteredTasks.length, filteredTasks);
   //     }
   // }, [filteredTasks]);
 
@@ -149,7 +150,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({
         ].tasks.push(task);
       } else {
         // Optional: Log tasks that don't map to a visible column, or handle them differently
-        // console.warn(`Task ${task.id} with status ${statusID} does not map to a visible Kanban column.`);
+        // logger.warn(`Task ${task.id} with status ${statusID} does not map to a visible Kanban column.`);
       }
     });
     return columns;
@@ -171,9 +172,9 @@ const KanbanView: React.FC<KanbanViewProps> = ({
     const { active, over } = event;
     setActiveId(null);
 
-    console.log("[KanbanView.tsx] handleDragEnd event:", event);
-    console.log("[KanbanView.tsx] Active item (composite key):", active.id);
-    console.log("[KanbanView.tsx] Over item/container:", over);
+    logger.info("[KanbanView.tsx] handleDragEnd event:", event);
+    logger.info("[KanbanView.tsx] Active item (composite key):", active.id);
+    logger.info("[KanbanView.tsx] Over item/container:", over);
 
     if (over && active.id !== over.id) {
       // Extract project_id and task_number from the active.id (composite key)
@@ -184,20 +185,20 @@ const KanbanView: React.FC<KanbanViewProps> = ({
         (t) => t.project_id === project_id && t.task_number === task_number,
       );
       if (!sourceTask) {
-        console.error("[KanbanView.tsx] Dragged task not found for ID:", active.id);
+        logger.error("[KanbanView.tsx] Dragged task not found for ID:", active.id);
         return;
       }
 
       const targetColumnId =
         over.data?.current?.sortable?.containerId || over.id;
-      console.log(
+      logger.info(
         `[KanbanView.tsx] Drag End: Task Composite ID: ${active.id}, Original Status: ${sourceTask.status}, Target Column ID Attempt: ${targetColumnId}`,
       );
 
       const isValidStatusId = KANBAN_COLUMN_RENDER_IDS.includes(
         targetColumnId as (typeof KANBAN_COLUMN_RENDER_IDS)[number],
       );
-      console.log(
+      logger.info(
         `[KanbanView.tsx] Is target a valid column (StatusID)? ${isValidStatusId}`,
       );
 
@@ -207,7 +208,7 @@ const KanbanView: React.FC<KanbanViewProps> = ({
       ) {
         const newStatus =
           targetColumnId as (typeof KANBAN_COLUMN_RENDER_IDS)[number];
-        console.log(
+        logger.info(
           `[KanbanView.tsx] Attempting to update task ${active.id} to new status: ${newStatus}`,
         );
         try {
@@ -221,11 +222,11 @@ const KanbanView: React.FC<KanbanViewProps> = ({
             duration: 2000,
             isClosable: true,
           });
-          console.log(
+          logger.info(
             `[KanbanView.tsx] Task ${active.id} status update API call successful.`,
           );
         } catch (error) {
-          console.error(
+          logger.error(
             "[KanbanView.tsx] Failed to update task status after drag:",
             error,
           );
@@ -241,16 +242,16 @@ const KanbanView: React.FC<KanbanViewProps> = ({
         isValidStatusId &&
         mapStatusToStatusID(sourceTask.status) === targetColumnId
       ) {
-        console.log(
+        logger.info(
           `[KanbanView.tsx] Task ${active.id} dropped into the same column. No status change.`,
         );
       } else if (!isValidStatusId) {
-        console.log(
+        logger.info(
           `[KanbanView.tsx] Drag ended over non-column or invalid target. Target ID: ${targetColumnId}`,
         );
       }
     } else {
-      console.log(
+      logger.info(
         "[KanbanView.tsx] Drag ended with no valid 'over' target or active.id === over.id.",
       );
     }

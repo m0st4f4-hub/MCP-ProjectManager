@@ -1,4 +1,5 @@
 'use client';
+import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -31,7 +32,7 @@ const AuditLogViewer: React.FC = () => {
       });
       setLogs(data);
     } catch (err) {
-      console.error('Failed to fetch audit logs', err);
+      logger.error('Failed to fetch audit logs', err);
     } finally {
       setLoading(false);
     }

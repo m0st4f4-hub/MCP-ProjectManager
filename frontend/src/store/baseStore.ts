@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import { create, StoreApi } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { handleApiError } from '@/lib/apiErrorHandler';
@@ -80,7 +81,7 @@ export const withLoading = async <T>(
     const errorMessage = extractErrorMessage(err);
     set({ loading: false, error: errorMessage });
     handleApiError(err, errorTitle);
-    // console.error("Operation failed:", errorMessage, err);
+    // logger.error("Operation failed:", errorMessage, err);
     throw err; // Rethrow error so calling action can also catch it if needed
   }
   // finally is not strictly needed if all paths set loading false

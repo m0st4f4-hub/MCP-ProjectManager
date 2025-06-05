@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import {
   Button,
   FormControl,
@@ -64,7 +65,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       setProjectName(""); // Reset form
       setProjectDescription("");
     } catch (error) {
-      console.error("Failed to create project:", error);
+      logger.error("Failed to create project:", error);
       toast({
         title: "Failed to create project.",
         description:

@@ -1,5 +1,6 @@
 // D:\mcp\task-manager\frontend\src\app\page.tsx
 "use client";
+import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from "react";
 import { Box, useDisclosure, useToast, useColorMode } from "@chakra-ui/react";
@@ -263,7 +264,7 @@ export default function Home() {
           onClose={onAddAgentClose}
           onSubmit={async (name: string) => {
             if (!name.trim()) {
-              console.error("Agent name cannot be empty.");
+              logger.error("Agent name cannot be empty.");
               return;
             }
             try {
@@ -271,7 +272,7 @@ export default function Home() {
               fetchAgents(0, 100);
               onAddAgentClose();
             } catch (error) {
-              console.error("Failed to create agent:", error);
+              logger.error("Failed to create agent:", error);
             }
           }}
         />

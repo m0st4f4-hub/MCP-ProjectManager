@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -29,7 +30,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ userId }) => {
         const userData = await getUserById(userId);
         setUser(userData);
       } catch (err: any) {
-        console.error("Failed to fetch user:", err);
+        logger.error("Failed to fetch user:", err);
         setError(err.message || "An error occurred while fetching user data.");
       } finally {
         setIsLoading(false);

@@ -1,4 +1,5 @@
 "use client";
+import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState, useRef } from "react";
 import {
@@ -87,13 +88,13 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               const fetchedTask = await getTaskById(project_id, task_number);
               setTask(fetchedTask);
             } catch (fetchError) {
-              console.error("Failed to fetch task by ID:", fetchError);
+              logger.error("Failed to fetch task by ID:", fetchError);
               setError("Failed to load task details.");
               setTask(null);
             }
           }
         } catch (e) {
-          console.error("Failed to load task details:", e);
+          logger.error("Failed to load task details:", e);
           const message =
             e instanceof Error ? e.message : "Could not load task details.";
           setError(message);

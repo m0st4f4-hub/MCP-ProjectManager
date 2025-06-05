@@ -1,4 +1,5 @@
 "use client";
+import * as logger from '@/utils/logger';
 
 import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -65,7 +66,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       reset();
       onClose();
     } catch (error) {
-      console.error("Failed to create project:", error);
+      logger.error("Failed to create project:", error);
       toast({
         title: "Error creating project",
         description:

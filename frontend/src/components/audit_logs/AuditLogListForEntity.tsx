@@ -1,3 +1,4 @@
+import * as logger from '@/utils/logger';
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -38,7 +39,7 @@ const AuditLogListForEntity: React.FC<AuditLogListForEntityProps> = ({
         const auditLogs = await getAuditLogsByEntity(entityType, entityId);
         setLogs(auditLogs);
       } catch (err: any) {
-        console.error("Failed to fetch audit logs:", err);
+        logger.error("Failed to fetch audit logs:", err);
         setError(err.message || "An error occurred while fetching audit logs.");
       } finally {
         setIsLoading(false);
