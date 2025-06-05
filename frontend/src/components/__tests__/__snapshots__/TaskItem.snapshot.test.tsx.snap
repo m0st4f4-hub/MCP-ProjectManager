@@ -1,0 +1,124 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`TaskItem snapshot > renders consistently 1`] = `
+<DocumentFragment>
+  <div
+    class="css-1t1yp2j"
+  >
+    <div
+      class="chakra-stack css-y10l5h"
+    >
+      <div
+        class="css-1ydq2kx"
+      >
+        <label
+          class="chakra-checkbox css-1577qb8"
+        >
+          <input
+            aria-checked="false"
+            aria-label="Mark task Snapshot Task as complete"
+            class="chakra-checkbox__input"
+            style="border: 0px; clip: rect(0px, 0px, 0px, 0px); height: 1px; width: 1px; margin: -1px; padding: 0px; overflow: hidden; white-space: nowrap; position: absolute;"
+            type="checkbox"
+            value=""
+          />
+          <span
+            aria-hidden="true"
+            class="chakra-checkbox__control css-olidhu"
+          />
+        </label>
+      </div>
+      <div
+        class="chakra-stack css-1w5ylqm"
+      >
+        <div
+          class="chakra-stack css-1w5ylqm"
+        >
+          <div
+            class="css-8atqhb"
+          >
+            <p
+              class="chakra-text css-ru5nt8"
+            >
+              Snapshot Task
+            </p>
+          </div>
+          <p
+            class="chakra-text css-khfcme"
+          >
+            Snapshot description
+          </p>
+          <div
+            class="chakra-stack css-wpcv6r"
+          >
+            <div
+              class="chakra-stack css-h2mol3"
+            >
+              <span
+                class="css-4owlnz"
+              >
+                <svg
+                  class="chakra-icon chakra-icon css-l30hbq"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <g
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                    />
+                    <path
+                      d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                    />
+                  </g>
+                </svg>
+                <span
+                  class="css-1ny2kle"
+                >
+                  To Do
+                </span>
+              </span>
+            </div>
+            <div
+              class="css-0"
+            >
+              <div
+                class="chakra-spinner css-hno8u4"
+              >
+                <span
+                  class="css-8b45rq"
+                >
+                  Loading...
+                </span>
+              </div>
+              <p
+                class="chakra-text css-6n7j50"
+              >
+                Loading task details...
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button
+      class="chakra-button css-l7xuv7"
+      type="button"
+    >
+      Archive
+    </button>
+  </div>
+  <span
+    hidden=""
+    id="__chakra_env"
+  />
+  <span
+    hidden=""
+    id="__chakra_env"
+  />
+</DocumentFragment>
+`;

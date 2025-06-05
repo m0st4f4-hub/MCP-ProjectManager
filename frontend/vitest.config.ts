@@ -20,8 +20,13 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/__tests__/setup.ts'],
     include: [
+<<<<<<< HEAD
       'src/lib/__tests__/*.test.ts',
       'src/lib/__tests__/*.test.tsx',
+=======
+      'src/components/__tests__/*.test.tsx',
+      'src/lib/__tests__/utils.test.tsx',
+>>>>>>> codex/add-snapshot-testing-with-vitest-for-taskitem-and-projectlis
       'src/store/__tests__/*.test.ts',
       'src/hooks/__tests__/*.test.tsx',
       'src/__tests__/integration/**/*.{ts,tsx}',
