@@ -12,8 +12,9 @@ from backend.crud.memory import (
     create_memory_relation,
     add_observation_to_entity,
     search_entities,
-    get_memory_entity_by_name
+    get_memory_entity_by_name,
 )
+from backend.services.memory_service import MemoryService
 from backend.schemas.memory import MemoryEntityCreate, MemoryObservationCreate
 
 logger = logging.getLogger(__name__)
@@ -121,5 +122,43 @@ async def search_memory_tool(
     ]
     }
     except Exception as e:
-    logger.error(f"MCP search memory failed: {e}")
-    raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"MCP search memory failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_memory_content_tool(
+    entity_id: int,
+    db: Session,
+) -> dict:
+    """MCP Tool: Get memory entity content."""
+    try:
+        service = MemoryService(db)
+        content = service.get_file_content(entity_id)
+        return {"success": True, "content": content}
+    except HTTPException as e:
+        logger.error(
+            f"MCP get memory content failed with HTTP exception: {e.detail}"
+        )
+        raise e
+    except Exception as e:
+        logger.error(f"MCP get memory content failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_memory_metadata_tool(
+    entity_id: int,
+    db: Session,
+) -> dict:
+    """MCP Tool: Get memory entity metadata."""
+    try:
+        service = MemoryService(db)
+        metadata = service.get_file_metadata(entity_id)
+        return {"success": True, "metadata": metadata}
+    except HTTPException as e:
+        logger.error(
+            f"MCP get memory metadata failed with HTTP exception: {e.detail}"
+        )
+        raise e
+    except Exception as e:
+        logger.error(f"MCP get memory metadata failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
