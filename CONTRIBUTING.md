@@ -41,6 +41,7 @@ pre-commit install
 
 * **Backend**: `flake8` runs on Python files
 * **Frontend**: `npm run lint` and `npm run type-check` run on JS/TS files (the type check can also be triggered from the repo root with `npm run type-check`)
+* **Docs**: `npm run update-readmes` keeps README file lists in sync
 
 These checks will automatically run on every commit.
 
@@ -48,13 +49,13 @@ These checks will automatically run on every commit.
 
 ## 📝 Before Committing Documentation Changes
 
-Run the README update script to refresh file lists:
+Pre-commit automatically runs the README update script. You can also run it manually if needed:
 
 ```bash
 npm run update-readmes
 ```
 
-This ensures all `README.md` files reflect up-to-date directory contents.
+This refreshes all README file lists.
 
 ---
 

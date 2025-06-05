@@ -21,3 +21,9 @@ repos:
         pass_filenames: false
         files: ^frontend/
         types: [javascript, jsx, ts, tsx, json, css, markdown]
+
+      - id: update-readmes
+        name: Update README file lists
+        entry: npm run update-readmes
+        language: system
+        pass_filenames: false
