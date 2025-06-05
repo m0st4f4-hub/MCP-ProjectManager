@@ -9,4 +9,5 @@ test('cli.js --help displays help information', () => {
   const result = spawnSync('node', [cliPath, '--help'], { encoding: 'utf8' });
   assert.strictEqual(result.status, 0, 'expected exit code 0');
   assert.ok(result.stdout.length > 0, 'stdout should not be empty');
+  assert.ok(result.stdout.includes('migrate'), 'help should mention migrate command');
 });

@@ -34,6 +34,14 @@ npm run dev                   # NPM script
 powershell dev_launcher.ps1   # PowerShell (Windows)
 ```
 
+### Database Migrations
+
+Apply pending migrations using the CLI:
+
+```bash
+node cli.js migrate
+```
+
 See [`DEV_LAUNCHER_GUIDE.md`](./DEV_LAUNCHER_GUIDE.md) for complete setup instructions.
 For an overview of all dev scripts, see [`DEV_SCRIPTS.md`](./DEV_SCRIPTS.md).
 If you're contributing, read the [CONTRIBUTING.md](./CONTRIBUTING.md) guide.
