@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -10,14 +10,15 @@ import {
   Input,
   Spinner,
   Text,
-} from "@chakra-ui/react";
-import { createTask } from "@/services/api";
-import type { Task } from "@/types";
+} from '@chakra-ui/react';
+import { createTask } from '@/services/api';
+import type { Task, TaskCreateData } from '@/types';
+import { TaskStatus } from '@/types';
 
 const TaskRunner: React.FC = () => {
-  const [projectId, setProjectId] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [projectId, setProjectId] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +27,13 @@ const TaskRunner: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const newTask = await createTask(projectId, { title, description });
+      const taskData: TaskCreateData = {
+        project_id: projectId,
+        title,
+        description,
+        status: TaskStatus.TO_DO,
+      };
+      const newTask: Task = await createTask(projectId, taskData);
       setTask(newTask);
     } catch (err) {
       setError((err as Error).message);
