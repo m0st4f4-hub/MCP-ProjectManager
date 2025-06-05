@@ -336,11 +336,15 @@ def create_app() -> FastAPI:
     include_app_routers(app)
     _rebuild_pydantic_models()
 
-    if FastApiMCP is not None:
+    enable_mcp = os.getenv("ENABLE_MCP", "true").lower() == "true"
+
+    if FastApiMCP is not None and enable_mcp:
         mcp = FastApiMCP(
             app,
             name="Task Manager MCP",
             description="MCP server for task manager",
+            tool_prefix="/api/mcp",
+            docs_url="/mcp-docs",
         )
         mcp.mount()
         app.state.mcp_instance = mcp
@@ -348,6 +352,7 @@ def create_app() -> FastAPI:
         class MockMCP:
             def __init__(self):
                 self.tools = {}
+
         app.state.mcp_instance = MockMCP()
 
     @app.get("/")
