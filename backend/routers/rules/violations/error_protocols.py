@@ -13,12 +13,17 @@ from ....schemas.agent_error_protocol import (
 router = APIRouter()
 
 
-async def get_service(db: AsyncSession = Depends(get_db)) -> AgentErrorProtocolService:
+async def get_service(
+    db: AsyncSession = Depends(get_db),
+) -> AgentErrorProtocolService:
     return AgentErrorProtocolService(db)
 
 
 @router.get("/error-protocols/{protocol_id}", response_model=AgentErrorProtocol)
-async def read_error_protocol(protocol_id: str, service: AgentErrorProtocolService = Depends(get_service)):
+async def read_error_protocol(
+    protocol_id: str,
+    service: AgentErrorProtocolService = Depends(get_service),
+):
     protocol = await service.get_protocol(protocol_id)
     if not protocol:
         raise HTTPException(status_code=404, detail="Error protocol not found")
@@ -26,7 +31,10 @@ async def read_error_protocol(protocol_id: str, service: AgentErrorProtocolServi
 
 
 @router.get("/{role_id}/error-protocols", response_model=List[AgentErrorProtocol])
-async def list_error_protocols(role_id: str, service: AgentErrorProtocolService = Depends(get_service)):
+async def list_error_protocols(
+    role_id: str,
+    service: AgentErrorProtocolService = Depends(get_service),
+):
     return await service.list_protocols(agent_role_id=role_id)
 
 
@@ -53,7 +61,10 @@ async def update_error_protocol(
 
 
 @router.delete("/error-protocols/{protocol_id}")
-async def delete_error_protocol(protocol_id: str, service: AgentErrorProtocolService = Depends(get_service)):
+async def delete_error_protocol(
+    protocol_id: str,
+    service: AgentErrorProtocolService = Depends(get_service),
+):
     success = await service.delete_protocol(protocol_id)
     if not success:
         raise HTTPException(status_code=404, detail="Error protocol not found")

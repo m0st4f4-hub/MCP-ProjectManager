@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import models
 from ..schemas.agent_error_protocol import (
-    AgentErrorProtocol,
     AgentErrorProtocolCreate,
     AgentErrorProtocolUpdate,
 )
@@ -16,10 +15,13 @@ class AgentErrorProtocolService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_protocol(self, protocol_id: str) -> Optional[models.AgentErrorProtocol]:
-        result = await self.db.execute(
-            select(models.AgentErrorProtocol).filter(models.AgentErrorProtocol.id == protocol_id)
+    async def get_protocol(
+        self, protocol_id: str
+    ) -> Optional[models.AgentErrorProtocol]:
+        stmt = select(models.AgentErrorProtocol).filter(
+            models.AgentErrorProtocol.id == protocol_id
         )
+        result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
     async def list_protocols(
@@ -27,7 +29,9 @@ class AgentErrorProtocolService:
     ) -> List[models.AgentErrorProtocol]:
         query = select(models.AgentErrorProtocol)
         if agent_role_id:
-            query = query.filter(models.AgentErrorProtocol.agent_role_id == agent_role_id)
+            query = query.filter(
+                models.AgentErrorProtocol.agent_role_id == agent_role_id
+            )
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
@@ -47,7 +51,9 @@ class AgentErrorProtocolService:
         return db_protocol
 
     async def update_protocol(
-        self, protocol_id: str, protocol_update: AgentErrorProtocolUpdate
+        self,
+        protocol_id: str,
+        protocol_update: AgentErrorProtocolUpdate,
     ) -> Optional[models.AgentErrorProtocol]:
         db_protocol = await self.get_protocol(protocol_id)
         if not db_protocol:
