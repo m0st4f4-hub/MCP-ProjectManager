@@ -11,8 +11,9 @@ import {
   FormErrorMessage,
   useToast,
 } from '@chakra-ui/react';
-import { useForm } from 'react-hook-form';
+import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   projectTemplateCreateSchema,
   ProjectTemplateCreateData,
@@ -41,15 +42,14 @@ const AddProjectTemplateForm: React.FC<AddProjectTemplateFormProps> = ({
     reset,
   } = useForm<FormFields>({
     resolver: zodResolver(
-      projectTemplateCreateSchema.extend({
-        template_data:
-          projectTemplateCreateSchema.shape.template_data.transform(() => ({})),
-      })
+      projectTemplateCreateSchema.pick({ name: true, description: true }).extend({
+        templateData: z.string(),
+      }) as unknown as z.ZodType<FormFields>
     ),
     defaultValues: { name: '', description: '', templateData: '{}' },
   });
 
-  const submitHandler = async (fields: FormFields) => {
+  const submitHandler: SubmitHandler<FormFields> = async (fields) => {
     try {
       const payload: ProjectTemplateCreateData = {
         name: fields.name,
