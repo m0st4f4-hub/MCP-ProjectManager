@@ -39,6 +39,14 @@ class DummyService:
     def ingest_url(self, url: str, user_id=None):
         return self.ingest_text(f"content from {url}", user_id)
 
+    def ingest_file(self, file, user_id=None):
+        if hasattr(file, "file"):
+            content = file.file.read().decode("utf-8")
+        else:
+            with open(file, "r", encoding="utf-8") as f:
+                content = f.read()
+        return self.ingest_text(content, user_id)
+
     def get_file_content(self, entity_id: int):
         return self.entities[entity_id].content
 
@@ -132,3 +140,15 @@ async def test_root_ingest_url():
         )
         assert resp.status_code == 201
         assert resp.json()["content"] == "content from http://root.com"
+
+
+@pytest.mark.asyncio
+async def test_root_ingest_upload():
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        files = {"file": ("hello.txt", b"upload", "text/plain")}
+        resp = await client.post("/ingest/upload", files=files)
+        assert resp.status_code == 201
+        assert resp.json()["content"] == "upload"

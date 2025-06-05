@@ -71,10 +71,20 @@ project-manager/
 * Human-agent task collaboration
 * Full task/project lifecycle management
 * Task dependencies, filtering, archiving
-* Memory service with `/api/memory/ingest-url` and `/api/memory/ingest-text`
+* Memory service with `/api/memory/ingest-url`, `/api/memory/ingest-text` and `/api/memory/ingest/upload`
 * Integrated MCP agentic automation
 * CLI-first UX with automatic backend/frontend orchestration
 * Auto-restoring services and port management
+
+### Uploading Files to Memory
+
+```bash
+curl -X POST -H "Authorization: Bearer <TOKEN>" \
+  -F "file=@path/to/file.txt" \
+  http://localhost:8000/api/v1/memory/ingest/upload
+```
+
+In the frontend, call `memoryApi.uploadFile(file)` after selecting a file in the UI.
 
 ---
 
