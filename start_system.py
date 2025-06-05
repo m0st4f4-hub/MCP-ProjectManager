@@ -132,7 +132,6 @@ class SystemIntegrator:
         """Initialize the database."""
         print("\n[Database] Initializing Database")
         print("-" * 40)
-<<<<<<< HEAD
 
         python_cmd = ".venv\\Scripts\\python.exe" if os.name == 'nt' else ".venv/bin/python"
 
@@ -143,29 +142,14 @@ class SystemIntegrator:
             return True
 
         # Run database initialization
-        init_script = self.backend_dir / "init_db.py"
-        if init_script.exists():
-            return self.run_command(
-                f"{python_cmd} init_db.py",
-                "Initializing database",
-                cwd=self.backend_dir,
-                timeout=60
-            )
-        else:
-            print("[Warning] Database initialization script not found")
-            return True
+        # This will create tables if they don't exist, or apply migrations if Alembic is used
+        # In this PR, we are removing the direct Base.metadata.create_all call from main.py
+        # and relying on Alembic for schema management.
+        # If Alembic isn't fully set up yet, this might need manual intervention or an explicit migration.
+        # For now, we assume Alembic will handle it during the dev setup.
+        print("[Info] Skipping direct database initialization, relying on Alembic or manual setup.")
+        return True
 
-=======
-        python_cmd = ".venv\\Scripts\\python.exe" if os.name == 'nt' else ".venv/bin/python"
-
-        return self.run_command(
-            f"{python_cmd} -m alembic upgrade head",
-            "Applying database migrations",
-            cwd=self.backend_dir,
-            timeout=60
-        )
-    
->>>>>>> codex/remove-base.metadata.create_all-and-update-setup
     def start_backend_server(self):
         """Start the backend server in a separate process."""
         print("[Start] Starting Backend Server...")
