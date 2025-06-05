@@ -5,26 +5,26 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import logging
 
-from ....database import get_db
-from ....services.project_service import ProjectService
-from ....services.audit_log_service import AuditLogService
+from ...database import get_db
+from ...services.project_service import ProjectService
+from ...services.audit_log_service import AuditLogService
 # Import specific schema classes from their files
-from ....schemas.project import Project, ProjectCreate, ProjectUpdate
+from ...schemas.project import Project, ProjectCreate, ProjectUpdate
 # Import standardized API response models
-from ....schemas.api_responses import (
+from ...schemas.api_responses import (
     DataResponse,
     ListResponse,
     PaginationParams,
 )
 # Import service exceptions
-from ....services.exceptions import (
+from ...services.exceptions import (
     EntityNotFoundError,
     DuplicateEntityError,
     ValidationError  # Import auth dependencies and UserRoleEnum
 )
-from ....auth import get_current_active_user, RoleChecker
-from ....enums import UserRoleEnum
-from ....models import User as UserModel  # For type hinting current_user
+from ...auth import get_current_active_user, RoleChecker
+from ...enums import UserRoleEnum
+from ...models import User as UserModel  # For type hinting current_user
 
 
 router = APIRouter(
