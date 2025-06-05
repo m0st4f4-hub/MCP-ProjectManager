@@ -14,6 +14,7 @@ from ..schemas.memory import (
     MemoryObservationCreate,
     MemoryRelationCreate
 )
+from ..schemas.file_ingest import FileIngestInput
 from ..crud.memory import (
     create_memory_entity,
     get_memory_entity,
@@ -49,7 +50,8 @@ class MemoryService:
     def delete_entity(self, entity_id: int) -> bool:
         return delete_memory_entity(self.db, entity_id)
 
-    def ingest_file(self, file_path: str, user_id: Optional[str] = None) -> models.MemoryEntity:
+    def ingest_file(self, ingest_input: FileIngestInput, user_id: Optional[str] = None) -> models.MemoryEntity:
+        file_path = ingest_input.file_path
         try:
             if not os.path.exists(file_path):
                 logger.error(f"File not found during ingestion: {file_path}")

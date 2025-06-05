@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "task-manager-backend"
+version = "0.1.0"
+description = "FastAPI backend for the MCP Project Manager"
+authors = ["MCP Team <team@example.com>"]
+readme = "README.md"
+packages = [{ include = "backend" }]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "*"
+uvicorn = { extras = ["standard"], version = "*" }
+sqlalchemy = "*"
+alembic = "*"
+psycopg2-binary = "*"
+python-dotenv = "*"
+fastapi-mcp = "*"
+passlib = { extras = ["bcrypt"], version = "*" }
+python-jose = "*"
+aiosqlite = "*"
+aiohttp = "*"
+httpx = "*"
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "*"
+pytest = "*"
+pytest-asyncio = "*"
+pytest-cov = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,4 +1,6 @@
 export * from "./colors";
+export * from "./fontFamily";
+export * from "./fontSize";
 export * from "./typography";
 export * from "./sizing";
 export * from "./shadows";
@@ -9,6 +11,8 @@ export * from "./opacity";
 export * from "./blur";
 
 import { colorPrimitives, semanticColors } from "./colors";
+import { fontFamily } from "./fontFamily";
+import { fontSize } from "./fontSize";
 import { typography } from "./typography";
 import { sizing } from "./sizing";
 import { shadows } from "./shadows";
@@ -20,6 +24,8 @@ import { blur } from "./blur";
 
 export const tokens = {
   colors: { ...colorPrimitives, ...semanticColors },
+  fontFamily,
+  fontSize,
   typography,
   sizing,
   shadows,

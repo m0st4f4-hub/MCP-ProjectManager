@@ -19,7 +19,9 @@
     "type-check": "npx tsc --noEmit",
     "fix": "cd frontend && npm run fix",
     "format": "cd frontend && npm run format",
-    "update-readmes": "python scripts/update_readmes.py"
+    "update-readmes": "python scripts/update_readmes.py",
+    "prettier:check": "prettier --check .",
+    "prettier:write": "prettier --write ."
   },
   "keywords": [
     "project-management",

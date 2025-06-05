@@ -2,6 +2,8 @@ import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
 import {
   colorPrimitives,
   semanticColors as appSemanticColors, // Rename to avoid conflict with Chakra's theme structure
+  fontFamily,
+  fontSize,
   typography,
   sizing,
 } from "../tokens"; // Assuming this path is correct relative to chakra-theme.ts
@@ -60,11 +62,11 @@ const customTheme = extendTheme({
     },
   },
   fonts: {
-    heading: typography.fontFamily.heading.join(", "),
-    body: typography.fontFamily.sans.join(", "),
-    mono: typography.fontFamily.mono.join(", "),
+    heading: fontFamily.heading.join(", "),
+    body: fontFamily.sans.join(", "),
+    mono: fontFamily.mono.join(", "),
   },
-  fontSizes: typography.fontSize,
+  fontSizes: fontSize,
   fontWeights: typography.fontWeight,
   lineHeights: typography.lineHeight,
   space: sizing.spacing,

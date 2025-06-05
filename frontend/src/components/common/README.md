@@ -102,6 +102,7 @@ Key files:
 *   `TaskActionsMenu.tsx`: Menu for task-specific actions.
 *   `TaskTitleEditor.tsx`: Inline editor for task titles.
 *   `TaskStatusTag.tsx`: Component to display task status.
+*   `iconMap.ts`: Provides `defaultIconMap` and `IconMap` used for status icons.
 *   `TaskProjectTag.tsx`: Component to display associated project.
 *   `TaskDescriptionEditor.tsx`: Inline editor for task descriptions.
 *   `FilterPanel.tsx`: Panel containing filter controls (likely used within `FilterSidebar`).
@@ -132,6 +133,7 @@ graph TD
 - `TaskProjectTag.tsx`
 - `TaskStatusTag.tsx`
 - `TaskTitleEditor.tsx`
+- `iconMap.ts`
 
 <!-- File List End -->
 

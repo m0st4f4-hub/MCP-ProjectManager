@@ -120,4 +120,4 @@ class Task(TaskInDBBase):
     model_config = ConfigDict(from_attributes=True)
 
 class TaskInDB(TaskInDBBase):
-    pass
+    model_config = ConfigDict(from_attributes=True)

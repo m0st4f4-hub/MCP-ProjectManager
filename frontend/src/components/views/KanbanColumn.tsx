@@ -1,6 +1,7 @@
 import React from "react";
 import { VStack, Flex, Heading, Text, Box } from "@chakra-ui/react";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import type { UniqueIdentifier } from "@dnd-kit/core";
 import { sizing } from "../../tokens";
 import { Task } from "@/types";
 import { motion } from "framer-motion";
@@ -83,10 +84,10 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
           {column.tasks.length}
         </Text>
       </Flex>
-      <SortableContext
-        items={column.tasks.map((t) => t.id)}
-        strategy={verticalListSortingStrategy}
-      >
+        <SortableContext
+          items={column.tasks.map((t) => t.id as UniqueIdentifier)}
+          strategy={verticalListSortingStrategy}
+        >
         <VStack
           spacing={compactView ? 2 : 3}
           flexGrow={1}
@@ -147,7 +148,7 @@ const DraggableTaskItem: React.FC<DraggableTaskItemProps> = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task.id });
+  } = useSortable({ id: task.id as UniqueIdentifier });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -198,6 +199,7 @@ const DraggableTaskItem: React.FC<DraggableTaskItemProps> = ({
       >
         <TaskItem
           task={task}
+          projectName={task.project_name || ""}
           compact={compactView}
           onDeleteInitiate={onDeleteInitiate}
         />

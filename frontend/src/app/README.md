@@ -48,7 +48,9 @@ This directory is the core of the Next.js application, utilizing the App Router.
 
 - **Purpose**: The icon file used by browsers for bookmarks, tabs, etc. This is the standard ICO format.
 
-_Note: Attempts to read `loading.tsx`, `not-found.tsx`, and `global.error.tsx` (which were present in a previous directory listing) were unsuccessful. Standard Next.js conventions would apply if these files were present and functional, but they are not in the current directory structure observed._
+### `not-found.tsx`
+
+- **Purpose**: Handles 404 errors by showing a friendly message and link back to the home page.
 
 ## 🎨 Theming Architecture & Best Practices
 
@@ -134,6 +136,7 @@ graph TD
 - `globals.css`
 - `layout.tsx`
 - `page.tsx`
+- `not-found.tsx`
 
 <!-- File List End -->
 
