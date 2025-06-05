@@ -73,7 +73,7 @@ This writes `frontend/src/types/generatedEnums.ts`.
 * Keep code self-explanatory and remove unused code.
 * **Frontend**:
 
-  * Run: `npm run lint`, `npm run type-check`, `npm run fix`, and `npm run format` before committing.
+  * Run: `npm run lint`, `npm run type-check`, `npm run fix`, `npm run format`, and `npm run prettier:check` before committing.
 * **Backend**:
 
   * Run: `flake8` and ensure no style violations or unused imports remain.
@@ -106,14 +106,16 @@ Before opening a Pull Request, ensure the following tests and linters pass:
 ```bash
 cd frontend
 npm run lint
-npm test
+npm run prettier:check
+npx vitest --coverage.v8 --coverage-threshold=90
 ```
 
 ### Backend
 
 ```bash
 cd backend
-pytest
+flake8
+pytest --cov=. --cov-fail-under=90
 ```
 
 All tests and linters must pass locally before submitting a PR.
