@@ -1,0 +1,32 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ProjectList snapshot > renders consistently 1`] = `
+<DocumentFragment>
+  <div
+    class="css-jgsorh"
+  >
+    <div
+      class="chakra-spinner css-noztm"
+    >
+      <span
+        class="css-8b45rq"
+      >
+        Loading...
+      </span>
+    </div>
+    <p
+      class="chakra-text css-k1bh69"
+    >
+      Loading projects...
+    </p>
+  </div>
+  <span
+    hidden=""
+    id="__chakra_env"
+  />
+  <span
+    hidden=""
+    id="__chakra_env"
+  />
+</DocumentFragment>
+`;
