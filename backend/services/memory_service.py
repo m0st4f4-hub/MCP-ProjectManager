@@ -279,6 +279,39 @@ class MemoryService:
             )
         return query.offset(skip).limit(limit).all()
 
+    def update_observation(
+        self, observation_id: int, observation: MemoryObservationCreate
+    ) -> Optional[models.MemoryObservation]:
+        db_obs = (
+            self.db.query(models.MemoryObservation)
+            .filter(models.MemoryObservation.id == observation_id)
+            .first()
+        )
+        if not db_obs:
+            return None
+
+        update_data = observation.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_obs, key, value)
+
+        self.db.commit()
+        self.db.refresh(db_obs)
+        logger.info(f"Updated memory observation: {observation_id}")
+        return db_obs
+
+    def delete_observation(self, observation_id: int) -> bool:
+        db_obs = (
+            self.db.query(models.MemoryObservation)
+            .filter(models.MemoryObservation.id == observation_id)
+            .first()
+        )
+        if db_obs:
+            self.db.delete(db_obs)
+            self.db.commit()
+            logger.info(f"Deleted memory observation: {observation_id}")
+            return True
+        return False
+
     def create_memory_relation(
         self, relation: MemoryRelationCreate
     ) -> models.MemoryRelation:
