@@ -6,13 +6,16 @@ This script tests the alignment between backend and frontend APIs.
 
 import asyncio
 import aiohttp
-import json
 import sys
-from typing import Dict, List, Any
 import time
 
+
 class APIAlignmentTester:
-    def __init__(self, backend_url="http://localhost:8000", frontend_url="http://localhost:3000"):
+    def __init__(
+        self,
+        backend_url="http://localhost:8000",
+        frontend_url="http://localhost:3000",
+    ):
         self.backend_url = backend_url
         self.frontend_url = frontend_url
         self.test_results = []
@@ -21,7 +24,9 @@ class APIAlignmentTester:
         """Test backend health endpoint."""
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(f"{self.backend_url}/health") as response:
+                async with session.get(
+                    f"{self.backend_url}/health"
+                ) as response:
                     if response.status == 200:
                         data = await response.json()
                         print("✅ Backend health check passed")
@@ -29,7 +34,9 @@ class APIAlignmentTester:
                         print(f"   Database: {data.get('database')}")
                         return True
                     else:
-                        print(f"❌ Backend health check failed: {response.status}")
+                        print(
+                            f"❌ Backend health check failed: {response.status}"
+                        )
                         return False
         except Exception as e:
             print(f"❌ Backend health check error: {e}")
@@ -39,11 +46,16 @@ class APIAlignmentTester:
         """Test backend OpenAPI documentation."""
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(f"{self.backend_url}/openapi.json") as response:
+                async with session.get(
+                    f"{self.backend_url}/openapi.json"
+                ) as response:
                     if response.status == 200:
                         openapi_spec = await response.json()
                         paths = openapi_spec.get('paths', {})
-                        print(f"✅ OpenAPI spec loaded with {len(paths)} endpoints")
+                        print(
+                            "✅ OpenAPI spec loaded with "
+                            f"{len(paths)} endpoints"
+                        )
                         required_endpoints = [
                             '/api/projects/',
                             '/api/projects/{project_id}',
@@ -60,13 +72,19 @@ class APIAlignmentTester:
                                 missing_endpoints.append(endpoint)
 
                         if missing_endpoints:
-                            print(f"⚠️  Missing endpoints: {missing_endpoints}")
+                            print(
+                                f"⚠️  Missing endpoints: {missing_endpoints}"
+                            )
                             return False
 
-                        print("✅ All required endpoints present in OpenAPI spec")
+                        print(
+                            "✅ All required endpoints present in OpenAPI spec"
+                        )
                         return True
                     else:
-                        print(f"❌ OpenAPI spec fetch failed: {response.status}")
+                        print(
+                            f"❌ OpenAPI spec fetch failed: {response.status}"
+                        )
                         return False
         except Exception as e:
             print(f"❌ OpenAPI spec test error: {e}")
@@ -78,17 +96,27 @@ class APIAlignmentTester:
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(f"{self.backend_url}/api/projects/") as response:
+                async with session.get(
+                    f"{self.backend_url}/api/projects/"
+                ) as response:
                     if response.status == 200:
                         data = await response.json()
                         if 'data' in data and isinstance(data['data'], list):
-                            print("✅ Projects list endpoint returns correct format")
+                            print(
+                                "✅ Projects list endpoint returns "
+                                "correct format"
+                            )
                             print(f"   Found {len(data['data'])} projects")
                         else:
-                            print("❌ Projects list endpoint returns unexpected format")
+                            print(
+                                "❌ Projects list endpoint returns "
+                                "unexpected format"
+                            )
                             return False
                     else:
-                        print(f"❌ Projects list failed: {response.status}")
+                        print(
+                            f"❌ Projects list failed: {response.status}"
+                        )
                         return False
                 test_project = {
                     "name": f"Test Project {int(time.time())}",
@@ -105,18 +133,27 @@ class APIAlignmentTester:
                         if 'data' in data and 'id' in data['data']:
                             project_id = data['data']['id']
                             print("✅ Project creation successful")
-                            async with session.get(f"{self.backend_url}/api/projects/{project_id}") as get_response:
+                            async with session.get(
+                                f"{self.backend_url}/api/projects/{project_id}"
+                            ) as get_response:
                                 if get_response.status == 200:
                                     print("✅ Project retrieval successful")
                                     return True
                                 else:
-                                    print(f"❌ Project retrieval failed: {get_response.status}")
+                                    print(
+                                        "❌ Project retrieval failed: "
+                                        f"{get_response.status}"
+                                    )
                                     return False
                         else:
-                            print("❌ Project creation returned unexpected format")
+                            print(
+                                "❌ Project creation returned unexpected format"
+                            )
                             return False
                     else:
-                        print(f"❌ Project creation failed: {response.status}")
+                        print(
+                            f"❌ Project creation failed: {response.status}"
+                        )
                         response_text = await response.text()
                         print(f"   Response: {response_text}")
                         return False
@@ -131,25 +168,46 @@ class APIAlignmentTester:
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(f"{self.backend_url}/api/projects/") as response:
+                async with session.get(
+                    f"{self.backend_url}/api/projects/"
+                ) as response:
                     if response.status == 200:
                         data = await response.json()
-                        required_fields = ['data', 'success', 'message', 'timestamp']
-                        missing_fields = [field for field in required_fields if field not in data]
+                        required_fields = [
+                            'data',
+                            'success',
+                            'message',
+                            'timestamp',
+                        ]
+                        missing_fields = [
+                            field
+                            for field in required_fields
+                            if field not in data
+                        ]
 
                         if missing_fields:
-                            print(f"❌ Missing response fields: {missing_fields}")
+                            print(
+                                f"❌ Missing response fields: {missing_fields}"
+                            )
                             return False
 
-                        print("✅ Backend returns standardized response format")
+                        print(
+                            "✅ Backend returns standardized response format"
+                        )
                         if isinstance(data['data'], list):
-                            print("✅ Projects data is properly wrapped")
+                            print(
+                                "✅ Projects data is properly wrapped"
+                            )
                             return True
                         else:
-                            print("❌ Projects data format incorrect")
+                            print(
+                                "❌ Projects data format incorrect"
+                            )
                             return False
                     else:
-                        print(f"❌ Response format test failed: {response.status}")
+                        print(
+                            f"❌ Response format test failed: {response.status}"
+                        )
                         return False
 
         except Exception as e:
@@ -189,6 +247,7 @@ class APIAlignmentTester:
         else:
             print("❌ Some integration tests FAILED")
             return False
+
 
 async def main():
     """Main test function."""
