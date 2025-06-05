@@ -22,6 +22,7 @@ The server will start and you should see:
 - **Interactive API**: http://localhost:8000/redoc
 - **Health Check**: http://localhost:8000/health
 - **Root Endpoint**: http://localhost:8000/
+- **Schema Snapshot**: `openapi.json` in this folder
 
 ## 🧪 Running Tests
 
@@ -243,6 +244,7 @@ graph TD
 - `init_db.py`
 - `main.py`
 - `middleware.py`
+- `openapi.json`
 - `pyproject.toml`
 - `pytest.ini`
 - `quick_fix_project_service.py`
@@ -255,6 +257,7 @@ graph TD
 - `validation.py`
 
 <!-- File List End -->
+
 
 
 
