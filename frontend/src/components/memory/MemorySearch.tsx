@@ -12,7 +12,7 @@ import {
   Link,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { mcpApi } from "@/services/api";
+import { memoryApi } from "@/services/api";
 import type { MemoryEntity } from "@/types/memory";
 
 const MemorySearch: React.FC = () => {
@@ -27,9 +27,9 @@ const MemorySearch: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const resp = await mcpApi.memory.searchGraph(query);
-      const data = (resp as any).data as MemoryEntity[];
-      setResults(data || []);
+      const resp = await memoryApi.searchGraph(query);
+      const data = (resp as any).data ?? resp;
+      setResults((data as MemoryEntity[]) || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
     } finally {
