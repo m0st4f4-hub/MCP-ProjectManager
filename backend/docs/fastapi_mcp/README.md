@@ -93,6 +93,7 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/memory/add-observation` (POST)
 - `/mcp-tools/memory/add-relation` (POST)
 - `/mcp-tools/memory/search` (GET)
+<<<<<<< HEAD
 - `/mcp-tools/forbidden-action/create` (POST)
 - `/mcp-tools/forbidden-action/list` (GET)
 - `/mcp-tools/capability/create` (POST)
@@ -157,6 +158,11 @@ await create_forbidden_action_tool(
 Use these routes to manage when one agent role should hand off control to
 another. Create new rules with `/mcp-tools/handoff/create`, list all criteria
 via `/mcp-tools/handoff/list`, and remove a rule using `/mcp-tools/handoff/delete`.
+=======
+- `/mcp-tools/template/create` (POST)
+- `/mcp-tools/templates/list` (GET)
+- `/mcp-tools/template/delete` (POST)
+>>>>>>> origin/codex/add-and-register-template_tools-functions
 
 ## Development and Contributing
 

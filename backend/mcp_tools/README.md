@@ -63,10 +63,14 @@ actions = await list_forbidden_actions_tool(agent_role_id="manager", db=session)
 - `project_tools.py`
 - `rule_tools.py`
 - `task_tools.py`
+<<<<<<< HEAD
 - `user_role_tools.py`
 =======
 - `verification_requirement_tools.py`
 >>>>>>> origin/codex/add-verification-requirement-tools
+=======
+- `template_tools.py`
+>>>>>>> origin/codex/add-and-register-template_tools-functions
 
 <!-- File List End -->
 

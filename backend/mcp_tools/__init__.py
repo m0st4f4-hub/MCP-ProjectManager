@@ -17,6 +17,7 @@ __all__ = [
     'add_project_file_tool',
     'list_project_files_tool',
     'remove_project_file_tool',
+<<<<<<< HEAD
     'create_forbidden_action_tool',
     'list_forbidden_actions_tool',
     'create_handoff_criteria_tool',
@@ -37,4 +38,9 @@ __all__ = [
     'list_verification_requirements_tool',
     'delete_verification_requirement_tool'
 >>>>>>> origin/codex/add-verification-requirement-tools
+=======
+    'create_template_tool',
+    'list_templates_tool',
+    'delete_template_tool'
+>>>>>>> origin/codex/add-and-register-template_tools-functions
 ]

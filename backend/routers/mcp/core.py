@@ -1,8 +1,14 @@
+<<<<<<< HEAD
+=======
+# MCP Core Tools Router
+
+>>>>>>> origin/codex/add-and-register-template_tools-functions
 """
 MCP Core Tools Router - Functionality for Project and Task MCP integration.
 Provides MCP tool definitions.
 """
 
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 import json
@@ -13,6 +19,12 @@ import logging
 from functools import wraps
 from collections import defaultdict
 import asyncio
+=======
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from typing import Optional
+import logging
+>>>>>>> origin/codex/add-and-register-template_tools-functions
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -20,6 +32,7 @@ from ....services.task_service import TaskService
 from ....services.audit_log_service import AuditLogService
 from ....services.memory_service import MemoryService
 from ....services.project_file_association_service import ProjectFileAssociationService
+<<<<<<< HEAD
 from ....services.event_publisher import publisher
 from ....schemas.project_template import ProjectTemplateCreate
 from ....services.rules_service import RulesService
@@ -50,6 +63,12 @@ from ....mcp_tools.capability_tools import (
 )
 from ....schemas.universal_mandate import UniversalMandateCreate
 from .... import models
+=======
+from ....services.project_template_service import ProjectTemplateService
+from ....schemas.project import ProjectCreate
+from ....schemas.task import TaskCreate, TaskUpdate
+from ....schemas.project_template import ProjectTemplateCreate
+>>>>>>> origin/codex/add-and-register-template_tools-functions
 from ....schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
@@ -502,6 +521,7 @@ async def mcp_remove_project_file(
 ):
     """MCP Tool: Disassociate a file from a project."""
     try:
+<<<<<<< HEAD
         success = service.remove_file_from_project(project_id, file_memory_entity_id)
         if not success:
             raise HTTPException(
@@ -510,6 +530,26 @@ async def mcp_remove_project_file(
         return DataResponse[bool](data=True, message="File removed from project successfully")
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
+=======
+        service.remove_project_file_association(
+            project_id=project_id,
+            file_memory_entity_id=file_memory_entity_id
+        )
+        audit_service = AuditLogService(service.db)
+        audit_service.log_action(
+            action="project_file_removed",
+            entity_type="project_file",
+            entity_id=f"{project_id}-{file_memory_entity_id}",
+            changes={
+                "project_id": project_id,
+                "file_memory_entity_id": file_memory_entity_id
+            }
+        )
+        return {
+            "success": True,
+            "message": "Project file association removed successfully",
+        }
+>>>>>>> origin/codex/add-and-register-template_tools-functions
     except Exception as e:
         logger.error(f"MCP remove project file failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -518,34 +558,68 @@ async def mcp_remove_project_file(
 @router.post(
     "/mcp-tools/template/create",
     tags=["mcp-tools"],
+<<<<<<< HEAD
     operation_id="create_project_template_tool",
 )
 @track_tool_usage("create_project_template_tool")
 async def mcp_create_project_template(
+=======
+    operation_id="create_template_tool",
+)
+async def mcp_create_template(
+>>>>>>> origin/codex/add-and-register-template_tools-functions
     template_data: ProjectTemplateCreate,
     db: Session = Depends(get_db_session),
 ):
     """MCP Tool: Create a new project template."""
     try:
+<<<<<<< HEAD
         from ...mcp_tools.project_template_tools import create_project_template_tool
 
         return await create_project_template_tool(template_data, db)
     except Exception as e:
         logger.error(f"MCP create project template failed: {e}")
+=======
+        service = ProjectTemplateService(db)
+        existing = service.get_template_by_name(template_data.name)
+        if existing:
+            raise HTTPException(status_code=400, detail="Template already exists")
+        template = service.create_template(template_data)
+        return {
+            "success": True,
+            "template": {
+                "id": template.id,
+                "name": template.name,
+                "description": template.description,
+                "created_at": template.created_at.isoformat(),
+            },
+        }
+    except Exception as e:
+        logger.error(f"MCP create template failed: {e}")
+>>>>>>> origin/codex/add-and-register-template_tools-functions
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get(
+<<<<<<< HEAD
     "/mcp-tools/template/list",
     tags=["mcp-tools"],
     operation_id="list_project_templates_tool",
 )
 @track_tool_usage("list_project_templates_tool")
 async def mcp_list_project_templates(
+=======
+    "/mcp-tools/templates/list",
+    tags=["mcp-tools"],
+    operation_id="list_templates_tool",
+)
+async def mcp_list_templates(
+>>>>>>> origin/codex/add-and-register-template_tools-functions
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db_session),
 ):
+<<<<<<< HEAD
     """MCP Tool: List all project templates."""
     try:
         from ...mcp_tools.project_template_tools import list_project_templates_tool
@@ -553,32 +627,71 @@ async def mcp_list_project_templates(
         return await list_project_templates_tool(skip, limit, db)
     except Exception as e:
         logger.error(f"MCP list project templates failed: {e}")
+=======
+    """MCP Tool: List project templates."""
+    try:
+        service = ProjectTemplateService(db)
+        templates = service.get_templates(skip=skip, limit=limit)
+        return {
+            "success": True,
+            "templates": [
+                {
+                    "id": t.id,
+                    "name": t.name,
+                    "description": t.description,
+                    "created_at": t.created_at.isoformat(),
+                }
+                for t in templates
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP list templates failed: {e}")
+>>>>>>> origin/codex/add-and-register-template_tools-functions
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post(
     "/mcp-tools/template/delete",
     tags=["mcp-tools"],
+<<<<<<< HEAD
     operation_id="delete_project_template_tool",
 )
 @track_tool_usage("delete_project_template_tool")
 async def mcp_delete_project_template(
+=======
+    operation_id="delete_template_tool",
+)
+async def mcp_delete_template(
+>>>>>>> origin/codex/add-and-register-template_tools-functions
     template_id: str,
     db: Session = Depends(get_db_session),
 ):
     """MCP Tool: Delete a project template."""
     try:
+<<<<<<< HEAD
         from ...mcp_tools.project_template_tools import delete_project_template_tool
 
         return await delete_project_template_tool(template_id, db)
     except Exception as e:
         logger.error(f"MCP delete project template failed: {e}")
+=======
+        service = ProjectTemplateService(db)
+        success = service.delete_template(template_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Template not found")
+        return {"success": True, "template_id": template_id}
+    except Exception as e:
+        logger.error(f"MCP delete template failed: {e}")
+>>>>>>> origin/codex/add-and-register-template_tools-functions
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post(
+<<<<<<< HEAD
 =======
 >>>>>>> origin/codex/add-update-and-delete-task-routes
+=======
+>>>>>>> origin/codex/add-and-register-template_tools-functions
     "/mcp-tools/memory/add-entity",
     tags=["mcp-tools"],
     operation_id="add_memory_entity_tool",
@@ -656,6 +769,7 @@ async def mcp_add_memory_observation(
 ):
     """MCP Tool: Add an observation to a memory entity."""
     try:
+<<<<<<< HEAD
         observation = memory_service.create_observation(entity_id, observation_data)
         return {
             "success": True,
@@ -668,6 +782,20 @@ async def mcp_add_memory_observation(
         }
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
+=======
+        observation = memory_service.create_memory_observation(
+            entity_id,
+            observation_data,
+        )
+        audit_service = AuditLogService(memory_service.db)
+        audit_service.log_action(
+            action="memory_observation_added",
+            entity_type="memory_observation",
+            entity_id=observation.id,
+            changes=observation_data.model_dump(exclude_unset=True)
+        )
+        return {"success": True, "observation_id": observation.id}
+>>>>>>> origin/codex/add-and-register-template_tools-functions
     except Exception as e:
         logger.error(f"MCP add memory observation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -779,7 +907,16 @@ async def mcp_get_memory_content(
 ):
     """MCP Tool: Get the content of a memory entity."""
     try:
+<<<<<<< HEAD
         content = memory_service.get_entity_content(entity_id)
+=======
+        content = memory_service.get_memory_entity_content(entity_id)
+        if content is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Memory entity content not found",
+            )
+>>>>>>> origin/codex/add-and-register-template_tools-functions
         return {"success": True, "content": content}
     except ValueError as ve:
         raise HTTPException(status_code=404, detail=str(ve))
@@ -800,7 +937,16 @@ async def mcp_get_memory_metadata(
 ):
     """MCP Tool: Get the metadata of a memory entity."""
     try:
+<<<<<<< HEAD
         metadata = memory_service.get_entity_metadata(entity_id)
+=======
+        metadata = memory_service.get_memory_entity_metadata(entity_id)
+        if metadata is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Memory entity metadata not found",
+            )
+>>>>>>> origin/codex/add-and-register-template_tools-functions
         return {"success": True, "metadata": metadata}
     except ValueError as ve:
         raise HTTPException(status_code=404, detail=str(ve))
@@ -845,6 +991,7 @@ async def mcp_create_mandate(
 ):
     """MCP Tool: Create a new universal mandate."""
     try:
+<<<<<<< HEAD
         rules_service = RulesService(db)
         created_mandate = rules_service.create_universal_mandate(mandate)
         return {
@@ -857,6 +1004,23 @@ async def mcp_create_mandate(
                 "created_at": created_mandate.created_at.isoformat(),
             },
         }
+=======
+        tool_list = []
+        for route in router.routes:
+            if hasattr(route, "operation_id") and route.operation_id.endswith("_tool"):
+                tool_info = {
+                    "name": route.operation_id,
+                    "path": route.path,
+                    "method": list(route.methods)[0] if route.methods else "GET",
+                    "description": (
+                        route.summary
+                        or route.description
+                        or "No description available"
+                    )
+                }
+                tool_list.append(tool_info)
+        return {"success": True, "tools": tool_list}
+>>>>>>> origin/codex/add-and-register-template_tools-functions
     except Exception as e:
         logger.error(f"MCP create mandate failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
