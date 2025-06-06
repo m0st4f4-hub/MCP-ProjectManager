@@ -4,6 +4,7 @@ import {
   Box,
   Button,
 <<<<<<< HEAD
+<<<<<<< HEAD
   Flex,
   Input,
   List,
@@ -25,6 +26,8 @@ const VerificationRequirements: React.FC<VerificationRequirementsProps> = ({ age
   const [newReq, setNewReq] = useState("");
   const [loading, setLoading] = useState(false);
 =======
+=======
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
   IconButton,
   Table,
   Tbody,
@@ -70,6 +73,9 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
+<<<<<<< HEAD
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
+=======
 >>>>>>> origin/3kceht-codex/create-verificationrequirements-component
 
   const loadRequirements = async () => {
@@ -80,7 +86,10 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
       toast({
         title: "Failed to load requirements",
 <<<<<<< HEAD
+<<<<<<< HEAD
         description: err instanceof Error ? err.message : String(err),
+=======
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
 =======
 >>>>>>> origin/3kceht-codex/create-verificationrequirements-component
         status: "error",
@@ -92,6 +101,7 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
 
   useEffect(() => {
     loadRequirements();
+<<<<<<< HEAD
 <<<<<<< HEAD
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentRoleId]);
@@ -112,6 +122,8 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
       toast({
         title: "Failed to add requirement",
 =======
+=======
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
   }, [agentRoleId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,6 +168,9 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
     } catch (err) {
       toast({
         title: "Error saving requirement",
+<<<<<<< HEAD
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
+=======
 >>>>>>> origin/3kceht-codex/create-verificationrequirements-component
         description: err instanceof Error ? err.message : String(err),
         status: "error",
@@ -163,14 +178,18 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
         isClosable: true,
       });
 <<<<<<< HEAD
+<<<<<<< HEAD
     } finally {
       setLoading(false);
+=======
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
 =======
 >>>>>>> origin/3kceht-codex/create-verificationrequirements-component
     }
   };
 
   const handleDelete = async (id: string) => {
+<<<<<<< HEAD
 <<<<<<< HEAD
     setLoading(true);
     try {
@@ -181,6 +200,8 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
       toast({
         title: "Failed to remove requirement",
 =======
+=======
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
     try {
       await verificationRequirementsApi.remove(id);
       setRequirements((r) => r.filter((req) => req.id !== id));
@@ -188,12 +209,16 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
     } catch (err) {
       toast({
         title: "Error deleting requirement",
+<<<<<<< HEAD
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
+=======
 >>>>>>> origin/3kceht-codex/create-verificationrequirements-component
         description: err instanceof Error ? err.message : String(err),
         status: "error",
         duration: 5000,
         isClosable: true,
       });
+<<<<<<< HEAD
 <<<<<<< HEAD
     } finally {
       setLoading(false);
@@ -237,6 +262,8 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
         </List>
       )}
 =======
+=======
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
     }
   };
 
@@ -324,6 +351,9 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+<<<<<<< HEAD
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
+=======
 >>>>>>> origin/3kceht-codex/create-verificationrequirements-component
     </Box>
   );

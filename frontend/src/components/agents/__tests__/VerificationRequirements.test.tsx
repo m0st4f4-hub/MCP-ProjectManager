@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { render, screen, waitFor, TestWrapper } from '@/__tests__/utils/test-utils';
 import VerificationRequirements from '../VerificationRequirements';
 
@@ -80,6 +81,8 @@ describe('VerificationRequirements', () => {
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith('1'));
     await waitFor(() => expect(listMock).toHaveBeenCalledTimes(2));
 =======
+=======
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
 import { render, screen, waitFor } from '@/__tests__/utils/test-utils';
 import VerificationRequirements from '../VerificationRequirements';
 import { verificationRequirementsApi } from '@/services/api/verificationRequirements';
@@ -143,6 +146,9 @@ describe('VerificationRequirements', () => {
     await waitFor(() => {
       expect(mockedApi.remove).toHaveBeenCalledWith('1');
     });
+<<<<<<< HEAD
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
+=======
 >>>>>>> origin/3kceht-codex/create-verificationrequirements-component
   });
 });
