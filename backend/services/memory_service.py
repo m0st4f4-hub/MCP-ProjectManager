@@ -338,21 +338,34 @@ class MemoryService:
         db_observation = await self.db.query(models.MemoryObservation).filter(models.MemoryObservation.id == observation_id).first()
         if not db_observation:
             return None
-        for key, value in observation_update.model_dump(exclude_unset=True).items():
-            setattr(db_observation, key, value)
-        await self.db.commit()
-        await self.db.refresh(db_observation)
-        logger.info(f"Updated observation {observation_id}")
-        return db_observation
+
+        update_data = observation_update.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(db_observation, field, value)
+
+        try:
+            await self.db.commit()
+            await self.db.refresh(db_observation)
+            logger.info(f"Updated memory observation: {observation_id}")
+            return db_observation
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Error updating memory observation {observation_id}: {e}")
+            raise ServiceError("Error updating memory observation")
 
     async def delete_observation(self, observation_id: int) -> bool:
         db_observation = await self.db.query(models.MemoryObservation).filter(models.MemoryObservation.id == observation_id).first()
         if not db_observation:
             return False
-        await self.db.delete(db_observation)
-        await self.db.commit()
-        logger.info(f"Deleted observation {observation_id}")
-        return True
+        try:
+            await self.db.delete(db_observation)
+            await self.db.commit()
+            logger.info(f"Deleted memory observation: {observation_id}")
+            return True
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Error deleting memory observation {observation_id}: {e}")
+            raise ServiceError("Error deleting memory observation")
 
     async def create_memory_relation(
         self, relation: MemoryRelationCreate

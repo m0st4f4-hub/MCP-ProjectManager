@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, Query, Path, status
+from fastapi import APIRouter, Depends, Query, Path, status, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from fastapi import HTTPException
 
 from ....database import get_sync_db as get_db
-from ....services.memory_service import MemoryService  # Assuming observation management is part of memory service
+from ....services.memory_service import MemoryService
 from ....schemas.memory import MemoryObservation, MemoryObservationCreate
 from ....schemas.api_responses import PaginationParams
 from ....services.exceptions import EntityNotFoundError
@@ -19,13 +18,21 @@ def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
 def add_observation(
     observation: MemoryObservationCreate,
     entity_id: int = Path(..., description="The ID of the entity to add the observation to."),
-    memory_service: MemoryService = Depends(get_memory_service),
+    memory_service: MemoryService = Depends(get_memory_service)
 ):
     """Add an observation to a memory entity."""
-    db_observation = memory_service.add_observation_to_entity(
-        entity_id=entity_id, observation=observation
-    )
-    return db_observation
+    try:
+        db_observation = memory_service.add_observation_to_entity(
+            entity_id=entity_id, observation=observation
+        )
+        return db_observation
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}"
+        )
 
 @router.get("/observations/", response_model=List[MemoryObservation])
 async def read_observations(
@@ -50,20 +57,27 @@ async def read_observations(
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 @router.put("/observations/{observation_id}", response_model=MemoryObservation)
-def update_observation(
+def update_observation_endpoint(
     observation: MemoryObservationCreate,
     observation_id: int = Path(..., description="ID of the observation to update."),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
-    """Update an existing memory observation."""
-    db_obs = memory_service.update_observation(observation_id, observation)
-    if db_obs is None:
-        raise EntityNotFoundError("MemoryObservation", observation_id)
-    return db_obs
+    """Update a memory observation."""
+    try:
+        db_observation = memory_service.update_observation(observation_id, observation)
+        if not db_observation:
+            raise EntityNotFoundError("MemoryObservation", observation_id)
+        return db_observation
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}"
+        )
 
-
-@router.delete("/observations/{observation_id}", response_model=DataResponse[bool])
-def delete_observation(
+@router.delete("/observations/{observation_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_observation_endpoint(
     observation_id: int = Path(..., description="ID of the observation to delete."),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
@@ -72,8 +86,11 @@ def delete_observation(
         success = memory_service.delete_observation(observation_id)
         if not success:
             raise EntityNotFoundError("MemoryObservation", observation_id)
-        return DataResponse[bool](data=True, message="Memory observation deleted successfully")
+        return {"message": "Memory observation deleted successfully"}
     except EntityNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}"
+        )
