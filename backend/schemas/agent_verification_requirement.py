@@ -7,11 +7,20 @@ class AgentVerificationRequirementBase(BaseModel):
     """Base schema for agent verification requirements."""
 
     agent_role_id: str = Field(..., description="ID of the related agent role.")
+<<<<<<< HEAD
     requirement: str = Field(..., description="Verification requirement text.")
     description: Optional[str] = Field(
         None, description="Optional description for the requirement."
     )
     is_mandatory: bool = Field(True, description="Whether the requirement is mandatory.")
+=======
+    requirement: str = Field(..., description="The verification requirement.")
+    description: Optional[str] = Field(None, description="Optional description.")
+    is_mandatory: bool = Field(
+        True,
+        description="Whether the requirement is mandatory.",
+    )
+>>>>>>> origin/codex/add-agent-verification-service-and-router
 
 
 class AgentVerificationRequirementCreate(AgentVerificationRequirementBase):
