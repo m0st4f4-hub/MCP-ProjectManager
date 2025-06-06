@@ -113,6 +113,7 @@ from .agent_verification_requirement import (
 )
 from .file_ingest import FileIngestInput
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 from .error_protocol import (
     ErrorProtocolBase,
@@ -127,11 +128,16 @@ from .agent_verification_requirement import (
     AgentVerificationRequirement,
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
 from .agent_handoff_criteria import (
     AgentHandoffCriteria,
     AgentHandoffCriteriaCreate,
     AgentHandoffCriteriaUpdate,
+<<<<<<< HEAD
 >>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
 =======
 >>>>>>> origin/codex/add-agent-verification-service-and-router
+=======
+>>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
 )

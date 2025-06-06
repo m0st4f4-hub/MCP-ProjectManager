@@ -5,6 +5,7 @@ from datetime import datetime
 
 class AgentHandoffCriteriaBase(BaseModel):
 <<<<<<< HEAD
+<<<<<<< HEAD
     """Base schema for agent handoff criteria."""
 
     agent_role_id: str = Field(..., description="ID of the related agent role.")
@@ -50,6 +51,8 @@ class AgentHandoffCriteria(AgentHandoffCriteriaBase):
     id: str = Field(..., description="Unique identifier for the criteria.")
     created_at: datetime = Field(..., description="Timestamp the criteria was created.")
 =======
+=======
+>>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
     """Base attributes for agent handoff criteria."""
     criteria: str = Field(..., description="Condition that triggers a handoff.")
     description: Optional[str] = Field(None, description="Details about the criteria.")
@@ -77,6 +80,9 @@ class AgentHandoffCriteria(AgentHandoffCriteriaBase):
     id: str = Field(..., description="Unique identifier.")
     agent_role_id: str = Field(..., description="ID of the owning agent role.")
     created_at: datetime = Field(..., description="Creation timestamp.")
+<<<<<<< HEAD
+>>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
+=======
 >>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
 
     model_config = ConfigDict(from_attributes=True)
