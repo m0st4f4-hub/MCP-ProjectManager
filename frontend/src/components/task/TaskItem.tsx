@@ -15,7 +15,7 @@ import { useProjectStore } from "@/store/projectStore";
 import { useTaskStore } from "@/store/taskStore";
 import { getDisplayableStatus, StatusID, StatusAttributeObject } from "@/lib/statusUtils";
 import { TaskItemProps } from "./TaskItem.types";
-import { getStatusAccentColor } from "./TaskItem.utils";
+import { getStatusAccentColor } from "@/components/task";
 import { useTaskItemStyles } from "../useTaskItemStyles";
 import TaskItemMainSection from "./TaskItemMainSection";
 import TaskItemModals from "../TaskItemModals";
