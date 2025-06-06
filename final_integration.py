@@ -89,6 +89,8 @@ class TheBuilderSystemIntegrator:
             ("Database initialization", self._check_database),
             ("Backend models integrity", self._check_models),
             ("API routers completeness", self._check_routers),
+            ("Project template features", self._check_project_template_features),
+            ("Agent rule features", self._check_agent_rule_features),
         ]
         
         for check_name, check_func in backend_checks:
@@ -187,9 +189,31 @@ class TheBuilderSystemIntegrator:
         routers_dir = self.backend_dir / "routers"
         if not routers_dir.exists():
             return False
-        
+
         key_routers = ['projects.py', 'tasks.py', 'agents.py', 'users.py']
         return all((routers_dir / router).exists() for router in key_routers)
+
+    def _check_project_template_features(self):
+        """Verify project template features exist on both backend and frontend."""
+        backend_router = (
+            self.backend_dir / "routers" / "project_templates" / "project_templates.py"
+        )
+        backend_service = self.backend_dir / "services" / "project_template_service.py"
+        frontend_service = (
+            self.frontend_dir / "src" / "services" / "api" / "project_templates.ts"
+        )
+        return backend_router.exists() and backend_service.exists() and frontend_service.exists()
+
+    def _check_agent_rule_features(self):
+        """Verify agent rule capabilities are present."""
+        backend_service = self.backend_dir / "services" / "rules_service.py"
+        backend_router = self.backend_dir / "routers" / "rules"
+        frontend_service = self.frontend_dir / "src" / "services" / "api" / "rules.ts"
+        return (
+            backend_service.exists()
+            and backend_router.exists()
+            and frontend_service.exists()
+        )
     
     def _check_frontend_structure(self):
         """Check frontend directory structure."""
