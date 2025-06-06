@@ -1,12 +1,18 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 =======
+=======
+>>>>>>> origin/codex/add-agent-verification-service-and-router
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+<<<<<<< HEAD
+>>>>>>> origin/codex/add-agent-verification-service-and-router
+=======
 >>>>>>> origin/codex/add-agent-verification-service-and-router
 
 from ....database import get_sync_db as get_db
@@ -19,6 +25,7 @@ from ....schemas.agent_verification_requirement import (
 router = APIRouter()
 
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 @router.get("/", response_model=List[AgentVerificationRequirement])
 def list_verification_requirements(
@@ -52,6 +59,8 @@ def delete_verification_requirement(
         raise HTTPException(status_code=404, detail="Requirement not found")
     return {"message": "Verification requirement deleted successfully"}
 =======
+=======
+>>>>>>> origin/codex/add-agent-verification-service-and-router
 def get_service(db: Session = Depends(get_db)) -> AgentVerificationService:
     return AgentVerificationService(db)
 
@@ -90,4 +99,7 @@ def delete_verification_requirement(
             detail="Verification requirement not found",
         )
     return {"message": "Verification requirement deleted"}
+<<<<<<< HEAD
+>>>>>>> origin/codex/add-agent-verification-service-and-router
+=======
 >>>>>>> origin/codex/add-agent-verification-service-and-router
