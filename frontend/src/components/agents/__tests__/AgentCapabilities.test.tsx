@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
+<<<<<<< HEAD
 import { render, screen, TestWrapper } from '@/__tests__/utils/test-utils';
 import AgentCapabilities from '../AgentCapabilities';
 
@@ -21,6 +22,16 @@ vi.mock('@/services/api', () => ({
     create: createMock,
     update: vi.fn(),
     delete: vi.fn(),
+=======
+import { render, screen } from '@/__tests__/utils/test-utils';
+import AgentCapabilities from '../AgentCapabilities';
+
+vi.mock('@/services/api/agent_roles', () => ({
+  agentRolesApi: {
+    getCapabilities: vi.fn().mockResolvedValue([]),
+    addCapability: vi.fn().mockResolvedValue({}),
+    deleteCapability: vi.fn().mockResolvedValue(undefined),
+>>>>>>> origin/codex/add-agentcapabilities-component-and-api-integration
   },
 }));
 
@@ -29,6 +40,7 @@ describe('AgentCapabilities', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+<<<<<<< HEAD
     listMock.mockResolvedValue([]);
   });
 
@@ -54,4 +66,35 @@ describe('AgentCapabilities', () => {
 
     expect(createMock).toHaveBeenCalled();
   });
+=======
+  });
+
+  it('should render without crashing', async () => {
+    render(
+      <AgentCapabilities roleName="BuilderAgent" roleId="1" />,
+      { wrapper: ({ children }) => <div>{children}</div> }
+    );
+    expect(screen.getByText('Name')).toBeInTheDocument();
+  });
+
+  it('should handle user interactions', async () => {
+    render(
+      <AgentCapabilities roleName="BuilderAgent" roleId="1" />,
+      { wrapper: ({ children }) => <div>{children}</div> }
+    );
+
+    const buttons = screen.queryAllByRole('button');
+    const inputs = screen.queryAllByRole('textbox');
+
+    if (buttons.length > 0) {
+      await user.click(buttons[0]);
+    }
+
+    if (inputs.length > 0) {
+      await user.type(inputs[0], 'test');
+    }
+
+    expect(document.body).toBeInTheDocument();
+  });
+>>>>>>> origin/codex/add-agentcapabilities-component-and-api-integration
 });

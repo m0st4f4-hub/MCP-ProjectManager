@@ -1,5 +1,13 @@
 import { request } from './request';
+<<<<<<< HEAD
+<<<<<<< HEAD
 import { buildApiUrl, API_CONFIG } from './config';
+=======
+import { buildApiUrl } from './config';
+>>>>>>> origin/codex/add-deletetemplate-function-to-project_templates
+=======
+import { buildApiUrl } from './config';
+>>>>>>> origin/codex/add-deletetemplate-to-api-project_templates
 import {
   ProjectTemplate,
   ProjectTemplateCreateData,
@@ -22,10 +30,30 @@ export async function deleteTemplate(
 export const projectTemplatesApi = {
   /** Create a new project template */
   async create(data: ProjectTemplateCreateData): Promise<ProjectTemplate> {
+<<<<<<< HEAD
     return request<ProjectTemplate>(buildApiUrl(API_CONFIG.ENDPOINTS.PROJECT_TEMPLATES), {
       method: 'POST',
       body: JSON.stringify(data),
     });
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+    return request<ProjectTemplate>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.PROJECT_TEMPLATES),
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+=======
+=======
+>>>>>>> origin/codex/add-deletetemplate-to-api-project_templates
+    return request<ProjectTemplate>(buildApiUrl('/project-templates/'), {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+>>>>>>> origin/codex/add-deletetemplate-function-to-project_templates
+>>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
   },
 
   /** List project templates with basic pagination */
@@ -35,14 +63,30 @@ export const projectTemplatesApi = {
       limit: String(limit),
     });
     return request<ProjectTemplate[]>(
+<<<<<<< HEAD
+<<<<<<< HEAD
       buildApiUrl(API_CONFIG.ENDPOINTS.PROJECT_TEMPLATES, `?${params}`)
+=======
+      buildApiUrl('/project-templates/', `?${params}`)
+>>>>>>> origin/codex/add-deletetemplate-function-to-project_templates
+=======
+      buildApiUrl('/project-templates/', `?${params}`)
+>>>>>>> origin/codex/add-deletetemplate-to-api-project_templates
     );
   },
 
   /** Retrieve a single project template */
   async get(templateId: string): Promise<ProjectTemplate> {
     return request<ProjectTemplate>(
+<<<<<<< HEAD
+<<<<<<< HEAD
       buildApiUrl(API_CONFIG.ENDPOINTS.PROJECT_TEMPLATES, `/${templateId}`)
+=======
+      buildApiUrl('/project-templates/', `/${templateId}`)
+>>>>>>> origin/codex/add-deletetemplate-function-to-project_templates
+=======
+      buildApiUrl('/project-templates/', `/${templateId}`)
+>>>>>>> origin/codex/add-deletetemplate-to-api-project_templates
     );
   },
 
@@ -52,7 +96,15 @@ export const projectTemplatesApi = {
     data: ProjectTemplateUpdateData
   ): Promise<ProjectTemplate> {
     return request<ProjectTemplate>(
+<<<<<<< HEAD
+<<<<<<< HEAD
       buildApiUrl(API_CONFIG.ENDPOINTS.PROJECT_TEMPLATES, `/${templateId}`),
+=======
+      buildApiUrl('/project-templates/', `/${templateId}`),
+>>>>>>> origin/codex/add-deletetemplate-function-to-project_templates
+=======
+      buildApiUrl('/project-templates/', `/${templateId}`),
+>>>>>>> origin/codex/add-deletetemplate-to-api-project_templates
       {
         method: 'PUT',
         body: JSON.stringify(data),
@@ -61,17 +113,43 @@ export const projectTemplatesApi = {
   },
 
   /** Delete a project template */
+<<<<<<< HEAD
   async delete(templateId: string): Promise<{ message: string }> {
     return request<{ message: string }>(
       buildApiUrl(API_CONFIG.ENDPOINTS.PROJECT_TEMPLATES, `/${templateId}`),
+=======
+<<<<<<< HEAD
+  delete: deleteTemplate,
+  deleteTemplate,
+=======
+  async delete(templateId: string): Promise<{ message: string }> {
+    return request<{ message: string }>(
+      buildApiUrl('/project-templates/', `/${templateId}`),
+>>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
       {
         method: 'DELETE',
       }
     );
   },
+<<<<<<< HEAD
 };
 
 /**
+=======
+>>>>>>> origin/codex/add-deletetemplate-function-to-project_templates
+};
+
+/**
+ * Convenience wrapper for deleting a project template by ID.
+ */
+export const deleteTemplate = async (
+  templateId: string
+): Promise<{ message: string }> => {
+  return projectTemplatesApi.delete(templateId);
+};
+
+/**
+>>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
  * Delete a project template by ID
  * Alias to `projectTemplatesApi.delete` for convenience
  */

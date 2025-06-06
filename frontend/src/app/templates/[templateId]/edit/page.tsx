@@ -3,7 +3,15 @@ import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@chakra-ui/react';
+<<<<<<< HEAD
 import EditProjectTemplateForm from '@/components/forms/EditProjectTemplateForm';
+=======
+<<<<<<< HEAD
+import TemplateForm from '@/components/templates/TemplateForm';
+=======
+import EditProjectTemplateForm from '@/components/forms/EditProjectTemplateForm';
+>>>>>>> origin/codex/add-delete-buttons-for-templates
+>>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
 import { useTemplateStore } from '@/store/templateStore';
 
 const EditTemplatePage: React.FC = () => {
@@ -35,17 +43,35 @@ const EditTemplatePage: React.FC = () => {
 
   return (
     <>
+<<<<<<< HEAD
       <EditProjectTemplateForm
+=======
+<<<<<<< HEAD
+      <TemplateForm
+=======
+      <EditProjectTemplateForm
+>>>>>>> origin/codex/add-delete-buttons-for-templates
+>>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
         template={template}
         onSubmit={handleSubmit}
         onCancel={() => router.push('/templates')}
       />
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+      <Button colorScheme="red" mt="4" onClick={handleDelete}>
+=======
+>>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
       <Button
         as={Link}
         href={`/templates/${templateId}/delete`}
         colorScheme="red"
         mt={4}
       >
+<<<<<<< HEAD
+=======
+>>>>>>> origin/codex/add-delete-buttons-for-templates
+>>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
         Delete Template
       </Button>
     </>

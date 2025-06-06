@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 // --- Agent Handoff Criteria Schemas ---
 export const agentHandoffCriteriaBaseSchema = z.object({
   agent_role_id: z.string(),
@@ -41,23 +42,38 @@ export interface AgentHandoffCriteriaListResponse {
   criteria: AgentHandoffCriteria[];
 }
 
+=======
+>>>>>>> origin/16bcjg-codex/implement-crud-for-error-protocols
 // --- Error Protocol Schemas ---
 export const errorProtocolBaseSchema = z.object({
   agent_role_id: z.string(),
   error_type: z.string(),
   protocol: z.string(),
+<<<<<<< HEAD
   priority: z.number().optional(),
+=======
+  priority: z.number().min(1).max(10).default(5),
+>>>>>>> origin/16bcjg-codex/implement-crud-for-error-protocols
   is_active: z.boolean().default(true),
 });
 
 export const errorProtocolCreateSchema = errorProtocolBaseSchema;
 export type ErrorProtocolCreateData = z.infer<typeof errorProtocolCreateSchema>;
 
+<<<<<<< HEAD
 export const errorProtocolUpdateSchema = errorProtocolBaseSchema.partial();
+=======
+export const errorProtocolUpdateSchema = errorProtocolBaseSchema
+  .partial()
+  .omit({
+    agent_role_id: true,
+  });
+>>>>>>> origin/16bcjg-codex/implement-crud-for-error-protocols
 export type ErrorProtocolUpdateData = z.infer<typeof errorProtocolUpdateSchema>;
 
 export const errorProtocolSchema = errorProtocolBaseSchema.extend({
   id: z.string(),
+<<<<<<< HEAD
   created_at: z.string().datetime({ message: 'Invalid ISO datetime string' }),
 });
 export type ErrorProtocol = z.infer<typeof errorProtocolSchema>;
@@ -250,4 +266,21 @@ export interface AgentCapabilityFilters {
   search?: string;
 }
 >>>>>>> origin/codex/add-agent-capabilities-crud-functions
+<<<<<<< HEAD
 >>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662
+=======
+=======
+  created_at: z
+    .string()
+    .datetime({ message: 'Invalid ISO datetime string' })
+    .optional(),
+});
+export type ErrorProtocol = z.infer<typeof errorProtocolSchema>;
+
+export interface ErrorProtocolFilters {
+  agent_role_id?: string;
+  error_type?: string;
+  is_active?: boolean;
+}
+>>>>>>> origin/16bcjg-codex/implement-crud-for-error-protocols
+>>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5

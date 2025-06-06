@@ -39,8 +39,17 @@ node dev_start.js
 - **✅ Agent System**: Rules-based agents with capabilities and constraints
 - **✅ Memory System**: Knowledge graph for file and content management
 - **✅ Audit Logging**: Complete action tracking and history
+<<<<<<< HEAD
 - **✅ Verification Requirement Tools**: Manage agent role verification
   requirements via MCP (create, list, delete)
+=======
+<<<<<<< HEAD
+- **✅ Verification Requirement Tools**: Manage agent role verification
+  requirements via MCP (create, list, delete)
+=======
+- **✅ Mandate Tools**: Manage universal mandates via MCP
+>>>>>>> origin/0czuut-codex/implement-mandate-tools-functions
+>>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
 
 ## 🌐 System Endpoints
 
@@ -54,6 +63,12 @@ node dev_start.js
 - **Main Application**: `/` (React/Next.js app)
 - **Project Management**: `/projects`
 - **Task Dashboard**: `/tasks`
+
+### Mandate MCP Tools
+Manage universal mandates used by all agents:
+- `POST /mcp-tools/rule/mandate/create` – create a mandate
+- `GET /mcp-tools/rule/mandate/list` – list mandates (filter with `active_only`)
+- `DELETE /mcp-tools/rule/mandate/delete` – delete by id
 
 ## 🔧 Development Tools
 
