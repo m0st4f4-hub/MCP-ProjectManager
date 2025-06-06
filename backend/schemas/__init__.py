@@ -96,6 +96,11 @@ from .agent_error_protocol import (
     AgentErrorProtocolUpdate,
     AgentErrorProtocol,
 )
+from .agent_verification_requirement import (
+    AgentVerificationRequirementBase,
+    AgentVerificationRequirementCreate,
+    AgentVerificationRequirement,
+)
 from .file_ingest import FileIngestInput
 
 from .error_protocol import (
