@@ -33,6 +33,7 @@ from .user import (
     User,
     UserRoleBase,
     UserRoleCreate,
+    UserRoleUpdate,
     UserRole,
 )
 

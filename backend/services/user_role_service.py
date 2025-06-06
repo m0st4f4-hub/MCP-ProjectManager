@@ -41,6 +41,40 @@ class UserRoleService:
             return True
         return False
 
+    def update_user_role(
+        self, user_id: str, current_role_name: str, new_role_name: str
+    ) -> Optional[models.UserRole]:
+        """Update a user's role."""
+        role = (
+            self.db.query(models.UserRole)
+            .filter(
+                models.UserRole.user_id == user_id,
+                models.UserRole.role_name == current_role_name,
+            )
+            .first()
+        )
+        if not role:
+            return None
+
+        if current_role_name == new_role_name:
+            return role
+
+        existing = (
+            self.db.query(models.UserRole)
+            .filter(
+                models.UserRole.user_id == user_id,
+                models.UserRole.role_name == new_role_name,
+            )
+            .first()
+        )
+        if existing:
+            return existing
+
+        role.role_name = new_role_name
+        self.db.commit()
+        self.db.refresh(role)
+        return role
+
     def get_user_roles(self, user_id: str) -> List[models.UserRole]:
         return (
             self.db.query(models.UserRole)
