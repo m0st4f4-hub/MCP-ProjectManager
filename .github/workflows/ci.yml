@@ -89,6 +89,11 @@ jobs:
           cd frontend
           npx vitest --coverage.v8 --coverage-threshold=90
 
+      - name: Run frontend test suite
+        run: |
+          cd frontend
+          npm run test:all
+
       - name: Upload frontend coverage artifact
         if: ${{ success() }}
         uses: actions/upload-artifact@v4

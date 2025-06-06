@@ -15,6 +15,15 @@ function displayHelp() {
 }
 
 
+const TEST_TYPES = {
+  unit: 'Unit Tests',
+  integration: 'Integration Tests',
+  e2e: 'End-to-End Tests',
+  api: 'API Tests',
+  coverage: 'Coverage Report',
+  all: 'Complete Suite'
+};
+
 (function() {
   Help() {
     console.log('Available test commands:')
