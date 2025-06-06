@@ -38,6 +38,23 @@ def main() -> None:
     out_path.write_text("\n".join(lines) + "\n")
     print(f"generated {out_path}")
 
+    # Update statusUtils.ts with any missing statuses
+    task_statuses = [member.value for member in getattr(module, "TaskStatusEnum")]
+    utils_path = Path("frontend/src/lib/statusUtils.ts")
+    if utils_path.exists():
+        utils_text = utils_path.read_text()
+        for status in task_statuses:
+            if status not in utils_text:
+                # Append to StatusID union and STATUS_MAP with generic attrs
+                utils_text = utils_text.replace(
+                    "| \"PENDING_RECOVERY_ATTEMPT\";",
+                    f"| \"PENDING_RECOVERY_ATTEMPT\"\n  | \"{status}\"\n  | \"{status.upper().replace(' ', '_')}\";",
+                )
+                insert_index = utils_text.find("} as const")
+                snippet = f"  \"{status}\": {{\n    id: \"{status}\",\n    displayName: \"{status}\",\n    category: \"todo\",\n    description: \"\",\n    colorScheme: \"gray\",\n    icon: \"InfoIcon\",\n    isTerminal: False,\n    isDynamic: False,\n  }},\n  {status.upper().replace(' ', '_')}: {{\n    id: \"{status}\",\n    displayName: \"{status}\",\n    category: \"todo\",\n    description: \"\",\n    colorScheme: \"gray\",\n    icon: \"InfoIcon\",\n    isTerminal: False,\n    isDynamic: False,\n  }},\n"
+                utils_text = utils_text[:insert_index] + snippet + utils_text[insert_index:]
+        utils_path.write_text(utils_text)
+
 
 if __name__ == "__main__":
     main()

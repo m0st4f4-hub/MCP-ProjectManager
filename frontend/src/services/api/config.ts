@@ -22,6 +22,7 @@ export const API_CONFIG = {
     PROJECT_TEMPLATES: "/project-templates/",
     MCP_EVENTS: "/mcp/events",
     VERIFICATION_REQUIREMENTS: "/verification-requirements",
+    STATUS_TRANSITIONS: "/status-transitions",
   },
 } as const;
 

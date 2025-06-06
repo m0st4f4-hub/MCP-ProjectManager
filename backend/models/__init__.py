@@ -44,6 +44,7 @@ from .agent_verification_requirement import AgentVerificationRequirement
 # Import task-related models
 from .task_dependency import TaskDependency
 from .task_file_association import TaskFileAssociation
+from .status_transition import StatusTransition
 
 # Import comment model
 from .comment import Comment
@@ -81,6 +82,7 @@ __all__ = [
     'TaskStatus',
     'TaskDependency',
     'TaskFileAssociation',
+    'StatusTransition',
 
     # Agent models
     'AgentRule',
