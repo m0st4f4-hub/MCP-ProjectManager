@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
+from typing import List
 
 from ...database import get_sync_db as get_db
 from ...services.memory_service import MemoryService
@@ -25,7 +26,11 @@ def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
     response_model=MemoryEntity,
     status_code=status.HTTP_201_CREATED,
 )
+<<<<<<< HEAD
 async def ingest_url_root(
+=======
+def ingest_url_root(
+>>>>>>> origin/codex/add-search_memory_entities-endpoint
     ingest_input: UrlIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
@@ -45,7 +50,11 @@ async def ingest_url_root(
     response_model=MemoryEntity,
     status_code=status.HTTP_201_CREATED,
 )
+<<<<<<< HEAD
 async def ingest_text_root(
+=======
+def ingest_text_root(
+>>>>>>> origin/codex/add-search_memory_entities-endpoint
     ingest_input: TextIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
@@ -70,3 +79,16 @@ def get_knowledge_graph(
         return memory_service.get_knowledge_graph()
     except Exception as e:  # pragma: no cover - pass through any service errors
         raise HTTPException(status_code=500, detail=f"Failed to retrieve graph: {e}")
+
+
+@router.get("/search", response_model=List[MemoryEntity])
+def search_memory_entities(
+    query: str = Query(..., description="Text to search for in entity content."),
+    limit: int = Query(10, description="Maximum number of results to return."),
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """Search memory entities by content text."""
+    try:
+        return memory_service.search_memory_entities(query=query, limit=limit)
+    except Exception as e:  # pragma: no cover - pass through any service errors
+        raise HTTPException(status_code=500, detail=f"Failed to search memory: {e}")
