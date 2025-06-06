@@ -55,6 +55,7 @@ graph TD
 - `AddAgentForm.tsx`
 - `AddProjectForm.tsx`
 - `AddProjectTemplateForm.tsx`
+- `AddProjectMemberForm.tsx`
 - `AddTaskForm.tsx`
 - `EditAgentForm.tsx`
 - `EditProjectTemplateForm.tsx`

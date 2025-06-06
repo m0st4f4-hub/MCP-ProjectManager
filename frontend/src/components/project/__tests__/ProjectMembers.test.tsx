@@ -3,8 +3,11 @@ import { render, screen, waitFor } from '@/__tests__/utils/test-utils';
 import userEvent from '@testing-library/user-event';
 import { TestWrapper } from '@/__tests__/utils/test-utils';
 import ProjectMembers from '../ProjectMembers';
-import { getProjectMembers } from '@/services/api/projects';
-import { mcpApi } from '@/services/api/mcp';
+import {
+  getProjectMembers,
+  addMemberToProject,
+  removeMemberFromProject,
+} from '@/services/api/projects';
 
 vi.mock('@chakra-ui/react', async () => {
   const actual = await vi.importActual('@chakra-ui/react');
@@ -17,22 +20,15 @@ vi.mock('@chakra-ui/react', async () => {
 
 vi.mock('@/services/api/projects', () => ({
   getProjectMembers: vi.fn(),
-}));
-
-vi.mock('@/services/api/mcp', () => ({
-  mcpApi: {
-    projectMember: {
-      add: vi.fn(),
-      remove: vi.fn(),
-    },
-  },
+  addMemberToProject: vi.fn(),
+  removeMemberFromProject: vi.fn(),
 }));
 
 describe('ProjectMembers', () => {
   const user = userEvent.setup();
   const getMembersMock = getProjectMembers as unknown as vi.Mock;
-  const addMock = mcpApi.projectMember.add as unknown as vi.Mock;
-  const removeMock = mcpApi.projectMember.remove as unknown as vi.Mock;
+  const addMock = addMemberToProject as unknown as vi.Mock;
+  const removeMock = removeMemberFromProject as unknown as vi.Mock;
   const projectId = 'p1';
 
   beforeEach(() => {
@@ -81,7 +77,13 @@ describe('ProjectMembers', () => {
     await user.selectOptions(screen.getByLabelText(/role/i), 'member');
     await user.click(screen.getByRole('button', { name: /add member/i }));
 
-    await waitFor(() => expect(addMock).toHaveBeenCalledWith({ project_id: projectId, user_id: 'u2', role: 'member' }));
+    await waitFor(() =>
+      expect(addMock).toHaveBeenCalledWith(projectId, {
+        project_id: projectId,
+        user_id: 'u2',
+        role: 'member',
+      })
+    );
 
     getMembersMock.mockResolvedValueOnce([
       { project_id: projectId, user_id: 'u2', role: 'member', id: '1', created_at: '' },
@@ -89,6 +91,8 @@ describe('ProjectMembers', () => {
 
     await user.click(screen.getByRole('button', { name: /remove/i }));
 
-    await waitFor(() => expect(removeMock).toHaveBeenCalledWith({ project_id: projectId, user_id: 'u2' }));
+    await waitFor(() =>
+      expect(removeMock).toHaveBeenCalledWith(projectId, 'u2')
+    );
   });
 });
