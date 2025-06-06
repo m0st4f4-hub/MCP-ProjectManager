@@ -113,7 +113,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
-      <ModalOverlay backdropFilter="blur(3px)" />
+      <ModalOverlay backdropFilter="blur(3px)" bg="overlayDefault" />
       <ModalContent
         bg="bgSurface"
         color="textPrimary"

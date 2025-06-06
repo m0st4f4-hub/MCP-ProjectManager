@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist+Sans:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 body {
@@ -19,20 +18,5 @@ a {
   text-decoration: none;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
 
-/* Add overrides after Tailwind imports */
-.chakra-modal__overlay {
-  @apply bg-overlayDefault;
-}
-
-.chakra-modal__content {
-  @apply bg-bgModal;
-}
-
-/* Existing global styles below if any */
-/* ... potentially other existing styles ... */
+/* Add additional global overrides below if needed */

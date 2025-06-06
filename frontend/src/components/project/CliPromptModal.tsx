@@ -29,7 +29,7 @@ const CliPromptModal: React.FC<CliPromptModalProps> = ({
   onClose,
 }) => (
   <Modal isOpen={isOpen} onClose={onClose} size="2xl" scrollBehavior="inside" isCentered>
-    <ModalOverlay backdropFilter="blur(3px)" />
+    <ModalOverlay backdropFilter="blur(3px)" bg="overlayDefault" />
     <ModalContent bg="bgSurfaceElevated" color="textPrimary" borderRadius="lg" maxH="80vh">
       <ModalHeader borderBottomWidth="1px" borderColor="borderDecorative" display="flex" alignItems="center">
         <AppIcon name="terminal" boxSize={5} mr={2} />

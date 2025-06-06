@@ -83,7 +83,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered>
-      <ModalOverlay />
+      <ModalOverlay bg="overlayDefault" />
       <ModalContent bg={modalSurfaceBg} color={onSurfaceColor}>
         <ModalHeader
           borderBottomWidth="1px"
