@@ -226,6 +226,21 @@ export const memoryApi = {
     return response.data;
   },
 
+  // Update an existing relation
+  updateRelation: async (
+    relationId: number,
+    data: MemoryRelationUpdateData
+  ): Promise<MemoryRelation> => {
+    const response = await request<{ data: MemoryRelation }>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+    return response.data;
+  },
+
   // Get relations with filters
   getRelations: async (
     filters?: MemoryRelationFilters
