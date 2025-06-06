@@ -5,3 +5,5 @@ export * from './baseStore';
 export * from './authStore';
 export * from './memoryStore';
 export * from './templateStore';
+export * from './ruleTemplateStore';
+export * from './universalMandateStore';
