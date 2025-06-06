@@ -135,6 +135,23 @@ await create_forbidden_action_tool(
 )
 ```
 
+### Forbidden Action Tools
+
+Use these routes to restrict actions for specific agent roles. Create new
+forbidden actions with `/mcp-tools/forbidden-action/create` and list all
+entries via `/mcp-tools/forbidden-action/list`.
+
+```python
+from backend.mcp_tools.forbidden_action_tools import create_forbidden_action_tool
+
+await create_forbidden_action_tool(
+    agent_role_id="manager",
+    action="deploy_production",
+    reason="Only ops may deploy",
+    db=session,
+)
+```
+
 ### Agent Handoff Tools
 
 Use these routes to manage when one agent role should hand off control to
