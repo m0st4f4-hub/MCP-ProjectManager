@@ -1,18 +1,30 @@
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, HTTPException, Query
+=======
+from fastapi import APIRouter, Depends, HTTPException
+>>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from ....database import get_sync_db as get_db
+<<<<<<< HEAD
 from ....services.agent_handoff_service import AgentHandoffService
+=======
+>>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
 from ....schemas.agent_handoff_criteria import (
     AgentHandoffCriteria,
     AgentHandoffCriteriaCreate,
     AgentHandoffCriteriaUpdate,
 )
+<<<<<<< HEAD
+=======
+from ....services.agent_handoff_service import AgentHandoffService
+>>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
 
 router = APIRouter()
 
 
+<<<<<<< HEAD
 @router.get("/", response_model=List[AgentHandoffCriteria])
 def list_handoff_criteria(
     agent_role_id: Optional[str] = Query(None, description="Filter by agent role"),
@@ -42,16 +54,34 @@ def create_handoff_criteria(
     db: Session = Depends(get_db),
 ):
     """Create new handoff criteria."""
+=======
+@router.post("/", response_model=AgentHandoffCriteria)
+def create_handoff_criteria(
+    criteria: AgentHandoffCriteriaCreate, db: Session = Depends(get_db)
+):
+>>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
     service = AgentHandoffService(db)
     return service.create_criteria(criteria)
 
 
+<<<<<<< HEAD
+=======
+@router.get("/", response_model=List[AgentHandoffCriteria])
+def list_handoff_criteria(
+    agent_role_id: Optional[str] = None, db: Session = Depends(get_db)
+):
+    service = AgentHandoffService(db)
+    return service.get_criteria_list(agent_role_id)
+
+
+>>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
 @router.put("/{criteria_id}", response_model=AgentHandoffCriteria)
 def update_handoff_criteria(
     criteria_id: str,
     criteria_update: AgentHandoffCriteriaUpdate,
     db: Session = Depends(get_db),
 ):
+<<<<<<< HEAD
     """Update existing handoff criteria."""
     service = AgentHandoffService(db)
     db_obj = service.update_criteria(criteria_id, criteria_update)
@@ -71,3 +101,19 @@ def delete_handoff_criteria(
     if not success:
         raise HTTPException(status_code=404, detail="Criteria not found")
     return DataResponse[bool](data=True, message="Criteria deleted successfully")
+=======
+    service = AgentHandoffService(db)
+    updated = service.update_criteria(criteria_id, criteria_update)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Handoff criteria not found")
+    return updated
+
+
+@router.delete("/{criteria_id}")
+def delete_handoff_criteria(criteria_id: str, db: Session = Depends(get_db)):
+    service = AgentHandoffService(db)
+    success = service.delete_criteria(criteria_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Handoff criteria not found")
+    return {"message": "Handoff criteria deleted"}
+>>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
