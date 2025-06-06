@@ -56,6 +56,9 @@ class DummyService:
     def get_entity(self, entity_id: int):
         return self.entities.get(entity_id)
 
+    def get_knowledge_graph(self):
+        return {"entities": list(self.entities.values()), "relations": []}
+
 
 dummy_user = types.SimpleNamespace(id="user1")
 
@@ -143,12 +146,27 @@ async def test_root_ingest_url():
 
 
 @pytest.mark.asyncio
+<<<<<<< HEAD
 async def test_root_ingest_upload():
+=======
+async def test_get_knowledge_graph():
+    dummy_service.ingest_text("a")
+    dummy_service.ingest_text("b")
+>>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
     ) as client:
+<<<<<<< HEAD
         files = {"file": ("hello.txt", b"upload", "text/plain")}
         resp = await client.post("/ingest/upload", files=files)
         assert resp.status_code == 201
         assert resp.json()["content"] == "upload"
+=======
+        resp = await client.get("/entities/graph")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "entities" in data and "relations" in data
+        assert len(data["entities"]) == 2
+        assert data["relations"] == []
+>>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662

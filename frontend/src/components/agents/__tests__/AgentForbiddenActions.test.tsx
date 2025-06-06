@@ -1,8 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
+<<<<<<< HEAD
 import { render, screen, waitFor } from '@/__tests__/utils/test-utils';
 import AgentForbiddenActions from '../AgentForbiddenActions';
 import { forbiddenActionsApi } from '@/services/api';
+=======
+import { render, screen } from '@/__tests__/utils/test-utils';
+import AgentForbiddenActions from '../AgentForbiddenActions';
+>>>>>>> origin/6iktiw-codex/build-agentforbiddenactions-component
 
 vi.mock('@chakra-ui/react', async () => {
   const actual = await vi.importActual('@chakra-ui/react');
@@ -13,6 +18,7 @@ vi.mock('@chakra-ui/react', async () => {
   };
 });
 
+<<<<<<< HEAD
 vi.mock('@/services/api');
 
 const mockedApi = vi.mocked(forbiddenActionsApi);
@@ -70,5 +76,34 @@ describe('AgentForbiddenActions', () => {
     await waitFor(() => {
       expect(mockedApi.delete).toHaveBeenCalledWith('1');
     });
+=======
+describe('AgentForbiddenActions', () => {
+  const user = userEvent.setup();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should render without crashing', () => {
+    render(<AgentForbiddenActions />, {
+      wrapper: ({ children }) => <div>{children}</div>,
+    });
+    expect(document.body).toBeInTheDocument();
+  });
+
+  it('should allow adding and removing actions', async () => {
+    render(<AgentForbiddenActions />, {
+      wrapper: ({ children }) => <div>{children}</div>,
+    });
+
+    const input = screen.getByPlaceholderText('Enter action');
+    await user.type(input, 'test-action');
+    await user.click(screen.getByRole('button', { name: /add action/i }));
+
+    expect(screen.getAllByTestId('forbidden-action-row')).toHaveLength(1);
+
+    await user.click(screen.getByRole('button', { name: /remove/i }));
+    expect(screen.queryAllByTestId('forbidden-action-row')).toHaveLength(0);
+>>>>>>> origin/6iktiw-codex/build-agentforbiddenactions-component
   });
 });

@@ -1,5 +1,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 // Core entity types
 export interface Project {
   id: string;
@@ -14,6 +16,8 @@ export interface Project {
 =======
 =======
 >>>>>>> origin/codex/add-crud-functions-and-typescript-interfaces
+=======
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions
 export * from './project';
 export * from './agent';
 export * from './agents';
@@ -27,6 +31,7 @@ export * from './mcp';
 export * from './project_template';
 export * from './agent_prompt_template';
 <<<<<<< HEAD
+<<<<<<< HEAD
 export * from './handoff';
 export * from './verification_requirement';
 export * from './error_protocol';
@@ -36,7 +41,26 @@ export * from './statusTransition';
 =======
 =======
 >>>>>>> origin/codex/add-crud-functions-and-typescript-interfaces
+<<<<<<< HEAD
 >>>>>>> 923023da617a254682cf1eb7264238cc87c3f3e1
+=======
+=======
+export * from "./project";
+export * from "./agent";
+export * from "./task";
+export * from "./user";
+export * from "./audit_log";
+export * from "./memory";
+export * from "./comment";
+export * from "./rules";
+export * from "./mcp";
+export * from "./project_template";
+export * from "./agent_prompt_template";
+export * from "./verificationRequirement";
+>>>>>>> origin/3kceht-codex/create-verificationrequirements-component
+=======
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions
+>>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662
 
 // Common types used across the application
 // Canonical shared sort direction type for all entities
@@ -256,4 +280,7 @@ export interface TaskSortOptions {
 // Add shared types for group by and view mode
 export type GroupByType = 'status' | 'project' | 'agent' | 'parent';
 export type ViewMode = 'list' | 'kanban';
+<<<<<<< HEAD
 >>>>>>> origin/codex/add-crud-functions-and-typescript-interfaces
+=======
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions

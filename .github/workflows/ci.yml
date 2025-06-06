@@ -2,9 +2,15 @@ name: CI - Main
 
 on:
   push:
+<<<<<<< HEAD
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
+=======
+    branches: [main]
+  # pull_request:
+  #   branches: [ main ]
+>>>>>>> origin/codex/add-accessibility-testing-to-ci
 
 jobs:
   test-backend:
@@ -152,6 +158,7 @@ jobs:
         name: frontend-coverage
 
 <<<<<<< HEAD
+<<<<<<< HEAD
       - name: Run setup script
         run: bash scripts/setup.sh
 
@@ -234,6 +241,8 @@ jobs:
           cd frontend
           npm run test:e2e --project="Accessibility Tests"
 =======
+=======
+>>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662
   integration-tests:
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend]
@@ -257,4 +266,46 @@ jobs:
     - name: Validate system alignment
       run: |
         python validate_alignment.py
+<<<<<<< HEAD
 >>>>>>> 923023da617a254682cf1eb7264238cc87c3f3e1
+=======
+=======
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Type check
+        run: |
+          cd frontend
+          npm run type-check
+
+      - name: Test with coverage
+        run: |
+          cd frontend
+          npm run test:coverage
+
+      - name: Upload frontend coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage
+
+      - name: Audit packages
+        run: |
+          cd frontend
+          npm audit --audit-level=high
+
+      - name: Accessibility tests
+        run: |
+          cd frontend
+          npm run test:e2e --project="Accessibility Tests"
+>>>>>>> origin/codex/add-accessibility-testing-to-ci
+>>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662

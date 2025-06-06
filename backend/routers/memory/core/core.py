@@ -26,13 +26,19 @@ def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
 
 
 @router.get("/graph")
+<<<<<<< HEAD
 async def get_memory_graph(
+=======
+<<<<<<< HEAD
+def get_memory_graph(
+>>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662
     memory_service: MemoryService = Depends(get_memory_service),
     entity_type: Optional[str] = Query(None),
     relation_type: Optional[str] = Query(None),
     limit: int = Query(100, ge=1),
     offset: int = Query(0, ge=0),
 ):
+<<<<<<< HEAD
     """Retrieve the knowledge graph with optional filters."""
     try:
         return await memory_service.get_knowledge_graph(
@@ -43,6 +49,20 @@ async def get_memory_graph(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+=======
+    """Retrieve the entire knowledge graph."""
+    return memory_service.get_knowledge_graph()
+=======
+def get_knowledge_graph_endpoint(
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """Return all memory entities and their relations."""
+    try:
+        return memory_service.get_knowledge_graph()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+>>>>>>> origin/codex/add-get-/graph-route-and-tests
+>>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662
 
 # =============================
 # CRUD Endpoints
