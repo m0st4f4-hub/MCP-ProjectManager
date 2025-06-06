@@ -27,6 +27,7 @@ __all__ = [
     'list_project_templates_tool',
     'delete_project_template_tool',
 <<<<<<< HEAD
+<<<<<<< HEAD
     'add_error_protocol_tool',
     'list_error_protocols_tool',
     'remove_error_protocol_tool',
@@ -54,4 +55,9 @@ __all__ = [
     'list_workflows_tool',
     'delete_workflow_tool'
 >>>>>>> origin/codex/add,-register,-and-document-workflow-tools
+=======
+    'create_mandate_tool',
+    'list_mandates_tool',
+    'delete_mandate_tool'
+>>>>>>> origin/0czuut-codex/implement-mandate-tools-functions
 ]

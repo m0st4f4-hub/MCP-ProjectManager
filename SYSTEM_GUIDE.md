@@ -41,6 +41,7 @@ node dev_start.js
 - **✅ Audit Logging**: Complete action tracking and history
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 - **✅ Verification Requirement Tools**: Manage agent role verification
   requirements via MCP (create, list, delete)
 =======
@@ -49,6 +50,9 @@ node dev_start.js
 =======
 - **✅ Workflow Management**: Create, list and delete workflows via MCP tools
 >>>>>>> origin/codex/add,-register,-and-document-workflow-tools
+=======
+- **✅ Mandate Tools**: Manage universal mandates via MCP
+>>>>>>> origin/0czuut-codex/implement-mandate-tools-functions
 
 ## 🌐 System Endpoints
 
