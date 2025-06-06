@@ -71,11 +71,36 @@ class SystemIntegrator:
             print(f"[Error] Error in {description}: {e}")
             return False
 
+<<<<<<< HEAD
+=======
+    def migrations_pending(self, python_cmd: str) -> bool:
+        """Check if Alembic migrations are pending."""
+        try:
+            current = subprocess.run(
+                [python_cmd, "-m", "alembic", "current"],
+                capture_output=True,
+                text=True,
+                cwd=self.backend_dir,
+            )
+            head = subprocess.run(
+                [python_cmd, "-m", "alembic", "heads"],
+                capture_output=True,
+                text=True,
+                cwd=self.backend_dir,
+            )
+            if current.returncode != 0 or head.returncode != 0:
+                return True
+            return current.stdout.strip() != head.stdout.strip()
+        except Exception:
+            return True
+
+>>>>>>> origin/codex/add-setup-helper-for-environment-and-migrations
     def setup_backend(self):
         """Set up the backend environment."""
         print("\n[Backend] Setting up Backend Environment")
         print("-" * 40)
 
+<<<<<<< HEAD
         # Check if virtual environment exists
         venv_path = self.backend_dir / ".venv"
         if not venv_path.exists():
@@ -102,6 +127,28 @@ class SystemIntegrator:
                 print(f"[Warning] Failed to install {dep}, continuing...")
 
         print("[Success] Backend environment setup completed")
+=======
+        venv_path = self.backend_dir / ".venv"
+        python_cmd = str(
+            venv_path / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+        )
+
+        needs_setup = not venv_path.exists()
+        if not needs_setup:
+            needs_setup = self.migrations_pending(python_cmd)
+
+        if needs_setup:
+            script = "init_backend.ps1" if os.name == "nt" else "init_backend.sh"
+            script_path = self.root_dir / script
+            cmd = (
+                f"powershell -ExecutionPolicy Bypass -File {script_path}"
+                if os.name == "nt"
+                else f"bash {script_path}"
+            )
+            return self.run_command(cmd, "Initializing backend", cwd=self.root_dir, timeout=600)
+
+        print("[Success] Backend environment already initialized")
+>>>>>>> origin/codex/add-setup-helper-for-environment-and-migrations
         return True
 
     def setup_frontend(self):
