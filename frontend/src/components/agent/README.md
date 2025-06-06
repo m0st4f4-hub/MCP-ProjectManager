@@ -29,6 +29,7 @@ graph TD
 - `AgentListHeader.tsx`
 - `CliPromptModal.tsx`
 - `EditAgentModal.tsx`
+- `AgentDetail.tsx`
 
 <!-- File List End -->
 
