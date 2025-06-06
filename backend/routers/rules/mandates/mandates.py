@@ -45,6 +45,13 @@ def update_mandate(
         raise HTTPException(status_code=404, detail="Mandate not found")
     return result
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/codex/add-delete-/mandate_id-endpoint
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 @router.delete("/{mandate_id}")
 
 
@@ -56,4 +63,12 @@ def delete_mandate(
     success = crud_rules.delete_universal_mandate(db, mandate_id)
     if not success:
         raise HTTPException(status_code=404, detail="Mandate not found")
+<<<<<<< HEAD
     return {"message": "Universal mandate deleted successfully"}
+=======
+<<<<<<< HEAD
+    return {"message": "Mandate deleted successfully"}
+=======
+    return {"message": "Universal mandate deleted successfully"}
+>>>>>>> origin/codex/add-delete-/mandate_id-endpoint
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26

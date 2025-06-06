@@ -1,5 +1,8 @@
 'use client';
+<<<<<<< HEAD
 import * as logger from '@/utils/logger';
+=======
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -8,6 +11,10 @@ import {
   deleteProject,
   archiveProject,
   unarchiveProject,
+<<<<<<< HEAD
+=======
+  exportProject,
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 } from '@/services/api/projects';
 import { Project } from '@/types/project';
 import {
@@ -95,7 +102,11 @@ const ProjectDetail: React.FC = () => {
           duration: 5000,
           isClosable: true,
         });
+<<<<<<< HEAD
         logger.error(err);
+=======
+        console.error(err);
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
       }
     }
   };
@@ -108,7 +119,11 @@ const ProjectDetail: React.FC = () => {
       fetchProject();
     } catch (err) {
       toast({ title: 'Failed to archive project', description: err instanceof Error ? err.message : String(err), status: 'error', duration: 5000, isClosable: true });
+<<<<<<< HEAD
       logger.error(err);
+=======
+      console.error(err);
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
     }
   };
 
@@ -120,7 +135,32 @@ const ProjectDetail: React.FC = () => {
       fetchProject();
     } catch (err) {
       toast({ title: 'Failed to unarchive project', description: err instanceof Error ? err.message : String(err), status: 'error', duration: 5000, isClosable: true });
+<<<<<<< HEAD
       logger.error(err);
+=======
+      console.error(err);
+    }
+  };
+
+  const handleExport = async () => {
+    if (!project) return;
+    try {
+      const data = await exportProject(project.id);
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${project.name}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Failed to export project');
+      console.error(err);
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
     }
   };
 
@@ -161,6 +201,7 @@ const ProjectDetail: React.FC = () => {
         <button onClick={handleDelete}>Delete Project</button>
         <button onClick={handleArchive}>Archive Project</button>
         <button onClick={handleUnarchive}>Unarchive Project</button>
+        <button onClick={handleExport}>Download JSON</button>
       </div>
 
       <ProjectMembers projectId={project.id} />

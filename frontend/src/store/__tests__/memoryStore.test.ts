@@ -7,6 +7,7 @@ vi.mock('@/services/api', () => ({
   memoryApi: {
     listEntities: vi.fn(),
     ingestFile: vi.fn(),
+    uploadFile: vi.fn(),
     ingestUrl: vi.fn(),
     ingestText: vi.fn(),
     deleteEntity: vi.fn(),
@@ -63,6 +64,23 @@ describe('memoryStore', () => {
     expect(mockedApi.ingestFile).toHaveBeenCalledWith('/tmp/test.txt');
     expect(useMemoryStore.getState().entities[0]).toEqual(entity);
     expect(useMemoryStore.getState().ingestionLoading).toBe(false);
+  });
+
+  it('uploadFile prepends new entity', async () => {
+    const entity = {
+      id: 5,
+      entity_type: 'file',
+      content: 'c',
+      created_at: '2024',
+    };
+    (mockedApi.uploadFile as any).mockResolvedValueOnce(entity);
+
+    await act(async () => {
+      await useMemoryStore.getState().uploadFile(new File(['c'], 'c.txt'));
+    });
+
+    expect(mockedApi.uploadFile).toHaveBeenCalled();
+    expect(useMemoryStore.getState().entities[0]).toEqual(entity);
   });
 
   it('deleteEntity removes entity', async () => {

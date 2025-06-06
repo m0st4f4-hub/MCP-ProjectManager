@@ -13,6 +13,7 @@ from ...services.memory_service import MemoryService
 from ...schemas.memory import MemoryEntity, KnowledgeGraph
 from ...auth import get_current_active_user
 from ...models import User as UserModel
+from fastapi import UploadFile, File
 from .core.core import (
     router as core_router,
     UrlIngestInput,
@@ -76,9 +77,33 @@ def ingest_text_root(
         raise HTTPException(status_code=500, detail=f"Failed to ingest text: {e}")
 
 
+<<<<<<< HEAD
 @router.post("/ingest/upload", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
 async def ingest_upload_root(
     file: UploadFile = File(...),
+=======
+@router.post("/ingest", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
+async def ingest_file_upload(
+    file: UploadFile = File(...),
+    memory_service: MemoryService = Depends(get_memory_service),
+    current_user: UserModel = Depends(get_current_active_user),
+):
+    """Upload a file and store it as a MemoryEntity."""
+    try:
+        content = await file.read()
+        return memory_service.ingest_uploaded_file(
+            filename=file.filename,
+            content=content,
+            content_type=file.content_type or "application/octet-stream",
+            user_id=current_user.id,
+        )
+    except Exception as e:  # pragma: no cover
+        raise HTTPException(status_code=500, detail=f"Failed to ingest file: {e}")
+
+
+@router.get("/graph", response_model=KnowledgeGraph)
+def get_knowledge_graph(
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
     memory_service: MemoryService = Depends(get_memory_service),
     current_user: UserModel = Depends(get_current_active_user),
 ):

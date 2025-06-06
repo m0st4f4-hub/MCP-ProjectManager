@@ -15,6 +15,7 @@ vi.mock('@chakra-ui/react', async () => {
 vi.mock('@/services/api', () => ({
   memoryApi: {
     ingestFile: vi.fn(),
+    uploadFile: vi.fn(),
     ingestUrl: vi.fn(),
     ingestText: vi.fn(),
   },

@@ -251,11 +251,13 @@ async def add_forbidden_action(
     return db_action
 
 
-async def get_forbidden_actions(db: AsyncSession, role_id: str) -> List[models.AgentForbiddenAction]:
+async def get_forbidden_actions(db: AsyncSession, role_id: str, skip: int = 0, limit: Optional[int] = 100) -> List[models.AgentForbiddenAction]:
     """List forbidden actions for a role."""
-    result = await db.execute(
-        select(models.AgentForbiddenAction).filter(models.AgentForbiddenAction.agent_role_id == role_id)
-    )
+    query = select(models.AgentForbiddenAction).filter(models.AgentForbiddenAction.agent_role_id == role_id)
+    query = query.offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
+    result = await db.execute(query)
     return result.scalars().all()
 
 

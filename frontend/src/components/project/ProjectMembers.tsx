@@ -3,6 +3,7 @@ import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import {
+<<<<<<< HEAD
   Box,
   Button,
   List,
@@ -15,6 +16,13 @@ import {
   removeMemberFromProject,
 } from '@/services/api/projects';
 import { addMemberToProject } from '@/services/projects';
+=======
+  getProjectMembers,
+  addMemberToProject,
+  removeMemberFromProject,
+} from '@/services/projects';
+import { useToast } from '@chakra-ui/react';
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 import { ProjectMember, ProjectMemberRole } from '@/types/project';
 import AddProjectMemberForm from '../forms/AddProjectMemberForm';
 
@@ -45,6 +53,39 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
     fetchMembers();
   }, [projectId]);
 
+<<<<<<< HEAD
+=======
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemberUserId || !newMemberRole) return;
+
+    try {
+      await addMemberToProject(projectId, {
+        user_id: newMemberUserId,
+        role: newMemberRole as ProjectMemberRole,
+      });
+      setNewMemberUserId('');
+      setNewMemberRole('');
+      toast({
+        title: 'Member added',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      fetchMembers();
+    } catch (err) {
+      toast({
+        title: 'Failed to add member',
+        description: err instanceof Error ? err.message : String(err),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      console.error(err);
+    }
+  };
+
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
   const handleRemoveMember = async (userId: string) => {
     setRemovingId(userId);
     try {
@@ -64,9 +105,13 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
         duration: 5000,
         isClosable: true,
       });
+<<<<<<< HEAD
       logger.error(err);
     } finally {
       setRemovingId(null);
+=======
+      console.error(err);
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
     }
   };
 

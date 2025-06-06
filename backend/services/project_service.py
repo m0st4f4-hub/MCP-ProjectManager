@@ -15,8 +15,8 @@ from ..schemas.project import (
     Project  # Import schema for ProjectTemplate
 )
 from ..schemas.project_template import ProjectTemplate  # Import task and project member schemas for template population
-from ..schemas.task import TaskCreate
-from ..schemas.project import ProjectMemberCreate  # Import CRUD operations
+from ..schemas.task import TaskCreate, Task
+from ..schemas.project import ProjectMemberCreate, ProjectMember  # Import CRUD operations
 from backend.crud.projects import (
     get_project,
     get_project_by_name,
@@ -275,3 +275,15 @@ class ProjectService:
         return await get_project_file_association(self.db, project_id, file_memory_entity_id)  # Convert to async method and use await
     async def get_tasks_by_project(self, project_id: str, search: Optional[str] = None, status: Optional[str] = None, is_archived: Optional[bool] = False) -> List[models.Task]:  # Delegate to CRUD and await
         return await get_tasks_by_project(self.db, project_id, search, status, is_archived)
+
+    async def export_project(self, project_id: str) -> dict:
+        """Return project details along with tasks and members."""
+        project = await self.get_project(project_id, is_archived=None)
+        tasks = await self.get_tasks_by_project(project_id, is_archived=None)
+        members = await self.get_project_members(project_id)
+
+        return {
+            "project": Project.model_validate(project).model_dump(),
+            "tasks": [Task.model_validate(t).model_dump() for t in tasks],
+            "members": [ProjectMember.model_validate(m).model_dump() for m in members],
+        }

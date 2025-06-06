@@ -1,12 +1,21 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, Query, Path, status, HTTPException
 =======
+=======
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 <<<<<<< HEAD
 from fastapi import APIRouter, Depends, Query, Path, status
 =======
 from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
+<<<<<<< HEAD
 >>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
+=======
+=======
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -27,10 +36,13 @@ def add_observation(
     observation: MemoryObservationCreate,
     entity_id: int = Path(..., description="The ID of the entity to add the observation to."),
 <<<<<<< HEAD
+<<<<<<< HEAD
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """Add an observation to a memory entity."""
 =======
+=======
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 <<<<<<< HEAD
     memory_service: MemoryService = Depends(get_memory_service),
 ):
@@ -43,7 +55,15 @@ def add_observation(
     memory_service: MemoryService = Depends(get_memory_service)
 ): 
     """Add an observation to a memory entity."""
+<<<<<<< HEAD
 >>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
+=======
+=======
+    memory_service: MemoryService = Depends(get_memory_service)
+): 
+    """Add an observation to a memory entity."""
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
     try:
         db_observation = memory_service.add_observation_to_entity(
             entity_id=entity_id, observation=observation
@@ -57,6 +77,10 @@ def add_observation(
             detail=f"Internal server error: {e}"
         )
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 =======
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 >>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
@@ -74,6 +98,7 @@ async def read_observations(
 ):
     """Get observations, optionally filtered by entity or content search."""
 <<<<<<< HEAD
+<<<<<<< HEAD
     try:
         return await memory_service.get_observations(
             entity_id=entity_id,
@@ -87,6 +112,8 @@ async def read_observations(
 @router.put("/observations/{observation_id}", response_model=MemoryObservation)
 def update_observation_endpoint(
 =======
+=======
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 <<<<<<< HEAD
     return memory_service.get_observations(
         entity_id=entity_id,
@@ -98,6 +125,8 @@ def update_observation_endpoint(
 @router.put("/observations/{observation_id}", response_model=MemoryObservation)
 def update_observation(
 =======
+=======
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
     try:
         return memory_service.get_observations(
             entity_id=entity_id,
@@ -113,12 +142,16 @@ def update_observation(
 
 @router.put("/observations/{observation_id}", response_model=MemoryObservation)
 def update_observation_endpoint(
+<<<<<<< HEAD
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
+=======
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 >>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
     observation: MemoryObservationCreate,
     observation_id: int = Path(..., description="ID of the observation to update."),
     memory_service: MemoryService = Depends(get_memory_service),
 ):
+<<<<<<< HEAD
 <<<<<<< HEAD
     """Update a memory observation."""
     try:
@@ -137,6 +170,8 @@ def update_observation_endpoint(
 @router.delete("/observations/{observation_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_observation_endpoint(
 =======
+=======
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 <<<<<<< HEAD
     """Update an existing memory observation."""
     db_obs = memory_service.update_observation(observation_id, observation)
@@ -148,6 +183,8 @@ def delete_observation_endpoint(
 @router.delete("/observations/{observation_id}", response_model=DataResponse[bool])
 def delete_observation(
 =======
+=======
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
     """Update a memory observation."""
     try:
         db_observation = memory_service.update_observation(observation_id, observation)
@@ -164,6 +201,9 @@ def delete_observation(
 
 @router.delete("/observations/{observation_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_observation_endpoint(
+<<<<<<< HEAD
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
+=======
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 >>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
     observation_id: int = Path(..., description="ID of the observation to delete."),
@@ -175,11 +215,14 @@ def delete_observation_endpoint(
         if not success:
             raise EntityNotFoundError("MemoryObservation", observation_id)
 <<<<<<< HEAD
+<<<<<<< HEAD
         return {"message": "Memory observation deleted successfully"}
     except EntityNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
 =======
+=======
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 <<<<<<< HEAD
         return DataResponse[bool](data=True, message="Memory observation deleted successfully")
     except EntityNotFoundError as e:
@@ -187,6 +230,8 @@ def delete_observation_endpoint(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 =======
+=======
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
         return {"message": "Memory observation deleted successfully"}
     except EntityNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -197,6 +242,10 @@ def delete_observation_endpoint(
             detail=f"Internal server error: {e}"
         )
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
+>>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 =======
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 >>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
