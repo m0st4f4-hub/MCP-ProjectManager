@@ -196,6 +196,13 @@ def include_app_routers(application: FastAPI) -> None:
     except ImportError as e:
         logger.warning(f"Could not import audit_logs router: {e}")
 
+    try:
+        from .routers import system
+        application.include_router(system.router, prefix="/api/v1", tags=["system"])
+        logger.info("System router included successfully")
+    except ImportError as e:
+        logger.warning(f"Could not import system router: {e}")
+
     logger.info("Router inclusion completed")
 
 
