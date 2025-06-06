@@ -26,4 +26,10 @@ describe('Templates navigation', () => {
     const link = screen.getByRole('button', { name: /create template/i });
     expect(link).toBeInTheDocument();
   });
+
+  it('shows delete button', () => {
+    render(<TemplatesPage />);
+    const del = screen.getByLabelText(/delete/i);
+    expect(del).toBeInTheDocument();
+  });
 });

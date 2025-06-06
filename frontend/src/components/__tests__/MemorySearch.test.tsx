@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { render, screen, waitFor, TestWrapper } from '@/__tests__/utils/test-utils';
+import {
+  render,
+  screen,
+  waitFor,
+  TestWrapper,
+} from '@/__tests__/utils/test-utils';
 import MemorySearch from '../MemorySearch';
 
 vi.mock('@chakra-ui/react', async () => {
@@ -28,11 +33,17 @@ describe('MemorySearch', () => {
   });
 
   it('sends search request and renders results', async () => {
+<<<<<<< HEAD
     (memoryApi.searchGraph as any).mockResolvedValue({
       data: [
         { id: 1, entity_type: 'file', content: 'doc', created_at: '2024' },
       ],
     });
+=======
+    (memoryApi.searchGraph as any).mockResolvedValue([
+      { id: 1, entity_type: 'file', content: 'doc', created_at: '2024' },
+    ]);
+>>>>>>> origin/codex/add-memorysearch-component-with-api-query
 
     render(
       <TestWrapper>
@@ -46,7 +57,12 @@ describe('MemorySearch', () => {
 
     await waitFor(() =>
       expect(memoryApi.searchGraph).toHaveBeenCalledWith('query')
+<<<<<<< HEAD
+=======
     );
-    await waitFor(() => expect(screen.getByRole('link')).toHaveAttribute('href', '/memory/1'));
+    await waitFor(() =>
+      expect(screen.getByRole('link')).toHaveAttribute('href', '/memory/1')
+>>>>>>> origin/codex/add-memorysearch-component-with-api-query
+    );
   });
 });

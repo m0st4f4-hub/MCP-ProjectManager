@@ -7,7 +7,16 @@ import {
   Flex,
   Heading,
   IconButton,
+<<<<<<< HEAD
   useToast,
+=======
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+>>>>>>> origin/codex/add-delete-buttons-for-templates
 } from '@chakra-ui/react';
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import { useTemplateStore } from '@/store/templateStore';
@@ -16,13 +25,12 @@ import DataTable, { Column, Action } from '../common/DataTable';
 const TemplateList: React.FC = () => {
   const templates = useTemplateStore((s) => s.templates);
   const fetchTemplates = useTemplateStore((s) => s.fetchTemplates);
-  const removeTemplate = useTemplateStore((s) => s.removeTemplate);
-  const toast = useToast();
 
   useEffect(() => {
     fetchTemplates();
   }, [fetchTemplates]);
 
+<<<<<<< HEAD
   const handleDelete = async (id: string) => {
     try {
       await removeTemplate(id);
@@ -69,6 +77,8 @@ const TemplateList: React.FC = () => {
     },
   ];
 
+=======
+>>>>>>> origin/codex/add-delete-buttons-for-templates
   return (
     <Box p="4">
       <Flex justify="space-between" align="center" mb="4">
@@ -77,7 +87,44 @@ const TemplateList: React.FC = () => {
           Create Template
         </Button>
       </Flex>
+<<<<<<< HEAD
       <DataTable data={templates} columns={columns} actions={actions} />
+=======
+      <Table variant="simple">
+        <Thead>
+          <Tr>
+            <Th>Name</Th>
+            <Th>Description</Th>
+            <Th>Actions</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {templates.map((t) => (
+            <Tr key={t.id} data-testid="template-row">
+              <Td>{t.name}</Td>
+              <Td>{t.description}</Td>
+              <Td>
+                <IconButton
+                  as={Link}
+                  href={`/templates/${t.id}/edit`}
+                  aria-label="Edit"
+                  icon={<EditIcon />}
+                  size="sm"
+                  mr="2"
+                />
+                <IconButton
+                  as={Link}
+                  href={`/templates/${t.id}/delete`}
+                  aria-label="Delete"
+                  icon={<DeleteIcon />}
+                  size="sm"
+                />
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+>>>>>>> origin/codex/add-delete-buttons-for-templates
     </Box>
   );
 };

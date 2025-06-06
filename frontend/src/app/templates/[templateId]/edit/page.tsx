@@ -1,8 +1,13 @@
 'use client';
 import React, { useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@chakra-ui/react';
+<<<<<<< HEAD
 import TemplateForm from '@/components/templates/TemplateForm';
+=======
+import EditProjectTemplateForm from '@/components/forms/EditProjectTemplateForm';
+>>>>>>> origin/codex/add-delete-buttons-for-templates
 import { useTemplateStore } from '@/store/templateStore';
 
 const EditTemplatePage: React.FC = () => {
@@ -40,12 +45,25 @@ const EditTemplatePage: React.FC = () => {
 
   return (
     <>
+<<<<<<< HEAD
       <TemplateForm
+=======
+      <EditProjectTemplateForm
+>>>>>>> origin/codex/add-delete-buttons-for-templates
         template={template}
         onSubmit={handleSubmit}
         onCancel={() => router.push('/templates')}
       />
+<<<<<<< HEAD
       <Button colorScheme="red" mt="4" onClick={handleDelete}>
+=======
+      <Button
+        as={Link}
+        href={`/templates/${templateId}/delete`}
+        colorScheme="red"
+        mt={4}
+      >
+>>>>>>> origin/codex/add-delete-buttons-for-templates
         Delete Template
       </Button>
     </>

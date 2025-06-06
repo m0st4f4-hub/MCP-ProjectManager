@@ -74,6 +74,7 @@ graph TD
 ```
 
 <!-- File List Start -->
+
 ## File List
 
 - `agentStore.ts`
@@ -83,9 +84,15 @@ graph TD
 - `memoryStore.ts`
 - `projectStore.ts`
 - `taskStore.ts`
+<<<<<<< HEAD
 - `templateStore.ts`
 
 <!-- File List End -->
 
 
 
+=======
+- `memoryStore.ts`
+
+<!-- File List End -->
+>>>>>>> origin/codex/add-memorystore-to-manage-entities-and-state
