@@ -9,6 +9,7 @@ This directory (`frontend/src/contexts/`) contains React Context providers and h
 Key files:
 
 *   `ThemeContext.tsx`: Provides context for managing the application's theme (light/dark mode).
+*   `TokenContext.tsx`: Manages the authentication token and refresh logic.
 *   `README.md`: This file.
 
 ## Files
@@ -27,6 +28,7 @@ graph TD
 ## File List
 
 - `ThemeContext.tsx`
+- `TokenContext.tsx`
 
 <!-- File List End -->
 

@@ -5,6 +5,7 @@ import { ChakraProvider, useColorMode } from "@chakra-ui/react";
 import baseAppTheme from "../theme/chakra-theme"; // Import our new custom theme
 import ModalProvider from "./ModalProvider";
 import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
+import { TokenProvider } from "../contexts/TokenContext";
 
 interface ChakraProviderWrapperProps {
   children: React.ReactNode;
@@ -29,9 +30,11 @@ export default function ChakraProviderWrapper({
   children,
 }: ChakraProviderWrapperProps) {
   return (
-    <ThemeProvider>
-      <ChakraInternalProvider>{children}</ChakraInternalProvider>
-    </ThemeProvider>
+    <TokenProvider>
+      <ThemeProvider>
+        <ChakraInternalProvider>{children}</ChakraInternalProvider>
+      </ThemeProvider>
+    </TokenProvider>
   );
 }
 
