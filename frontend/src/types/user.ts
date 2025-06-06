@@ -1,14 +1,5 @@
 import { z } from 'zod';
-
-// User Role Enum matching backend UserRoleEnum
-export enum UserRole {
-  ADMIN = 'admin',
-  MANAGER = 'manager',
-  ENGINEER = 'engineer',
-  VIEWER = 'viewer',
-  USER = 'user',
-  AGENT = 'agent',
-}
+import { UserRoleEnum as UserRole } from './generated';
 
 // Define a schema for the UserRole object returned by the backend
 export const userRoleObjectSchema = z.object({

@@ -59,11 +59,95 @@ flake8 .
 pytest --cov=. --cov-fail-under=80
 ```
 
+<<<<<<< HEAD
 #### Frontend (TypeScript/React)
 - **Linting**: Use ESLint with our configuration
 - **Type Checking**: Run TypeScript compiler checks
 - **Testing**: Write tests with Vitest
 - **Formatting**: Use Prettier for consistent formatting
+=======
+---
+
+## 🧹 Set Up Pre-commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to automatically check code quality and enforce consistency.
+
+### Install `pre-commit` and activate hooks:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+### What gets checked:
+
+* **Backend**: `flake8` runs on Python files
+* **Frontend**: `npm run lint` and `npm run type-check` run on JS/TS files (the type check can also be triggered from the repo root with `npm run type-check`)
+
+These checks will automatically run on every commit.
+
+---
+
+## 📝 Before Committing Documentation Changes
+
+Run the README update script to refresh file lists:
+
+```bash
+npm run update-readmes
+```
+
+This ensures all `README.md` files reflect up-to-date directory contents.
+
+### Generate shared TypeScript types
+
+Whenever you modify the Pydantic models under `backend/schemas`, regenerate the
+frontend type definitions:
+
+```bash
+npm run gen-types
+```
+
+This writes the file `frontend/src/types/generated.ts`. Commit the updated file
+so the frontend stays in sync with the backend.
+
+---
+
+## 📐 Coding Standards
+
+* Follow existing code structure and conventions.
+* Keep code self-explanatory and remove unused code.
+* **Frontend**:
+
+  * Run: `npm run lint`, `npm run type-check`, `npm run fix`, and `npm run format` before committing.
+* **Backend**:
+
+  * Run: `flake8` and ensure no style violations or unused imports remain.
+
+---
+
+## 🧾 Commit Style
+
+This repo uses [Conventional Commits](https://www.conventionalcommits.org/) to maintain clean history and enable automatic changelog generation.
+
+### Examples:
+
+```bash
+feat: add project deadline editing modal
+fix: resolve crash on null status ID
+docs: update instructions for local setup
+```
+
+Always prefix commits with `feat`, `fix`, `chore`, `docs`, etc.
+Reference related issues when applicable (e.g. `fix: #42`).
+
+---
+
+## ✅ Test Requirements
+
+Before opening a Pull Request, ensure the following tests and linters pass:
+
+### Frontend
+>>>>>>> origin/codex/add-python-script-to-generate-ts-models
 
 ```bash
 # Run frontend quality checks
