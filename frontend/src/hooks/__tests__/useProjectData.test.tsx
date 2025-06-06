@@ -30,7 +30,7 @@ describe('useProjectData', () => {
     mockedApi.getProjectById.mockResolvedValueOnce(project);
     mockedApi.getAllTasksForProject.mockResolvedValueOnce(tasks);
 
-    const { result } = renderHook(() => useProjectData('p1'));
+    const { result } = renderHook(() => useProjectData('p1', { page: 0, pageSize: 100 }))
 
     await waitFor(() => expect(result.current.project).toEqual(project));
     expect(result.current.tasks).toEqual(tasks);

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -68,6 +69,8 @@ class AgentCapabilityService:
         await self.db.delete(capability)
         await self.db.commit()
 =======
+=======
+>>>>>>> origin/codex/add-agent-capability-service-and-router
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from .. import models
@@ -142,5 +145,8 @@ class AgentCapabilityService:
 
         self.db.delete(db_cap)
         self.db.commit()
+<<<<<<< HEAD
+>>>>>>> origin/codex/add-agent-capability-service-and-router
+=======
 >>>>>>> origin/codex/add-agent-capability-service-and-router
         return True

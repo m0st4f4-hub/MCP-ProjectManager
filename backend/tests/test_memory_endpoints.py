@@ -39,6 +39,10 @@ class DummyService:
     async def ingest_url(self, url: str, user_id=None):
         return await self.ingest_text(f"content from {url}", user_id)
 
+    def ingest_uploaded_file(self, filename: str, content: bytes, content_type: str, user_id=None):
+        text = content.decode("utf-8") if content else ""
+        return self.ingest_text(text, user_id)
+
     def get_file_content(self, entity_id: int):
         return self.entities[entity_id].content
 
@@ -138,16 +142,29 @@ async def test_root_ingest_url():
 
 
 @pytest.mark.asyncio
+<<<<<<< HEAD
 async def test_get_knowledge_graph():
     dummy_service.ingest_text("a")
     dummy_service.ingest_text("b")
+=======
+async def test_file_upload_ingest():
+>>>>>>> origin/codex/add-file-selection-and-display-results
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
     ) as client:
+<<<<<<< HEAD
         resp = await client.get("/entities/graph")
         assert resp.status_code == 200
         data = resp.json()
         assert "entities" in data and "relations" in data
         assert len(data["entities"]) == 2
         assert data["relations"] == []
+=======
+        resp = await client.post(
+            "/ingest",
+            files={"file": ("sample.txt", b"hello", "text/plain")},
+        )
+        assert resp.status_code == 201
+        assert resp.json()["content"] == "hello"
+>>>>>>> origin/codex/add-file-selection-and-display-results

@@ -113,7 +113,50 @@ class MemoryService:
             logger.error(f"Error ingesting file {file_path}: {e}")
             raise ServiceError(f"Error ingesting file: {str(e)}")
 
+<<<<<<< HEAD
     async def ingest_url(
+=======
+    def ingest_uploaded_file(
+        self,
+        filename: str,
+        content: bytes,
+        content_type: str,
+        user_id: Optional[str] = None,
+    ) -> models.MemoryEntity:
+        """Create a MemoryEntity from an uploaded file."""
+        try:
+            try:
+                text_content = content.decode("utf-8")
+            except UnicodeDecodeError:
+                try:
+                    text_content = content.decode("latin-1")
+                except Exception:
+                    text_content = f"Binary file: {filename}"
+
+            file_info = {
+                "filename": filename,
+                "size": len(content),
+                "content_type": content_type,
+            }
+
+            entity_create = MemoryEntityCreate(
+                entity_type="file",
+                content=text_content,
+                entity_metadata=file_info,
+                source="file_upload",
+                source_metadata=None,
+                created_by_user_id=user_id,
+            )
+            return self.create_entity(entity_create)
+        except Exception as e:
+            logger.error(f"Error ingesting uploaded file {filename}: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error ingesting uploaded file: {str(e)}",
+            )
+
+    def ingest_url(
+>>>>>>> origin/codex/add-file-selection-and-display-results
         self, url: str, user_id: Optional[str] = None
     ) -> models.MemoryEntity:
         try:
@@ -319,6 +362,38 @@ class MemoryService:
             logger.info(f"Deleted memory observation: {observation_id}")
         return db_observation
 
+    def update_observation(
+        self, observation_id: int, observation_update: MemoryObservationCreate
+    ) -> Optional[models.MemoryObservation]:
+        db_observation = (
+            self.db.query(models.MemoryObservation)
+            .filter(models.MemoryObservation.id == observation_id)
+            .first()
+        )
+        if not db_observation:
+            return None
+
+        update_data = observation_update.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(db_observation, field, value)
+
+        self.db.commit()
+        self.db.refresh(db_observation)
+        logger.info(f"Updated memory observation: {observation_id}")
+        return db_observation
+
+    def delete_observation(self, observation_id: int) -> Optional[models.MemoryObservation]:
+        db_observation = (
+            self.db.query(models.MemoryObservation)
+            .filter(models.MemoryObservation.id == observation_id)
+            .first()
+        )
+        if db_observation:
+            self.db.delete(db_observation)
+            self.db.commit()
+            logger.info(f"Deleted memory observation: {observation_id}")
+        return db_observation
+
     def create_memory_relation(
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
         self, relation: MemoryRelationCreate
@@ -394,8 +469,17 @@ class MemoryService:
     ) -> Optional[models.MemoryRelation]:
         return await self.db.query(models.MemoryRelation).get(relation_id)
 
+<<<<<<< HEAD
     async def get_relations_for_entity(
         self, entity_id: int, relation_type: Optional[str] = None
+=======
+    def get_relations_for_entity(
+        self,
+        entity_id: int,
+        relation_type: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 100,
+>>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
     ) -> List[models.MemoryRelation]:
         query = self.db.query(models.MemoryRelation).filter(
             (models.MemoryRelation.from_entity_id == entity_id) |
@@ -403,7 +487,11 @@ class MemoryService:
         )
         if relation_type:
             query = query.filter(models.MemoryRelation.relation_type == relation_type)
+<<<<<<< HEAD
         return await query.all()
+=======
+        return query.offset(skip).limit(limit).all()
+>>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
 
     async def delete_memory_relation(
         self, relation_id: int

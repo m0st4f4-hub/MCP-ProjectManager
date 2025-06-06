@@ -33,6 +33,28 @@ export const universalMandateSchema = universalMandateBaseSchema.extend({
 
 export type UniversalMandate = z.infer<typeof universalMandateSchema>;
 
+// --- Mandate Schemas (for universal mandate endpoints) ---
+export const mandateBaseSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  priority: z.number().min(1).max(10).default(5),
+  is_active: z.boolean().default(true),
+});
+
+export const mandateCreateSchema = mandateBaseSchema;
+export type MandateCreateData = z.infer<typeof mandateCreateSchema>;
+
+export const mandateUpdateSchema = mandateBaseSchema.partial();
+export type MandateUpdateData = z.infer<typeof mandateUpdateSchema>;
+
+export const mandateSchema = mandateBaseSchema.extend({
+  id: z.string(),
+  created_at: z.string(),
+  updated_at: z.string().optional(),
+});
+
+export type Mandate = z.infer<typeof mandateSchema>;
+
 // --- Agent Rule Schemas ---
 export const ruleAgentRuleBaseSchema = z.object({
   agent_id: z.string(),
@@ -85,6 +107,13 @@ export interface RuleListResponse<T> {
 export interface UniversalMandateFilters {
   is_active?: boolean;
   category?: string;
+  priority_min?: number;
+  priority_max?: number;
+  search?: string;
+}
+
+export interface MandateFilters {
+  is_active?: boolean;
   priority_min?: number;
   priority_max?: number;
   search?: string;

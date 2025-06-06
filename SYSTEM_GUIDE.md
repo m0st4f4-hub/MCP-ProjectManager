@@ -40,8 +40,16 @@ node dev_start.js
 - **✅ Memory System**: Knowledge graph for file and content management
 - **✅ Audit Logging**: Complete action tracking and history
 <<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 - **✅ Verification Requirement Tools**: Manage agent role verification
   requirements via MCP (create, list, delete)
+=======
+- **✅ Mandate Tools**: Manage universal mandates via MCP
+>>>>>>> origin/0czuut-codex/implement-mandate-tools-functions
+=======
+- **✅ Workflow Management**: Create, list and delete workflows via MCP tools
+>>>>>>> origin/codex/add,-register,-and-document-workflow-tools
 =======
 - **✅ Mandate Tools**: Manage universal mandates via MCP
 >>>>>>> origin/0czuut-codex/implement-mandate-tools-functions

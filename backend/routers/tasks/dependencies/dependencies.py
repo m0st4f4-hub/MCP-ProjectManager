@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Optional
 import uuid
 
 from ....database import get_sync_db as get_db
@@ -12,8 +12,10 @@ from ....services.exceptions import EntityNotFoundError, DuplicateEntityError
 
 router = APIRouter()
 
+
 def get_task_dependency_service(db: Session = Depends(get_db)) -> TaskDependencyService:
     return TaskDependencyService(db)
+
 
 @router.post(
     "/{project_id}/tasks/{task_number}/dependencies/",
@@ -22,8 +24,6 @@ def get_task_dependency_service(db: Session = Depends(get_db)) -> TaskDependency
     tags=["Task Dependencies"],
     operation_id="projects_tasks_add_task_dependency"
 )
-
-
 async def add_task_dependency_endpoint(
     project_id: str,  # This is the successor's project_id
     task_number: int,  # This is the successor's task_number
@@ -62,19 +62,26 @@ async def add_task_dependency_endpoint(
     tags=["Task Dependencies"],
     operation_id="projects_tasks_get_all_task_dependencies"
 )
-
-
 async def get_all_task_dependencies_endpoint(
     project_id: str,
     task_number: int,
     sort_by: Optional[str] = Query(
-        None, description="Field to sort by (e.g., \'predecessor_task.task_number\',"
-            "\'successor_task.task_number\')."),  # Adjusted for potential join
+        None, description=(
+            "Field to sort by (e.g., 'predecessor_task.task_number',"
+            "'successor_task.task_number')."
+        )
+    ),  # Adjusted for potential join
     sort_direction: Optional[str] = Query(
-        None, description="Sort direction: \'asc\' or \'desc\'."),
+        None, description="Sort direction: 'asc' or 'desc'."
+    ),
     dependency_type: Optional[str] = Query(
-        None, description="Filter by dependency type (e.g., \'FINISH_TO_START\')."),  # Assuming TaskDependency model has `type`
-    task_dependency_service: TaskDependencyService = Depends(get_task_dependency_service)
+        None, description=(
+            "Filter by dependency type (e.g., 'FINISH_TO_START')."
+        )
+    ),  # Assuming TaskDependency model has `type`
+    task_dependency_service: TaskDependencyService = Depends(
+        get_task_dependency_service
+    )
 ):
     """Get all dependencies for a task (both predecessors and successors)."""
     try:
@@ -109,8 +116,6 @@ async def get_all_task_dependencies_endpoint(
     tags=["Task Dependencies"],
     operation_id="projects_tasks_get_task_predecessors"
 )
-
-
 async def get_task_predecessors_endpoint(
     project_id: str,
     task_number: int,
@@ -155,8 +160,6 @@ async def get_task_predecessors_endpoint(
     tags=["Task Dependencies"],
     operation_id="projects_tasks_get_task_successors"
 )
-
-
 async def get_task_successors_endpoint(
     project_id: str,
     task_number: int,
@@ -200,8 +203,6 @@ async def get_task_successors_endpoint(
     tags=["Task Dependencies"],
     operation_id="projects_tasks_remove_task_dependency"
 )
-
-
 async def remove_task_dependency_endpoint(
     project_id: str,  # Successor project_id
     task_number: int,  # Successor task_number
