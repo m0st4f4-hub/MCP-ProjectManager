@@ -1,6 +1,10 @@
 import { StoreApi } from 'zustand';
+<<<<<<< HEAD
 import { createBaseStore, BaseState } from './baseStore';
 import { handleApiError } from '@/lib/apiErrorHandler';
+=======
+import { createBaseStore, BaseState, handleApiError } from './baseStore';
+>>>>>>> origin/codex/add-memorystore-to-manage-entities-and-state
 import { memoryApi } from '@/services/api';
 import type { MemoryEntity, MemoryEntityFilters } from '@/types/memory';
 
@@ -38,8 +42,12 @@ const actionsCreator = (
       });
       set({ entities: resp.data, loading: false });
     } catch (err) {
+<<<<<<< HEAD
       handleApiError(err);
       set({ error: err instanceof Error ? err.message : String(err), loading: false });
+=======
+      set({ error: handleApiError(err), loading: false });
+>>>>>>> origin/codex/add-memorystore-to-manage-entities-and-state
     }
   },
   ingestFile: async (filePath: string) => {
@@ -51,8 +59,12 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
+<<<<<<< HEAD
       handleApiError(err);
       set({ ingestionError: err instanceof Error ? err.message : String(err), ingestionLoading: false });
+=======
+      set({ ingestionError: handleApiError(err), ingestionLoading: false });
+>>>>>>> origin/codex/add-memorystore-to-manage-entities-and-state
       throw err;
     }
   },
@@ -65,8 +77,12 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
+<<<<<<< HEAD
       handleApiError(err);
       set({ ingestionError: err instanceof Error ? err.message : String(err), ingestionLoading: false });
+=======
+      set({ ingestionError: handleApiError(err), ingestionLoading: false });
+>>>>>>> origin/codex/add-memorystore-to-manage-entities-and-state
       throw err;
     }
   },
@@ -79,8 +95,12 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
+<<<<<<< HEAD
       handleApiError(err);
       set({ ingestionError: err instanceof Error ? err.message : String(err), ingestionLoading: false });
+=======
+      set({ ingestionError: handleApiError(err), ingestionLoading: false });
+>>>>>>> origin/codex/add-memorystore-to-manage-entities-and-state
       throw err;
     }
   },
@@ -93,8 +113,12 @@ const actionsCreator = (
         loading: false,
       }));
     } catch (err) {
+<<<<<<< HEAD
       handleApiError(err);
       set({ error: err instanceof Error ? err.message : String(err), loading: false });
+=======
+      set({ error: handleApiError(err), loading: false });
+>>>>>>> origin/codex/add-memorystore-to-manage-entities-and-state
       throw err;
     }
   },
