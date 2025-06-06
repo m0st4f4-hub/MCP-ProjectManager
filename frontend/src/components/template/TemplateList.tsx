@@ -8,6 +8,12 @@ import {
   Heading,
   IconButton,
   useToast,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
 } from '@chakra-ui/react';
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import { useTemplateStore } from '@/store/templateStore';
@@ -40,31 +46,26 @@ const TemplateList: React.FC = () => {
   const columns: Column<typeof templates[number]>[] = [
     { header: 'Name', accessor: 'name' },
     { header: 'Description', accessor: 'description' },
-  ];
-
-  const actions: Action<typeof templates[number]>[] = [
     {
-      label: 'edit',
+      header: 'Actions',
       render: (t) => (
-        <IconButton
-          as={Link}
-          href={`/templates/${t.id}/edit`}
-          aria-label="Edit"
-          icon={<EditIcon />}
-          size="sm"
-          mr="2"
-        />
-      ),
-    },
-    {
-      label: 'delete',
-      render: (t) => (
-        <IconButton
-          aria-label="Delete"
-          icon={<DeleteIcon />}
-          size="sm"
-          onClick={() => handleDelete(t.id)}
-        />
+        <>
+          <IconButton
+            as={Link}
+            href={`/templates/${t.id}/edit`}
+            aria-label="Edit"
+            icon={<EditIcon />}
+            size="sm"
+            mr="2"
+          />
+          <IconButton
+            as={Link}
+            href={`/templates/${t.id}/delete`}
+            aria-label="Delete"
+            icon={<DeleteIcon />}
+            size="sm"
+          />
+        </>
       ),
     },
   ];
@@ -77,7 +78,7 @@ const TemplateList: React.FC = () => {
           Create Template
         </Button>
       </Flex>
-      <DataTable data={templates} columns={columns} actions={actions} />
+      <DataTable data={templates} columns={columns} />
     </Box>
   );
 };

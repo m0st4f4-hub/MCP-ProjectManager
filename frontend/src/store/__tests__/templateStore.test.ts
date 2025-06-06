@@ -22,22 +22,34 @@ const initialState = {
 
 describe('templateStore', () => {
   beforeEach(() => {
-    useTemplateStore.setState(initialState as any);
+    useTemplateStore.setState({
+      ...initialState,
+      clearError: useTemplateStore.getState().clearError,
+    } as any);
     vi.clearAllMocks();
   });
 
   it('removeTemplate calls API and updates state', async () => {
     useTemplateStore.setState({
       ...initialState,
-      templates: [{ id: 't1', name: 'T1', description: '', template_data: {} }],
+      templates: [
+        {
+          id: '1',
+          name: 'Temp',
+          description: null,
+          template_data: {},
+          created_at: '',
+          updated_at: '',
+        },
+      ],
     } as any);
     mockedApi.delete.mockResolvedValueOnce({} as any);
 
     await act(async () => {
-      await useTemplateStore.getState().removeTemplate('t1');
+      await useTemplateStore.getState().removeTemplate('1');
     });
 
-    expect(mockedApi.delete).toHaveBeenCalledWith('t1');
+    expect(mockedApi.delete).toHaveBeenCalledWith('1');
     expect(useTemplateStore.getState().templates).toEqual([]);
   });
 });

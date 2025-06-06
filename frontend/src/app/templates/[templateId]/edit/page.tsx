@@ -1,8 +1,9 @@
 'use client';
 import React, { useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@chakra-ui/react';
-import TemplateForm from '@/components/templates/TemplateForm';
+import EditProjectTemplateForm from '@/components/forms/EditProjectTemplateForm';
 import { useTemplateStore } from '@/store/templateStore';
 
 const EditTemplatePage: React.FC = () => {
@@ -10,12 +11,11 @@ const EditTemplatePage: React.FC = () => {
   const templateId = Array.isArray(params.templateId)
     ? params.templateId[0]
     : (params.templateId as string);
-  const { templates, fetchTemplates, updateTemplate, removeTemplate } =
+  const { templates, fetchTemplates, updateTemplate } =
     useTemplateStore((s) => ({
       templates: s.templates,
       fetchTemplates: s.fetchTemplates,
       updateTemplate: s.updateTemplate,
-      removeTemplate: s.removeTemplate,
     }));
   const router = useRouter();
 
@@ -33,19 +33,19 @@ const EditTemplatePage: React.FC = () => {
     router.push('/templates');
   };
 
-  const handleDelete = async () => {
-    await removeTemplate(templateId);
-    router.push('/templates');
-  };
-
   return (
     <>
-      <TemplateForm
+      <EditProjectTemplateForm
         template={template}
         onSubmit={handleSubmit}
         onCancel={() => router.push('/templates')}
       />
-      <Button colorScheme="red" mt="4" onClick={handleDelete}>
+      <Button
+        as={Link}
+        href={`/templates/${templateId}/delete`}
+        colorScheme="red"
+        mt={4}
+      >
         Delete Template
       </Button>
     </>
