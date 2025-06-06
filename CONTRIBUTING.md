@@ -36,6 +36,7 @@ This project uses [pre-commit](https://pre-commit.com/) to automatically check c
 pip install pre-commit
 pre-commit install
 ```
+Run this command once after cloning (and again if `.pre-commit-config.yaml` changes) to ensure the hooks run.
 
 ### What gets checked:
 
