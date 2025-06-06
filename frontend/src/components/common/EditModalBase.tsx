@@ -136,7 +136,7 @@ function EditModalBase<T extends EntityWithIdAndName>({
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} isCentered size={size}>
-        <ModalOverlay />
+        <ModalOverlay bg="overlayDefault" />
         <ModalContent bg={surfaceBg} color={onSurfaceColor}>
           <ModalHeader
             borderBottomWidth="1px"

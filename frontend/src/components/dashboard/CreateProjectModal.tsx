@@ -86,7 +86,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size="xl" isCentered>
-      <ModalOverlay backdropFilter="blur(3px)" />
+      <ModalOverlay backdropFilter="blur(3px)" bg="overlayDefault" />
       <ModalContent
         bg="bgSurface"
         color="textPrimary"

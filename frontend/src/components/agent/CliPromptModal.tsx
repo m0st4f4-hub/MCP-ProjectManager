@@ -42,7 +42,7 @@ const CliPromptModal: React.FC<CliPromptModalProps> = ({
       scrollBehavior="inside"
       isCentered
     >
-      <ModalOverlay backdropFilter="blur(3px)" />
+      <ModalOverlay backdropFilter="blur(3px)" bg="overlayDefault" />
       <ModalContent
         bg="bgSurfaceElevated"
         color="textPrimary"

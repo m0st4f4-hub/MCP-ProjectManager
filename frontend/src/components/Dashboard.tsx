@@ -188,8 +188,8 @@ const TaskList: React.FC = () => {
         onClose={onCloseAddTaskModal}
         size="xl"
       >
-        <ModalOverlay />
-        <ModalContent>
+        <ModalOverlay bg="overlayDefault" />
+        <ModalContent bg="bgModal">
           <ModalCloseButton />
           <ModalBody pb={6} pt={8}>
             <Text>Add task functionality might be here.</Text>

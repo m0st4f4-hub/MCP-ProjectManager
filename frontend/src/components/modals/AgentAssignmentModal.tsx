@@ -35,7 +35,7 @@ const AgentAssignmentModal: React.FC<AgentAssignmentModalProps> = ({
   selectedTask,
 }) => (
   <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>
-    <ModalOverlay />
+    <ModalOverlay bg="overlayDefault" />
     <ModalContent bg="bg.modal">
       <ModalHeader borderBottomWidth="1px" borderColor="border.base">
         Assign Agent{selectedTask ? ` to ${selectedTask.title}` : ""}

@@ -522,8 +522,8 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
 
       {/* Modal for associating a file */}
       <Modal isOpen={isFileModalOpen} onClose={onFileModalClose}>
-        <ModalOverlay />
-        <ModalContent>
+        <ModalOverlay bg="overlayDefault" />
+        <ModalContent bg="bgModal">
           <ModalHeader>Associate File with Task</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -554,8 +554,8 @@ const TaskItemDetailsSection: React.FC<Omit<TaskItemDetailsSectionProps, 'status
 
       {/* Modal for adding a dependency */}
       <Modal isOpen={isDependencyModalOpen} onClose={onDependencyModalClose}>
-        <ModalOverlay />
-        <ModalContent>
+        <ModalOverlay bg="overlayDefault" />
+        <ModalContent bg="bgModal">
           <ModalHeader>Add Task Dependency</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
