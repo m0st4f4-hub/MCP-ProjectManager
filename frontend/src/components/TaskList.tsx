@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
-  useBreakpointValue,
   useDisclosure,
-  useToast,
   Box,
   Text,
   Modal,
@@ -14,7 +12,6 @@ import {
   ModalCloseButton,
 } from "@chakra-ui/react";
 
-import { useTaskStore } from "@/store/taskStore";
 import { Task, GroupByType } from "@/types";
 import type { GroupedTasks } from "./views/ListView.types";
 
@@ -27,27 +24,28 @@ import NoTasks from "./NoTasks";
 import TaskPagination from "./task/TaskPagination";
 
 import { applyAllFilters, groupTasksByStatus } from "./TaskList.utils";
+import { useTaskListState } from "./useTaskListState";
 
 type ViewMode = "list" | "kanban";
 
 const TaskList: React.FC = () => {
-  const tasks = useTaskStore((state) => state.tasks);
-  const loading = useTaskStore((state) => state.loading);
-  const error = useTaskStore((state) => state.error);
-  const fetchTasks = useTaskStore((state) => state.fetchTasks);
-  const fetchProjectsAndAgents = useTaskStore((state) => state.fetchProjectsAndAgents);
-  const sortOptions = useTaskStore((state) => state.sortOptions);
-  const isPolling = useTaskStore((state) => state.isPolling);
-  const pollingError = useTaskStore((state) => state.pollingError);
-  const clearPollingError = useTaskStore((state) => state.clearPollingError);
-  const mutationError = useTaskStore((state) => state.mutationError);
-  const clearMutationError = useTaskStore((state) => state.clearMutationError);
-  const filters = useTaskStore((state) => state.filters);
-
-  const [groupBy, setGroupBy] = useState<GroupByType>("status");
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [searchTerm, setSearchTerm] = useState(filters.search || "");
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const {
+    tasks,
+    loading,
+    error,
+    fetchTasks,
+    sortOptions,
+    isPolling,
+    filters,
+    groupBy,
+    setGroupBy,
+    viewMode,
+    setViewMode,
+    searchTerm,
+    setSearchTerm,
+    isInitialLoad,
+    isMobile,
+  } = useTaskListState();
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
@@ -57,45 +55,7 @@ const TaskList: React.FC = () => {
     onClose: onCloseAddTaskModal,
   } = useDisclosure();
 
-  const toast = useToast();
-  const isMobile = useBreakpointValue({ base: true, md: false }) ?? false;
-
-  useEffect(() => {
-    fetchTasks();
-    fetchProjectsAndAgents();
-  }, [fetchTasks, fetchProjectsAndAgents]);
-
-  useEffect(() => {
-    if (isInitialLoad && tasks.length > 0 && !loading) {
-      setIsInitialLoad(false);
-    }
-  }, [tasks, isInitialLoad, loading]);
-
-  useEffect(() => {
-    if (pollingError) {
-      toast({
-        title: "Polling Error",
-        description: pollingError,
-        status: "warning",
-        duration: 5000,
-        isClosable: true,
-        onCloseComplete: clearPollingError,
-      });
-    }
-  }, [pollingError, toast, clearPollingError]);
-
-  useEffect(() => {
-    if (mutationError) {
-      toast({
-        title: `Task Operation Failed (${mutationError.type})`,
-        description: mutationError.message,
-        status: "error",
-        duration: 7000,
-        isClosable: true,
-        onCloseComplete: clearMutationError,
-      });
-    }
-  }, [mutationError, toast, clearMutationError]);
+  // Initial fetches and toast handling are performed within useTaskListState
 
   const handleOpenAddTaskModalCallback = useCallback(() => {
     onOpenAddTaskModal();
