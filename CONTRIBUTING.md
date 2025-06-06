@@ -100,6 +100,7 @@ pre-commit install
 
 * **Backend**: `flake8` runs on Python files
 * **Frontend**: `npm run lint` and `npm run type-check` run on JS/TS files (the type check can also be triggered from the repo root with `npm run type-check`)
+* **Lint Staged Files**: `npx lint-staged` automatically fixes and formats only the files you commit using the config in `frontend/package.json`
 
 These checks will automatically run on every commit.
 

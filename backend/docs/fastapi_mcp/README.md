@@ -95,6 +95,10 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/memory/search` (GET)
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+- `/mcp-tools/memory/search-graph` (GET)
+>>>>>>> origin/codex/add-search_memory_entities-endpoint
 =======
 - `/mcp-tools/memory/search-graph` (GET)
 >>>>>>> origin/codex/add-search_memory_entities-endpoint
@@ -113,6 +117,7 @@ FastAPI-MCP automatically exposes selected API endpoints as tools under the `/mc
 - `/mcp-tools/template/list` (GET)
 - `/mcp-tools/template/delete` (POST)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 ### Project Template Tools
 
@@ -141,11 +146,16 @@ await create_forbidden_action_tool(
 )
 ```
 =======
+=======
+>>>>>>> origin/codex/add-search_memory_entities-endpoint
 Both `/mcp-tools/memory/search` and `/mcp-tools/memory/search-graph` accept the
 following query parameters:
 
 - `query` – the text to search for in memory entity content.
 - `limit` – maximum number of results to return (default `10`).
+<<<<<<< HEAD
+>>>>>>> origin/codex/add-search_memory_entities-endpoint
+=======
 >>>>>>> origin/codex/add-search_memory_entities-endpoint
 
 ### Forbidden Action Tools

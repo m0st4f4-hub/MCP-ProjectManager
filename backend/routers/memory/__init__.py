@@ -34,8 +34,11 @@ def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
     status_code=status.HTTP_201_CREATED,
 )
 <<<<<<< HEAD
+<<<<<<< HEAD
 async def ingest_url_root(
 =======
+=======
+>>>>>>> origin/codex/add-search_memory_entities-endpoint
 def ingest_url_root(
 >>>>>>> origin/codex/add-search_memory_entities-endpoint
     ingest_input: UrlIngestInput,
@@ -58,8 +61,11 @@ def ingest_url_root(
     status_code=status.HTTP_201_CREATED,
 )
 <<<<<<< HEAD
+<<<<<<< HEAD
 async def ingest_text_root(
 =======
+=======
+>>>>>>> origin/codex/add-search_memory_entities-endpoint
 def ingest_text_root(
 >>>>>>> origin/codex/add-search_memory_entities-endpoint
     ingest_input: TextIngestInput,

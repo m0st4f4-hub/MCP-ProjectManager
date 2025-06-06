@@ -303,9 +303,32 @@ jobs:
           cd frontend
           npm audit --audit-level=high
 
+<<<<<<< HEAD
       - name: Accessibility tests
         run: |
           cd frontend
           npm run test:e2e --project="Accessibility Tests"
 >>>>>>> origin/codex/add-accessibility-testing-to-ci
+<<<<<<< HEAD
 >>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662
+=======
+=======
+  cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run CLI tests
+        run: node --test tests/cli/*.test.js
+>>>>>>> origin/codex/add-cli-command-tests-and-ci-integration
+>>>>>>> 77bcf5ef27a2d755e4eaede0da22116c82360753
