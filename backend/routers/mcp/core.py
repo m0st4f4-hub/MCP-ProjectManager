@@ -304,7 +304,10 @@ async def mcp_list_tasks(
     tags=["mcp-tools"],
     operation_id="update_task_tool",
 )
+<<<<<<< HEAD
 @track_tool_usage("update_task_tool")
+=======
+>>>>>>> origin/codex/add-update-and-delete-task-routes
 async def mcp_update_task(
     project_id: str,
     task_number: int,
@@ -323,8 +326,13 @@ async def mcp_update_task(
         audit_service.log_action(
             action="task_updated",
             entity_type="task",
+<<<<<<< HEAD
             entity_id=f"{task.project_id}-{task.task_number}",
             changes=task_update.dict(exclude_unset=True)
+=======
+            entity_id=f"{project_id}-{task_number}",
+            changes=task_update.model_dump(exclude_unset=True)
+>>>>>>> origin/codex/add-update-and-delete-task-routes
         )
 
         return {
@@ -336,17 +344,24 @@ async def mcp_update_task(
                 "description": task.description,
                 "status": task.status,
                 "agent_id": task.agent_id,
+<<<<<<< HEAD
                 "created_at": task.created_at.isoformat(),
                 "updated_at": task.updated_at.isoformat()
             }
         }
     except HTTPException:
         raise
+=======
+                "updated_at": task.updated_at.isoformat() if task.updated_at else None
+            }
+        }
+>>>>>>> origin/codex/add-update-and-delete-task-routes
     except Exception as e:
         logger.error(f"MCP update task failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
+<<<<<<< HEAD
 @router.delete(
     "/mcp-tools/task/delete",
     tags=["mcp-tools"],
@@ -354,6 +369,13 @@ async def mcp_update_task(
     response_model=DataResponse[bool],
 )
 @track_tool_usage("delete_task_tool")
+=======
+@router.post(
+    "/mcp-tools/task/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_task_tool",
+)
+>>>>>>> origin/codex/add-update-and-delete-task-routes
 async def mcp_delete_task(
     project_id: str,
     task_number: int,
@@ -362,26 +384,51 @@ async def mcp_delete_task(
     """MCP Tool: Delete a task."""
     try:
         task_service = TaskService(db)
+<<<<<<< HEAD
         success = task_service.delete_task(project_id, task_number)
         if not success:
             raise HTTPException(status_code=404, detail="Task not found")
 
+=======
+        task = task_service.delete_task(
+            project_id=project_id,
+            task_number=task_number
+        )
+>>>>>>> origin/codex/add-update-and-delete-task-routes
         audit_service = AuditLogService(db)
         audit_service.log_action(
             action="task_deleted",
             entity_type="task",
+<<<<<<< HEAD
             entity_id=f"{project_id}-{task_number}"
         )
 
         return DataResponse[bool](data=True, message="Task deleted successfully")
     except HTTPException:
         raise
+=======
+            entity_id=f"{project_id}-{task_number}",
+            changes=None
+        )
+
+        return {
+            "success": True,
+            "task": {
+                "project_id": task.project_id,
+                "task_number": task.task_number,
+                "title": task.title,
+                "description": task.description,
+                "status": task.status
+            }
+        }
+>>>>>>> origin/codex/add-update-and-delete-task-routes
     except Exception as e:
         logger.error(f"MCP delete task failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post(
+<<<<<<< HEAD
     "/mcp-tools/project/add-file",
     tags=["mcp-tools"],
     operation_id="add_project_file_tool",
@@ -530,6 +577,8 @@ async def mcp_delete_project_template(
 
 
 @router.post(
+=======
+>>>>>>> origin/codex/add-update-and-delete-task-routes
     "/mcp-tools/memory/add-entity",
     tags=["mcp-tools"],
     operation_id="add_memory_entity_tool",
