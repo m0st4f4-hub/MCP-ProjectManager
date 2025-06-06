@@ -3,17 +3,14 @@ import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Input, List, ListItem, useToast } from '@chakra-ui/react';
-<<<<<<< HEAD
-import { mcpApi, memoryApi, getProjectFiles } from '@/services/api';
-import {
-  ProjectFileAssociation,
-  ProjectFileAssociationListResponse,
-} from '@/types/project';
-=======
 import { mcpApi, memoryApi } from '@/services/api';
 import { useIngestFile } from '@/hooks/useMemory';
+import {
+  getProjectFiles,
+  associateFileWithProject,
+  disassociateFileFromProject,
+} from '@/services/projects';
 import type { ProjectFileAssociation } from '@/services/api/projects';
->>>>>>> 7d90ed314aa8c0192581c08560c32b47c0d84736
 import TaskPagination from '../task/TaskPagination';
 
 interface ProjectFilesProps {
@@ -35,12 +32,11 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
   const fetchFiles = async () => {
     setLoading(true);
     try {
-      const response: ProjectFileAssociationListResponse =
-        await getProjectFiles(
-          projectId,
-          currentPage * itemsPerPage,
-          itemsPerPage
-        );
+      const response = await getProjectFiles(
+        projectId,
+        currentPage * itemsPerPage,
+        itemsPerPage
+      );
       setFiles(response.data);
       setTotal(response.total);
     } catch (err) {
@@ -60,14 +56,8 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
     if (!filePath) return;
     setUploading(true);
     try {
-<<<<<<< HEAD
-      const entity = await memoryApi.ingestFile(filePath);
-      await associateFileWithProject(projectId, {
-=======
       const entity = await ingestFile(filePath);
-      await mcpApi.projectFile.add({
-        project_id: projectId,
->>>>>>> 7d90ed314aa8c0192581c08560c32b47c0d84736
+      await associateFileWithProject(projectId, {
         file_id: String(entity.id),
       });
       setFilePath('');

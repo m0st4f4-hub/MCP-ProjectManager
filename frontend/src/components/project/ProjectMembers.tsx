@@ -12,9 +12,10 @@ import {
 } from '@chakra-ui/react';
 import {
   getProjectMembers,
+  addMemberToProject,
   removeMemberFromProject,
-} from '@/services/api/projects';
-import { ProjectMember } from '@/types/project';
+} from '@/services/projects';
+import { ProjectMember, ProjectMemberRole } from '@/types/project';
 import AddProjectMemberForm from '../forms/AddProjectMemberForm';
 
 interface ProjectMembersProps {
@@ -44,11 +45,44 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
     fetchMembers();
   }, [projectId]);
 
+  const handleAddMember = async (e: React.FormEvent, newMemberUserId: string, newMemberRole: string) => {
+    e.preventDefault();
+    if (!newMemberUserId || !newMemberRole) return;
+
+    try {
+      await addMemberToProject(projectId, {
+        user_id: newMemberUserId,
+        role: newMemberRole as ProjectMemberRole,
+      });
+      toast({
+        title: 'Member added',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      fetchMembers();
+    } catch (err) {
+      toast({
+        title: 'Failed to add member',
+        description: err instanceof Error ? err.message : String(err),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      logger.error(err);
+    }
+  };
+
   const handleRemoveMember = async (userId: string) => {
     setRemovingId(userId);
     try {
       await removeMemberFromProject(projectId, userId);
-      toast({ title: 'Member removed', status: 'success', duration: 3000, isClosable: true });
+      toast({
+        title: 'Member removed',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
       fetchMembers();
     } catch (err) {
       toast({
