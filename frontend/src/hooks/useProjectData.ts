@@ -1,76 +1,122 @@
-import { useState, useEffect, useCallback } from "react";
-import { getProjectById, updateProject, getAllTasksForProject } from "@/services/api";
-import { Project, ProjectUpdateData, Task } from "@/types";
+import { useState, useEffect, useCallback } from 'react';
+import { Project, Task } from '../types';
+import { api } from '../services/api';
 
-export interface UseProjectDataResult {
+interface UseProjectDataReturn {
   project: Project | null;
   tasks: Task[];
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
-  updateProjectDetails: (data: ProjectUpdateData) => Promise<void>;
+  updateProject: (updates: Partial<Project>) => Promise<void>;
+  createTask: (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
+  deleteTask: (taskId: string) => Promise<void>;
 }
 
 /**
- * Fetch project details and its tasks.
- * Provides helpers for refreshing data and updating the project.
+ * Custom hook for managing project data and related tasks
+ * @param projectId - The project ID to fetch data for
+ * @returns Project data, tasks, and management functions
  */
-export const useProjectData = (projectId: string): UseProjectDataResult => {
+export function useProjectData(projectId: string | undefined): UseProjectDataReturn {
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const fetchData = useCallback(async () => {
-    if (!projectId) return;
-    setLoading(true);
-    setError(null);
+  
+  const fetchProjectData = useCallback(async () => {
+    if (!projectId) {
+      setProject(null);
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
+    
     try {
-      const [proj, projTasks] = await Promise.all([
-        getProjectById(projectId),
-        getAllTasksForProject(projectId, undefined, undefined, 0, 100),
+      setLoading(true);
+      setError(null);
+      
+      // Fetch project and tasks in parallel
+      const [projectResponse, tasksResponse] = await Promise.all([
+        api.get(`/projects/${projectId}`),
+        api.get(`/projects/${projectId}/tasks`)
       ]);
-      setProject(proj);
-      setTasks(projTasks);
+      
+      setProject(projectResponse.data);
+      setTasks(tasksResponse.data);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to load project";
-      setError(message);
+      console.error('Failed to fetch project data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch project data');
     } finally {
       setLoading(false);
     }
   }, [projectId]);
-
+  
+  const updateProject = useCallback(async (updates: Partial<Project>) => {
+    if (!projectId || !project) return;
+    
+    try {
+      const response = await api.patch(`/projects/${projectId}`, updates);
+      setProject(response.data);
+    } catch (err) {
+      console.error('Failed to update project:', err);
+      throw err;
+    }
+  }, [projectId, project]);
+  
+  const createTask = useCallback(async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => {
+    if (!projectId) return;
+    
+    try {
+      const response = await api.post(`/projects/${projectId}/tasks`, taskData);
+      setTasks(prev => [...prev, response.data]);
+    } catch (err) {
+      console.error('Failed to create task:', err);
+      throw err;
+    }
+  }, [projectId]);
+  
+  const updateTask = useCallback(async (taskId: string, updates: Partial<Task>) => {
+    if (!projectId) return;
+    
+    try {
+      const response = await api.patch(`/projects/${projectId}/tasks/${taskId}`, updates);
+      setTasks(prev => prev.map(task => 
+        task.id === taskId ? response.data : task
+      ));
+    } catch (err) {
+      console.error('Failed to update task:', err);
+      throw err;
+    }
+  }, [projectId]);
+  
+  const deleteTask = useCallback(async (taskId: string) => {
+    if (!projectId) return;
+    
+    try {
+      await api.delete(`/projects/${projectId}/tasks/${taskId}`);
+      setTasks(prev => prev.filter(task => task.id !== taskId));
+    } catch (err) {
+      console.error('Failed to delete task:', err);
+      throw err;
+    }
+  }, [projectId]);
+  
+  // Initial data fetch
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const updateProjectDetails = useCallback(
-    async (data: ProjectUpdateData) => {
-      if (!projectId) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const updated = await updateProject(projectId, data);
-        setProject(updated);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to update project";
-        setError(message);
-        throw err;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [projectId],
-  );
-
+    fetchProjectData();
+  }, [fetchProjectData]);
+  
   return {
     project,
     tasks,
     loading,
     error,
-    refresh: fetchData,
-    updateProjectDetails,
+    refresh: fetchProjectData,
+    updateProject,
+    createTask,
+    updateTask,
+    deleteTask
   };
-};
-
-export default useProjectData;
+}

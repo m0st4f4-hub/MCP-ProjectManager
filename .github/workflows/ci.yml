@@ -1,17 +1,48 @@
-name: CI
+name: CI - Main
 
 on:
   push:
-    branches: [main]
-  # pull_request:
-  #   branches: [ main ]
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
-  backend:
+  test-backend:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run backend linting
+      run: |
+        cd backend
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Run backend tests with coverage
+      run: |
+        cd backend
+        pytest --cov=. --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage.xml
+        flags: backend
+        name: backend-coverage
 
+<<<<<<< HEAD
       - name: Run setup script
         run: bash scripts/setup.sh
 
@@ -78,10 +109,49 @@ jobs:
           path: backend/coverage.xml
 
   frontend:
+=======
+  test-frontend:
+>>>>>>> 923023da617a254682cf1eb7264238cc87c3f3e1
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run frontend linting
+      run: |
+        cd frontend
+        npm run lint
+    
+    - name: Run frontend type checking
+      run: |
+        cd frontend
+        npm run type-check
+    
+    - name: Run frontend tests with coverage
+      run: |
+        cd frontend
+        npm run test:coverage
+    
+    - name: Upload frontend coverage
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./frontend/coverage/lcov.info
+        flags: frontend
+        name: frontend-coverage
 
+<<<<<<< HEAD
       - name: Run setup script
         run: bash scripts/setup.sh
 
@@ -163,3 +233,28 @@ jobs:
         run: |
           cd frontend
           npm run test:e2e --project="Accessibility Tests"
+=======
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python and Node.js
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Run integration tests
+      run: |
+        python final_integration.py --mode all
+    
+    - name: Validate system alignment
+      run: |
+        python validate_alignment.py
+>>>>>>> 923023da617a254682cf1eb7264238cc87c3f3e1

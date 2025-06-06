@@ -135,3 +135,52 @@ export type AgentRole =
   | 'RulesSyncAgent'
   | 'RunnerAgent';
 
+<<<<<<< HEAD
+=======
+// --- Agent Forbidden Action Schemas & Types ---
+export const agentForbiddenActionBaseSchema = z.object({
+  agent_role_id: z.string(),
+  action: z.string(),
+  reason: z.string().nullable().optional(),
+  is_active: z.boolean().default(true),
+});
+
+export const agentForbiddenActionCreateSchema =
+  agentForbiddenActionBaseSchema.omit({
+    is_active: true,
+  });
+
+export type AgentForbiddenActionCreateData = z.infer<
+  typeof agentForbiddenActionCreateSchema
+>;
+
+export const agentForbiddenActionUpdateSchema = agentForbiddenActionBaseSchema
+  .partial()
+  .omit({ agent_role_id: true });
+
+export type AgentForbiddenActionUpdateData = z.infer<
+  typeof agentForbiddenActionUpdateSchema
+>;
+
+export const agentForbiddenActionSchema = agentForbiddenActionBaseSchema.extend(
+  {
+    id: z.string(),
+    created_at: z.string().datetime({ message: 'Invalid ISO datetime string' }),
+  }
+);
+
+export type AgentForbiddenAction = z.infer<typeof agentForbiddenActionSchema>;
+
+export interface AgentForbiddenActionResponse {
+  data: AgentForbiddenAction;
+  error?: { code: string; message: string; field?: string };
+}
+
+export interface AgentForbiddenActionListResponse {
+  data: AgentForbiddenAction[];
+  total: number;
+  page: number;
+  pageSize: number;
+  error?: { code: string; message: string; field?: string };
+}
+>>>>>>> origin/codex/implement-crud-functions-for-new-backend-routes

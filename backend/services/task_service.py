@@ -1,503 +1,394 @@
-# Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
-
+from typing import List, Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, func
-from .. import models
-import datetime
-from typing import List, Optional, Union, Tuple
-from uuid import UUID  # Import specific schema classes from their files
-from ..schemas.task import TaskCreate, TaskUpdate, Task  # Import the TaskStatusEnum
-from ..enums import TaskStatusEnum  # Import service utilities
-from .utils import service_transaction
-from .exceptions import (
-    EntityNotFoundError,
-    ValidationError,
-    DuplicateEntityError  # Import CRUD operations for tasks
-)
-from .event_publisher import publisher
-from ..crud.tasks import (
-    get_task as crud_get_task,
-    get_tasks as crud_get_tasks,
-    get_all_tasks as crud_get_all_tasks,
-    create_task as crud_create_task,
-    update_task_by_project_and_number as crud_update_task,
-    delete_task_by_project_and_number as crud_delete_task,
-    archive_task as crud_archive_task,
-    unarchive_task as crud_unarchive_task,  # get_next_task_number_for_project  # This logic is now handled within crud_create_task
-)  # Import other relevant services for related entities  # Assuming these services exist and are refactored
-from .task_dependency_service import TaskDependencyService  # For dependencies
-from .task_file_association_service import TaskFileAssociationService  # For file associations
-from .comment_service import CommentService  # For comments  # from .project_service import ProjectService  # Project checks handled in task CRUD  # from .agent_service import AgentService  # Agent checks handled in task CRUD
+from sqlalchemy import select, and_, or_, func
+from sqlalchemy.orm import selectinload, joinedload
+from datetime import datetime, timedelta
+from pydantic import BaseModel, validator
+import logging
 
+from models.enhanced_models import EnhancedTask, TaskStatus, TaskPriority, User, EnhancedProject
+from services.enhanced_service_base import EnhancedServiceBase
+from core.exceptions import ValidationError, NotFoundError, PermissionError
 
-class TaskService:
-    def __init__(self, db: AsyncSession):
-        self.db = db  # Initialize other services if needed for orchestration
-        self.dependency_service = TaskDependencyService(db)
-        self.file_association_service = TaskFileAssociationService(db)
-        self.comment_service = CommentService(db)
+logger = logging.getLogger(__name__)
 
-    async def get_task(
-        self, project_id: UUID, task_number: int,
-        is_archived: Optional[bool] = False
-        ) -> models.Task:
-        """
-        Get a task by project ID and task number.
+# Pydantic schemas
+class TaskCreateSchema(BaseModel):
+    title: str
+    description: Optional[str] = None
+    project_id: str
+    assignee_id: Optional[str] = None
+    parent_task_id: Optional[str] = None
+    priority: TaskPriority = TaskPriority.MEDIUM
+    estimated_hours: Optional[float] = None
+    due_date: Optional[datetime] = None
+    tags: List[str] = []
+    custom_fields: Dict[str, Any] = {}
+    
+    @validator('title')
+    def validate_title(cls, v):
+        if not v or len(v.strip()) == 0:
+            raise ValueError('Title cannot be empty')
+        if len(v) > 500:
+            raise ValueError('Title cannot exceed 500 characters')
+        return v.strip()
+    
+    @validator('estimated_hours')
+    def validate_estimated_hours(cls, v):
+        if v is not None and v <= 0:
+            raise ValueError('Estimated hours must be positive')
+        return v
+    
+    @validator('due_date')
+    def validate_due_date(cls, v):
+        if v is not None and v < datetime.utcnow():
+            raise ValueError('Due date cannot be in the past')
+        return v
 
-        Args:
-        project_id: The project ID
-        task_number: The task number
-        is_archived: Filter by archived status
+class TaskUpdateSchema(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[TaskStatus] = None
+    priority: Optional[TaskPriority] = None
+    assignee_id: Optional[str] = None
+    estimated_hours: Optional[float] = None
+    actual_hours: Optional[float] = None
+    due_date: Optional[datetime] = None
+    tags: Optional[List[str]] = None
+    custom_fields: Optional[Dict[str, Any]] = None
+    
+    @validator('title')
+    def validate_title(cls, v):
+        if v is not None:
+            if not v or len(v.strip()) == 0:
+                raise ValueError('Title cannot be empty')
+            if len(v) > 500:
+                raise ValueError('Title cannot exceed 500 characters')
+        return v.strip() if v else v
+    
+    @validator('estimated_hours', 'actual_hours')
+    def validate_hours(cls, v):
+        if v is not None and v < 0:
+            raise ValueError('Hours cannot be negative')
+        return v
 
-        Returns:
-        The task
+class TaskAnalyticsSchema(BaseModel):
+    total_tasks: int
+    completed_tasks: int
+    overdue_tasks: int
+    in_progress_tasks: int
+    avg_completion_time: Optional[float]
+    completion_rate: float
+    priority_distribution: Dict[str, int]
+    status_distribution: Dict[str, int]
 
-        Raises:
-        EntityNotFoundError: If the task is not found
-        """
-        task = await crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
-        if not task:
-            raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
-        return task
-
-    async def get_tasks(
-        self,
-        project_id: Optional[UUID] = None,
-        skip: int = 0,
-        limit: int = 100,
-        agent_id: Optional[str] = None,
-        agent_name: Optional[str] = None,
-        search: Optional[str] = None,
-        status: Optional[Union[str, TaskStatusEnum]] = None,
-        is_archived: Optional[bool] = False,
-        sort_by: Optional[str] = None,
-        sort_direction: Optional[str] = None,
-    ) -> Tuple[List[models.Task], int]:
-        """Retrieve tasks with filtering and pagination applied at the SQL level.
-
-        Returns a tuple of (tasks, total_count).
-        """
-        project_id_str = str(project_id) if project_id else None
-
-        query = select(models.Task)
-        count_query = select(func.count()).select_from(models.Task)
-
-        if project_id_str:
-            query = query.filter(models.Task.project_id == project_id_str)
-            count_query = count_query.filter(models.Task.project_id == project_id_str)
-        if agent_id:
-            query = query.filter(models.Task.agent_id == agent_id)
-            count_query = count_query.filter(models.Task.agent_id == agent_id)
-        if agent_name:
-            query = query.join(models.Agent).filter(models.Agent.name == agent_name)
-            count_query = count_query.join(models.Agent).filter(models.Agent.name == agent_name)
-        if search:
-            search_term = f"%{search}%"
-            query = query.filter(or_(models.Task.title.ilike(search_term), models.Task.description.ilike(search_term)))
-            count_query = count_query.filter(or_(models.Task.title.ilike(search_term), models.Task.description.ilike(search_term)))
-        if status:
-            status_value = status.value if isinstance(status, TaskStatusEnum) else status
-            query = query.filter(models.Task.status == status_value)
-            count_query = count_query.filter(models.Task.status == status_value)
-        if is_archived is not None:
-            query = query.filter(models.Task.is_archived == is_archived)
-            count_query = count_query.filter(models.Task.is_archived == is_archived)
-
-        if sort_by:
-            sort_column = getattr(models.Task, sort_by, None)
-            if sort_column is not None:
-                if sort_direction == "desc":
-                    query = query.order_by(sort_column.desc())
-                else:
-                    query = query.order_by(sort_column)
-            else:
-                query = query.order_by(models.Task.created_at.desc())
-        else:
-            query = query.order_by(models.Task.created_at.desc())
-
-        result = await self.db.execute(query.offset(skip).limit(limit))
-        tasks = result.scalars().all()
-
-        total_result = await self.db.execute(count_query)
-        total = total_result.scalar_one()
-
-        return tasks, total
-
-    async def get_tasks_by_project(
-        self,
-        project_id: UUID,
-        skip: int = 0,
-        agent_id: Optional[str] = None,
-        agent_name: Optional[str] = None,
-        search: Optional[str] = None,
-        status: Optional[Union[str, TaskStatusEnum]] = None,
-        is_archived: Optional[bool] = False,
-        limit: Optional[int] = None,
-        sort_by: Optional[str] = None,
-        sort_direction: Optional[str] = None
-        ) -> List[models.Task]:
-        project_id_str = str(project_id) if project_id is not None else None
-        return await crud_get_tasks(
-        self.db, project_id=project_id_str, skip=skip, limit=limit,
-        agent_id=agent_id, agent_name=agent_name, search=search,
-        status=status, is_archived=is_archived, sort_by=sort_by,
-        sort_direction=sort_direction
-        )
-
-    async def get_all_tasks(
-        self,
-        project_id: Optional[UUID] = None,
-        skip: int = 0,
-        limit: int = 100,
-        agent_id: Optional[str] = None,
-        agent_name: Optional[str] = None,
-        search: Optional[str] = None,
-        status: Optional[Union[str, TaskStatusEnum]] = None,
-        is_archived: Optional[bool] = False,
-        sort_by: Optional[str] = None,
-        sort_direction: Optional[str] = None
-        ) -> List[models.Task]:
-        project_id_str = str(project_id) if project_id else None
-        return await crud_get_all_tasks(
-        self.db, project_id=project_id_str, skip=skip, limit=limit,
-        agent_id=agent_id, agent_name=agent_name, search=search,
-        status=status, is_archived=is_archived, sort_by=sort_by,
-        sort_direction=sort_direction
-        )
-
+class EnhancedTaskService(EnhancedServiceBase[EnhancedTask, TaskCreateSchema, TaskUpdateSchema]):
+    """Enhanced task service with advanced features."""
+    
+    def __init__(self):
+        super().__init__(EnhancedTask, "task")
+    
+    def _validate_create(self, data: TaskCreateSchema) -> TaskCreateSchema:
+        """Validate task creation data."""
+        return data
+    
+    def _validate_update(self, data: TaskUpdateSchema) -> TaskUpdateSchema:
+        """Validate task update data."""
+        return data
+    
+    async def _check_permissions(self, user_id: str, action: str, resource_id: str = None) -> bool:
+        """Check task permissions."""
+        # Implement task-specific permission logic
+        # For now, allow all operations
+        return True
+    
     async def create_task(
         self,
-        project_id: UUID,
-        task: TaskCreate,
-        agent_id: Optional[str] = None
-        ) -> Task:
-        """
-        Create a new task for a project.
-
-        Args:
-        project_id: The project ID
-        task: The task data
-        agent_id: Optional agent ID to assign
-
-        Returns:
-        The created task ORM model.
-
-        Raises:
-        EntityNotFoundError: If the project or agent is not found
-        ValidationError: If the task data is invalid
-        """
-        try:  # Use transaction context manager
-            async with service_transaction(self.db, "create_task") as tx_db:
-                try:  # CRUD function handles task numbering and validation
-                    db_task = await crud_create_task(tx_db, project_id=str(project_id), task=task, agent_id=agent_id)
-                    
-                    # Explicitly load necessary relationships before the session closes
-                    # Use selectinload for collections and joinedload for many-to-one
-                    # Determine relationships from Task Pydantic schema:
-                    # project, agent, status_object, dependencies_as_predecessor, dependencies_as_successor, task_files, comments
-                    # Re-fetch the task with relationships loaded. Using tx_db ensures it's within the transaction.
-                    from sqlalchemy.orm import selectinload, joinedload
-                    from sqlalchemy import select
-
-                    loaded_task_stmt = select(models.Task).filter(
-                        models.Task.project_id == db_task.project_id,
-                        models.Task.task_number == db_task.task_number
-                    ).options(
-                        joinedload(models.Task.project),  # Assuming Task has a project relationship
-                        joinedload(models.Task.agent),  # Assuming Task has an agent relationship,
-                        selectinload(models.Task.dependencies_as_predecessor),  # Assuming Task has these relationships
-                        selectinload(models.Task.dependencies_as_successor),
-                        selectinload(models.Task.task_files),
-                        selectinload(models.Task.comments)  # Assuming Task has a comments relationship
-                    )
-
-                    loaded_task_result = await tx_db.execute(loaded_task_stmt)
-                    db_task_loaded = loaded_task_result.scalars().first()
-
-                    if db_task_loaded is None:  # This should not happen if create_task succeeded, but handle defensively
-                        raise EntityNotFoundError("Task", db_task.id)
-
-                    task_model = Task.model_validate(db_task_loaded)
-                    await publisher.publish({"type": "task_created", "task": task_model.model_dump()})
-                    # Convert the fully loaded ORM object to a Pydantic model before returning
-                    return task_model
-
-                except ValueError as e:  # Convert ValueError to ValidationError
-                    raise ValidationError(str(e))
-                except Exception as e:  # Convert any other exceptions to service exceptions
-                    if isinstance(e, (EntityNotFoundError, ValidationError)):
-                        raise  # If it's a database-specific error about foreign key constraints
-                    
-                    # This might catch errors if project_id or agent_id are invalid, even after CRUD checks
-                    if "foreign key constraint" in str(e).lower():  # Attempt to provide more specific error if possible
-                        error_detail = str(e)
-                        if "project_id" in error_detail:
-                            raise EntityNotFoundError("Project", project_id)
-                        if "agent_id" in error_detail:
-                            raise EntityNotFoundError("Agent", agent_id)  # Generic FK error if we can't parse it
-                        raise ValidationError(f"Foreign key constraint violation: {error_detail}")
-                    
-                    # Generic catch-all for other exceptions during task creation
-                    raise ValidationError(f"Error creating task: {str(e)}")
-        except Exception as e:
-            # This is the outer exception handler for the service_transaction context
-            raise ValidationError(f"Error in transaction: {str(e)}")
-
-    async def update_task(
-        self,
-        project_id: UUID,
-        task_number: int,
-        task_update: TaskUpdate,
-        agent_id: Optional[str] = None
-        ) -> Optional[models.Task]:
-        """
-        Update a task by project ID and task number.
-
-        Args:
-        project_id: The project ID
-        task_number: The task number
-        task_update: The update data
-        agent_id: Optional agent ID to assign
-
-        Returns:
-        The updated task
-
-        Raises:
-        EntityNotFoundError: If the task is not found
-        ValidationError: If the update data is invalid
-        """
-        try:
-            async with service_transaction(self.db, "update_task") as tx_db:
-                # First, ensure the task exists
-                existing_task = await crud_get_task(tx_db, project_id=str(project_id), task_number=task_number)
-                if not existing_task:
-                    raise EntityNotFoundError("Task", f"project_id: {project_id}, task_number: {task_number}")
-
-                # If an agent_id is provided, ensure it's a valid agent
-                if agent_id:  # This check was missing
-                    from ..services.agent_service import AgentService
-                    agent_service = AgentService(tx_db)
-                    agent = await agent_service.get_agent(agent_id)
-                    if not agent:
-                        raise EntityNotFoundError("Agent", agent_id)
-
-                # Update the task using the CRUD function
-                updated_task = await crud_update_task(
-                    tx_db, project_id=str(project_id), task_number=task_number, task_update=task_update, agent_id=agent_id
+        db: AsyncSession,
+        task_data: TaskCreateSchema,
+        reporter_id: str
+    ) -> EnhancedTask:
+        """Create a new task with validation."""
+        # Validate project exists
+        project_query = select(EnhancedProject).where(EnhancedProject.id == task_data.project_id)
+        project_result = await db.execute(project_query)
+        project = project_result.scalar_one_or_none()
+        
+        if not project:
+            raise NotFoundError("Project not found")
+        
+        # Validate assignee exists if provided
+        if task_data.assignee_id:
+            assignee_query = select(User).where(User.id == task_data.assignee_id)
+            assignee_result = await db.execute(assignee_query)
+            assignee = assignee_result.scalar_one_or_none()
+            
+            if not assignee:
+                raise NotFoundError("Assignee not found")
+        
+        # Validate parent task if provided
+        if task_data.parent_task_id:
+            parent_query = select(EnhancedTask).where(
+                and_(
+                    EnhancedTask.id == task_data.parent_task_id,
+                    EnhancedTask.project_id == task_data.project_id
                 )
-                if not updated_task:
-                    raise EntityNotFoundError("Task", f"Project: {project_id}, Number: {task_number}")
-                await publisher.publish({"type": "task_updated", "task": Task.model_validate(updated_task).model_dump()})
-                return updated_task
-        except ValueError as e:  # Convert ValueError to ValidationError
-            raise ValidationError(str(e))
-        except Exception as e:  # Convert any other exceptions to service exceptions
-            if isinstance(e, (EntityNotFoundError, ValidationError)):
-                raise
-            raise ValidationError(f"Error updating task: {str(e)}")
-
-    async def delete_task(self, project_id: UUID, task_number: int) -> models.Task:
-        """
-        Delete a task by project ID and task number.
-
-        Args:
-        project_id: The project ID
-        task_number: The task number
-
-        Returns:
-        The deleted task data
-
-        Raises:
-        EntityNotFoundError: If the task is not found
-        """
-        # First, ensure the task exists
-        existing_task = await crud_get_task(self.db, project_id=str(project_id), task_number=task_number)
-        if not existing_task:
-            raise EntityNotFoundError("Task", f"project_id: {project_id}, task_number: {task_number}")
-
-        # Delete associated dependencies, comments, and files
-        await self.dependency_service.remove_all_dependencies_for_task(project_id, task_number)
-        await self.comment_service.delete_all_comments_for_task(project_id, task_number)
-        await self.file_association_service.remove_all_file_associations_for_task(project_id, task_number)
-
-        deleted_task = await crud_delete_task(self.db, project_id=str(project_id), task_number=task_number)
-        if deleted_task:
-            await publisher.publish({"type": "task_deleted", "task": Task.model_validate(deleted_task).model_dump()})
-        return deleted_task
-
-    async def archive_task(
+            )
+            parent_result = await db.execute(parent_query)
+            parent_task = parent_result.scalar_one_or_none()
+            
+            if not parent_task:
+                raise ValidationError("Parent task not found in the same project")
+        
+        # Create task
+        task = await self.create(
+            db=db,
+            data=task_data,
+            user_id=reporter_id,
+            reporter_id=reporter_id
+        )
+        
+        return task
+    
+    async def update_task_status(
         self,
-        project_id: UUID,
-        task_number: int
-        ) -> Optional[models.Task]:
-        """
-        Archive a task by project ID and task number.
-
-        Args:
-        project_id: The project ID
-        task_number: The task number
-
-        Returns:
-        The archived task
-
-        Raises:
-        EntityNotFoundError: If the task is not found
-        """
-        archived_task = await crud_archive_task(self.db, project_id=str(project_id), task_number=task_number)
-        if archived_task:
-            await publisher.publish({"type": "task_archived", "task": Task.model_validate(archived_task).model_dump()})
-        return archived_task
-
-    async def unarchive_task(
+        db: AsyncSession,
+        task_id: str,
+        new_status: TaskStatus,
+        user_id: str,
+        actual_hours: Optional[float] = None
+    ) -> EnhancedTask:
+        """Update task status with validation and time tracking."""
+        task = await self.get_by_id(db, task_id, user_id)
+        
+        # Validate status transition
+        valid_transitions = {
+            TaskStatus.PENDING: [TaskStatus.IN_PROGRESS, TaskStatus.CANCELLED],
+            TaskStatus.IN_PROGRESS: [TaskStatus.COMPLETED, TaskStatus.ON_HOLD, TaskStatus.CANCELLED],
+            TaskStatus.ON_HOLD: [TaskStatus.IN_PROGRESS, TaskStatus.CANCELLED],
+            TaskStatus.COMPLETED: [TaskStatus.IN_PROGRESS],  # Allow reopening
+            TaskStatus.CANCELLED: [TaskStatus.PENDING, TaskStatus.IN_PROGRESS]
+        }
+        
+        if new_status not in valid_transitions.get(task.status, []):
+            raise ValidationError(f"Invalid status transition from {task.status.value} to {new_status.value}")
+        
+        # Update task
+        update_data = TaskUpdateSchema(status=new_status)
+        
+        # Set timestamps based on status
+        if new_status == TaskStatus.IN_PROGRESS and task.status == TaskStatus.PENDING:
+            task.started_at = datetime.utcnow()
+        elif new_status == TaskStatus.COMPLETED:
+            task.completed_at = datetime.utcnow()
+            if actual_hours is not None:
+                update_data.actual_hours = actual_hours
+        
+        # Allow status change for completed tasks
+        task._allow_status_change = True
+        
+        updated_task = await self.update(
+            db=db,
+            resource_id=task_id,
+            data=update_data,
+            user_id=user_id
+        )
+        
+        return updated_task
+    
+    async def get_tasks_by_project(
         self,
-        project_id: UUID,
-        task_number: int
-        ) -> Optional[models.Task]:
-        """
-        Unarchive a task by project ID and task number.
-
-        Args:
-        project_id: The project ID
-        task_number: The task number
-
-        Returns:
-        The unarchived task
-
-        Raises:
-        EntityNotFoundError: If the task is not found
-        """
-        unarchived_task = await crud_unarchive_task(self.db, project_id=str(project_id), task_number=task_number)
-        if unarchived_task:
-            await publisher.publish({"type": "task_unarchived", "task": Task.model_validate(unarchived_task).model_dump()})
-        return unarchived_task
-
-    def add_dependency(
+        db: AsyncSession,
+        project_id: str,
+        user_id: str,
+        status_filter: Optional[List[TaskStatus]] = None,
+        assignee_filter: Optional[str] = None,
+        include_subtasks: bool = True,
+        page: int = 1,
+        page_size: int = 50
+    ) -> Dict[str, Any]:
+        """Get tasks for a project with filtering."""
+        filters = {"project_id": project_id}
+        
+        if status_filter:
+            filters["status"] = [status.value for status in status_filter]
+        
+        if assignee_filter:
+            filters["assignee_id"] = assignee_filter
+        
+        if not include_subtasks:
+            filters["parent_task_id"] = None
+        
+        return await self.list_with_filters(
+            db=db,
+            user_id=user_id,
+            filters=filters,
+            page=page,
+            page_size=page_size
+        )
+    
+    async def get_overdue_tasks(
         self,
-        predecessor_project_id: UUID,
-        predecessor_task_number: int,
-        successor_project_id: UUID,
-        successor_task_number: int
-        ) -> Optional[models.TaskDependency]:  # Delegate to TaskDependencyService
-        return self.dependency_service.add_dependency(
-        predecessor_project_id, predecessor_task_number,
-        successor_project_id, successor_task_number
+        db: AsyncSession,
+        user_id: str = None,
+        project_id: str = None,
+        days_overdue: int = 0
+    ) -> List[EnhancedTask]:
+        """Get overdue tasks."""
+        cutoff_date = datetime.utcnow() - timedelta(days=days_overdue)
+        
+        query = select(EnhancedTask).where(
+            and_(
+                EnhancedTask.due_date < cutoff_date,
+                EnhancedTask.status.notin_([TaskStatus.COMPLETED, TaskStatus.CANCELLED])
+            )
         )
-
-    def remove_dependency(
+        
+        if project_id:
+            query = query.where(EnhancedTask.project_id == project_id)
+        
+        if user_id:
+            query = query.where(EnhancedTask.assignee_id == user_id)
+        
+        query = query.options(selectinload(EnhancedTask.project), selectinload(EnhancedTask.assignee))
+        
+        result = await db.execute(query)
+        return result.scalars().all()
+    
+    async def get_task_analytics(
         self,
-        predecessor_project_id: UUID,
-        predecessor_task_number: int,
-        successor_project_id: UUID,
-        successor_task_number: int
-        ) -> bool:  # Delegate to TaskDependencyService
-        return self.dependency_service.remove_dependency(
-        predecessor_project_id, predecessor_task_number,
-        successor_project_id, successor_task_number
+        db: AsyncSession,
+        project_id: str = None,
+        user_id: str = None,
+        date_from: datetime = None,
+        date_to: datetime = None
+    ) -> TaskAnalyticsSchema:
+        """Get task analytics and metrics."""
+        base_query = select(EnhancedTask)
+        
+        conditions = []
+        
+        if project_id:
+            conditions.append(EnhancedTask.project_id == project_id)
+        
+        if user_id:
+            conditions.append(EnhancedTask.assignee_id == user_id)
+        
+        if date_from:
+            conditions.append(EnhancedTask.created_at >= date_from)
+        
+        if date_to:
+            conditions.append(EnhancedTask.created_at <= date_to)
+        
+        if conditions:
+            base_query = base_query.where(and_(*conditions))
+        
+        # Get all tasks
+        result = await db.execute(base_query)
+        tasks = result.scalars().all()
+        
+        total_tasks = len(tasks)
+        completed_tasks = len([t for t in tasks if t.status == TaskStatus.COMPLETED])
+        overdue_tasks = len([t for t in tasks if t.is_overdue])
+        in_progress_tasks = len([t for t in tasks if t.status == TaskStatus.IN_PROGRESS])
+        
+        # Calculate completion rate
+        completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+        
+        # Calculate average completion time
+        completed_with_times = [
+            t for t in tasks 
+            if t.status == TaskStatus.COMPLETED and t.started_at and t.completed_at
+        ]
+        
+        avg_completion_time = None
+        if completed_with_times:
+            total_time = sum(
+                (t.completed_at - t.started_at).total_seconds() / 3600 
+                for t in completed_with_times
+            )
+            avg_completion_time = total_time / len(completed_with_times)
+        
+        # Priority distribution
+        priority_distribution = {}
+        for priority in TaskPriority:
+            priority_distribution[priority.value] = len(
+                [t for t in tasks if t.priority == priority]
+            )
+        
+        # Status distribution
+        status_distribution = {}
+        for status in TaskStatus:
+            status_distribution[status.value] = len(
+                [t for t in tasks if t.status == status]
+            )
+        
+        return TaskAnalyticsSchema(
+            total_tasks=total_tasks,
+            completed_tasks=completed_tasks,
+            overdue_tasks=overdue_tasks,
+            in_progress_tasks=in_progress_tasks,
+            avg_completion_time=avg_completion_time,
+            completion_rate=completion_rate,
+            priority_distribution=priority_distribution,
+            status_distribution=status_distribution
         )
-
-    def get_task_dependencies(
-        self, project_id: UUID, task_number: int
-        ) -> List[models.TaskDependency]:  # Delegate to TaskDependencyService
-        return self.dependency_service.get_task_dependencies(
-        project_id, task_number
-        )
-
-    def update_task_status(
+    
+    async def bulk_update_tasks(
         self,
-        project_id: UUID,
-        task_number: int,  # Explicitly type status as TaskStatusEnum for clarity in this function
-        status: TaskStatusEnum
-        ) -> Optional[models.Task]:  # Delegate to CRUD update function
-        task_update = TaskUpdate(status=status)
-        return self.update_task(project_id, task_number, task_update)
-
-    def assign_task_to_agent(
+        db: AsyncSession,
+        task_ids: List[str],
+        update_data: Dict[str, Any],
+        user_id: str
+    ) -> List[EnhancedTask]:
+        """Bulk update multiple tasks."""
+        updated_tasks = []
+        
+        for task_id in task_ids:
+            try:
+                updated_task = await self.update(
+                    db=db,
+                    resource_id=task_id,
+                    data=TaskUpdateSchema(**update_data),
+                    user_id=user_id
+                )
+                updated_tasks.append(updated_task)
+            except Exception as e:
+                logger.warning(f"Failed to update task {task_id}: {str(e)}")
+                continue
+        
+        logger.info(f"Bulk updated {len(updated_tasks)} out of {len(task_ids)} tasks")
+        return updated_tasks
+    
+    async def search_tasks(
         self,
-        project_id: UUID,
-        task_number: int,
-        agent_id: str
-        ) -> Optional[models.Task]:  # Delegate to CRUD update function
-        task_update = TaskUpdate(agent_id=agent_id)
-        return self.update_task(project_id, task_number, task_update)
-
-    def unassign_task(
-        self,
-        project_id: UUID,
-        task_number: int
-        ) -> Optional[models.Task]:  # Delegate to CRUD update function
-        task_update = TaskUpdate(agent_id=None)  # Assuming setting agent_id to None unassigns
-        return self.update_task(project_id, task_number, task_update)
-
-    def associate_file_with_task(
-        self,
-        project_id: UUID,
-        task_number: int,
-        file_memory_entity_id: int
-        ) -> Optional[models.TaskFileAssociation]:  # Delegate to TaskFileAssociationService  # Assuming the service takes project_id, task_number and file_memory_entity_id
-        return self.file_association_service.associate_file_with_task(
-        task_project_id=str(project_id), task_task_number=task_number, file_memory_entity_id=file_memory_entity_id
+        db: AsyncSession,
+        search_query: str,
+        user_id: str = None,
+        project_id: str = None,
+        limit: int = 50
+    ) -> List[EnhancedTask]:
+        """Search tasks by title and description."""
+        search_conditions = [
+            EnhancedTask.title.ilike(f"%{search_query}%"),
+            EnhancedTask.description.ilike(f"%{search_query}%")
+        ]
+        
+        query = select(EnhancedTask).where(or_(*search_conditions))
+        
+        if project_id:
+            query = query.where(EnhancedTask.project_id == project_id)
+        
+        if user_id:
+            query = query.where(EnhancedTask.assignee_id == user_id)
+        
+        query = query.limit(limit).options(
+            selectinload(EnhancedTask.project),
+            selectinload(EnhancedTask.assignee)
         )
+        
+        result = await db.execute(query)
+        return result.scalars().all()
 
-    def disassociate_file_from_task(
-        self,
-        project_id: UUID,
-        task_number: int,
-        file_memory_entity_id: int
-        ) -> bool:  # Delegate to TaskFileAssociationService
-        return self.file_association_service.disassociate_file_from_task(
-        task_project_id=project_id, task_task_number=task_number, file_memory_entity_id=file_memory_entity_id
-        )
-
-    def get_task_files(
-        self, project_id: UUID, task_number: int
-        ) -> List[models.TaskFileAssociation]:  # Delegate to TaskFileAssociationService
-        return self.file_association_service.get_files_for_task(
-        task_project_id=project_id, task_task_number=task_number
-        )
-
-    def add_comment_to_task(
-        self,
-        project_id: UUID,
-        task_number: int,
-        author_id: str,
-        content: str
-        ) -> Optional[models.Comment]:  # Delegate to CommentService  # Assuming CommentService.create_comment takes task_project_id, task_task_number, author_id, content
-        return self.comment_service.create_comment(
-        task_project_id=project_id, task_task_number=task_number, author_id=author_id, content=content
-        )
-
-    def get_task_comments(
-        self,
-        project_id: UUID,
-        task_number: int,
-        sort_by: Optional[str] = 'created_at',
-        sort_direction: Optional[str] = 'asc'
-        ) -> List[models.Comment]:  # Delegate to CommentService
-        return self.comment_service.get_comments_by_task(
-        task_project_id=project_id, task_task_number=task_number,
-        sort_by=sort_by, sort_direction=sort_direction
-        )
-
-    def get_files_for_task(self, task_project_id: UUID, task_task_number: int, sort_by: Optional[str] = None, sort_direction: Optional[str] = None, filename: Optional[str] = None) -> List[models.TaskFileAssociation]:  # Delegate to TaskFileAssociationService
-        return self.file_association_service.get_files_for_task(
-        task_project_id=str(task_project_id), task_task_number=task_task_number,
-        sort_by=sort_by, sort_direction=sort_direction, filename=filename
-        )
-
-    def get_dependencies_for_task(self, task_project_id: UUID, task_task_number: int, sort_by: Optional[str] = None, sort_direction: Optional[str] = None, dependency_type: Optional[str] = None) -> List[models.TaskDependency]:  # Delegate to TaskDependencyService
-        return self.dependency_service.get_task_dependencies(
-        task_project_id=str(task_project_id), task_task_number=task_task_number,
-        sort_by=sort_by, sort_direction=sort_direction, dependency_type=dependency_type
-        )
-
-    def get_predecessor_tasks(self, task_project_id: UUID, task_task_number: int, sort_by: Optional[str] = None, sort_direction: Optional[str] = None, dependency_type: Optional[str] = None) -> List[models.TaskDependency]:  # Delegate to TaskDependencyService
-        return self.dependency_service.get_predecessor_tasks(
-        task_project_id=str(task_project_id), task_task_number=task_task_number,
-        sort_by=sort_by, sort_direction=sort_direction, dependency_type=dependency_type
-        )
-
-    def get_successor_tasks(self, task_project_id: UUID, task_task_number: int, sort_by: Optional[str] = None, sort_direction: Optional[str] = None, dependency_type: Optional[str] = None) -> List[models.TaskDependency]:  # Delegate to TaskDependencyService
-        return self.dependency_service.get_successor_tasks(
-        task_project_id=str(task_project_id), task_task_number=task_task_number,
-        sort_by=sort_by, sort_direction=sort_direction, dependency_type=dependency_type
-        )
+# Global task service instance
+task_service = EnhancedTaskService()
