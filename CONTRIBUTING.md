@@ -1,6 +1,6 @@
 Here is the fully merged and finalized version of the `CONTRIBUTING.md` file, incorporating the `update-readmes` script section into the comprehensive contribution guide:
 
-````markdown
+```markdown
 # Contributing Guide
 
 Thank you for taking the time to contribute to **MCP Project Manager**! This project follows several conventions to ensure a clean, reliable, and collaborative development process.
@@ -15,7 +15,7 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-````
+```
 
 ### 2. Frontend (Node.js)
 
@@ -57,13 +57,17 @@ npm run update-readmes
 
 This ensures all `README.md` files reflect up-to-date directory contents.
 
-Run the enum generation script to sync frontend types with backend enums:
+### Generate shared TypeScript types
+
+Whenever you modify the Pydantic models under `backend/schemas`, regenerate the
+frontend type definitions:
 
 ```bash
-npm run generate
+npm run gen-types
 ```
 
-This writes `frontend/src/types/generatedEnums.ts`.
+This writes the file `frontend/src/types/generated.ts`. Commit the updated file
+so the frontend stays in sync with the backend.
 
 ---
 
