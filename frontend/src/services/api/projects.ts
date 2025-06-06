@@ -21,9 +21,13 @@ interface RawProject {
 
 // Fetch all projects
 export const getProjects = async (
+<<<<<<< HEAD
   filters?: ProjectFilters,
   skip = 0,
   limit = 100
+=======
+  filters?: ProjectFilters
+>>>>>>> origin/4g8jfq-codex/implement-project-export-functionality
 ): Promise<Project[]> => {
   const queryParams = new URLSearchParams();
   if (filters?.search) queryParams.append('search', filters.search);
@@ -125,6 +129,19 @@ export const deleteProject = async (project_id: string): Promise<boolean> => {
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}`),
     { method: 'DELETE' }
   );
+<<<<<<< HEAD
+=======
+  return {
+    ...rawProject,
+    id: String(rawProject.id),
+    name: String(rawProject.name || ''),
+    description: rawProject.description ? String(rawProject.description) : null,
+    is_archived: !!rawProject.is_archived,
+    created_at: String(rawProject.created_at || new Date().toISOString()),
+    task_count:
+      typeof rawProject.task_count === 'number' ? rawProject.task_count : 0,
+  };
+>>>>>>> origin/4g8jfq-codex/implement-project-export-functionality
 };
 
 // --- Project Archive/Unarchive ---
@@ -209,6 +226,7 @@ export interface AssociateFileWithProjectData {
 }
 
 export const getProjectFiles = async (
+<<<<<<< HEAD
   projectId: string,
   skip = 0,
   limit = 100
@@ -219,6 +237,12 @@ export const getProjectFiles = async (
   const query = params.toString();
   return request<ProjectFileAssociation[]>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/files?${query}`)
+=======
+  projectId: string
+): Promise<ProjectFileAssociation[]> => {
+  return request<ProjectFileAssociation[]>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/files`)
+>>>>>>> origin/4g8jfq-codex/implement-project-export-functionality
   );
 };
 
@@ -245,4 +269,13 @@ export const disassociateFileFromProject = async (
       method: 'DELETE',
     }
   );
+<<<<<<< HEAD
+=======
+};
+
+export const exportProject = async (projectId: string): Promise<any> => {
+  return request<any>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/export`)
+  );
+>>>>>>> origin/4g8jfq-codex/implement-project-export-functionality
 };
