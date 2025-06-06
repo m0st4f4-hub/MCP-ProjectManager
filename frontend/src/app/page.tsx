@@ -33,6 +33,7 @@ import AddAgentModal from "../components/modals/AddAgentModal";
 import DevToolsDrawer from "../components/modals/DevToolsDrawer";
 import FilterPanel from "../components/common/FilterPanel";
 import AppIcon from "../components/common/AppIcon";
+import UserRolesPage from "./user-roles/page";
 
 import type { TaskState } from "../store/taskStore";
 import type { ProjectState } from "../store/projectStore";
@@ -153,6 +154,8 @@ export default function Home() {
         return <ProjectList />;
       case "Registry":
         return <AgentList />;
+      case "User Roles":
+        return <UserRolesPage />;
       case "Settings":
         return <SettingsContent />;
       default:
@@ -165,6 +168,7 @@ export default function Home() {
     { view: "Workboard", label: "Workboard", icon: <EditIcon /> },
     { view: "Portfolio", label: "Portfolio", icon: <SearchIcon /> },
     { view: "Registry", label: "Registry", icon: <TimeIcon /> },
+    { view: "User Roles", label: "User Roles", icon: <ViewIcon /> },
   ];
 
   const actionNavItems = [
