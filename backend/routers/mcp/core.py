@@ -35,7 +35,7 @@ from ....schemas.memory import (
     MemoryObservationCreate,
     MemoryRelationCreate
 )
-from ....schemas.api_responses import MetricsResponse
+from ....schemas.api_responses import MetricsResponse, DataResponse
 from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
 from ....schemas.error_protocol import ErrorProtocolCreate
 from ....schemas.mcp_tool_metrics import McpToolMetricsResponse
@@ -48,14 +48,7 @@ from ....mcp_tools.capability_tools import (
     list_capabilities_tool,
     delete_capability_tool,
 )
-from ....schemas.universal_mandate import UniversalMandateCreate
 from .... import models
-from ....schemas.memory import (
-    MemoryEntityCreate,
-    MemoryEntityUpdate,
-    MemoryObservationCreate,
-    MemoryRelationCreate
-)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
@@ -323,8 +316,8 @@ async def mcp_update_task(
         audit_service.log_action(
             action="task_updated",
             entity_type="task",
-            entity_id=f"{task.project_id}-{task.task_number}",
-            changes=task_update.dict(exclude_unset=True)
+            entity_id=f"{project_id}-{task_number}",
+            changes=task_update.model_dump(exclude_unset=True)
         )
 
         return {
@@ -337,11 +330,9 @@ async def mcp_update_task(
                 "status": task.status,
                 "agent_id": task.agent_id,
                 "created_at": task.created_at.isoformat(),
-                "updated_at": task.updated_at.isoformat()
+                "updated_at": task.updated_at.isoformat() if task.updated_at else None
             }
         }
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"MCP update task failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
