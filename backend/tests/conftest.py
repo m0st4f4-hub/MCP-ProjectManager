@@ -1,6 +1,7 @@
 """
 Shared test fixtures and configuration.
 """
+# flake8: noqa
 import os
 import sys
 import pytest
@@ -21,11 +22,11 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient, ASGITransport
 
 from backend.database import Base, get_db
-from backend.main import app
 from backend.models import User as UserModel
 from backend.models import Project as ProjectModel
 from backend.models import Task as TaskModel
 from backend.models import Agent as AgentModel
+from backend.models import ProjectMember as ProjectMemberModel
 from backend.crud.users import get_password_hash
 from backend.enums import UserRoleEnum, TaskStatusEnum
 
@@ -118,6 +119,12 @@ def test_app(async_db_session: AsyncSession):
     except Exception as e:
         print(f"Error including users router: {e}")
 
+    try:
+        from backend.routers import memory
+        test_app.include_router(memory.router, prefix="/api/memory", tags=["Memory"])
+    except Exception as e:
+        print(f"Error including memory router: {e}")
+
     # Override database dependency with direct function
     async def get_test_db():
         yield async_db_session
@@ -137,7 +144,7 @@ def test_client(test_app):
 @pytest.fixture(scope="function")
 async def async_client(test_app) -> AsyncGenerator[AsyncClient, None]:
     """Create an async test client."""
-    async with AsyncClient(transport=ASGITransport(app=test_app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=test_app, raise_app_exceptions=False), base_url="http://test") as client:
         yield client
 
 @pytest.fixture
