@@ -38,6 +38,7 @@ from ....schemas.memory import (
 from ....schemas.api_responses import MetricsResponse, DataResponse
 from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
 from ....schemas.error_protocol import ErrorProtocolCreate
+from ....schemas.verification_requirement import VerificationRequirementCreate
 from ....schemas.mcp_tool_metrics import McpToolMetricsResponse
 from ....mcp_tools.forbidden_action_tools import (
     add_forbidden_action_tool,
@@ -47,6 +48,11 @@ from ....mcp_tools.capability_tools import (
     create_capability_tool,
     list_capabilities_tool,
     delete_capability_tool,
+)
+from ....mcp_tools.verification_requirement_tools import (
+    create_verification_requirement_tool,
+    list_verification_requirements_tool,
+    delete_verification_requirement_tool,
 )
 from .... import models
 
@@ -120,6 +126,12 @@ def get_error_protocol_service(
     db: Session = Depends(get_db_session),
 ) -> ErrorProtocolService:
     return ErrorProtocolService(db)
+
+
+def get_verification_requirement_service(
+    db: Session = Depends(get_db_session),
+) -> VerificationRequirementService:
+    return VerificationRequirementService(db)
 
 
 @router.post(
@@ -1059,6 +1071,7 @@ async def mcp_list_forbidden_actions(
     tags=["mcp-tools"],
     operation_id="create_capability_tool",
 )
+@track_tool_usage("create_capability_tool")
 async def mcp_create_capability(
     agent_role_id: str,
     capability: str,
@@ -1066,17 +1079,58 @@ async def mcp_create_capability(
     is_active: bool = True,
     db: Session = Depends(get_db_session),
 ):
-    """MCP Tool: Create a capability for an agent role."""
+    """MCP Tool: Create a new agent capability."""
     try:
-        return await create_capability_tool(
+        rules_service = RulesService(db)
+        capability_obj = rules_service.create_agent_capability(
             agent_role_id=agent_role_id,
             capability=capability,
             description=description,
             is_active=is_active,
-            db=db,
         )
+        return {
+            "success": True,
+            "capability": capability_obj.model_dump(mode='json')
+        }
+    except HTTPException as e:
+        logger.error(f"MCP create capability failed: {e.detail}")
+        raise e
     except Exception as e:
         logger.error(f"MCP create capability failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/verification-requirement/create",
+    tags=["mcp-tools"],
+    operation_id="create_verification_requirement_tool",
+)
+@track_tool_usage("create_verification_requirement_tool")
+async def mcp_create_verification_requirement(
+    agent_role_id: str,
+    requirement: str,
+    description: Optional[str] = None,
+    is_mandatory: bool = True,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a new agent verification requirement."""
+    try:
+        rules_service = RulesService(db)
+        verification_requirement_obj = rules_service.create_agent_verification_requirement(
+            agent_role_id=agent_role_id,
+            requirement=requirement,
+            description=description,
+            is_mandatory=is_mandatory,
+        )
+        return {
+            "success": True,
+            "verification_requirement": verification_requirement_obj.model_dump(mode='json')
+        }
+    except HTTPException as e:
+        logger.error(f"MCP create verification requirement failed: {e.detail}")
+        raise e
+    except Exception as e:
+        logger.error(f"MCP create verification requirement failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -1085,15 +1139,44 @@ async def mcp_create_capability(
     tags=["mcp-tools"],
     operation_id="list_capabilities_tool",
 )
+@track_tool_usage("list_capabilities_tool")
 async def mcp_list_capabilities(
-    agent_role_id: Optional[str] = Query(None),
+    agent_role_id: Optional[str] = Query(None, description="Filter by agent role ID."),
     db: Session = Depends(get_db_session),
 ):
-    """MCP Tool: List capabilities for agent roles."""
+    """MCP Tool: List agent capabilities."""
     try:
-        return await list_capabilities_tool(agent_role_id, db)
+        rules_service = RulesService(db)
+        capabilities = rules_service.list_agent_capabilities(agent_role_id)
+        return {
+            "success": True,
+            "capabilities": [c.model_dump(mode='json') for c in capabilities]
+        }
     except Exception as e:
         logger.error(f"MCP list capabilities failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/verification-requirement/list",
+    tags=["mcp-tools"],
+    operation_id="list_verification_requirements_tool",
+)
+@track_tool_usage("list_verification_requirements_tool")
+async def mcp_list_verification_requirements(
+    agent_role_id: Optional[str] = Query(None, description="Filter by agent role ID."),
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List agent verification requirements."""
+    try:
+        rules_service = RulesService(db)
+        verification_requirements = rules_service.list_agent_verification_requirements(agent_role_id)
+        return {
+            "success": True,
+            "verification_requirements": [vr.model_dump(mode='json') for vr in verification_requirements]
+        }
+    except Exception as e:
+        logger.error(f"MCP list verification requirements failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -1101,20 +1184,40 @@ async def mcp_list_capabilities(
     "/mcp-tools/capability/delete",
     tags=["mcp-tools"],
     operation_id="delete_capability_tool",
-    response_model=DataResponse[bool],
 )
+@track_tool_usage("delete_capability_tool")
 async def mcp_delete_capability(
     capability_id: str,
     db: Session = Depends(get_db_session),
 ):
-    """MCP Tool: Delete a capability."""
+    """MCP Tool: Delete an agent capability by ID."""
     try:
-        await delete_capability_tool(capability_id, db)
-        return DataResponse[bool](data=True, message="Capability deleted")
-    except HTTPException:
-        raise
+        rules_service = RulesService(db)
+        success = rules_service.delete_agent_capability(capability_id)
+        return {"success": success, "message": "Capability deleted successfully." if success else "Capability not found."}
     except Exception as e:
         logger.error(f"MCP delete capability failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete(
+    "/mcp-tools/verification-requirement/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_verification_requirement_tool",
+    response_model=DataResponse[bool],
+)
+@track_tool_usage("delete_verification_requirement_tool")
+async def mcp_delete_verification_requirement(
+    requirement_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a verification requirement by ID."""
+    try:
+        rules_service = RulesService(db)
+        success = rules_service.delete_agent_verification_requirement(requirement_id)
+        return {"success": success, "message": "Verification requirement deleted successfully." if success else "Verification requirement not found."}
+    except Exception as e:
+        logger.error(f"MCP delete verification requirement failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

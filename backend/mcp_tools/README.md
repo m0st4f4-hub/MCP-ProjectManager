@@ -63,6 +63,7 @@ actions = await list_forbidden_actions_tool(agent_role_id="manager", db=session)
 - `rule_tools.py`
 - `task_tools.py`
 - `user_role_tools.py`
+- `verification_requirement_tools.py`
 
 <!-- File List End -->
 
