@@ -4,6 +4,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 // Core entity types
 export interface Project {
   id: string;
@@ -29,6 +30,11 @@ export * from './agents';
 export * from './project';
 export * from './agent';
 >>>>>>> origin/16bcjg-codex/implement-crud-for-error-protocols
+=======
+export * from './project';
+export * from './agent';
+export * from './agents';
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions
 export * from './task';
 export * from './user';
 export * from './audit_log';
@@ -38,6 +44,7 @@ export * from './rules';
 export * from './mcp';
 export * from './project_template';
 export * from './agent_prompt_template';
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -79,6 +86,8 @@ export * from './agents';
 =======
 export * from "./workflow";
 >>>>>>> origin/codex/add-typed-crud-functions-to-api
+=======
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions
 
 // Common types used across the application
 // Canonical shared sort direction type for all entities
@@ -301,6 +310,7 @@ export type ViewMode = 'list' | 'kanban';
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> origin/codex/add-crud-functions-and-typescript-interfaces
 =======
 >>>>>>> origin/codex/add-agent-capabilities-crud-functions
@@ -308,3 +318,5 @@ export type ViewMode = 'list' | 'kanban';
 >>>>>>> origin/codex/add-memorysearch-component-with-api-query
 =======
 >>>>>>> origin/16bcjg-codex/implement-crud-for-error-protocols
+=======
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions

@@ -5,6 +5,7 @@ import type {
   AgentCapabilityCreateData,
   AgentCapabilityUpdateData,
 <<<<<<< HEAD
+<<<<<<< HEAD
   AgentCapabilityListResponse,
   AgentCapabilityResponse,
 } from '@/types/agents';
@@ -78,6 +79,8 @@ export const agentCapabilitiesApi = {
     );
   },
 =======
+=======
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions
 } from '@/types/agents';
 
 // Fetch capabilities for a given agent role
@@ -131,5 +134,8 @@ export const deleteAgentCapability = async (
     ),
     { method: 'DELETE' }
   );
+<<<<<<< HEAD
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions
+=======
 >>>>>>> origin/codex/add-agent-capabilities-crud-functions
 };
