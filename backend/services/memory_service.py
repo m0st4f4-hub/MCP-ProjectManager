@@ -403,6 +403,7 @@ class MemoryService:
     async def search_memory_entities(
         self, query: str, limit: int = 10
     ) -> List[models.MemoryEntity]:
+<<<<<<< HEAD
         return await self.db.query(models.MemoryEntity).filter(models.MemoryEntity.content.ilike(f"%{query}%")).limit(limit).all()
 
     def get_knowledge_graph(self) -> Dict[str, Any]:
@@ -414,3 +415,12 @@ class MemoryService:
             "relations": [relation.to_dict() for relation in relations],
         }
         return graph
+=======
+        return self.get_memory_entities(name=query, limit=limit)
+
+    def get_knowledge_graph(self) -> Dict[str, List[models.BaseModel]]:
+        """Return all memory entities and relations."""
+        entities = self.db.query(models.MemoryEntity).all()
+        relations = self.db.query(models.MemoryRelation).all()
+        return {"entities": entities, "relations": relations}
+>>>>>>> origin/codex/add-get-/graph-route-and-tests
