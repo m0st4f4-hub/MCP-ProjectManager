@@ -17,6 +17,7 @@ from backend.enums import UserRoleEnum
 import uuid
 from pydantic import BaseModel
 
+
 router = APIRouter(
     prefix="/auth",  # Prefix specifically for authentication operations
     tags=["Authentication"],
@@ -129,12 +130,14 @@ async def _authenticate_user(
                 data={"sub": user.username}, expires_delta=refresh_expires
             )
             response.set_cookie(
-                "refresh_token",
-                refresh_token,
+                key="refresh_token",
+                value=refresh_token,
                 httponly=True,
                 secure=True,
+                samesite="lax",
                 max_age=int(refresh_expires.total_seconds()),
             )
+            
             await audit_log_service.create_log(
                 action="login_success",
                 user_id=user.id,

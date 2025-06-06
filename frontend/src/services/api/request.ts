@@ -72,6 +72,7 @@ async function refreshAccessToken(): Promise<string | null> {
       }
     );
     if (!response.ok) {
+      logger.error("Failed to refresh token: Server responded with an error", response);
       return null;
     }
     const data = await response.json();
@@ -83,7 +84,7 @@ async function refreshAccessToken(): Promise<string | null> {
     }
     return null;
   } catch (err) {
-    console.error('Failed to refresh token', err);
+    logger.error('Failed to refresh token', err);
     return null;
   }
 }
@@ -124,11 +125,16 @@ export async function request<T>(
     throw new NetworkError((err as Error).message || 'Network Error', url);
   }
 
+  // Handle 401 Unauthorized by attempting to refresh token
   if (response.status === 401) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       (headers as Record<string, string>).Authorization = `Bearer ${refreshed}`;
+      // Re-attempt the original request with the new token
       response = await fetch(url, { ...options, headers, credentials: 'include' });
+    } else {
+      // If token refresh failed, re-throw the 401 to be handled by the caller (e.g., redirect to login)
+      throw new ApiError(`Unauthorized: ${response.statusText || 'Token refresh failed'}`, response.status, url);
     }
   }
 
@@ -164,25 +170,18 @@ export async function request<T>(
     return null as T;
   }
 
-<<<<<<< HEAD
-  const responseData = await response.json();
-=======
   let responseData: any;
   try {
     responseData = await response.json();
   } catch (e) {
-    console.warn(`Failed to parse response as JSON for URL: ${url}`, e);
+    logger.warn(`Failed to parse response as JSON for URL: ${url}`, e);
     throw new ApiError('Invalid JSON response', response.status, url);
   }
 
-  if (
-    responseData &&
-    typeof responseData === 'object' &&
-    'data' in responseData
-  ) {
+  // Return the raw response data, or responseData.data if it exists (for DataResponse schema)
+  if (responseData && typeof responseData === 'object' && 'data' in responseData) {
     return responseData.data as T;
   }
 
->>>>>>> 7d90ed314aa8c0192581c08560c32b47c0d84736
   return responseData as T;
 }
