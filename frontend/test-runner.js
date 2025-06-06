@@ -1,6 +1,19 @@
 const { spawn, exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const TEST_TYPES = {
+  unit: "Unit tests",
+  integration: "Integration tests",
+  e2e: "End-to-End tests",
+  api: "API tests",
+  coverage: "Coverage report",
+  all: "Complete test suite"
+};
+
+function displayHelp() {
+  Help();
+}
+
 
 (function() {
   Help() {
@@ -60,7 +73,7 @@ const path = require('path');
   async function runIntegrationTests() {
     console.log('🔗 Running Integration Tests...')
     try {
-      await runCommand('npm', ['run', 'test:run', '--', 'src/__tests__/integration'])
+      await runCommand('npm', ['run', 'test:run', '--', 'src/__tests__/integration', 'tests/integration'])
       console.log('✅ Integration tests completed successfully')
       return true
     } catch (error) {

@@ -79,6 +79,11 @@ jobs:
           cd frontend
           npm run type-check
 
+      - name: Integration tests
+        run: |
+          cd frontend
+          npm run test:integration
+
       - name: Test with coverage
         run: |
           cd frontend
