@@ -57,6 +57,13 @@ jobs:
       - name: Ensure OpenAPI schema is committed
         run: git diff --exit-code backend/openapi.json
 
+      - name: Generate OpenAPI schema
+        run: |
+          python scripts/update_openapi.py
+
+      - name: Ensure OpenAPI schema is committed
+        run: git diff --exit-code backend/openapi.json
+
       - name: Upload Python coverage artifact
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
