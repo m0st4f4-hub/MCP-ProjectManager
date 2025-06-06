@@ -1,6 +1,10 @@
 import types
 from datetime import datetime, timezone
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 =======
 
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
@@ -13,15 +17,21 @@ from backend.routers.memory.observations.observations import (
     get_memory_service,
 )
 <<<<<<< HEAD
+<<<<<<< HEAD
 from backend.schemas.memory import MemoryObservation, MemoryObservationCreate
 
 
 class DummyObsService:
 =======
+=======
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 from backend.schemas.memory import MemoryObservationCreate
 
 
 class DummyService:
+<<<<<<< HEAD
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
+=======
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
     def __init__(self):
         self.observations = {}
@@ -29,7 +39,11 @@ class DummyService:
 
     def add_observation_to_entity(self, entity_id: int, observation: MemoryObservationCreate):
 <<<<<<< HEAD
+<<<<<<< HEAD
         obs = MemoryObservation(
+=======
+        obs = types.SimpleNamespace(
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 =======
         obs = types.SimpleNamespace(
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
@@ -38,8 +52,14 @@ class DummyService:
             content=observation.content,
             metadata_=observation.metadata_,
 <<<<<<< HEAD
+<<<<<<< HEAD
             created_at=datetime.now(timezone.utc),
             entity=None,
+=======
+            source=None,
+            timestamp=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc),
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 =======
             source=None,
             timestamp=datetime.now(timezone.utc),
@@ -54,6 +74,7 @@ class DummyService:
         obs = list(self.observations.values())
         if entity_id is not None:
             obs = [o for o in obs if o.entity_id == entity_id]
+<<<<<<< HEAD
 <<<<<<< HEAD
         return obs[skip: skip + limit]
 
@@ -81,6 +102,8 @@ app = FastAPI()
 app.include_router(router)
 app.dependency_overrides[get_memory_service] = override_service
 =======
+=======
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
         return obs[skip : skip + limit]
 
     def update_observation(self, observation_id: int, observation: MemoryObservationCreate):
@@ -101,6 +124,9 @@ dummy_service = DummyService()
 app = FastAPI()
 app.include_router(router)
 app.dependency_overrides[get_memory_service] = lambda: dummy_service
+<<<<<<< HEAD
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
+=======
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 
 
@@ -110,7 +136,11 @@ async def test_update_and_delete_observation():
         resp = await client.post(
             "/entities/1/observations/",
 <<<<<<< HEAD
+<<<<<<< HEAD
             json={"entity_id": 1, "content": "orig"},
+=======
+            json={"entity_id": 1, "content": "hello"},
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 =======
             json={"entity_id": 1, "content": "hello"},
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
@@ -127,11 +157,15 @@ async def test_update_and_delete_observation():
 
         resp = await client.delete(f"/observations/{obs_id}")
 <<<<<<< HEAD
+<<<<<<< HEAD
         assert resp.status_code == 200
         assert resp.json()["data"] is True
 
         resp = await client.delete(f"/observations/{obs_id}")
         assert resp.status_code == 404
+=======
+        assert resp.status_code == 204
+>>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 =======
         assert resp.status_code == 204
 >>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
