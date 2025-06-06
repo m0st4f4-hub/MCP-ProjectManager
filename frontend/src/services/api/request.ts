@@ -144,7 +144,13 @@ export async function request<T>(
     return null as T;
   }
 
-  const responseData = await response.json();
+  let responseData: any;
+  try {
+    responseData = await response.json();
+  } catch (e) {
+    console.warn(`Failed to parse response as JSON for URL: ${url}`, e);
+    throw new ApiError('Invalid JSON response', response.status, url);
+  }
 
   if (
     responseData &&
