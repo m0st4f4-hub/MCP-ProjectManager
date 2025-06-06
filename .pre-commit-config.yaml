@@ -14,6 +14,12 @@ repos:
         language: system
         pass_filenames: false
 
+      - id: npm-test
+        name: Run frontend tests
+        entry: npm test --prefix frontend
+        language: system
+        pass_filenames: false
+
       - id: frontend-format
         name: Format frontend with Prettier
         entry: npm run format

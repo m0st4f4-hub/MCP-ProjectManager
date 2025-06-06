@@ -29,8 +29,12 @@ class UserRole(UserRoleBase):
  model_config = ConfigDict(from_attributes=True)
 
 class UserRoleCreate(UserRoleBase):
- """Schema for creating a new user role association."""
- pass
+    """Schema for creating a new user role association."""
+    pass
+
+class UserRoleUpdate(BaseModel):
+    """Schema for updating an existing user role association."""
+    role_name: UserRoleEnum = Field(..., description="The updated role name.")
 
 # --- User Schemas ---
 class UserBase(BaseModel):

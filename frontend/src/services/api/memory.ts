@@ -31,6 +31,20 @@ export const updateRelation = async (
   return response.data;
 };
 
+export const updateRelation = async (
+  relationId: number,
+  data: MemoryRelationUpdateData
+): Promise<MemoryRelation> => {
+  const response = await request<{ data: MemoryRelation }>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
+    {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }
+  );
+  return response.data;
+};
+
 // --- Memory Entity APIs ---
 export const memoryApi = {
   // Create a new memory entity
@@ -203,6 +217,21 @@ export const memoryApi = {
     return response.data;
   },
 
+  // Update an observation
+  updateObservation: async (
+    observationId: number,
+    data: MemoryObservationUpdateData
+  ): Promise<MemoryObservation> => {
+    const response = await request<{ data: MemoryObservation }>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/observations/${observationId}`),
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+    return response.data;
+  },
+
   // Delete an observation
   deleteObservation: async (observationId: number): Promise<boolean> => {
     return request<boolean>(
@@ -238,6 +267,21 @@ export const memoryApi = {
       buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
       {
         method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    );
+    return response.data;
+  },
+
+  // Update an existing relation
+  updateRelation: async (
+    relationId: number,
+    data: MemoryRelationUpdateData
+  ): Promise<MemoryRelation> => {
+    const response = await request<{ data: MemoryRelation }>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
+      {
+        method: "PUT",
         body: JSON.stringify(data),
       }
     );

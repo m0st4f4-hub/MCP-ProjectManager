@@ -17,14 +17,16 @@ class ProjectFileAssociationService:
     def get_association(self, project_id: str, file_memory_entity_id: int):
         return get_project_file_association(self.db, project_id, file_memory_entity_id)
 
-    def get_files_for_project(self, project_id: str, skip: int = 0, limit: int = 100):
-        return get_project_files(self.db, project_id, skip=skip, limit=limit)
+    async def get_files_for_project(
+        self, project_id: str, skip: int = 0, limit: Optional[int] = 100
+    ):
+        return await get_project_files(self.db, project_id, skip=skip, limit=limit)
 
     async def get_project_files(
-        self, project_id: str, skip: int = 0, limit: int = 100
+        self, project_id: str, skip: int = 0, limit: Optional[int] = 100
     ):
         """Async wrapper for get_files_for_project with pagination."""
-        return self.get_files_for_project(project_id, skip=skip, limit=limit)
+        return await self.get_files_for_project(project_id, skip=skip, limit=limit)
 
     def associate_file_with_project(self, project_id: str, file_memory_entity_id: int):
         project_file = ProjectFileAssociationCreate(

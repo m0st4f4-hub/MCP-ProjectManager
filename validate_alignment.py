@@ -9,8 +9,9 @@ import asyncio
 import aiohttp
 import sys
 import subprocess
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 import time
+import argparse
 
 
 class FeatureAlignmentValidator:
@@ -338,6 +339,15 @@ class FeatureAlignmentValidator:
                         session, "GET", "/api/memory/search?q=test", "Search memory"
                     )
                 )
+                results.append(
+                    await self._test_endpoint(
+                        session,
+                        "POST",
+                        "/api/memory/ingest-text",
+                        "Ingest memory text",
+                        {"text": "sample"},
+                    )
+                )
 
                 # Test ingestion endpoints
                 async with session.post(
@@ -432,6 +442,62 @@ class FeatureAlignmentValidator:
 
         return results
 
+    async def validate_template_features(self) -> List[Tuple[str, bool, str]]:
+        """Validate project template endpoints."""
+        results = []
+        try:
+            async with aiohttp.ClientSession() as session:
+                results.append(
+                    await self._test_endpoint(
+                        session,
+                        "GET",
+                        "/api/templates",
+                        "List project templates",
+                    )
+                )
+        except Exception as e:
+            results.append(("Template features validation", False, f"Error: {e}"))
+        return results
+
+    async def validate_user_features(self) -> List[Tuple[str, bool, str]]:
+        """Validate user management endpoints."""
+        results = []
+        try:
+            async with aiohttp.ClientSession() as session:
+                results.append(
+                    await self._test_endpoint(
+                        session, "GET", "/api/v1/users/", "List users"
+                    )
+                )
+        except Exception as e:
+            results.append(("User features validation", False, f"Error: {e}"))
+        return results
+
+    async def validate_mcp_tools(self) -> List[Tuple[str, bool, str]]:
+        """Validate MCP tool endpoints."""
+        results = []
+        try:
+            async with aiohttp.ClientSession() as session:
+                results.append(
+                    await self._test_endpoint(
+                        session,
+                        "GET",
+                        "/api/mcp/mcp-tools/list",
+                        "List MCP tools",
+                    )
+                )
+                results.append(
+                    await self._test_endpoint(
+                        session,
+                        "GET",
+                        "/api/mcp/mcp-tools/projects/list",
+                        "List projects via tool",
+                    )
+                )
+        except Exception as e:
+            results.append(("MCP tools validation", False, f"Error: {e}"))
+        return results
+
     async def _test_endpoint(
         self,
         session: aiohttp.ClientSession,
@@ -473,8 +539,11 @@ class FeatureAlignmentValidator:
         except Exception as e:
             return (description, False, f"❌ {method} {path} - Error: {str(e)}")
 
-    async def run_full_validation(self) -> bool:
-        """Run complete frontend-backend feature alignment validation."""
+    async def run_validation(
+        self,
+        suites: List[Tuple[str, Callable[[], asyncio.Future]]],
+    ) -> bool:
+        """Run the provided validation suites."""
         print("🔍 Frontend-Backend Feature Alignment Validation")
         print("=" * 60)
 
@@ -501,14 +570,7 @@ class FeatureAlignmentValidator:
             await self._stop_backend()
             return False
 
-        # Run all validations
-        validation_suites = [
-            ("Project Features", self.validate_project_features),
-            ("Task Features", self.validate_task_features),
-            ("Agent Features", self.validate_agent_features),
-            ("Memory Features", self.validate_memory_features),
-            ("Rules Features", self.validate_rules_features),
-        ]
+        validation_suites = suites
 
         all_results = []
         total_passed = 0
@@ -551,11 +613,59 @@ class FeatureAlignmentValidator:
         await self._stop_backend()
         return result
 
+    async def run_full_validation(self) -> bool:
+        """Run all available validation suites."""
+        suites = [
+            ("Project Features", self.validate_project_features),
+            ("Task Features", self.validate_task_features),
+            ("Agent Features", self.validate_agent_features),
+            ("Memory Features", self.validate_memory_features),
+            ("Rules Features", self.validate_rules_features),
+            ("Template Features", self.validate_template_features),
+            ("User Features", self.validate_user_features),
+            ("MCP Tools", self.validate_mcp_tools),
+        ]
+        return await self.run_validation(suites)
+
 
 async def main():
     """Main validation function."""
-    validator = FeatureAlignmentValidator()
-    success = await validator.run_full_validation()
+    parser = argparse.ArgumentParser(description="Validate backend alignment")
+    parser.add_argument("--projects", action="store_true", help="Validate project endpoints")
+    parser.add_argument("--tasks", action="store_true", help="Validate task endpoints")
+    parser.add_argument("--agents", action="store_true", help="Validate agent endpoints")
+    parser.add_argument("--memory", action="store_true", help="Validate memory endpoints")
+    parser.add_argument("--rules", action="store_true", help="Validate rules endpoints")
+    parser.add_argument("--templates", action="store_true", help="Validate template endpoints")
+    parser.add_argument("--users", action="store_true", help="Validate user endpoints")
+    parser.add_argument("--mcp-tools", action="store_true", help="Validate MCP tools")
+    parser.add_argument("--backend-url", default="http://localhost:8000", help="Backend base URL")
+    args = parser.parse_args()
+
+    validator = FeatureAlignmentValidator(backend_url=args.backend_url)
+
+    suites = []
+    if args.projects:
+        suites.append(("Project Features", validator.validate_project_features))
+    if args.tasks:
+        suites.append(("Task Features", validator.validate_task_features))
+    if args.agents:
+        suites.append(("Agent Features", validator.validate_agent_features))
+    if args.memory:
+        suites.append(("Memory Features", validator.validate_memory_features))
+    if args.rules:
+        suites.append(("Rules Features", validator.validate_rules_features))
+    if args.templates:
+        suites.append(("Template Features", validator.validate_template_features))
+    if args.users:
+        suites.append(("User Features", validator.validate_user_features))
+    if args.mcp_tools:
+        suites.append(("MCP Tools", validator.validate_mcp_tools))
+
+    if not suites:
+        success = await validator.run_full_validation()
+    else:
+        success = await validator.run_validation(suites)
 
     if not success:
         sys.exit(1)

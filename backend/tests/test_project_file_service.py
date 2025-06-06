@@ -52,6 +52,10 @@ import pytest
 async def test_get_project_files_passes_pagination():
     session = MagicMock()
     service = ProjectFileAssociationService(session)
-    service.get_files_for_project = MagicMock(return_value=[])
-    await service.get_project_files("p1", skip=5, limit=10)
-    service.get_files_for_project.assert_called_once_with("p1", skip=5, limit=10)
+    with patch(
+        "backend.services.project_file_association_service.get_project_files",
+        new_callable=MagicMock,
+    ) as mock_crud:
+        mock_crud.return_value = []
+        await service.get_project_files("p1", skip=5, limit=10)
+        mock_crud.assert_called_once_with(session, "p1", skip=5, limit=10)

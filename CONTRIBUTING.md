@@ -36,6 +36,7 @@ This project uses [pre-commit](https://pre-commit.com/) to automatically check c
 pip install pre-commit
 pre-commit install
 ```
+Run this command once after cloning (and again if `.pre-commit-config.yaml` changes) to ensure the hooks run.
 
 ### What gets checked:
 
@@ -128,6 +129,11 @@ pytest --cov=. --cov-report=xml --cov-fail-under=90
 ```
 
 All linters and tests must pass locally before submitting a PR.
+
+The CI pipeline also runs `prettier --check`, `npm run lint`, and `flake8`.
+Coverage thresholds are enforced: `pytest --cov-fail-under=90` and
+`vitest --coverage.v8 --coverage-threshold=90`. Coverage artifacts are uploaded
+only when these checks succeed.
 
 ---
 

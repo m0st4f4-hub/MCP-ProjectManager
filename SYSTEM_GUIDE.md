@@ -253,6 +253,32 @@ npm run build
 npm start
 ```
 
+## 🛠 MCP Tool Routes
+
+The backend exposes several `/mcp-tools/` routes that the MCP server registers as agent tools. When `FastApiMCP` mounts in `backend/main.py`, these endpoints become callable via the MCP server. Agents can invoke them using the tool names shown in the table below.
+
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/mcp-tools/project/create` | `POST` | Create a new project |
+| `/mcp-tools/task/create` | `POST` | Create a new task |
+| `/mcp-tools/projects/list` | `GET` | List projects |
+| `/mcp-tools/tasks/list` | `GET` | List tasks with optional filters |
+| `/mcp-tools/task/update` | `POST` | Update an existing task |
+| `/mcp-tools/task/delete` | `POST` | Delete a task |
+| `/mcp-tools/project/add-file` | `POST` | Attach a memory entity file to a project |
+| `/mcp-tools/project/file/list` | `GET` | List files associated with a project |
+| `/mcp-tools/project/remove-file` | `POST` | Remove a file association from a project |
+| `/mcp-tools/memory/add-entity` | `POST` | Add a new memory entity |
+| `/mcp-tools/memory/update-entity` | `POST` | Update a memory entity |
+| `/mcp-tools/memory/add-observation` | `POST` | Add an observation to a memory entity |
+| `/mcp-tools/memory/add-relation` | `POST` | Create a relation between memory entities |
+| `/mcp-tools/memory/search` | `GET` | Search memory entities |
+| `/mcp-tools/memory/get-content` | `GET` | Retrieve stored file content |
+| `/mcp-tools/memory/get-metadata` | `GET` | Retrieve memory entity metadata |
+| `/mcp-tools/list` | `GET` | List all available MCP tools |
+
+Agents call these tools through the MCP server using syntax like `mcp.create_project_tool(...)`. Refer to `/mcp-docs` for a live listing of registered tools and routes.
+
 ---
 
 **🏗️ Built by The Builder** - Dedicated to continuous improvement and evolution of the task-manager repository.

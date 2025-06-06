@@ -5,25 +5,24 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import logging
 
-from ....database import get_db
-from ....services.project_service import ProjectService
-from ....services.audit_log_service import AuditLogService
+from ...database import get_db
+from ...services.project_service import ProjectService
+from ...services.audit_log_service import AuditLogService
 # Import specific schema classes from their files
-from ....schemas.project import Project, ProjectCreate, ProjectUpdate
+from ...schemas.project import Project, ProjectCreate, ProjectUpdate
 # Import standardized API response models
-from ....schemas.api_responses import (
+from ...schemas.api_responses import (
     DataResponse,
     ListResponse,
+    ErrorResponse,
 )
 # Import service exceptions
-from ....services.exceptions import (
+from ...services.exceptions import (
     EntityNotFoundError,
-    DuplicateEntityError,
-    ValidationError  # Import auth dependencies and UserRoleEnum
 )
-from ....auth import get_current_active_user, RoleChecker
-from ....enums import UserRoleEnum
-from ....models import User as UserModel  # For type hinting current_user
+from ...auth import get_current_active_user, RoleChecker
+from ...enums import UserRoleEnum
+from ...models import User as UserModel  # For type hinting current_user
 
 
 router = APIRouter(
@@ -47,6 +46,12 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
     summary="Create Project",
     operation_id="create_project",
     dependencies=[Depends(RoleChecker([UserRoleEnum.ADMIN, UserRoleEnum.MANAGER]))],
+    responses={
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        409: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
 )  # Allow ADMIN and MANAGER
 async def create_project(
     project: ProjectCreate,
@@ -80,18 +85,9 @@ async def create_project(
             data=project_data,
             message="Project created successfully"
         )
-    except DuplicateEntityError as e:  # Convert to FastAPI HTTPException
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
-    except ValidationError as e:  # Convert to FastAPI HTTPException
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except EntityNotFoundError as e:  # This could happen if template_id is invalid
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:  # Log unexpected errors
-        logging.error(f"Error in create_project: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating project: {str(e)}"
-        )
+    except Exception as e:  # Allow global handlers to manage errors
+        logging.error(f"Error in create_project: {e}")
+        raise
 
 
 @router.get(
@@ -155,6 +151,10 @@ async def get_project_list(
     response_model=DataResponse[Project],
     summary="Get Project by ID",
     operation_id="get_project_by_id",
+    responses={
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
 )
 async def get_project_by_id_endpoint(
     project_id: str,
@@ -199,6 +199,13 @@ async def get_project_by_id_endpoint(
     response_model=DataResponse[Project],
     summary="Update Project",
     operation_id="update_project_by_id",
+    responses={
+        400: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        409: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
 )
 async def update_project(
     project_id: str,
@@ -238,18 +245,9 @@ async def update_project(
             data=Project.model_validate(db_project),
             message="Project updated successfully"
         )
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except DuplicateEntityError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
-    except ValidationError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         logging.error(f"Unexpected error in PUT /projects/{project_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal server error: {str(e)}",
-        )
+        raise
 
 
 @router
@@ -257,6 +255,10 @@ async def update_project(
     response_model=DataResponse[bool],
     summary="Delete Project",
     operation_id="delete_project_by_id",
+    responses={
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
 )
 async def delete_project(
     project_id: str,
@@ -272,14 +274,9 @@ async def delete_project(
             data=True,
             message="Project deleted successfully"
         )
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logging.error(f"Unexpected error in DELETE /projects/{project_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal server error: {str(e)}",
-        )
+        raise
 
 
 @router.post(
@@ -287,6 +284,10 @@ async def delete_project(
     response_model=DataResponse[Project],
     summary="Archive Project",
     operation_id="archive_project",
+    responses={
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
 )
 async def archive_project(
     project_id: str,
@@ -309,16 +310,11 @@ async def archive_project(
             data=Project.model_validate(db_project),
             message="Project archived successfully"
         )
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logging.error(
             f"Unexpected error in POST /projects/{project_id}/archive: {e}"
         )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal server error: {str(e)}",
-        )
+        raise
 
 
 @router.post(
@@ -326,6 +322,10 @@ async def archive_project(
     response_model=DataResponse[Project],
     summary="Unarchive Project",
     operation_id="unarchive_project",
+    responses={
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
 )
 async def unarchive_project(
     project_id: str,
@@ -348,13 +348,8 @@ async def unarchive_project(
             data=Project.model_validate(db_project),
             message="Project unarchived successfully"
         )
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         logging.error(
             f"Unexpected error in POST /projects/{project_id}/unarchive: {e}"
         )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal server error: {str(e)}",
-        )
+        raise

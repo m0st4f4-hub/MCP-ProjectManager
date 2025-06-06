@@ -23,6 +23,7 @@ export const API_CONFIG = {
     MCP_EVENTS: "/mcp/events",
     ENUMS: "/enums",
     VERIFICATION_REQUIREMENTS: "/verification-requirements",
+    STATUS_TRANSITIONS: "/status-transitions",
   },
 } as const;
 

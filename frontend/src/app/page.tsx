@@ -19,6 +19,7 @@ import AgentList from "@/components/AgentList";
 import { useTaskStore } from "@/store/taskStore";
 import { useProjectStore } from "@/store/projectStore";
 import { useAgentStore } from "../store/agentStore";
+import { useAuthStore } from "../store/authStore";
 import { createProject, createAgent } from "../services/api";
 import { ProjectCreateData } from "../types/project";
 import Dashboard from "../components/Dashboard";
@@ -34,6 +35,7 @@ import AddAgentModal from "../components/modals/AddAgentModal";
 import DevToolsDrawer from "../components/modals/DevToolsDrawer";
 import FilterPanel from "../components/common/FilterPanel";
 import AppIcon from "../components/common/AppIcon";
+import UserRolesPage from "./user-roles/page";
 
 import type { TaskState } from "../store/taskStore";
 import type { ProjectState } from "../store/projectStore";
@@ -154,6 +156,8 @@ export default function Home() {
         return <ProjectList />;
       case "Registry":
         return <AgentList />;
+      case "User Roles":
+        return <UserRolesPage />;
       case "Settings":
         return <SettingsContent />;
       default:
@@ -166,6 +170,7 @@ export default function Home() {
     { view: "Workboard", label: "Workboard", icon: <EditIcon /> },
     { view: "Portfolio", label: "Portfolio", icon: <SearchIcon /> },
     { view: "Registry", label: "Registry", icon: <TimeIcon /> },
+    { view: "User Roles", label: "User Roles", icon: <ViewIcon /> },
   ];
 
   const actionNavItems = [
@@ -216,6 +221,12 @@ export default function Home() {
       label: "Dev Tools",
       icon: <SettingsIcon />,
       action: onOpenDevTools,
+    },
+    {
+      id: "logout",
+      label: "Logout",
+      icon: <AppIcon name="logout" />,
+      action: () => useAuthStore.getState().logout(),
     },
   ];
 

@@ -1,28 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Box, Heading, Spinner, Text, VStack } from "@chakra-ui/react";
-import { memoryApi } from "@/services/api";
 import type { MemoryEntity } from "@/types/memory";
+import { useListMemory } from "@/hooks/useMemory";
 
 const MemoryViewer: React.FC = () => {
-  const [entities, setEntities] = useState<MemoryEntity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchEntities = async () => {
-      try {
-        const resp = await memoryApi.listEntities({ skip: 0, limit: 20 });
-        setEntities(resp.data);
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEntities();
-  }, []);
+  const { entities, loading, error } = useListMemory({ skip: 0, limit: 20 });
 
   return (
     <Box>

@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Run setup script
+        run: bash scripts/setup.sh
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -32,16 +35,43 @@ jobs:
 
       - name: Lint
         run: |
+          set -o pipefail
           cd backend
-          flake8 .
+          flake8 . | tee flake8.log
+
+      - name: Upload flake8 log
+        uses: actions/upload-artifact@v4
+        with:
+          name: flake8-output
+          path: backend/flake8.log
 
       - name: Test with coverage
         run: |
           cd backend
           pytest --cov=. --cov-report=xml --cov-fail-under=90
+<<<<<<< HEAD
 
       - name: Upload Python coverage artifact
         if: success()
+=======
+
+      - name: Generate OpenAPI schema
+        run: |
+          python scripts/update_openapi.py
+
+      - name: Ensure OpenAPI schema is committed
+        run: git diff --exit-code backend/openapi.json
+
+      - name: Generate OpenAPI schema
+        run: |
+          python scripts/update_openapi.py
+
+      - name: Ensure OpenAPI schema is committed
+        run: git diff --exit-code backend/openapi.json
+
+      - name: Upload Python coverage artifact
+        if: ${{ success() }}
+>>>>>>> 7d90ed314aa8c0192581c08560c32b47c0d84736
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage
@@ -52,12 +82,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Run setup script
+        run: bash scripts/setup.sh
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
+
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
       - name: Install dependencies
         run: |
@@ -66,7 +107,12 @@ jobs:
 
       - name: Prettier check
         run: |
+<<<<<<< HEAD
           npx prettier --check .
+=======
+          cd frontend
+          npx prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,md}"
+>>>>>>> 7d90ed314aa8c0192581c08560c32b47c0d84736
 
       - name: Lint
         run: |
@@ -78,13 +124,30 @@ jobs:
           cd frontend
           npm run type-check
 
+      - name: Integration tests
+        run: |
+          cd frontend
+          npm run test:integration
+
       - name: Test with coverage
         run: |
           cd frontend
+<<<<<<< HEAD
           npx vitest run --coverage.v8 --coverage-threshold=90
 
       - name: Upload frontend coverage artifact
         if: success()
+=======
+          npx vitest --coverage.v8 --coverage-threshold=90
+
+      - name: Run frontend test suite
+        run: |
+          cd frontend
+          npm run test:all
+
+      - name: Upload frontend coverage artifact
+        if: ${{ success() }}
+>>>>>>> 7d90ed314aa8c0192581c08560c32b47c0d84736
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage

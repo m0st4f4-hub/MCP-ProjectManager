@@ -52,6 +52,7 @@ const standardIcons: Record<string, React.ElementType> = {
   arrowup: ArrowUpIcon,
   settings: SettingsIcon,
   close: CloseIcon,
+  logout: ViewOffIcon,
   filter: SettingsIcon,
   title: ChatIcon,
   description: InfoOutlineIcon,

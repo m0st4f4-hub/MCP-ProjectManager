@@ -2,13 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
   Select,
   Button,
   Flex,
@@ -17,6 +10,7 @@ import { getUsers } from '@/services/api/users';
 import { userRolesApi } from '@/services/api/user_roles';
 import { User, UserRole } from '@/types/user';
 import { handleApiError } from '@/lib/apiErrorHandler';
+import DataTable, { Column, Action } from '@/components/common/DataTable';
 
 const UserRolesPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -65,72 +59,68 @@ const UserRolesPage: React.FC = () => {
     }
   };
 
+  const columns: Column<User>[] = [
+    { header: 'Username', accessor: 'username' },
+    {
+      header: 'Roles',
+      accessor: (u) => (
+        <Flex wrap="wrap" gap="2">
+          {u.user_roles.map((r) => (
+            <Button
+              key={r.role_name}
+              size="xs"
+              onClick={() => handleRemove(u.id, r.role_name)}
+              data-testid={`remove-${u.id}-${r.role_name}`}
+            >
+              {r.role_name} ✕
+            </Button>
+          ))}
+        </Flex>
+      ),
+    },
+  ];
+
+  const actions: Action<User>[] = [
+    {
+      label: 'assign',
+      render: (u) => (
+        <Flex>
+          <Select
+            size="sm"
+            value={selectedRoles[u.id] || ''}
+            onChange={(e) =>
+              setSelectedRoles((prev) => ({
+                ...prev,
+                [u.id]: e.target.value as UserRole,
+              }))
+            }
+            placeholder="Select role"
+            mr="2"
+            data-testid={`select-${u.id}`}
+          >
+            {Object.values(UserRole).map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </Select>
+          <Button
+            size="sm"
+            onClick={() => handleAssign(u.id)}
+            isDisabled={!selectedRoles[u.id]}
+            isLoading={loading}
+            data-testid={`assign-${u.id}`}
+          >
+            Add
+          </Button>
+        </Flex>
+      ),
+    },
+  ];
+
   return (
     <Box p="4">
-      <TableContainer>
-        <Table variant="simple" size="sm">
-          <Thead>
-            <Tr>
-              <Th>Username</Th>
-              <Th>Roles</Th>
-              <Th>Assign Role</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {users.map((u) => (
-              <Tr key={u.id} data-testid="user-row">
-                <Td>{u.username}</Td>
-                <Td>
-                  <Flex wrap="wrap" gap="2">
-                    {u.user_roles.map((r) => (
-                      <Button
-                        key={r.role_name}
-                        size="xs"
-                        onClick={() => handleRemove(u.id, r.role_name)}
-                        data-testid={`remove-${u.id}-${r.role_name}`}
-                      >
-                        {r.role_name} ✕
-                      </Button>
-                    ))}
-                  </Flex>
-                </Td>
-                <Td>
-                  <Flex>
-                    <Select
-                      size="sm"
-                      value={selectedRoles[u.id] || ''}
-                      onChange={(e) =>
-                        setSelectedRoles((prev) => ({
-                          ...prev,
-                          [u.id]: e.target.value as UserRole,
-                        }))
-                      }
-                      placeholder="Select role"
-                      mr="2"
-                      data-testid={`select-${u.id}`}
-                    >
-                      {Object.values(UserRole).map((r) => (
-                        <option key={r} value={r}>
-                          {r}
-                        </option>
-                      ))}
-                    </Select>
-                    <Button
-                      size="sm"
-                      onClick={() => handleAssign(u.id)}
-                      isDisabled={!selectedRoles[u.id]}
-                      isLoading={loading}
-                      data-testid={`assign-${u.id}`}
-                    >
-                      Add
-                    </Button>
-                  </Flex>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
+      <DataTable data={users} columns={columns} actions={actions} />
     </Box>
   );
 };

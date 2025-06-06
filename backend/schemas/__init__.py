@@ -33,6 +33,7 @@ from .user import (
     User,
     UserRoleBase,
     UserRoleCreate,
+    UserRoleUpdate,
     UserRole,
 )
 
@@ -94,6 +95,11 @@ from .agent_error_protocol import (
     AgentErrorProtocolCreate,
     AgentErrorProtocolUpdate,
     AgentErrorProtocol,
+)
+from .agent_verification_requirement import (
+    AgentVerificationRequirementBase,
+    AgentVerificationRequirementCreate,
+    AgentVerificationRequirement,
 )
 from .file_ingest import FileIngestInput
 

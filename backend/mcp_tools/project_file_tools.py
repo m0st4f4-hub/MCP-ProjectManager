@@ -43,7 +43,7 @@ async def list_project_files_tool(
     """List files associated with a project."""
     try:
         service = _get_service(db)
-        files = service.get_files_for_project(project_id, skip=skip, limit=limit)
+        files = await service.get_project_files(project_id, skip=skip, limit=limit)
         return {
             "success": True,
             "files": [
