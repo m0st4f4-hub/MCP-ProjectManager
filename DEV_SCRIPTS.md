@@ -27,11 +27,24 @@ frontend or manage the full stack.
   python run_backend.py
   ```
 
+## `init_backend.sh` / `init_backend.ps1`
+- **Purpose:** Initialize the backend Python environment.
+- **What it does:**
+  - Creates `backend/.venv` if it does not exist.
+  - Installs Python requirements from `backend/requirements.txt`.
+  - Applies Alembic migrations (`alembic upgrade head`).
+- **Usage:**
+  ```bash
+  ./init_backend.sh          # macOS/Linux
+  # or
+  powershell ./init_backend.ps1  # Windows
+  ```
+
 ## `start_system.py`
 - **Purpose:** Set up and start the entire development system.
 - **What it does:**
   - Checks the project structure for `backend/` and `frontend/`.
-  - Creates the Python virtual environment and installs core packages if needed.
+  - Creates the Python virtual environment and installs requirements (via `init_backend.sh`) if needed.
   - Installs Node.js dependencies in the frontend.
   - Initializes the SQLite database if it does not exist.
   - Starts both backend and frontend servers and monitors them.

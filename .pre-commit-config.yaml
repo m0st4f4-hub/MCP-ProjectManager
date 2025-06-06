@@ -40,4 +40,8 @@ repos:
         name: Lint staged files
         entry: npx lint-staged
         language: system
+<<<<<<< HEAD
         pass_filenames: false
+=======
+        pass_filenames: false
+>>>>>>> origin/codex/add-lint-staged-config-and-update-workflows

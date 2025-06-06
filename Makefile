@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 .PHONY: setup-backend setup-frontend test lint dev migrate format
+=======
+.PHONY: setup-backend setup-frontend setup test lint dev
+>>>>>>> origin/codex/add-setup-helper-for-environment-and-migrations
 
 setup-backend:
 	python -m venv backend/.venv
@@ -20,6 +24,7 @@ lint:
 	cd frontend && npm run lint
 
 dev:
+<<<<<<< HEAD
 	python start_system.py
 
 migrate:
@@ -28,3 +33,9 @@ migrate:
 format:
 	cd backend && ../backend/.venv/bin/python comprehensive_flake8_fixer.py
 	cd frontend && npm run format
+=======
+        python start_system.py
+
+setup:
+        bash init_backend.sh
+>>>>>>> origin/codex/add-setup-helper-for-environment-and-migrations

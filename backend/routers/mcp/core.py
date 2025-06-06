@@ -9,6 +9,7 @@ Provides MCP tool definitions.
 """
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 import json
@@ -21,10 +22,17 @@ from collections import defaultdict
 import asyncio
 =======
 from fastapi import APIRouter, Depends, HTTPException, Query
+=======
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+>>>>>>> origin/codex/add-in-memory-counters-and-expose-metrics
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Dict
 import logging
+<<<<<<< HEAD
 >>>>>>> origin/codex/add-and-register-template_tools-functions
+=======
+from collections import defaultdict
+>>>>>>> origin/codex/add-in-memory-counters-and-expose-metrics
 
 from ....database import get_sync_db as get_db
 from ....services.project_service import ProjectService
@@ -82,6 +90,7 @@ from .... import models
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
 
+<<<<<<< HEAD
 # In-memory counters for tool usage
 tool_counters: Dict[str, int] = defaultdict(int)
 
@@ -118,6 +127,30 @@ async def mcp_tools_stream(request: Request):
             publisher.unsubscribe(queue)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+=======
+# In-memory counters for MCP tool invocations
+tool_counters: Dict[str, int] = defaultdict(int)
+
+
+@router.middleware("http")
+async def count_tool_usage(request: Request, call_next):
+    """Middleware to count MCP tool invocations."""
+    path = request.url.path
+    # Remove router prefix if present
+    if path.startswith("/api/mcp/"):
+        sub_path = path[len("/api/mcp/"):]
+    else:
+        sub_path = path.lstrip("/")
+
+    if sub_path.startswith("mcp-tools/") and not sub_path.startswith(
+        "mcp-tools/metrics"
+    ):
+        tool_name = sub_path[len("mcp-tools/"):]
+        tool_counters[tool_name] += 1
+
+    response = await call_next(request)
+    return response
+>>>>>>> origin/codex/add-in-memory-counters-and-expose-metrics
 
 
 def get_db_session():
@@ -965,8 +998,42 @@ async def mcp_search_memory(
     tags=["mcp-tools"],
     operation_id="search_graph_tool",
 )
+<<<<<<< HEAD
 @track_tool_usage("search_graph_tool")
 async def mcp_search_graph(
+=======
+async def mcp_search_graph(  # noqa: F811
+    query: str,
+    limit: int = 10,
+    memory_service: MemoryService = Depends(get_memory_service),
+):
+    """MCP Tool: Search memory graph."""
+    try:
+        results = memory_service.search_memory_entities(query, limit=limit)
+        return {
+            "success": True,
+            "results": [
+                {
+                    "id": r.id,
+                    "type": r.type,
+                    "name": r.name,
+                    "description": r.description,
+                }
+                for r in results
+            ],
+        }
+    except Exception as e:
+        logger.error(f"MCP search graph failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get(
+    "/mcp-tools/memory/search-graph",
+    tags=["mcp-tools"],
+    operation_id="search_graph_tool",
+)
+async def mcp_search_graph(  # noqa: F811
+>>>>>>> origin/codex/add-in-memory-counters-and-expose-metrics
     query: str,
     limit: int = 10,
     memory_service: MemoryService = Depends(get_memory_service),
@@ -1073,6 +1140,16 @@ async def mcp_list_tools():
                 "description": description,
             })
     return {"success": True, "tools": tools}
+
+
+@router.get(
+    "/mcp-tools/metrics",
+    tags=["mcp-tools"],
+    operation_id="mcp_tools_metrics",
+)
+async def mcp_tools_metrics():
+    """Return invocation counts for each MCP tool."""
+    return {"success": True, "metrics": dict(tool_counters)}
 
 
 @router.post(

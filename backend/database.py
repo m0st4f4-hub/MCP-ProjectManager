@@ -29,11 +29,36 @@ DATABASE_URL = os.environ.get(
 # For sync operations, convert the async URL to sync
 SYNC_DATABASE_URL = DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite:///")
 
-# Create an async SQLAlchemy engine
-engine = create_async_engine(DATABASE_URL, echo=False)
+# Connection pool settings
+POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "5"))
+MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", "10"))
+POOL_TIMEOUT = int(os.getenv("DB_POOL_TIMEOUT", "30"))
+POOL_RECYCLE = int(os.getenv("DB_POOL_RECYCLE", "1800"))
+PRE_PING = os.getenv("DB_POOL_PRE_PING", "true").lower() in {"1", "true", "yes"}
 
-# Create a sync SQLAlchemy engine
-sync_engine = create_engine(SYNC_DATABASE_URL, echo=False)
+# Create SQLAlchemy engines with pooling for non-SQLite databases
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_async_engine(DATABASE_URL, echo=False, pool_pre_ping=PRE_PING)
+    sync_engine = create_engine(SYNC_DATABASE_URL, echo=False, pool_pre_ping=PRE_PING)
+else:
+    engine = create_async_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_size=POOL_SIZE,
+        max_overflow=MAX_OVERFLOW,
+        pool_timeout=POOL_TIMEOUT,
+        pool_recycle=POOL_RECYCLE,
+        pool_pre_ping=PRE_PING,
+    )
+    sync_engine = create_engine(
+        SYNC_DATABASE_URL,
+        echo=False,
+        pool_size=POOL_SIZE,
+        max_overflow=MAX_OVERFLOW,
+        pool_timeout=POOL_TIMEOUT,
+        pool_recycle=POOL_RECYCLE,
+        pool_pre_ping=PRE_PING,
+    )
 
 # Create an async sessionmaker
 AsyncSessionLocal = async_sessionmaker(

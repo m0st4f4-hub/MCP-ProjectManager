@@ -186,6 +186,7 @@ export interface MCPToolInfo {
   example?: Record<string, any>;
 }
 
+<<<<<<< HEAD
 // --- Metrics Response ---
 export interface MetricsResponse {
   metrics: Record<string, number>;
@@ -202,3 +203,8 @@ export const mcpRuleMandateCreateRequestSchema = z.object({
 export type MCPRuleMandateCreateRequest = z.infer<
   typeof mcpRuleMandateCreateRequestSchema
 >;
+=======
+export interface MCPToolMetrics {
+  [tool: string]: number;
+}
+>>>>>>> origin/codex/add-in-memory-counters-and-expose-metrics
