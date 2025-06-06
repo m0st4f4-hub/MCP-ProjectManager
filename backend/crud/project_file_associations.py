@@ -37,14 +37,20 @@ async def get_project_file_association(db: AsyncSession, project_id: str, file_m
     return association
 
 
-async def get_project_files(db: AsyncSession, project_id: str, skip: int = 0, limit: int = 100) -> List[ProjectFileAssociation]:
+async def get_project_files(
+    db: AsyncSession,
+    project_id: str,
+    skip: int = 0,
+    limit: Optional[int] = 100,
+) -> List[ProjectFileAssociation]:
     """Get all files associated with a project."""
     logger.debug(f"[DEBUG] get_project_files called with project_id: {project_id}, skip: {skip}, limit: {limit}")  # Debug print
-    result = await db.execute(
-    select(ProjectFileAssociation).filter(
-    ProjectFileAssociation.project_id == project_id
-    ).offset(skip).limit(limit)
-    )
+    query = select(ProjectFileAssociation).filter(
+        ProjectFileAssociation.project_id == project_id
+    ).offset(skip)
+    if limit is not None:
+        query = query.limit(limit)
+    result = await db.execute(query)
     files = result.scalars().all()
     logger.debug(f"[DEBUG] get_project_files returned {len(files)} files")  # Debug print
     return files
