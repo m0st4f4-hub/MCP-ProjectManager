@@ -31,6 +31,20 @@ export const updateRelation = async (
   return response.data;
 };
 
+export const updateRelation = async (
+  relationId: number,
+  data: MemoryRelationUpdateData
+): Promise<MemoryRelation> => {
+  const response = await request<{ data: MemoryRelation }>(
+    buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
+    {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }
+  );
+  return response.data;
+};
+
 // --- Memory Entity APIs ---
 export const memoryApi = {
   // Create a new memory entity
