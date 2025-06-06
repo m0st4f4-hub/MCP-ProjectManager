@@ -1,6 +1,3 @@
-Here is the fully merged and finalized version of the `CONTRIBUTING.md` file, incorporating the `update-readmes` script section into the comprehensive contribution guide:
-
-```markdown
 # Contributing Guide
 
 Thank you for taking the time to contribute to **MCP Project Manager**! This project follows several conventions to ensure a clean, reliable, and collaborative development process.
@@ -141,6 +138,3 @@ only when these checks succeed.
 
 Your contributions help make this project better.
 Whether it's fixing a bug, improving documentation, or adding a new feature—we appreciate your effort.
-
-```
-```
