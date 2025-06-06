@@ -2,8 +2,12 @@
 import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from 'react';
-import { getProjectMembers } from '@/services/api/projects';
-import { mcpApi } from '@/services/api/mcp';
+import {
+  getProjectMembers,
+  addMemberToProject,
+  removeMemberFromProject,
+} from '@/services/projects';
+import { useToast } from '@chakra-ui/react';
 import { ProjectMember, ProjectMemberRole } from '@/types/project';
 
 interface ProjectMembersProps {
@@ -11,6 +15,7 @@ interface ProjectMembersProps {
 }
 
 const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
+  const toast = useToast();
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,23 +43,60 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
     if (!newMemberUserId || !newMemberRole) return;
 
     try {
-      await mcpApi.projectMember.add({ project_id: projectId, user_id: newMemberUserId, role: newMemberRole as ProjectMemberRole });
+      await addMemberToProject(projectId, {
+        user_id: newMemberUserId,
+        role: newMemberRole as ProjectMemberRole,
+      });
       setNewMemberUserId('');
       setNewMemberRole('');
-      fetchMembers(); // Refresh the list
+      toast({
+        title: 'Member added',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      fetchMembers();
     } catch (err) {
+<<<<<<< HEAD
       alert('Failed to add member');
       logger.error(err);
+=======
+      toast({
+        title: 'Failed to add member',
+        description: err instanceof Error ? err.message : String(err),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      console.error(err);
+>>>>>>> codex/add-api-calls-in-projects.ts
     }
   };
 
   const handleRemoveMember = async (userId: string) => {
     try {
-      await mcpApi.projectMember.remove({ project_id: projectId, user_id: userId });
-      fetchMembers(); // Refresh the list
+      await removeMemberFromProject(projectId, userId);
+      toast({
+        title: 'Member removed',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      fetchMembers();
     } catch (err) {
+<<<<<<< HEAD
       alert('Failed to remove member');
       logger.error(err);
+=======
+      toast({
+        title: 'Failed to remove member',
+        description: err instanceof Error ? err.message : String(err),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      console.error(err);
+>>>>>>> codex/add-api-calls-in-projects.ts
     }
   };
 

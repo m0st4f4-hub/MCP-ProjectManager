@@ -11,6 +11,7 @@ import ProjectFiles from './ProjectFiles';
 import { getAllTasksForProject } from '@/services/api/tasks';
 import { Task } from '@/types/task';
 import TaskItem from '@/components/task/TaskItem';
+import { useToast } from '@chakra-ui/react';
 
 const ProjectDetail: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -22,6 +23,7 @@ const ProjectDetail: React.FC = () => {
   const [planningPrompt, setPlanningPrompt] = useState<string | null>(null);
   const [planningLoading, setPlanningLoading] = useState(false);
   const [planningError, setPlanningError] = useState<string | null>(null);
+  const toast = useToast();
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tasksLoading, setTasksLoading] = useState(true);
@@ -63,10 +65,21 @@ const ProjectDetail: React.FC = () => {
     if (confirm('Are you sure you want to delete this project?')) {
       try {
         await deleteProject(project.id);
-        alert('Project deleted successfully!');
+        toast({
+          title: 'Project deleted',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
         router.push('/projects');
       } catch (err) {
-        alert('Failed to delete project');
+        toast({
+          title: 'Failed to delete project',
+          description: err instanceof Error ? err.message : String(err),
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
         logger.error(err);
       }
     }
@@ -76,10 +89,10 @@ const ProjectDetail: React.FC = () => {
     if (!project) return;
     try {
       await archiveProject(project.id);
-      alert('Project archived successfully!');
+      toast({ title: 'Project archived', status: 'success', duration: 3000, isClosable: true });
       fetchProject();
     } catch (err) {
-      alert('Failed to archive project');
+      toast({ title: 'Failed to archive project', description: err instanceof Error ? err.message : String(err), status: 'error', duration: 5000, isClosable: true });
       logger.error(err);
     }
   };
@@ -88,10 +101,10 @@ const ProjectDetail: React.FC = () => {
     if (!project) return;
     try {
       await unarchiveProject(project.id);
-      alert('Project unarchived successfully!');
+      toast({ title: 'Project unarchived', status: 'success', duration: 3000, isClosable: true });
       fetchProject();
     } catch (err) {
-      alert('Failed to unarchive project');
+      toast({ title: 'Failed to unarchive project', description: err instanceof Error ? err.message : String(err), status: 'error', duration: 5000, isClosable: true });
       logger.error(err);
     }
   };
