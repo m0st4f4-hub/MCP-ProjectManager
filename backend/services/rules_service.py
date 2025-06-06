@@ -196,10 +196,6 @@ def delete_prompt_template(self, template_id: str) -> bool:
     """Delete an agent prompt template by ID."""
     return crud_rules.delete_agent_prompt_template(self.db, template_id)
 
-def delete_universal_mandate(self, mandate_id: str) -> bool:
-    """Delete a universal mandate by ID."""
-    return crud_rules.delete_universal_mandate(self.db, mandate_id)
-
 def initialize_default_rules(self):
         """Initialize default rules for the system"""
         self._create_universal_mandates()
@@ -249,67 +245,254 @@ def _create_universal_mandates(self):
 def _create_default_agent_roles(self):
         """Create default agent roles"""
         from ..schemas.agent_role import AgentRoleCreate
+        from ..schemas.agent_capability import AgentCapabilityCreate
+        from ..schemas.handoff_criteria import HandoffCriteriaCreate
+        from ..schemas.verification_requirement import VerificationRequirementCreate
+        from ..schemas.error_protocol import ErrorProtocolCreate
 
         default_roles = [
             {
                 "name": "ProjectManager",
                 "display_name": "Project Manager",
-                "primary_purpose": "Orchestrates project workflows, manages tasks, ensures validation, and handles anomalies",
+                "primary_purpose": "Orchestrates and manages agent workflows, decomposes goals into tasks, and ensures successful project completion.",
+                "is_active": True,
                 "capabilities": [
-                    "Task creation and assignment",
-                    "Workflow orchestration",
-                    "Strategic planning",
-                    "Progress monitoring"
+                    {"capability": "task_decomposition", "description": "Decomposes high-level goals into sub-tasks.", "is_active": True},
+                    {"capability": "task_assignment", "description": "Assigns tasks to appropriate agents.", "is_active": True},
+                    {"capability": "progress_monitoring", "description": "Monitors task status and progress.", "is_active": True},
+                    {"capability": "anomaly_resolution", "description": "Identifies and resolves workflow anomalies.", "is_active": True},
+                    {"capability": "workflow_orchestration", "description": "Orchestrates multi-agent workflows.", "is_active": True},
                 ],
-                "forbidden_actions": [
-                    "Direct code implementation",
-                    "Bypassing verification protocols"
+                "handoff_criteria": [
+                    {"criteria": "task_completed", "description": "Task successfully completed.", "target_agent_role": "ProjectManager", "is_active": True},
+                    {"criteria": "task_blocked", "description": "Task encountered an unresolvable block.", "target_agent_role": "ProjectManager", "is_active": True},
+                ],
+                "verification_requirements": [
+                    {"requirement": "all_subtasks_verified", "description": "Ensures all delegated subtasks have been verified.", "is_mandatory": True},
+                ],
+                "error_protocols": [
+                    {"error_type": "default", "protocol": "Log error, attempt recovery, escalate to ProjectManager if unrecoverable.", "is_active": True},
                 ]
             },
             {
                 "name": "ImplementationSpecialist",
                 "display_name": "Implementation Specialist",
-                "primary_purpose": "Implements code modifications, feature development, and fixes, producing tested and functional code artifacts",
+                "primary_purpose": "Implements code changes/fixes, verifies outputs, and reports to ProjectManager.",
+                "is_active": True,
                 "capabilities": [
-                    "Code implementation",
-                    "Feature development",
-                    "Bug fixes",
-                    "Unit testing"
+                    {"capability": "code_implementation", "description": "Implements code changes and fixes.", "is_active": True},
+                    {"capability": "unit_testing", "description": "Writes and runs unit tests.", "is_active": True},
+                    {"capability": "linting", "description": "Performs code linting and formatting.", "is_active": True},
                 ],
-                "forbidden_actions": [
-                    "Modifying project requirements",
-                    "Deploying to production without validation"
+                "handoff_criteria": [
+                    {"criteria": "code_implemented_and_verified", "description": "Code changes are implemented and verified locally.", "target_agent_role": "ProjectManager", "is_active": True},
+                ],
+                "verification_requirements": [
+                    {"requirement": "all_tests_pass", "description": "All relevant tests must pass after changes.", "is_mandatory": True},
+                    {"requirement": "code_lints_cleanly", "description": "Code must pass linting checks.", "is_mandatory": True},
+                ],
+                "error_protocols": [
+                    {"error_type": "default", "protocol": "Log error, provide detailed diagnosis, await ProjectManager guidance.", "is_active": True},
                 ]
             },
             {
                 "name": "InformationAnalyst",
                 "display_name": "Information Analyst",
-                "primary_purpose": "Analyzes files, code, web content, or other data based on MCP task requirements, producing structured reports",
+                "primary_purpose": "Performs read-only analysis of information sources and produces structured reports.",
+                "is_active": True,
                 "capabilities": [
-                    "Data analysis",
-                    "Report generation",
-                    "Code analysis",
-                    "Research"
+                    {"capability": "file_analysis", "description": "Analyzes content of specified files.", "is_active": True},
+                    {"capability": "code_analysis", "description": "Analyzes code structure and logic.", "is_active": True},
+                    {"capability": "web_research", "description": "Performs web searches for information.", "is_active": True},
+                    {"capability": "report_generation", "description": "Generates structured analysis reports.", "is_active": True},
                 ],
-                "forbidden_actions": [
-                    "Code modification",
-                    "Task assignment"
+                "handoff_criteria": [
+                    {"criteria": "analysis_complete", "description": "Information analysis is complete and reported.", "target_agent_role": "ProjectManager", "is_active": True},
+                ],
+                "verification_requirements": [
+                    {"requirement": "report_accuracy_verified", "description": "Ensures the accuracy and completeness of the analysis report.", "is_mandatory": True},
+                ],
+                "error_protocols": [
+                    {"error_type": "default", "protocol": "Log error, report data source issues, await ProjectManager guidance.", "is_active": True},
                 ]
-            }
+            },
+            {
+                "name": "DocumentationCurator",
+                "display_name": "Documentation Curator",
+                "primary_purpose": "Generates, updates, and verifies documentation (comments, READMEs, design docs).",
+                "is_active": True,
+                "capabilities": [
+                    {"capability": "documentation_generation", "description": "Generates new documentation.", "is_active": True},
+                    {"capability": "documentation_update", "description": "Updates existing documentation.", "is_active": True},
+                    {"capability": "documentation_verification", "description": "Verifies documentation for accuracy and style.", "is_active": True},
+                ],
+                "handoff_criteria": [
+                    {"criteria": "documentation_updated_and_verified", "description": "Documentation changes are made and verified.", "target_agent_role": "ProjectManager", "is_active": True},
+                ],
+                "verification_requirements": [
+                    {"requirement": "documentation_accuracy", "description": "Ensures documentation accurately reflects the system.", "is_mandatory": True},
+                    {"requirement": "style_guide_adherence", "description": "Ensures documentation adheres to specified style guides.", "is_mandatory": True},
+                ],
+                "error_protocols": [
+                    {"error_type": "default", "protocol": "Log error, report documentation issues, await ProjectManager guidance.", "is_active": True},
+                ]
+            },
+            {
+                "name": "ExecutionValidator",
+                "display_name": "Execution Validator",
+                "primary_purpose": "Executes commands (tests, builds, linters) and rigorously verifies their outputs.",
+                "is_active": True,
+                "capabilities": [
+                    {"capability": "command_execution", "description": "Executes specified terminal commands.", "is_active": True},
+                    {"capability": "output_verification", "description": "Verifies command outputs against expected results.", "is_active": True},
+                ],
+                "handoff_criteria": [
+                    {"criteria": "execution_verified", "description": "Command execution and verification are complete.", "target_agent_role": "ProjectManager", "is_active": True},
+                ],
+                "verification_requirements": [
+                    {"requirement": "exit_code_match", "description": "Ensures command exit codes match expectations.", "is_mandatory": True},
+                    {"requirement": "stdout_stderr_check", "description": "Checks command standard output and error for expected patterns.", "is_mandatory": True},
+                ],
+                "error_protocols": [
+                    {"error_type": "default", "protocol": "Log execution error, report results, await ProjectManager guidance.", "is_active": True},
+                ]
+            },
+            {
+                "name": "PresentationLayerSpecialist",
+                "display_name": "UI Implementation Specialist",
+                "primary_purpose": "Implements UI style and presentation code (HTML, CSS/SCSS, frontend JS/TS).",
+                "is_active": True,
+                "capabilities": [
+                    {"capability": "ui_implementation", "description": "Implements UI components and styles.", "is_active": True},
+                    {"capability": "responsive_design", "description": "Ensures responsive UI design.", "is_active": True},
+                    {"capability": "accessibility_compliance", "description": "Ensures UI accessibility (WCAG/ARIA) compliance.", "is_active": True},
+                ],
+                "handoff_criteria": [
+                    {"criteria": "ui_implemented_and_verified", "description": "UI changes are implemented and verified.", "target_agent_role": "ProjectManager", "is_active": True},
+                ],
+                "verification_requirements": [
+                    {"requirement": "visual_fidelity", "description": "Ensures UI matches design specifications.", "is_mandatory": True},
+                    {"requirement": "cross_browser_compatibility", "description": "Verifies UI functionality across different browsers.", "is_mandatory": False},
+                ],
+                "error_protocols": [
+                    {"error_type": "default", "protocol": "Log UI implementation error, provide screenshots/details, await ProjectManager guidance.", "is_active": True},
+                ]
+            },
+            {
+                "name": "CodeStructureSpecialist",
+                "display_name": "Code Structure Specialist",
+                "primary_purpose": "Refactors codebase structure and performance, strictly preserving external behavior.",
+                "is_active": True,
+                "capabilities": [
+                    {"capability": "code_refactoring", "description": "Refactors code to improve structure and maintainability.", "is_active": True},
+                    {"capability": "performance_optimization", "description": "Optimizes code for performance without changing external behavior.", "is_active": True},
+                ],
+                "handoff_criteria": [
+                    {"criteria": "code_refactored_and_verified", "description": "Code refactoring is complete and verified.", "target_agent_role": "ProjectManager", "is_active": True},
+                ],
+                "verification_requirements": [
+                    {"requirement": "external_behavior_preserved", "description": "Ensures refactoring does not alter external behavior.", "is_mandatory": True},
+                    {"requirement": "performance_metrics_stable", "description": "Confirms performance metrics are stable or improved after refactoring.", "is_mandatory": False},
+                ],
+                "error_protocols": [
+                    {"error_type": "default", "protocol": "Log refactoring error, provide code diffs, await ProjectManager guidance.", "is_active": True},
+                ]
+            },
+            {
+                "name": "MultimodalClassifier",
+                "display_name": "Multimodal Classifier",
+                "primary_purpose": "Classifies multimodal content (images, text, audio) using Desktop Commander tools.",
+                "is_active": True,
+                "capabilities": [
+                    {"capability": "image_classification", "description": "Classifies images.", "is_active": True},
+                    {"capability": "text_classification", "description": "Classifies text.", "is_active": True},
+                    {"capability": "audio_classification", "description": "Classifies audio.", "is_active": True},
+                ],
+                "handoff_criteria": [
+                    {"criteria": "classification_complete", "description": "Content classification is complete.", "target_agent_role": "ProjectManager", "is_active": True},
+                ],
+                "verification_requirements": [
+                    {"requirement": "confidence_score_provided", "description": "Ensures a confidence score is provided with classification results.", "is_mandatory": True},
+                ],
+                "error_protocols": [
+                    {"error_type": "default", "protocol": "Log classification error, report tool issues, await ProjectManager guidance.", "is_active": True},
+                ]
+            },
+            {
+                "name": "ImageManipulationSpecialist",
+                "display_name": "Image Manipulation Specialist",
+                "primary_purpose": "Performs image modifications (resize, crop, format conversion, simple edits) as specified in MCP tasks.",
+                "is_active": True,
+                "capabilities": [
+                    {"capability": "image_resize", "description": "Resizes images.", "is_active": True},
+                    {"capability": "image_crop", "description": "Crops images.", "is_active": True},
+                    {"capability": "format_conversion", "description": "Converts image formats.", "is_active": True},
+                ],
+                "handoff_criteria": [
+                    {"criteria": "image_manipulation_complete", "description": "Image manipulation is complete and verified.", "target_agent_role": "ProjectManager", "is_active": True},
+                ],
+                "verification_requirements": [
+                    {"requirement": "output_dimensions_match", "description": "Ensures output image dimensions match specifications.", "is_mandatory": True},
+                    {"requirement": "output_format_correct", "description": "Ensures output image format is correct.", "is_mandatory": True},
+                ],
+                "error_protocols": [
+                    {"error_type": "default", "protocol": "Log image manipulation error, provide image info, await ProjectManager guidance.", "is_active": True},
+                ]
+            },
+            {
+                "name": "SeedingAgent",
+                "display_name": "Seeding Agent",
+                "primary_purpose": "Initializes the rules system by creating directories and populating with core rule files.",
+                "is_active": True,
+                "capabilities": [
+                    {"capability": "directory_creation", "description": "Creates necessary directories.", "is_active": True},
+                    {"capability": "file_population", "description": "Populates directories with core rule files.", "is_active": True},
+                ],
+                "handoff_criteria": [
+                    {"criteria": "rules_seeded", "description": "Core rule files and directories are set up.", "target_agent_role": "ProjectManager", "is_active": True},
+                ],
+                "verification_requirements": [
+                    {"requirement": "all_files_present", "description": "Ensures all required rule files are present.", "is_mandatory": True},
+                    {"requirement": "directory_structure_correct", "description": "Ensures the directory structure is correctly initialized.", "is_mandatory": True},
+                ],
+                "error_protocols": [
+                    {"error_type": "default", "protocol": "Log seeding error, report file system issues, await ProjectManager guidance.", "is_active": True},
+                ]
+            },
+            {
+                "name": "UnitScaffoldingAgent",
+                "display_name": "Unit Scaffolding Agent",
+                "primary_purpose": "Generates new agent rule file templates (.mdcc) with standard structure and references.",
+                "is_active": True,
+                "capabilities": [
+                    {"capability": "template_generation", "description": "Generates new rule file templates.", "is_active": True},
+                    {"capability": "template_population", "description": "Populates templates with provided data.", "is_active": True},
+                ],
+                "handoff_criteria": [
+                    {"criteria": "template_generated", "description": "New rule file template generated and verified.", "target_agent_role": "ProjectManager", "is_active": True},
+                ],
+                "verification_requirements": [
+                    {"requirement": "template_structure_correct", "description": "Ensures the generated template adheres to the standard structure.", "is_mandatory": True},
+                    {"requirement": "placeholders_filled", "description": "Ensures all placeholders in the template are correctly filled.", "is_mandatory": True},
+                ],
+                "error_protocols": [
+                    {"error_type": "default", "protocol": "Log template generation error, report missing inputs, await ProjectManager guidance.", "is_active": True},
+                ]
+            },
         ]
 
         for role_data in default_roles:
-            existing = self.db.query(crud_rules.AgentRole).filter(
+            existing_role = self.db.query(crud_rules.AgentRole).filter(
                 crud_rules.AgentRole.name == role_data["name"]
             ).first()
 
-            if not existing:
-                capabilities = role_data.pop("capabilities", [])
-                forbidden_actions = role_data.pop("forbidden_actions", [])
-
-                role = AgentRoleCreate(**role_data)
-                db_role = crud_rules.create_agent_role(self.db, role)  # Add capabilities
-                for capability in capabilities:
-                    crud_rules.add_agent_capability(self.db, db_role.id, capability)  # Add forbidden actions
-                for action in forbidden_actions:
-                    crud_rules.add_forbidden_action(self.db, db_role.id, action)
+            if not existing_role:
+                agent_role = crud_rules.create_agent_role(self.db, AgentRoleCreate(**role_data))
+                for capability_data in role_data.get("capabilities", []):
+                    crud_rules.create_agent_capability(self.db, AgentCapabilityCreate(agent_role_id=str(agent_role.id), **capability_data))
+                for handoff_data in role_data.get("handoff_criteria", []):
+                    crud_rules.create_handoff_criteria(self.db, HandoffCriteriaCreate(agent_role_id=str(agent_role.id), **handoff_data))
+                for verification_data in role_data.get("verification_requirements", []):
+                    crud_rules.create_verification_requirement(self.db, VerificationRequirementCreate(agent_role_id=str(agent_role.id), **verification_data))
+                for error_data in role_data.get("error_protocols", []):
+                    crud_rules.create_error_protocol(self.db, ErrorProtocolCreate(agent_role_id=str(agent_role.id), **error_data))
