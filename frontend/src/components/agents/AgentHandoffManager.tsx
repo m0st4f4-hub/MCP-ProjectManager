@@ -23,7 +23,9 @@ import {
   deleteAgentHandoffCriteria,
 } from "@/services/api/agent_handoff_criteria";
 import { handoffApi } from '@/services/api/handoff';
-import type { AgentHandoffCriteria } from "@/types/agents";
+import type {
+  AgentHandoffCriteria,
+} from "@/types/agents";
 import type {
   HandoffCriteria,
   HandoffCriteriaCreateData,
@@ -220,7 +222,7 @@ const AgentHandoffManager: React.FC<AgentHandoffManagerProps> = ({ agentRoleId }
             <Tr>
               <Th>Criteria</Th>
               <Th>Description</Th>
-              <Th>Target Role</Th>
+              <Th>Target Agent Role</Th>
               <Th>Active</Th>
               <Th>Actions</Th>
             </Tr>
@@ -229,9 +231,9 @@ const AgentHandoffManager: React.FC<AgentHandoffManagerProps> = ({ agentRoleId }
             {criteriaList.map((c) => (
               <Tr key={c.id}>
                 <Td>{c.criteria}</Td>
-                <Td>{c.description || '-'}</Td>
-                <Td>{c.target_agent_role || '-'}</Td>
-                <Td>{c.is_active ? 'Yes' : 'No'}</Td>
+                <Td>{c.description || "-"}</Td>
+                <Td>{c.target_agent_role || "-"}</Td>
+                <Td>{c.is_active ? "Yes" : "No"}</Td>
                 <Td>
                   <Button size="sm" colorScheme="red" onClick={() => handleDelete(c.id)}>
                     Delete
