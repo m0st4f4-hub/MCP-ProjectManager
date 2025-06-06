@@ -1,1 +1,7 @@
-# Task ID: <taskId>  # Agent Role: ImplementationSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>  # This makes 'routers' a Python package  # Import and include modular routers
+# Router package initialization
+
+"""Expose router modules used by :mod:`backend.app_factory`."""
+
+__all__ = [
+    "system",
+]
