@@ -40,8 +40,8 @@ export const getProjects = async (
     API_CONFIG.ENDPOINTS.PROJECTS,
     queryString ? `?${queryString}` : ''
   );
-  const rawProjects = await request<RawProject[]>(url);
-  return rawProjects.map((rawProject) => ({
+  const resp = await request<{ data: RawProject[] }>(url);
+  return resp.data.map((rawProject) => ({
     ...rawProject,
     id: String(rawProject.id),
     name: String(rawProject.name || ''),
@@ -67,7 +67,7 @@ export const getProjectById = async (
     API_CONFIG.ENDPOINTS.PROJECTS,
     `/${projectId}${queryString ? `?${queryString}` : ''}`
   );
-  const rawProject = await request<RawProject>(url);
+  const { data: rawProject } = await request<{ data: RawProject }>(url);
   return {
     ...rawProject,
     id: String(rawProject.id),
@@ -84,7 +84,7 @@ export const getProjectById = async (
 export const createProject = async (
   projectData: ProjectCreateData
 ): Promise<Project> => {
-  const rawProject = await request<RawProject>(
+  const { data: rawProject } = await request<{ data: RawProject }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, '/'),
     { method: 'POST', body: JSON.stringify(projectData) }
   );
@@ -105,7 +105,7 @@ export const updateProject = async (
   project_id: string,
   projectData: ProjectUpdateData
 ): Promise<Project> => {
-  const rawProject = await request<RawProject>(
+  const { data: rawProject } = await request<{ data: RawProject }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}`),
     { method: 'PUT', body: JSON.stringify(projectData) }
   );
@@ -122,16 +122,26 @@ export const updateProject = async (
 };
 
 // Delete a project
-export const deleteProject = async (project_id: string): Promise<boolean> => {
-  return request<boolean>(
+export const deleteProject = async (project_id: string): Promise<Project> => {
+  const { data: rawProject } = await request<{ data: RawProject }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}`),
     { method: 'DELETE' }
   );
+  return {
+    ...rawProject,
+    id: String(rawProject.id),
+    name: String(rawProject.name || ''),
+    description: rawProject.description ? String(rawProject.description) : null,
+    is_archived: !!rawProject.is_archived,
+    created_at: String(rawProject.created_at || new Date().toISOString()),
+    task_count:
+      typeof rawProject.task_count === 'number' ? rawProject.task_count : 0,
+  } as Project;
 };
 
 // --- Project Archive/Unarchive ---
 export const archiveProject = async (projectId: string): Promise<Project> => {
-  const rawProject = await request<RawProject>(
+  const { data: rawProject } = await request<{ data: RawProject }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/archive`),
     { method: 'POST' }
   );
@@ -148,7 +158,7 @@ export const archiveProject = async (projectId: string): Promise<Project> => {
 };
 
 export const unarchiveProject = async (projectId: string): Promise<Project> => {
-  const rawProject = await request<RawProject>(
+  const { data: rawProject } = await request<{ data: RawProject }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/unarchive`),
     { method: 'POST' }
   );

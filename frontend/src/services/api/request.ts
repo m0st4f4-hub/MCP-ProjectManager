@@ -149,14 +149,5 @@ export async function request<T>(
   }
 
   const responseData = await response.json();
-
-  if (
-    responseData &&
-    typeof responseData === 'object' &&
-    'data' in responseData
-  ) {
-    return responseData.data as T;
-  }
-
   return responseData as T;
 }

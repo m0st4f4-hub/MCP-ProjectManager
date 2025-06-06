@@ -205,8 +205,8 @@ export const getTasks = async (
   }
   const queryString = queryParams.toString();
   const url = buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/tasks${queryString ? `?${queryString}` : ""}`);
-  const rawTasks = await request<RawTask[]>(url);
-  return rawTasks.map((rawTask) => {
+  const resp = await request<{ data: RawTask[] }>(url);
+  return resp.data.map((rawTask) => {
     const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
     return {
       ...rawTask,
@@ -254,8 +254,8 @@ export const getAllTasks = async (
   }
   const queryString = queryParams.toString();
   const url = buildApiUrl(API_CONFIG.ENDPOINTS.TASKS, queryString ? `?${queryString}` : "");
-  const rawTasks = await request<RawTask[]>(url);
-  return rawTasks.map((rawTask) => {
+  const resp = await request<{ data: RawTask[] }>(url);
+  return resp.data.map((rawTask) => {
     const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
     return {
       ...rawTask,
@@ -289,7 +289,7 @@ export const getTaskById = async (
   }
   const queryString = queryParams.toString();
   const url = buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}${queryString ? `?${queryString}` : ""}`);
-  const rawTask = await request<RawTask>(url);
+  const { data: rawTask } = await request<{ data: RawTask }>(url);
   const statusId = normalizeToStatusID(rawTask.status, !!rawTask.completed);
   return {
     ...rawTask,
@@ -312,7 +312,7 @@ export const getTaskById = async (
 
 // Create a new task
 export const createTask = async (project_id: string, taskData: TaskCreateData): Promise<Task> => {
-  const rawTask = await request<RawTask>(
+  const { data: rawTask } = await request<{ data: RawTask }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/`),
     { method: "POST", body: JSON.stringify(taskData) },
   );
@@ -348,7 +348,7 @@ export const updateTask = async (
       : TaskStatus.TO_DO;
     delete payload.completed;
   }
-  const rawTask = await request<RawTask>(
+  const { data: rawTask } = await request<{ data: RawTask }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}`),
     { method: "PUT", body: JSON.stringify(payload) },
   );
@@ -381,14 +381,32 @@ export const getAllTasksForProject = async (
 ): Promise<Task[]> => {
   return getTasks(projectId, filters, sortOptions, page, pageSize);
 };
+
 export const deleteTask = async (
   project_id: string,
   task_number: number,
-): Promise<boolean> => {
-  return request<boolean>(
+): Promise<Task> => {
+  const { data: rawTask } = await request<{ data: RawTask }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}`),
     { method: "DELETE" },
   );
+  return {
+    ...rawTask,
+    id: `${rawTask.project_id}-${rawTask.task_number}`, // Computed ID for frontend compatibility
+    project_id: String(rawTask.project_id),
+    task_number: Number(rawTask.task_number),
+    title: String(rawTask.title || ""),
+    description: rawTask.description ? String(rawTask.description) : null,
+    status: normalizeToStatusID(rawTask.status, !!rawTask.completed),
+    agent_id: rawTask.agent_id ? String(rawTask.agent_id) : null,
+    agent_name: rawTask.agent_name ? String(rawTask.agent_name) : null,
+    agent_status: rawTask.agent_status ? String(rawTask.agent_status) : undefined,
+    created_at: String(rawTask.created_at || new Date().toISOString()),
+    updated_at: String(rawTask.updated_at || new Date().toISOString()),
+    is_archived: !!rawTask.is_archived,
+    subtasks: rawTask.subtasks || [],
+    dependencies: rawTask.dependencies || [],
+  } as Task;
 };
 
 // --- Task Comments API ---
@@ -396,12 +414,13 @@ export const getTaskComments = async (
   project_id: string,
   task_number: number
 ): Promise<Comment[]> => {
-  return request<Comment[]>(
+  const { data } = await request<{ data: Comment[] }>(
     buildApiUrl(
       API_CONFIG.ENDPOINTS.PROJECTS,
       `/${project_id}/tasks/${task_number}/comments/`
     )
   );
+  return data;
 };
 
 export const addTaskComment = async (
@@ -409,13 +428,14 @@ export const addTaskComment = async (
   task_number: number,
   commentData: CommentCreateData
 ): Promise<Comment> => {
-  return request<Comment>(
+  const { data } = await request<{ data: Comment }>(
     buildApiUrl(
       API_CONFIG.ENDPOINTS.PROJECTS,
       `/${project_id}/tasks/${task_number}/comments/`
     ),
     { method: "POST", body: JSON.stringify(commentData) }
   );
+  return data;
 };
 
 // --- Task Archive/Unarchive ---
@@ -423,7 +443,7 @@ export const archiveTask = async (
   project_id: string,
   task_number: number,
 ): Promise<Task> => {
-  const rawTask = await request<RawTask>(
+  const { data: rawTask } = await request<{ data: RawTask }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/archive`),
     { method: "POST" },
   );
@@ -449,7 +469,7 @@ export const unarchiveTask = async (
   project_id: string,
   task_number: number,
 ): Promise<Task> => {
-  const rawTask = await request<RawTask>(
+  const { data: rawTask } = await request<{ data: RawTask }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}/tasks/${task_number}/unarchive`),
     { method: "POST" },
   );
