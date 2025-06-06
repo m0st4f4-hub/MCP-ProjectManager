@@ -96,7 +96,15 @@ Based on a `grep_search` for `var(--...)`, the following files have been identif
   - **DONE - Remove CSS Modules References:** Commented-out `className` attributes removed from `page.tsx`.
   - **DONE - Audit `FilterSidebar` component**: Reviewed for legacy styles and replaced remaining `rem` values with `sizing` tokens.
   - **DONE - Audit `frontend/src/app/globals.css`**: Migrated font and modal styles to Tailwind tokens.
-  - **TODO - Review remaining UI components** listed in `page.tsx` imports: `TaskList`, `
+  - **Status Map - UI components imported by `page.tsx`:**
+
+    | Component | Audit Status |
+    |-----------|--------------|
+    | `TaskList.tsx` | ✅ Reviewed & Compliant |
+    | `ProjectList.tsx` | ⚠️ Partially Refactored (legacy `var(--...)` tokens remain) |
+    | `AgentList.tsx` | ✅ Reviewed & Compliant |
+    | `Dashboard.tsx` | ✅ Reviewed & Compliant |
+    | `SettingsContent.tsx` | ✅ Reviewed & Compliant |
 
 ### 7. Tailwind CSS Configuration Audit (`frontend/tailwind.config.ts`) (2025-05-17)
 
