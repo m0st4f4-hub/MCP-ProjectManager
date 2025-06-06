@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 // Core entity types
 export interface Project {
   id: string;
@@ -11,6 +12,8 @@ export interface Project {
   owner_id?: string;
   settings?: ProjectSettings;
 =======
+=======
+>>>>>>> origin/codex/add-crud-functions-and-typescript-interfaces
 export * from './project';
 export * from './agent';
 export * from './agents';
@@ -23,10 +26,13 @@ export * from './rules';
 export * from './mcp';
 export * from './project_template';
 export * from './agent_prompt_template';
+<<<<<<< HEAD
 export * from './handoff';
 export * from './verification_requirement';
 export * from './error_protocol';
 export * from './generated';
+=======
+>>>>>>> origin/codex/add-crud-functions-and-typescript-interfaces
 
 // Common types used across the application
 // Canonical shared sort direction type for all entities
@@ -175,8 +181,18 @@ export interface ProjectFilters {
   owner_id?: string;
 }
 
+<<<<<<< HEAD
 // Event types
 export interface McpEvent {
+=======
+// Theme types
+export type ThemeMode = 'light' | 'dark' | 'system';
+
+// Toast types
+export type ToastType = 'success' | 'error' | 'warning' | 'info';
+
+export interface ToastMessage {
+>>>>>>> origin/codex/add-crud-functions-and-typescript-interfaces
   id: string;
   type: string;
   data: Record<string, any>;
@@ -199,6 +215,7 @@ export interface ApiError {
   details?: Record<string, any>;
 }
 
+<<<<<<< HEAD
 // Theme and UI types
 export interface ThemeConfig {
   colorMode: 'light' | 'dark';
@@ -216,3 +233,23 @@ export interface NotificationConfig {
     system_alerts: boolean;
   };
 }
+=======
+// Canonical task sort field type (should match all UI/usage fields)
+export type TaskSortField =
+  | 'created_at'
+  | 'title'
+  | 'status'
+  | 'agent'
+  | 'project_id'
+  | 'updated_at';
+
+// Canonical task sort options type
+export interface TaskSortOptions {
+  field: TaskSortField;
+  direction: SortDirection;
+}
+
+// Add shared types for group by and view mode
+export type GroupByType = 'status' | 'project' | 'agent' | 'parent';
+export type ViewMode = 'list' | 'kanban';
+>>>>>>> origin/codex/add-crud-functions-and-typescript-interfaces
