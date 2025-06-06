@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List  # Import logging at the top of the file
 import logging
@@ -40,8 +40,8 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
 
 async def get_project_files_endpoint(
     project_id: str,
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1),
     project_file_service: ProjectFileAssociationService = Depends(get_project_file_association_service)
 ):
     """Get files associated with a project with pagination."""

@@ -3,13 +3,11 @@ import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Input, List, ListItem, useToast } from '@chakra-ui/react';
-import { memoryApi } from '@/services/api';
+import { mcpApi, memoryApi, getProjectFiles } from '@/services/api';
 import {
-  getProjectFiles,
-  associateFileWithProject,
-  disassociateFileFromProject,
-} from '@/services/projects';
-import type { ProjectFileAssociation } from '@/services/api/projects';
+  ProjectFileAssociation,
+  ProjectFileAssociationListResponse,
+} from '@/types/project';
 import TaskPagination from '../task/TaskPagination';
 
 interface ProjectFilesProps {
@@ -24,17 +22,20 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
   const [filePath, setFilePath] = useState('');
   const [uploading, setUploading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [total, setTotal] = useState(0);
   const itemsPerPage = 10;
 
   const fetchFiles = async () => {
     setLoading(true);
     try {
-      const data = await getProjectFiles(
-        projectId,
-        currentPage * itemsPerPage,
-        itemsPerPage
-      );
-      setFiles(data);
+      const response: ProjectFileAssociationListResponse =
+        await getProjectFiles(
+          projectId,
+          currentPage * itemsPerPage,
+          itemsPerPage
+        );
+      setFiles(response.data);
+      setTotal(response.total);
     } catch (err) {
       setError('Failed to fetch project files');
       logger.error(err);
@@ -141,10 +142,12 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
       <TaskPagination
         currentPage={currentPage}
         itemsPerPage={itemsPerPage}
-        totalItems={files.length + currentPage * itemsPerPage}
+        totalItems={total}
         onPrevious={() => setCurrentPage((p) => Math.max(0, p - 1))}
         onNext={() =>
-          setCurrentPage((p) => (files.length < itemsPerPage ? p : p + 1))
+          setCurrentPage((p) =>
+            Math.min(Math.ceil(total / itemsPerPage) - 1, p + 1)
+          )
         }
       />
     </Box>

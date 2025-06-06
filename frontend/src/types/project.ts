@@ -123,3 +123,17 @@ export const projectMemberSchema = projectMemberBaseSchema.extend({
 });
 
 export type ProjectMember = z.infer<typeof projectMemberSchema>;
+
+// --- Project File Association Types ---
+export interface ProjectFileAssociation {
+  project_id: string;
+  file_id: string;
+}
+
+export interface ProjectFileAssociationListResponse {
+  data: ProjectFileAssociation[];
+  total: number;
+  page: number;
+  pageSize: number;
+  error?: ProjectError;
+}
