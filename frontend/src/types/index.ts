@@ -68,6 +68,7 @@ export * from "./mcp";
 export * from "./project_template";
 export * from "./agent_prompt_template";
 <<<<<<< HEAD
+<<<<<<< HEAD
 export * from "./verificationRequirement";
 <<<<<<< HEAD
 >>>>>>> origin/3kceht-codex/create-verificationrequirements-component
@@ -88,6 +89,9 @@ export * from "./workflow";
 >>>>>>> origin/codex/add-typed-crud-functions-to-api
 =======
 >>>>>>> origin/codex/add-agent-capabilities-crud-functions
+=======
+export * from "./verification_requirement";
+>>>>>>> origin/codex/add-crud-functions-for-error-protocols
 
 // Common types used across the application
 // Canonical shared sort direction type for all entities
