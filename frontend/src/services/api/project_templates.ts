@@ -1,9 +1,13 @@
 import { request } from './request';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { buildApiUrl, API_CONFIG } from './config';
 =======
 import { buildApiUrl } from './config';
 >>>>>>> origin/codex/add-deletetemplate-function-to-project_templates
+=======
+import { buildApiUrl } from './config';
+>>>>>>> origin/codex/add-deletetemplate-to-api-project_templates
 import {
   ProjectTemplate,
   ProjectTemplateCreateData,
@@ -27,6 +31,7 @@ export const projectTemplatesApi = {
   /** Create a new project template */
   async create(data: ProjectTemplateCreateData): Promise<ProjectTemplate> {
 <<<<<<< HEAD
+<<<<<<< HEAD
     return request<ProjectTemplate>(
       buildApiUrl(API_CONFIG.ENDPOINTS.PROJECT_TEMPLATES),
       {
@@ -35,6 +40,8 @@ export const projectTemplatesApi = {
       }
     );
 =======
+=======
+>>>>>>> origin/codex/add-deletetemplate-to-api-project_templates
     return request<ProjectTemplate>(buildApiUrl('/project-templates/'), {
       method: 'POST',
       body: JSON.stringify(data),
@@ -50,10 +57,14 @@ export const projectTemplatesApi = {
     });
     return request<ProjectTemplate[]>(
 <<<<<<< HEAD
+<<<<<<< HEAD
       buildApiUrl(API_CONFIG.ENDPOINTS.PROJECT_TEMPLATES, `?${params}`)
 =======
       buildApiUrl('/project-templates/', `?${params}`)
 >>>>>>> origin/codex/add-deletetemplate-function-to-project_templates
+=======
+      buildApiUrl('/project-templates/', `?${params}`)
+>>>>>>> origin/codex/add-deletetemplate-to-api-project_templates
     );
   },
 
@@ -61,10 +72,14 @@ export const projectTemplatesApi = {
   async get(templateId: string): Promise<ProjectTemplate> {
     return request<ProjectTemplate>(
 <<<<<<< HEAD
+<<<<<<< HEAD
       buildApiUrl(API_CONFIG.ENDPOINTS.PROJECT_TEMPLATES, `/${templateId}`)
 =======
       buildApiUrl('/project-templates/', `/${templateId}`)
 >>>>>>> origin/codex/add-deletetemplate-function-to-project_templates
+=======
+      buildApiUrl('/project-templates/', `/${templateId}`)
+>>>>>>> origin/codex/add-deletetemplate-to-api-project_templates
     );
   },
 
@@ -75,10 +90,14 @@ export const projectTemplatesApi = {
   ): Promise<ProjectTemplate> {
     return request<ProjectTemplate>(
 <<<<<<< HEAD
+<<<<<<< HEAD
       buildApiUrl(API_CONFIG.ENDPOINTS.PROJECT_TEMPLATES, `/${templateId}`),
 =======
       buildApiUrl('/project-templates/', `/${templateId}`),
 >>>>>>> origin/codex/add-deletetemplate-function-to-project_templates
+=======
+      buildApiUrl('/project-templates/', `/${templateId}`),
+>>>>>>> origin/codex/add-deletetemplate-to-api-project_templates
       {
         method: 'PUT',
         body: JSON.stringify(data),
@@ -110,3 +129,11 @@ export const deleteTemplate = async (
 ): Promise<{ message: string }> => {
   return projectTemplatesApi.delete(templateId);
 };
+
+/**
+ * Delete a project template by ID
+ * Alias to `projectTemplatesApi.delete` for convenience
+ */
+export const deleteTemplate = async (
+  templateId: string
+): Promise<{ message: string }> => projectTemplatesApi.delete(templateId);
