@@ -3,31 +3,6 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
-<<<<<<< HEAD
-<<<<<<< HEAD
-  Flex,
-  Input,
-  List,
-  ListItem,
-  Spinner,
-  Text,
-  useToast,
-} from "@chakra-ui/react";
-import { verificationRequirementsApi } from "@/services/api";
-import type { VerificationRequirement } from "@/types";
-
-interface VerificationRequirementsProps {
-  agentRoleId: string;
-}
-
-const VerificationRequirements: React.FC<VerificationRequirementsProps> = ({ agentRoleId }) => {
-  const toast = useToast();
-  const [requirements, setRequirements] = useState<VerificationRequirement[] | null>(null);
-  const [newReq, setNewReq] = useState("");
-  const [loading, setLoading] = useState(false);
-=======
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
   IconButton,
   Table,
   Tbody,
@@ -48,11 +23,11 @@ const VerificationRequirements: React.FC<VerificationRequirementsProps> = ({ age
   ModalCloseButton,
   ModalBody,
   ModalFooter,
+  Heading,
+  VStack,
 } from "@chakra-ui/react";
 import { AddIcon, EditIcon, DeleteIcon } from "@chakra-ui/icons";
-import {
-  verificationRequirementsApi,
-} from "@/services/api";
+import { verificationRequirementsApi } from "@/services/api";
 import type {
   VerificationRequirement,
   VerificationRequirementCreateData,
@@ -73,10 +48,6 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-<<<<<<< HEAD
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
 
   const loadRequirements = async () => {
     try {
@@ -85,13 +56,7 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
     } catch (err) {
       toast({
         title: "Failed to load requirements",
-<<<<<<< HEAD
-<<<<<<< HEAD
         description: err instanceof Error ? err.message : String(err),
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -101,29 +66,6 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
 
   useEffect(() => {
     loadRequirements();
-<<<<<<< HEAD
-<<<<<<< HEAD
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentRoleId]);
-
-  const handleCreate = async () => {
-    if (!newReq.trim()) return;
-    setLoading(true);
-      try {
-        await verificationRequirementsApi.create({
-          agent_role_id: agentRoleId,
-          requirement: newReq,
-          is_mandatory: true,
-        });
-      setNewReq("");
-      await loadRequirements();
-      toast({ title: "Requirement added", status: "success", duration: 3000, isClosable: true });
-    } catch (err) {
-      toast({
-        title: "Failed to add requirement",
-=======
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
   }, [agentRoleId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,145 +110,82 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
     } catch (err) {
       toast({
         title: "Error saving requirement",
-<<<<<<< HEAD
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
         description: err instanceof Error ? err.message : String(err),
         status: "error",
         duration: 5000,
         isClosable: true,
       });
-<<<<<<< HEAD
-<<<<<<< HEAD
-    } finally {
-      setLoading(false);
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
     }
   };
 
   const handleDelete = async (id: string) => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    setLoading(true);
     try {
       await verificationRequirementsApi.delete(id);
-      await loadRequirements();
-      toast({ title: "Requirement removed", status: "success", duration: 3000, isClosable: true });
-    } catch (err) {
-      toast({
-        title: "Failed to remove requirement",
-=======
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
-    try {
-      await verificationRequirementsApi.remove(id);
-      setRequirements((r) => r.filter((req) => req.id !== id));
+      setRequirements((r) => r.filter((x) => x.id !== id));
       toast({ title: "Requirement deleted", status: "success", duration: 3000 });
     } catch (err) {
       toast({
         title: "Error deleting requirement",
-<<<<<<< HEAD
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
         description: err instanceof Error ? err.message : String(err),
         status: "error",
         duration: 5000,
         isClosable: true,
       });
-<<<<<<< HEAD
-<<<<<<< HEAD
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!requirements) {
-    return (
-      <Flex justify="center" align="center" p="4" minH="100px">
-        <Spinner />
-      </Flex>
-    );
-  }
-
-  return (
-    <Box>
-      <Flex mb={2} gap={2}>
-        <Input
-          placeholder="New requirement"
-          value={newReq}
-          onChange={(e) => setNewReq(e.target.value)}
-        />
-        <Button onClick={handleCreate} isLoading={loading} disabled={!newReq.trim()}>
-          Add
-        </Button>
-      </Flex>
-      {requirements.length === 0 ? (
-        <Text>No verification requirements.</Text>
-      ) : (
-        <List spacing={2}>
-          {requirements.map((req) => (
-            <ListItem key={req.id} borderWidth="1px" borderRadius="md" p={2}>
-              <Flex justify="space-between" align="center">
-                <Text>{req.requirement}</Text>
-                <Button size="sm" colorScheme="red" onClick={() => handleDelete(req.id)}>
-                  Delete
-                </Button>
-              </Flex>
-            </ListItem>
-          ))}
-        </List>
-      )}
-=======
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
     }
   };
 
   return (
-    <Box>
-      <Button leftIcon={<AddIcon />} mb={4} onClick={openCreate}>
-        Add Requirement
-      </Button>
-      <Table variant="simple">
-        <Thead>
-          <Tr>
-            <Th>Requirement</Th>
-            <Th>Description</Th>
-            <Th>Mandatory</Th>
-            <Th>Actions</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {requirements.map((req) => (
-            <Tr key={req.id} data-testid="requirement-row">
-              <Td>{req.requirement}</Td>
-              <Td>{req.description}</Td>
-              <Td>{req.is_mandatory ? "Yes" : "No"}</Td>
-              <Td>
-                <IconButton
-                  aria-label="Edit"
-                  icon={<EditIcon />}
-                  size="sm"
-                  mr={2}
-                  onClick={() => openEdit(req)}
-                />
-                <IconButton
-                  aria-label="Delete"
-                  icon={<DeleteIcon />}
-                  size="sm"
-                  colorScheme="red"
-                  onClick={() => handleDelete(req.id)}
-                />
-              </Td>
+    <Box p={4}>
+      <VStack spacing={4} align="stretch">
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Heading size="md">Verification Requirements</Heading>
+          <Button leftIcon={<AddIcon />} colorScheme="blue" onClick={openCreate}>
+            Add Requirement
+          </Button>
+        </Box>
+
+        <Table variant="simple">
+          <Thead>
+            <Tr>
+              <Th>Requirement</Th>
+              <Th>Description</Th>
+              <Th>Mandatory</Th>
+              <Th>Actions</Th>
             </Tr>
-          ))}
-        </Tbody>
-      </Table>
+          </Thead>
+          <Tbody>
+            {requirements.map((req) => (
+              <Tr key={req.id}>
+                <Td>{req.requirement}</Td>
+                <Td>{req.description || "—"}</Td>
+                <Td>{req.is_mandatory ? "Yes" : "No"}</Td>
+                <Td>
+                  <IconButton
+                    aria-label="Edit requirement"
+                    icon={<EditIcon />}
+                    size="sm"
+                    mr={2}
+                    onClick={() => openEdit(req)}
+                  />
+                  <IconButton
+                    aria-label="Delete requirement"
+                    icon={<DeleteIcon />}
+                    size="sm"
+                    colorScheme="red"
+                    onClick={() => handleDelete(req.id)}
+                  />
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+
+        {requirements.length === 0 && (
+          <Box textAlign="center" py={8} color="gray.500">
+            No verification requirements defined yet.
+          </Box>
+        )}
+      </VStack>
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
@@ -316,33 +195,37 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <FormControl mb={3}>
-              <FormLabel>Requirement</FormLabel>
-              <Input
-                name="requirement"
-                value={formState.requirement}
-                onChange={handleChange}
-              />
-            </FormControl>
-            <FormControl mb={3}>
-              <FormLabel>Description</FormLabel>
-              <Input
-                name="description"
-                value={formState.description || ""}
-                onChange={handleChange}
-              />
-            </FormControl>
-            <FormControl display="flex" alignItems="center">
-              <FormLabel mb="0">Mandatory</FormLabel>
-              <Switch
-                name="is_mandatory"
-                isChecked={formState.is_mandatory}
-                onChange={handleChange}
-              />
-            </FormControl>
+            <VStack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel>Requirement</FormLabel>
+                <Input
+                  name="requirement"
+                  value={formState.requirement}
+                  onChange={handleChange}
+                  placeholder="Enter requirement text"
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Description</FormLabel>
+                <Input
+                  name="description"
+                  value={formState.description}
+                  onChange={handleChange}
+                  placeholder="Optional description"
+                />
+              </FormControl>
+              <FormControl display="flex" alignItems="center">
+                <FormLabel mb="0">Mandatory</FormLabel>
+                <Switch
+                  name="is_mandatory"
+                  isChecked={formState.is_mandatory}
+                  onChange={handleChange}
+                />
+              </FormControl>
+            </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button mr={3} onClick={onClose}>
+            <Button variant="ghost" mr={3} onClick={onClose}>
               Cancel
             </Button>
             <Button colorScheme="blue" onClick={handleSubmit}>
@@ -351,10 +234,6 @@ const VerificationRequirements: React.FC<Props> = ({ agentRoleId }) => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-<<<<<<< HEAD
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
-=======
->>>>>>> origin/3kceht-codex/create-verificationrequirements-component
     </Box>
   );
 };

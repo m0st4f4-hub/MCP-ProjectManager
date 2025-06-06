@@ -9,8 +9,8 @@ import time
 import json
 from datetime import datetime, timedelta
 
-from core.async_utils import async_redis, async_retry, async_timeout
-from core.exceptions import ValidationError as CustomValidationError, NotFoundError, PermissionError
+from backend.core.async_utils import async_redis, async_retry, async_timeout
+from .exceptions import ValidationError as CustomValidationError, NotFoundError, PermissionError
 
 logger = logging.getLogger(__name__)
 

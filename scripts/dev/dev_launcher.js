@@ -59,7 +59,8 @@ async function main() {
     await killPort(3000);
     console.log('');
     
-    const projectRoot = path.resolve(__dirname);
+    // Update project root to go up two levels from scripts/dev/
+    const projectRoot = path.resolve(__dirname, '../../');
     const isWindows = os.platform() === 'win32';
 
     // Apply database migrations

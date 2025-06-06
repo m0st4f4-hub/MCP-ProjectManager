@@ -23,13 +23,9 @@ interface RawProject {
 
 // Fetch all projects
 export const getProjects = async (
-<<<<<<< HEAD
   filters?: ProjectFilters,
   skip = 0,
   limit = 100
-=======
-  filters?: ProjectFilters
->>>>>>> origin/4g8jfq-codex/implement-project-export-functionality
 ): Promise<Project[]> => {
   const queryParams = new URLSearchParams();
   if (filters?.search) queryParams.append('search', filters.search);
@@ -131,11 +127,6 @@ export const deleteProject = async (project_id: string): Promise<Project> => {
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${project_id}`),
     { method: 'DELETE' }
   );
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
   return {
     ...rawProject,
     id: String(rawProject.id),
@@ -145,12 +136,7 @@ export const deleteProject = async (project_id: string): Promise<Project> => {
     created_at: String(rawProject.created_at || new Date().toISOString()),
     task_count:
       typeof rawProject.task_count === 'number' ? rawProject.task_count : 0,
-<<<<<<< HEAD
-  } as Project;
-=======
   };
->>>>>>> origin/4g8jfq-codex/implement-project-export-functionality
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 };
 
 // --- Project Archive/Unarchive ---
@@ -229,7 +215,6 @@ export interface AssociateFileWithProjectData {
 }
 
 export const getProjectFiles = async (
-<<<<<<< HEAD
   projectId: string,
   skip = 0,
   limit = 100
@@ -240,12 +225,6 @@ export const getProjectFiles = async (
   const query = params.toString();
   return request<ProjectFileAssociationListResponse>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/files?${query}`)
-=======
-  projectId: string
-): Promise<ProjectFileAssociation[]> => {
-  return request<ProjectFileAssociation[]>(
-    buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/files`)
->>>>>>> origin/4g8jfq-codex/implement-project-export-functionality
   );
 };
 
@@ -272,13 +251,10 @@ export const disassociateFileFromProject = async (
       method: 'DELETE',
     }
   );
-<<<<<<< HEAD
-=======
 };
 
 export const exportProject = async (projectId: string): Promise<any> => {
   return request<any>(
     buildApiUrl(API_CONFIG.ENDPOINTS.PROJECTS, `/${projectId}/export`)
   );
->>>>>>> origin/4g8jfq-codex/implement-project-export-functionality
 };

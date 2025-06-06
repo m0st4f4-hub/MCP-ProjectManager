@@ -3,28 +3,23 @@ import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import {
-<<<<<<< HEAD
   Box,
   Button,
   List,
   ListItem,
   Spinner,
+  Text,
   useToast,
+  VStack,
+  HStack,
+  Heading,
 } from '@chakra-ui/react';
 import {
   getProjectMembers,
   removeMemberFromProject,
+  ProjectMember,
 } from '@/services/api/projects';
-import { addMemberToProject } from '@/services/projects';
-=======
-  getProjectMembers,
-  addMemberToProject,
-  removeMemberFromProject,
-} from '@/services/projects';
-import { useToast } from '@chakra-ui/react';
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
-import { ProjectMember, ProjectMemberRole } from '@/types/project';
-import AddProjectMemberForm from '../forms/AddProjectMemberForm';
+import AddProjectMemberForm from './AddProjectMemberForm';
 
 interface ProjectMembersProps {
   projectId: string;
@@ -38,12 +33,15 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
   const [removingId, setRemovingId] = useState<string | null>(null);
 
   const fetchMembers = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const data = await getProjectMembers(projectId);
       setMembers(data);
     } catch (err) {
-      setError('Failed to fetch project members');
-      logger.error(err);
+      const errorMessage = 'Failed to fetch project members.';
+      setError(errorMessage);
+      logger.error(errorMessage, err);
     } finally {
       setLoading(false);
     }
@@ -53,106 +51,61 @@ const ProjectMembers: React.FC<ProjectMembersProps> = ({ projectId }) => {
     fetchMembers();
   }, [projectId]);
 
-<<<<<<< HEAD
-=======
-  const handleAddMember = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMemberUserId || !newMemberRole) return;
-
-    try {
-      await addMemberToProject(projectId, {
-        user_id: newMemberUserId,
-        role: newMemberRole as ProjectMemberRole,
-      });
-      setNewMemberUserId('');
-      setNewMemberRole('');
-      toast({
-        title: 'Member added',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-      fetchMembers();
-    } catch (err) {
-      toast({
-        title: 'Failed to add member',
-        description: err instanceof Error ? err.message : String(err),
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-      console.error(err);
-    }
-  };
-
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
   const handleRemoveMember = async (userId: string) => {
     setRemovingId(userId);
     try {
       await removeMemberFromProject(projectId, userId);
-      toast({
-        title: 'Member removed',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-      fetchMembers();
+      toast({ title: 'Member removed.', status: 'success', duration: 3000 });
+      fetchMembers(); // Refresh list after removing
     } catch (err) {
-      toast({
-        title: 'Failed to remove member',
-        description: err instanceof Error ? err.message : String(err),
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-<<<<<<< HEAD
-      logger.error(err);
+      const errorMsg = 'Failed to remove member.';
+      toast({ title: errorMsg, description: err instanceof Error ? err.message : 'Unknown error', status: 'error', duration: 5000 });
+      logger.error(errorMsg, err);
     } finally {
       setRemovingId(null);
-=======
-      console.error(err);
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
     }
   };
 
   if (loading) {
     return (
-      <Box py={4} textAlign="center">
+      <Box p={4} display="flex" justifyContent="center">
         <Spinner />
       </Box>
     );
   }
 
   if (error) {
-    return <Box color="red.500">Error: {error}</Box>;
+    return <Text color="red.500" p={4}>{error}</Text>;
   }
 
   return (
-    <Box>
-      <h3>Project Members</h3>
-      {members.length === 0 ? (
-        <p>No members yet.</p>
-      ) : (
-        <List spacing={2} my={2}>
-          {members.map((member) => (
-            <ListItem key={member.user_id} display="flex" alignItems="center" gap={2}>
-              <span>
-                {member.user_id} ({member.role})
-              </span>
-              <Button
-                size="xs"
-                onClick={() => handleRemoveMember(member.user_id)}
-                isLoading={removingId === member.user_id}
-              >
-                Remove
-              </Button>
-            </ListItem>
-          ))}
+    <Box p={4} borderWidth="1px" borderRadius="md" mt={4}>
+      <Heading size="md" mb={4}>Project Members</Heading>
+      <VStack spacing={4} align="stretch">
+        <List spacing={3}>
+          {members.length > 0 ? (
+            members.map((member) => (
+              <ListItem key={member.user_id} d="flex" justifyContent="space-between" alignItems="center">
+                <Text>
+                  User ID: <Text as="span" fontFamily="monospace">{member.user_id}</Text>
+                  <Text as="span" color="gray.500"> ({member.role})</Text>
+                </Text>
+                <Button
+                  size="sm"
+                  colorScheme="red"
+                  onClick={() => handleRemoveMember(member.user_id)}
+                  isLoading={removingId === member.user_id}
+                >
+                  Remove
+                </Button>
+              </ListItem>
+            ))
+          ) : (
+            <Text>No members have been added to this project.</Text>
+          )}
         </List>
-      )}
-
-      <h4>Add Member</h4>
-      <AddProjectMemberForm projectId={projectId} onSuccess={fetchMembers} />
+        <AddProjectMemberForm projectId={projectId} onSuccess={fetchMembers} />
+      </VStack>
     </Box>
   );
 };

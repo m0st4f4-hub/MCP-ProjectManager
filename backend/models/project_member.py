@@ -4,6 +4,7 @@
 Model definition for project members.
 """
 
+from sqlalchemy import (
     Column,
     String,
     ForeignKey,
@@ -35,15 +36,17 @@ class ProjectMember(Base):
     __table_args__ = (PrimaryKeyConstraint('project_id', 'user_id'),)
 
     project_id: Mapped[str] = mapped_column(
-    String(32), ForeignKey("projects.id"))
+        String(32), ForeignKey("projects.id"))
     user_id: Mapped[str] = mapped_column(String(32), ForeignKey("users.id"))
     role: Mapped[str] = mapped_column(String)
     created_at: Mapped[datetime] = mapped_column(
-    DateTime, default=lambda: datetime.now(timezone.utc))
+        DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[Optional[datetime]] = mapped_column(
-    DateTime,
-    default=lambda: datetime.now(timezone.utc),
-    onupdate=lambda: datetime.now(timezone.utc),
-    nullable=True)  # Relationships
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=True)
+    
+    # Relationships
     project: Mapped["Project"] = relationship(back_populates="project_members")
     user: Mapped["User"] = relationship(back_populates="project_memberships")

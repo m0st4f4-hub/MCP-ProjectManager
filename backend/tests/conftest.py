@@ -12,14 +12,15 @@ import subprocess
 import time
 from pathlib import Path
 
-# Add backend to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Add project root to the Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import event
 from fastapi.testclient import TestClient
 from httpx import AsyncClient, ASGITransport
+import uuid
 
 from backend.database import Base, get_db
 from backend.models import User as UserModel
@@ -29,6 +30,7 @@ from backend.models import Agent as AgentModel
 from backend.models import ProjectMember as ProjectMemberModel
 from backend.crud.users import get_password_hash
 from backend.enums import UserRoleEnum, TaskStatusEnum
+from backend.main import app
 
 
 @pytest.fixture(scope="session")
@@ -181,7 +183,7 @@ async def test_project(async_db_session: AsyncSession, test_user):
     project = ProjectModel(
         name="Test Project",
         description="A test project",
-        created_by=test_user.id
+        owner_id=test_user.id  # Use string UUID directly, not uuid.UUID()
     )
     async_db_session.add(project)
     await async_db_session.commit()

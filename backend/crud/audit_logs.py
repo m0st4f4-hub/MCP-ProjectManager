@@ -5,7 +5,7 @@ from typing import List, Optional
 import json
 from backend import models
 from backend.models.audit import AuditLog as AuditLogModel
-from backend.schemas.audit_log import AuditLogCreate  # Import async equivalents and necessary functions
+from backend.schemas.audit_log import AuditLogCreate, AuditLogUpdate  # Import async equivalents and necessary functions
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 
@@ -94,3 +94,33 @@ async def get_audit_logs(
 
     result = await db.execute(query.order_by(AuditLogModel.timestamp.desc()).offset(skip).limit(limit))
     return result.scalars().all()
+
+
+async def update_audit_log(
+    db: AsyncSession,
+    audit_log_id: str,
+    audit_log_update: AuditLogUpdate
+) -> Optional[AuditLogModel]:
+    """Update an existing audit log entry."""
+    # Get the existing audit log
+    db_audit_log = await get_audit_log(db, audit_log_id)
+    if not db_audit_log:
+        return None
+    
+    # Update fields that are provided in the update schema
+    update_data = audit_log_update.model_dump(exclude_unset=True)
+    
+    for field, value in update_data.items():
+        if field == "action":
+            # Map 'action' from schema to 'action_type' in model
+            db_audit_log.action_type = value
+        elif field == "details":
+            # Convert dict to JSON string for storage
+            db_audit_log.details = json.dumps(value) if value else None
+        elif hasattr(db_audit_log, field):
+            setattr(db_audit_log, field, value)
+    
+    # Commit the changes
+    await db.commit()
+    await db.refresh(db_audit_log)
+    return db_audit_log

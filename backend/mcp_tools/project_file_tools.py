@@ -36,9 +36,9 @@ async def add_project_file_tool(
 
 async def list_project_files_tool(
     project_id: str,
+    db: Session,
     skip: int = 0,
     limit: int = 100,
-    db: Session,
 ) -> dict:
     """List files associated with a project."""
     try:

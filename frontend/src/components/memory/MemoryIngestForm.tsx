@@ -31,9 +31,6 @@ const MemoryIngestForm: React.FC = () => {
     setIsLoading(true);
     try {
       if (mode === "file") {
-<<<<<<< HEAD
-        await ingestFile(filePath);
-=======
         if (!file) throw new Error("No file selected");
         const entity = await memoryApi.uploadFile(file);
         toast({
@@ -43,7 +40,6 @@ const MemoryIngestForm: React.FC = () => {
           duration: 3000,
           isClosable: true,
         });
->>>>>>> origin/codex/add-file-selection-and-display-results
       } else if (mode === "url") {
         const entity = await memoryApi.ingestUrl(url);
         toast({

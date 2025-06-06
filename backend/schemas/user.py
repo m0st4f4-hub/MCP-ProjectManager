@@ -4,12 +4,12 @@
 # Project: task-manager
 # Timestamp: <timestamp>
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from typing import Optional, List
 from datetime import datetime
 
 # Import UserRoleEnum
-from ..enums import UserRoleEnum
+from backend.enums import UserRoleEnum
 
 # Forward references for relationships
 # Comment = "Comment" # If Comment is in a separate module

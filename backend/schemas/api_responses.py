@@ -4,7 +4,7 @@ This module defines Pydantic models for API responses.
 """
 
 from typing import Generic, TypeVar, List, Dict, Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict, field_serializer
 from datetime import datetime, UTC  # Generic type for data
 
 T = TypeVar('T')
@@ -15,6 +15,10 @@ class BaseResponse(BaseModel):
     success: bool = True
     message: str = "Operation successful"
     timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    
+    @field_serializer('timestamp')
+    def serialize_timestamp(self, value: datetime) -> str:
+        return value.isoformat()
 
 
 class DataResponse(BaseResponse, Generic[T]):
@@ -38,6 +42,10 @@ class ErrorResponse(BaseModel):
     error_code: Optional[str] = None
     error_details: Optional[Dict[str, Any]] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    
+    @field_serializer('timestamp')
+    def serialize_timestamp(self, value: datetime) -> str:
+        return value.isoformat()
 
 
 class PaginationParams(BaseModel):

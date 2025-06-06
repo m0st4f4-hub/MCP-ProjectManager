@@ -1,21 +1,6 @@
+import pytest
 import types
 from datetime import datetime, timezone
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
-=======
-
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
-import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient, ASGITransport
 
@@ -23,65 +8,23 @@ from backend.routers.memory.observations.observations import (
     router,
     get_memory_service,
 )
-<<<<<<< HEAD
-<<<<<<< HEAD
-from backend.schemas.memory import MemoryObservation, MemoryObservationCreate
-
-
-<<<<<<< HEAD
-class DummyService:
-=======
-class DummyObsService:
-=======
-=======
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
 from backend.schemas.memory import MemoryObservationCreate
 
 
 class DummyService:
-<<<<<<< HEAD
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
-=======
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
     def __init__(self):
         self.observations = {}
         self.next_id = 1
 
     def add_observation_to_entity(self, entity_id: int, observation: MemoryObservationCreate):
-<<<<<<< HEAD
-<<<<<<< HEAD
-        obs = MemoryObservation(
-=======
         obs = types.SimpleNamespace(
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
-=======
-        obs = types.SimpleNamespace(
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
             id=self.next_id,
             entity_id=entity_id,
             content=observation.content,
             metadata_=observation.metadata_,
-<<<<<<< HEAD
-<<<<<<< HEAD
-            created_at=datetime.now(timezone.utc),
-<<<<<<< HEAD
-=======
-            entity=None,
-=======
             source=None,
             timestamp=datetime.now(timezone.utc),
             created_at=datetime.now(timezone.utc),
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
-<<<<<<< HEAD
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
-=======
-=======
-            source=None,
-            timestamp=datetime.now(timezone.utc),
-            created_at=datetime.now(timezone.utc),
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
         )
         self.observations[self.next_id] = obs
         self.next_id += 1
@@ -91,39 +34,6 @@ class DummyService:
         obs = list(self.observations.values())
         if entity_id is not None:
             obs = [o for o in obs if o.entity_id == entity_id]
-<<<<<<< HEAD
-<<<<<<< HEAD
-        return obs[skip : skip + limit]
-=======
-=======
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
-<<<<<<< HEAD
-        return obs[skip: skip + limit]
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
-
-    async def update_observation(self, observation_id: int, observation_update: MemoryObservationCreate):
-        obs = self.observations.get(observation_id)
-        if not obs:
-            return None
-        obs.content = observation_update.content
-        obs.metadata_ = observation_update.metadata_
-        return obs
-
-    async def delete_observation(self, observation_id: int) -> bool:
-        return self.observations.pop(observation_id, None) is not None
-
-
-dummy_service = DummyService()
-
-app = FastAPI()
-app.include_router(router)
-<<<<<<< HEAD
-app.dependency_overrides[get_memory_service] = lambda: dummy_service
-=======
-app.dependency_overrides[get_memory_service] = override_service
-=======
-=======
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
         return obs[skip : skip + limit]
 
     def update_observation(self, observation_id: int, observation: MemoryObservationCreate):
@@ -144,11 +54,6 @@ dummy_service = DummyService()
 app = FastAPI()
 app.include_router(router)
 app.dependency_overrides[get_memory_service] = lambda: dummy_service
-<<<<<<< HEAD
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
-=======
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
 
 
 @pytest.mark.asyncio
@@ -156,24 +61,7 @@ async def test_update_and_delete_observation():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         resp = await client.post(
             "/entities/1/observations/",
-<<<<<<< HEAD
-<<<<<<< HEAD
-            json={"entity_id": 1, "content": "original content"},
-=======
-=======
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
-<<<<<<< HEAD
-            json={"entity_id": 1, "content": "orig"},
-=======
             json={"entity_id": 1, "content": "hello"},
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
-<<<<<<< HEAD
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
-=======
-=======
-            json={"entity_id": 1, "content": "hello"},
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
         )
         assert resp.status_code == 200
         obs_id = resp.json()["id"]
@@ -186,8 +74,6 @@ async def test_update_and_delete_observation():
         assert resp.json()["content"] == "updated content"
 
         resp = await client.delete(f"/observations/{obs_id}")
-<<<<<<< HEAD
-<<<<<<< HEAD
         assert resp.status_code == 204
 
         resp = await client.delete(f"/observations/{obs_id}")
@@ -205,29 +91,10 @@ async def test_read_observations_pagination():
             )
             assert resp.status_code == 200
 
-        resp = await client.get("/observations/?entity_id=1&page=1&page_size=2")
+        resp = await client.get("/observations/?skip=0&limit=2")
         assert resp.status_code == 200
         assert len(resp.json()) == 2
 
-        resp = await client.get("/observations/?entity_id=1&page=2&page_size=2")
+        resp = await client.get("/observations/?skip=2&limit=2")
         assert resp.status_code == 200
         assert len(resp.json()) == 1
-=======
-=======
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
-<<<<<<< HEAD
-        assert resp.status_code == 200
-        assert resp.json()["data"] is True
-
-        resp = await client.delete(f"/observations/{obs_id}")
-        assert resp.status_code == 404
-=======
-        assert resp.status_code == 204
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
-<<<<<<< HEAD
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
-=======
-=======
-        assert resp.status_code == 204
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26

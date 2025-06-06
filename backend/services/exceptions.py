@@ -41,3 +41,7 @@ class DependencyError(ServiceError):
         self.dependency = dependency
         self.message = f"Dependency error in {dependency}: {message}"
         super().__init__(self.message)
+
+# Aliases for compatibility
+NotFoundError = EntityNotFoundError
+PermissionError = AuthorizationError

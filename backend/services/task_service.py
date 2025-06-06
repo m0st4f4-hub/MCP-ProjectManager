@@ -6,9 +6,9 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel, validator
 import logging
 
-from models.enhanced_models import EnhancedTask, TaskStatus, TaskPriority, User, EnhancedProject
-from services.enhanced_service_base import EnhancedServiceBase
-from core.exceptions import ValidationError, NotFoundError, PermissionError
+from backend.models.enhanced_models import EnhancedTask, TaskStatus, TaskPriority, User, EnhancedProject
+from backend.services.enhanced_service_base import EnhancedServiceBase
+from .exceptions import ValidationError, NotFoundError, PermissionError
 
 logger = logging.getLogger(__name__)
 
@@ -392,3 +392,6 @@ class EnhancedTaskService(EnhancedServiceBase[EnhancedTask, TaskCreateSchema, Ta
 
 # Global task service instance
 task_service = EnhancedTaskService()
+
+# Alias for backward compatibility
+TaskService = EnhancedTaskService

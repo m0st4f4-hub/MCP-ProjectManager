@@ -32,6 +32,7 @@ class MemoryEntity(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     entity_type: Mapped[str] = mapped_column(String, index=True)
+    name: Mapped[str] = mapped_column(String, nullable=False, index=True)
     content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     entity_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
     source: Mapped[Optional[str]] = mapped_column(String, nullable=True)
@@ -56,7 +57,7 @@ class MemoryEntity(Base):
 
     def __repr__(self):
         return (f"<MemoryEntity(id={self.id}, type='{self.entity_type}', "
-                f"source='{self.source}')>")
+                f"name='{self.name}', source='{self.source}')>")
 
 class MemoryObservation(Base):
     """Represents an observation associated with a memory entity."""

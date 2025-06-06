@@ -9,6 +9,7 @@ from ....schemas.agent_prompt_template import (
     AgentPromptTemplateCreate,
     AgentPromptTemplateUpdate
 )
+from ....schemas.api_responses import DataResponse
 
 router = APIRouter()  # Prompt Templates
 @router.get("/agent-roles/{agent_name}", response_model=AgentPromptTemplate)

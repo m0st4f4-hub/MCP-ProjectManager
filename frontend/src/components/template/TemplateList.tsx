@@ -7,40 +7,35 @@ import {
   Flex,
   Heading,
   IconButton,
-<<<<<<< HEAD
-  useToast,
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
   Table,
   Tbody,
   Td,
   Th,
   Thead,
   Tr,
-<<<<<<< HEAD
-=======
->>>>>>> origin/codex/add-delete-buttons-for-templates
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
+  useToast,
 } from '@chakra-ui/react';
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import { useTemplateStore } from '@/store/templateStore';
-import DataTable, { Column, Action } from '../common/DataTable';
 
 const TemplateList: React.FC = () => {
   const templates = useTemplateStore((s) => s.templates);
   const fetchTemplates = useTemplateStore((s) => s.fetchTemplates);
+  const removeTemplate = useTemplateStore((s) => s.removeTemplate);
+  const toast = useToast();
 
   useEffect(() => {
     fetchTemplates();
   }, [fetchTemplates]);
 
-<<<<<<< HEAD
   const handleDelete = async (id: string) => {
     try {
       await removeTemplate(id);
-      toast({ title: 'Template deleted', status: 'success', duration: 3000 });
+      toast({ 
+        title: 'Template deleted', 
+        status: 'success', 
+        duration: 3000 
+      });
     } catch (err) {
       toast({
         title: 'Error deleting template',
@@ -51,35 +46,6 @@ const TemplateList: React.FC = () => {
     }
   };
 
-  const columns: Column<typeof templates[number]>[] = [
-    { header: 'Name', accessor: 'name' },
-    { header: 'Description', accessor: 'description' },
-    {
-      header: 'Actions',
-      render: (t) => (
-        <>
-          <IconButton
-            as={Link}
-            href={`/templates/${t.id}/edit`}
-            aria-label="Edit"
-            icon={<EditIcon />}
-            size="sm"
-            mr="2"
-          />
-          <IconButton
-            as={Link}
-            href={`/templates/${t.id}/delete`}
-            aria-label="Delete"
-            icon={<DeleteIcon />}
-            size="sm"
-          />
-        </>
-      ),
-    },
-  ];
-
-=======
->>>>>>> origin/codex/add-delete-buttons-for-templates
   return (
     <Box p="4">
       <Flex justify="space-between" align="center" mb="4">
@@ -88,12 +54,7 @@ const TemplateList: React.FC = () => {
           Create Template
         </Button>
       </Flex>
-<<<<<<< HEAD
-      <DataTable data={templates} columns={columns} />
-=======
-<<<<<<< HEAD
-      <DataTable data={templates} columns={columns} actions={actions} />
-=======
+      
       <Table variant="simple">
         <Thead>
           <Tr>
@@ -103,33 +64,31 @@ const TemplateList: React.FC = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {templates.map((t) => (
-            <Tr key={t.id} data-testid="template-row">
-              <Td>{t.name}</Td>
-              <Td>{t.description}</Td>
+          {templates.map((template) => (
+            <Tr key={template.id} data-testid="template-row">
+              <Td>{template.name}</Td>
+              <Td>{template.description}</Td>
               <Td>
                 <IconButton
                   as={Link}
-                  href={`/templates/${t.id}/edit`}
-                  aria-label="Edit"
+                  href={`/templates/${template.id}/edit`}
+                  aria-label="Edit template"
                   icon={<EditIcon />}
                   size="sm"
                   mr="2"
                 />
                 <IconButton
-                  as={Link}
-                  href={`/templates/${t.id}/delete`}
-                  aria-label="Delete"
+                  aria-label="Delete template"
                   icon={<DeleteIcon />}
                   size="sm"
+                  colorScheme="red"
+                  onClick={() => handleDelete(template.id)}
                 />
               </Td>
             </Tr>
           ))}
         </Tbody>
       </Table>
->>>>>>> origin/codex/add-delete-buttons-for-templates
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
     </Box>
   );
 };

@@ -8,7 +8,12 @@ from backend.schemas.memory import MemoryEntityCreate
 async def test_associate_memory_file_with_task(async_db_session, test_task):
     memory_service = MemoryService(async_db_session)
     file_entity = await memory_service.create_entity(
-        MemoryEntityCreate(entity_type='file', content='data')
+        MemoryEntityCreate(
+            entity_type='file', 
+            name='test_file.txt',
+            content='data',
+            source='test'
+        )
     )
 
     assoc_service = TaskFileAssociationService(async_db_session)

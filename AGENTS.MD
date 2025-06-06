@@ -2,12 +2,27 @@ Understood. I will conduct an in-depth analysis of the MCP Project Manager repos
 
 This will allow me to generate a highly optimized, repository-specific AGENTS.md that aligns with the current architecture, toolchain, and development conventions—and elevates agent productivity to its peak potential.
 
-I’ll report back with the complete AGENTS.md draft once research is complete.
+I'll report back with the complete AGENTS.md draft once research is complete.
 
 
 # AGENTS.md for MCP Project Manager
 
-This file guides the Codex agent on working with the **MCP Project Manager** codebase. It describes the repo layout, tech stack, setup/build/test commands, coding standards, and other conventions so that the agent can navigate, build, and modify the code reliably.  It assumes a development environment with Python 3.8+ and Node.js 18+ (npm).
+This repository is a **Task Manager** built with **FastAPI** (backend) and **Next.js** (frontend), designed for human-agent collaboration via the **Model Context Protocol (MCP)**. The backend provides REST APIs for projects, tasks, users, and memory services.  There are also helper scripts (`scripts/dev/dev_launcher.js` for cross-platform use, `scripts/dev/dev_launcher.bat`/`.ps1` for Windows PowerShell) that clear ports 8000/3000 and start the backend with Uvicorn and frontend with `npm run dev`.  The FastAPI backend is launched (in dev) via `uvicorn backend.main:app --reload` and serves on `http://localhost:8000` with docs at `/docs`.
+
+## Quick Start
+
+```bash
+# One-command setup and launch
+python start_system.py
+
+# Or use the development launchers
+node scripts/dev/dev_launcher.js          # Cross-platform Node.js
+.\scripts\dev\dev_launcher.ps1            # Windows PowerShell  
+.\scripts\dev\dev_launcher.bat            # Windows Batch
+
+# Or traditional approach
+npm run dev     # runs scripts/dev/dev_launcher.bat (on Windows) or you can run `node scripts/dev/dev_launcher.js` cross-platform
+```
 
 ## Tech Stack & Structure
 
@@ -15,7 +30,7 @@ This file guides the Codex agent on working with the **MCP Project Manager** cod
 
 * **Frontend (Web GUI):** Next.js (React + TypeScript) with Chakra UI for styling and Zustand for state management.  The frontend code is in `frontend/`, with React components under `frontend/src/`, public assets in `frontend/public/`, and configuration files (`next.config.mjs`, `tsconfig.json`, etc) at the root of `frontend/`.  The frontend communicates with the backend API (e.g. via fetch or React Query) and supports features like task dependencies, file attachments, theming, etc.
 
-* **CLI & Dev Launcher:** A Node.js CLI (`cli.js` in the repo root, published as `mcp-project-manager-cli`) uses Commander.js to bootstrap and run the suite.  This CLI automates dependency installs, project setup, and launching of both backend and frontend services.  There are also helper scripts (`dev_launcher.js` for cross-platform use, `dev_launcher.bat`/`.ps1` for Windows PowerShell) that clear ports 8000/3000 and start the backend with Uvicorn and frontend with `npm run dev`.  The FastAPI backend is launched (in dev) via `uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000` (as seen in `run_backend.py` and the dev launcher).  The Next.js dev server runs on port 3000 (`npm run dev` from `frontend/`).
+* **CLI & Dev Launcher:** A Node.js CLI (`scripts/utils/cli.js` in the repo, published as `mcp-project-manager-cli`) uses Commander.js to bootstrap and run the suite.  This CLI automates dependency installs, project setup, and launching of both backend and frontend services.  There are also helper scripts (`scripts/dev/dev_launcher.js` for cross-platform use, `scripts/dev/dev_launcher.bat`/`.ps1` for Windows PowerShell) that clear ports 8000/3000 and start the backend with Uvicorn and frontend with `npm run dev`.  The FastAPI backend is launched (in dev) via `uvicorn backend.main:app --reload` and serves on `http://localhost:8000` with docs at `/docs`.
 
 * **MCP and .cursor rules:**  Agent behaviors and tools are defined via Model Context Protocol rules (`.mdc` files) in the `.cursor/rules/` folder.  The CLI copies or updates these rules so that the MCP server (fastapi-mcp) can use them.  Agents can invoke backend APIs (CRUD endpoints, memory service, etc.) as tools via MCP, as well as custom CLI commands.
 
@@ -80,7 +95,7 @@ To set up a fresh dev environment, follow these steps (examples use Unix-style s
   (After building frontend, you may bundle/install backend requirements with `npm run build:all`, which triggers `npm run build` then `pip install -r backend/requirements.txt`.)
 
 * **Type-check:**
-  The frontend uses TypeScript. Run `npx tsc --noEmit` or `npm run type-check` to catch TS errors.  ESLint is set up for both backend and frontend. The frontend’s ESLint script is `npm run lint` (using Next.js’s config), and there is `npm run fix` to auto-fix ESLint issues.  The backend code should be linted with flake8; a helper `comprehensive_flake8_fixer.py` is provided to auto-clean common issues.
+  The frontend uses TypeScript. Run `npx tsc --noEmit` or `npm run type-check` to catch TS errors.  ESLint is set up for both backend and frontend. The frontend's ESLint script is `npm run lint` (using Next.js's config), and there is `npm run fix` to auto-fix ESLint issues.  The backend code should be linted with flake8; a helper `comprehensive_flake8_fixer.py` is provided to auto-clean common issues.
 
 * **Tests:**
 
@@ -101,7 +116,7 @@ To set up a fresh dev environment, follow these steps (examples use Unix-style s
 
 * **Coding conventions:** Follow the patterns in the codebase.  Use clear, descriptive names (avoid abbreviations).  The repository includes many detailed READMEs (e.g. component-level READMEs under `frontend/src/`)—study them to match existing styles.  Always handle errors and edge cases.  Write comments/docstrings only where necessary (code should be self-explanatory).
 
-* **Commits/PRs:** Use concise, imperative commit messages (e.g. “Add feature X”, “Fix bug in Y”) and follow Conventional Commit style (prefix with `feat:`, `fix:`, `docs:`, etc).  If an `AGENTS.md` rule specifies a PR title or message format, the agent should follow it.  Include issue or ticket references if applicable.  Each PR should include a summary of changes; if tests or linting are required, mention that in the PR description.
+* **Commits/PRs:** Use concise, imperative commit messages (e.g. "Add feature X", "Fix bug in Y") and follow Conventional Commit style (prefix with `feat:`, `fix:`, `docs:`, etc).  If an `AGENTS.md` rule specifies a PR title or message format, the agent should follow it.  Include issue or ticket references if applicable.  Each PR should include a summary of changes; if tests or linting are required, mention that in the PR description.
 
 * **Citation:** When the agent makes changes, it should cite relevant code or docs as evidence of correctness (as Codex does).  For example, when fixing a bug, run tests and cite the test output and logs.  See Codex docs for guidance on citation style.
 
@@ -126,23 +141,23 @@ To set up a fresh dev environment, follow these steps (examples use Unix-style s
 
 ## Agent Tools & Advanced Features
 
-* **CLI & Dev Tools:** The agent can invoke the CLI and launcher as “tools”.  For example, run `npx mcp-project-manager` (or `node cli.js`) to use the integrated CLI, or execute `python start_system.py` to start the entire system.  The agent should quote full commands and work in the project root unless otherwise needed.
+* **CLI & Dev Tools:** The agent can invoke the CLI and launcher as "tools".  For example, run `npx mcp-project-manager` (or `node cli.js`) to use the integrated CLI, or execute `python start_system.py` to start the entire system.  The agent should quote full commands and work in the project root unless otherwise needed.
 
 * **MCP (.cursor) Rules:** The `.cursor/rules/` folder contains Model Context Protocol rule files (`.mdc`) that define agent behaviors and tasks.  When planning agent actions, follow the patterns in these rules.  For instance, custom MCP tools are defined here.  The agent should *not* modify these rule files directly (they are auto-loaded), but can use them as guidance.
 
-* **Task Templates:** When describing or breaking down tasks, use clear templates.  For multi-step tasks, use numbered or bullet lists to structure steps.  (For example: “1. Do X. 2. Then do Y.”)  This ensures clarity and reproducibility.
+* **Task Templates:** When describing or breaking down tasks, use clear templates.  For multi-step tasks, use numbered or bullet lists to structure steps.  (For example: "1. Do X. 2. Then do Y.")  This ensures clarity and reproducibility.
 
-* **Memory Service:** The backend’s **Knowledge Graph/Memory** allows storing and retrieving facts.  Use memory endpoints (`/memory`) to create or query memory tags if useful.  For example, to recall context or associated files, attach memory entities to tasks via the API.  (See `backend/routers/memory.py` for usage.)  These memory entries persist across sessions and help maintain context.
+* **Memory Service:** The backend's **Knowledge Graph/Memory** allows storing and retrieving facts.  Use memory endpoints (`/memory`) to create or query memory tags if useful.  For example, to recall context or associated files, attach memory entities to tasks via the API.  (See `backend/routers/memory.py` for usage.)  These memory entries persist across sessions and help maintain context.
 
 * **Tool Invocation:** The agent can run any shell command listed in the project.  Common tools include `uvicorn`, `npm`, `pytest`, etc.  Always ensure the correct working directory (e.g. run backend commands in `backend/`, frontend commands in `frontend/`).  The dev scripts show examples: e.g. `spawn('npm', ['run','dev'], { cwd: 'frontend', shell: true })`.  Use absolute or relative paths to avoid ambiguity if needed.
 
 ## Prompting Guidelines
 
-* **Be explicit and deterministic.**  Give precise instructions, avoid vague terms. For multi-step tasks, use numbered lists.  Specify exact function or variable names rather than “it” or “that”.
+* **Be explicit and deterministic.**  Give precise instructions, avoid vague terms. For multi-step tasks, use numbered lists.  Specify exact function or variable names rather than "it" or "that".
 * **Follow specs and docs.**  Refer to README/ARCHITECTURE docs for context.  Use the technology and naming conventions shown there.
 * **Run tests and cite results.**  After making code changes, run the test suite (both frontend and backend) and include test output citations to verify correctness. Also run `npm run lint` or flake8 and fix any errors.
-* **Commit process:** Draft the change, then produce a commit message summarizing the change. The commit message should be imperative (e.g. “Fix database null bug”), and can mention related issues or tests run.
-* **Memory:** If an agent needs to remember something across interactions, store it using the memory service (e.g. “store task IDs with tag ‘todo’”). Then later recall with the same tag.
+* **Commit process:** Draft the change, then produce a commit message summarizing the change. The commit message should be imperative (e.g. "Fix database null bug"), and can mention related issues or tests run.
+* **Memory:** If an agent needs to remember something across interactions, store it using the memory service (e.g. "store task IDs with tag 'todo'"). Then later recall with the same tag.
 * **Review:** Finally, re-run all tests and lint/format, ensure everything passes cleanly, and provide citations of the passing output.
 
-By following this guide, the Codex agent will understand how to navigate the code, set up the environment, and adhere to this project’s conventions and quality standards.
+By following this guide, the Codex agent will understand how to navigate the code, set up the environment, and adhere to this project's conventions and quality standards.

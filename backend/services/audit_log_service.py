@@ -63,7 +63,7 @@ class AuditLogService:
             skip=skip,
             limit=limit,
             user_id=user_id,
-            action_filter=action_filter
+            action=action_filter
         )
 
     async def update_log(
@@ -78,16 +78,15 @@ class AuditLogService:
             audit_log_update=audit_log_update
         )
 
-    async def delete_log(self, audit_log_id: str) -> Optional[AuditLogModel]:
-        """Delete an audit log entry and return the deleted record if it existed."""
+    async def delete_log(self, audit_log_id: str) -> bool:
+        """Delete an audit log entry and return True if it was deleted, False if not found."""
         log = await self.get_log(audit_log_id)
         if not log:
-            return None
-        await audit_log_crud.delete_audit_log(
+            return False
+        return await audit_log_crud.delete_audit_log(
             db=self.db,
             log_id=audit_log_id
         )
-        return log
 
     async def log_user_action(
         self,

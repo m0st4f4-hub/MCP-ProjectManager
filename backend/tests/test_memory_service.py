@@ -72,7 +72,6 @@ async def test_ingest_file_unsupported_encoding(tmp_path):
 
     with patch("aiofiles.open", side_effect=decode_error):
         with pytest.raises(HTTPException):
-<<<<<<< HEAD
             await service.ingest_file(FileIngestInput(file_path=str(tmp_file)))
 
 
@@ -93,7 +92,6 @@ async def test_ingest_large_file(tmp_path):
 
     entity = service.create_entity.call_args.args[0]
     assert entity.content == content
-<<<<<<< HEAD
 
 
 @pytest.mark.asyncio
@@ -114,9 +112,6 @@ async def test_ingest_file_upload():
     assert entity.content == "hello upload"
     assert entity.source == "file_upload"
     assert result == created
-=======
-=======
-            service.ingest_file(FileIngestInput(file_path=str(tmp_file)))
 
 
 def test_get_knowledge_graph():
@@ -136,5 +131,3 @@ def test_get_knowledge_graph():
 
     assert graph["entities"] == entities
     assert graph["relations"] == relations
->>>>>>> origin/codex/add-get-/graph-route-and-tests
->>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662

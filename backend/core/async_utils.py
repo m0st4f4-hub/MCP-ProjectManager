@@ -5,12 +5,11 @@ from functools import wraps
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import QueuePool
-import aioredis
+import redis.asyncio as redis
 import time
 
-from core.config import get_settings
+from backend.config.app_config import settings
 
-settings = get_settings()
 logger = logging.getLogger(__name__)
 
 class AsyncDatabaseManager:
@@ -84,7 +83,7 @@ class AsyncRedisManager:
         if self._initialized:
             return
         
-        self.redis_pool = aioredis.ConnectionPool.from_url(
+        self.redis_pool = redis.ConnectionPool.from_url(
             f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
             max_connections=20,
             retry_on_timeout=True,
@@ -94,12 +93,12 @@ class AsyncRedisManager:
         self._initialized = True
         logger.info("Async Redis manager initialized")
     
-    async def get_redis(self) -> aioredis.Redis:
+    async def get_redis(self) -> redis.Redis:
         """Get Redis connection."""
         if not self._initialized:
             await self.initialize()
         
-        return aioredis.Redis(connection_pool=self.redis_pool)
+        return redis.Redis(connection_pool=self.redis_pool)
     
     async def close(self):
         """Close Redis connections."""

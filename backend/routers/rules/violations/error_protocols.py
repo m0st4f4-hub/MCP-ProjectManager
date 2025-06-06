@@ -9,6 +9,7 @@ from ....schemas.agent_error_protocol import (
     AgentErrorProtocolCreate,
     AgentErrorProtocolUpdate,
 )
+from ....schemas.api_responses import DataResponse
 
 router = APIRouter()
 

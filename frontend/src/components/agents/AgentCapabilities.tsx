@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -12,7 +11,12 @@ import {
   Spinner,
   Text,
   useToast,
+  VStack,
+  HStack,
+  IconButton,
+  Textarea,
 } from '@chakra-ui/react';
+import { DeleteIcon, EditIcon, CheckIcon, CloseIcon } from '@chakra-ui/icons';
 import { agentCapabilitiesApi } from '@/services/api';
 import type { AgentCapability } from '@/types/agents';
 
@@ -46,48 +50,10 @@ const AgentCapabilities: React.FC<AgentCapabilitiesProps> = ({
         duration: 5000,
         isClosable: true,
       });
-=======
-"use client";
-
-import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
-  Button,
-  HStack,
-  Input,
-} from "@chakra-ui/react";
-import { agentRolesApi } from "@/services/api/agent_roles";
-import type { AgentCapability } from "@/types/agent";
-
-interface AgentCapabilitiesProps {
-  roleName: string;
-  roleId: string;
-}
-
-const AgentCapabilities: React.FC<AgentCapabilitiesProps> = ({ roleName, roleId }) => {
-  const [capabilities, setCapabilities] = useState<AgentCapability[]>([]);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-
-  const fetchCapabilities = async () => {
-    try {
-      const caps = await agentRolesApi.getCapabilities(roleName);
-      setCapabilities(caps);
-    } catch (err) {
-      console.error("Failed to load capabilities", err);
->>>>>>> origin/codex/add-agentcapabilities-component-and-api-integration
     }
   };
 
   useEffect(() => {
-<<<<<<< HEAD
     loadCapabilities();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentRoleId]);
@@ -119,25 +85,10 @@ const AgentCapabilities: React.FC<AgentCapabilitiesProps> = ({ roleName, roleId 
       });
     } finally {
       setLoading(false);
-=======
-    fetchCapabilities();
-  }, [roleName]);
-
-  const handleAdd = async () => {
-    if (!name) return;
-    try {
-      await agentRolesApi.addCapability(roleId, name, description);
-      setName("");
-      setDescription("");
-      fetchCapabilities();
-    } catch (err) {
-      console.error("Failed to add capability", err);
->>>>>>> origin/codex/add-agentcapabilities-component-and-api-integration
     }
   };
 
   const handleDelete = async (id: string) => {
-<<<<<<< HEAD
     setLoading(true);
     try {
       await agentCapabilitiesApi.delete(id);
@@ -205,143 +156,115 @@ const AgentCapabilities: React.FC<AgentCapabilitiesProps> = ({ roleName, roleId 
 
   return (
     <Box>
-      <Flex mb={2} gap={2} flexWrap="wrap">
-        <Input
-          placeholder="Capability"
-          value={newCap}
-          onChange={(e) => setNewCap(e.target.value)}
-        />
-        <Input
-          placeholder="Description"
-          value={newDesc}
-          onChange={(e) => setNewDesc(e.target.value)}
-        />
-        <Button
-          onClick={handleCreate}
-          isLoading={loading}
-          disabled={!newCap.trim()}
-        >
-          Add
-        </Button>
-      </Flex>
-      {capabilities.length === 0 ? (
-        <Text>No capabilities.</Text>
-      ) : (
+      <VStack spacing={4} align="stretch">
+        {/* Add new capability form */}
+        <Box p={4} border="1px" borderColor="gray.200" borderRadius="md">
+          <Text fontWeight="bold" mb={2}>
+            Add New Capability
+          </Text>
+          <VStack spacing={2}>
+            <Input
+              placeholder="Capability name"
+              value={newCap}
+              onChange={(e) => setNewCap(e.target.value)}
+            />
+            <Textarea
+              placeholder="Description (optional)"
+              value={newDesc}
+              onChange={(e) => setNewDesc(e.target.value)}
+            />
+            <Button
+              onClick={handleCreate}
+              isLoading={loading}
+              isDisabled={!newCap.trim()}
+              colorScheme="blue"
+              w="full"
+            >
+              Add Capability
+            </Button>
+          </VStack>
+        </Box>
+
+        {/* Capabilities list */}
         <List spacing={2}>
           {capabilities.map((cap) => (
-            <ListItem key={cap.id} borderWidth="1px" borderRadius="md" p={2}>
+            <ListItem
+              key={cap.id}
+              p={3}
+              border="1px"
+              borderColor="gray.200"
+              borderRadius="md"
+            >
               {editingId === cap.id ? (
-                <Flex gap={2} flexWrap="wrap">
+                <VStack spacing={2} align="stretch">
                   <Input
                     value={editCap}
                     onChange={(e) => setEditCap(e.target.value)}
                   />
-                  <Input
+                  <Textarea
                     value={editDesc}
                     onChange={(e) => setEditDesc(e.target.value)}
                   />
-                  <Button
-                    size="sm"
-                    onClick={() => handleUpdate(cap.id)}
-                    isLoading={loading}
-                  >
-                    Save
-                  </Button>
-                  <Button size="sm" onClick={() => setEditingId(null)}>
-                    Cancel
-                  </Button>
-                </Flex>
-              ) : (
-                <Flex justify="space-between" align="center">
-                  <Box>
-                    <Text fontWeight="bold">{cap.capability}</Text>
-                    {cap.description && (
-                      <Text fontSize="sm">{cap.description}</Text>
-                    )}
-                  </Box>
-                  <Flex gap={2}>
-                    <Button size="sm" onClick={() => startEdit(cap)}>
-                      Edit
+                  <HStack>
+                    <Button
+                      size="sm"
+                      colorScheme="green"
+                      leftIcon={<CheckIcon />}
+                      onClick={() => handleUpdate(cap.id)}
+                      isLoading={loading}
+                    >
+                      Save
                     </Button>
                     <Button
                       size="sm"
+                      variant="outline"
+                      leftIcon={<CloseIcon />}
+                      onClick={() => setEditingId(null)}
+                    >
+                      Cancel
+                    </Button>
+                  </HStack>
+                </VStack>
+              ) : (
+                <Flex justify="space-between" align="center">
+                  <Box flex={1}>
+                    <Text fontWeight="semibold">{cap.capability}</Text>
+                    {cap.description && (
+                      <Text fontSize="sm" color="gray.600">
+                        {cap.description}
+                      </Text>
+                    )}
+                  </Box>
+                  <HStack>
+                    <IconButton
+                      size="sm"
+                      icon={<EditIcon />}
+                      aria-label="Edit capability"
+                      onClick={() => startEdit(cap)}
+                    />
+                    <IconButton
+                      size="sm"
+                      icon={<DeleteIcon />}
+                      aria-label="Delete capability"
                       colorScheme="red"
                       onClick={() => handleDelete(cap.id)}
-                    >
-                      Delete
-                    </Button>
-                  </Flex>
+                      isLoading={loading}
+                    />
+                  </HStack>
                 </Flex>
               )}
             </ListItem>
           ))}
         </List>
-      )}
-=======
-    try {
-      await agentRolesApi.deleteCapability(id);
-      fetchCapabilities();
-    } catch (err) {
-      console.error("Failed to delete capability", err);
-    }
-  };
 
-  return (
-    <Box p={4}>
-      <HStack mb={4} spacing={2}>
-        <Input
-          placeholder="Capability"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          size="sm"
-        />
-        <Input
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          size="sm"
-        />
-        <Button onClick={handleAdd} size="sm" data-testid="add-capability">
-          Add
-        </Button>
-      </HStack>
-      <TableContainer>
-        <Table size="sm">
-          <Thead>
-            <Tr>
-              <Th>Name</Th>
-              <Th>Description</Th>
-              <Th></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {capabilities.map((cap: any) => (
-              <Tr key={cap.id ?? cap.name} data-testid="capability-row">
-                <Td>{cap.name ?? cap.capability}</Td>
-                <Td>{cap.description}</Td>
-                <Td>
-                  {cap.id && (
-                    <Button
-                      size="xs"
-                      colorScheme="red"
-                      onClick={() => handleDelete(cap.id)}
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
->>>>>>> origin/codex/add-agentcapabilities-component-and-api-integration
+        {capabilities.length === 0 && (
+          <Text textAlign="center" color="gray.500" py={4}>
+            No capabilities defined yet
+          </Text>
+        )}
+      </VStack>
     </Box>
   );
 };
 
 export default AgentCapabilities;
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/codex/add-agentcapabilities-component-and-api-integration

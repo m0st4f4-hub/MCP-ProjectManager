@@ -9,15 +9,7 @@ from ..schemas.agent_handoff_criteria import (
 
 
 class AgentHandoffService:
-<<<<<<< HEAD
-<<<<<<< HEAD
-    """Service for managing agent handoff criteria."""
-=======
     """Service for CRUD operations on AgentHandoffCriteria."""
->>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
-=======
-    """Service for CRUD operations on AgentHandoffCriteria."""
->>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
 
     def __init__(self, db: Session):
         self.db = db
@@ -25,32 +17,13 @@ class AgentHandoffService:
     def create_criteria(
         self, criteria_in: AgentHandoffCriteriaCreate
     ) -> models.AgentHandoffCriteria:
-<<<<<<< HEAD
-<<<<<<< HEAD
-        db_criteria = models.AgentHandoffCriteria(
-=======
         db_obj = models.AgentHandoffCriteria(
->>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
-=======
-        db_obj = models.AgentHandoffCriteria(
->>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
             agent_role_id=criteria_in.agent_role_id,
             criteria=criteria_in.criteria,
             description=criteria_in.description,
             target_agent_role=criteria_in.target_agent_role,
             is_active=criteria_in.is_active,
         )
-<<<<<<< HEAD
-<<<<<<< HEAD
-        self.db.add(db_criteria)
-        self.db.commit()
-        self.db.refresh(db_criteria)
-        return db_criteria
-
-    def list_criteria(
-=======
-=======
->>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
         self.db.add(db_obj)
         self.db.commit()
         self.db.refresh(db_obj)
@@ -64,10 +37,6 @@ class AgentHandoffService:
         )
 
     def get_criteria_list(
-<<<<<<< HEAD
->>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
-=======
->>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
         self, agent_role_id: Optional[str] = None
     ) -> List[models.AgentHandoffCriteria]:
         query = self.db.query(models.AgentHandoffCriteria)
@@ -77,19 +46,6 @@ class AgentHandoffService:
             )
         return query.all()
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    def get_criteria(self, criteria_id: str) -> Optional[models.AgentHandoffCriteria]:
-        return (
-            self.db.query(models.AgentHandoffCriteria)
-            .filter(models.AgentHandoffCriteria.id == criteria_id)
-            .first()
-        )
-
-=======
->>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
-=======
->>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
     def update_criteria(
         self, criteria_id: str, criteria_update: AgentHandoffCriteriaUpdate
     ) -> Optional[models.AgentHandoffCriteria]:
@@ -104,19 +60,7 @@ class AgentHandoffService:
         return db_obj
 
     def delete_criteria(self, criteria_id: str) -> bool:
-<<<<<<< HEAD
-<<<<<<< HEAD
-        db_obj = (
-            self.db.query(models.AgentHandoffCriteria)
-            .filter(models.AgentHandoffCriteria.id == criteria_id)
-            .first()
-        )
-=======
         db_obj = self.get_criteria(criteria_id)
->>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
-=======
-        db_obj = self.get_criteria(criteria_id)
->>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
         if not db_obj:
             return False
         self.db.delete(db_obj)

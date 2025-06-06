@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { act } from 'react-dom/test-utils';
 import { useTemplateStore } from '../templateStore';
 import { projectTemplatesApi } from '@/services/api';
-=======
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { act } from 'react-dom/test-utils'
-import { useTemplateStore } from '../templateStore'
-import { projectTemplatesApi } from '@/services/api'
->>>>>>> origin/codex/add-delete-buttons-for-templates
 
 vi.mock('@/services/api', () => ({
   projectTemplatesApi: {
@@ -17,93 +10,70 @@ vi.mock('@/services/api', () => ({
     update: vi.fn(),
     delete: vi.fn(),
   },
-<<<<<<< HEAD
 }));
 
 const mockedApi = vi.mocked(projectTemplatesApi);
-=======
-}))
-
-const mockedApi = vi.mocked(projectTemplatesApi)
->>>>>>> origin/codex/add-delete-buttons-for-templates
 
 const initialState = {
   templates: [],
   loading: false,
   error: null,
-<<<<<<< HEAD
 };
 
 describe('templateStore', () => {
   beforeEach(() => {
-    useTemplateStore.setState({
-      ...initialState,
-      clearError: useTemplateStore.getState().clearError,
-    } as any);
+    // Reset Zustand store and mocks before each test
+    act(() => {
+      useTemplateStore.setState(initialState);
+    });
     vi.clearAllMocks();
   });
-=======
-}
 
-describe('templateStore', () => {
-  beforeEach(() => {
-    useTemplateStore.setState({
-      ...initialState,
-      clearError: useTemplateStore.getState().clearError,
-    } as any)
-    vi.clearAllMocks()
-  })
->>>>>>> origin/codex/add-delete-buttons-for-templates
+  it('removeTemplate should call the delete API and remove the template from the state', async () => {
+    // Arrange: Set up the initial state with a template
+    const initialTemplate = {
+      id: '1',
+      name: 'Test Template',
+      description: 'A template for testing.',
+      template_data: { version: 1 },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    act(() => {
+      useTemplateStore.setState({ templates: [initialTemplate] });
+    });
+    
+    mockedApi.delete.mockResolvedValue({ message: 'Template deleted' });
 
-  it('removeTemplate calls API and updates state', async () => {
-    useTemplateStore.setState({
-      ...initialState,
-<<<<<<< HEAD
-      templates: [
-        {
-          id: '1',
-          name: 'Temp',
-          description: null,
-          template_data: {},
-          created_at: '',
-          updated_at: '',
-        },
-      ],
-=======
-<<<<<<< HEAD
-      templates: [{ id: 't1', name: 'T1', description: '', template_data: {} }],
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
-    } as any);
-    mockedApi.delete.mockResolvedValueOnce({} as any);
-
+    // Act: Call the removeTemplate action
     await act(async () => {
       await useTemplateStore.getState().removeTemplate('1');
     });
 
+    // Assert: Check that the API was called and the state was updated
     expect(mockedApi.delete).toHaveBeenCalledWith('1');
     expect(useTemplateStore.getState().templates).toEqual([]);
+    expect(useTemplateStore.getState().loading).toBe(false);
+    expect(useTemplateStore.getState().error).toBe(null);
+  });
+
+  it('should handle errors when removeTemplate fails', async () => {
+    // Arrange
+    const initialTemplate = { id: '1', name: 'Test Template', description: 'A template for testing.', template_data: { version: 1 }, created_at: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    act(() => {
+      useTemplateStore.setState({ templates: [initialTemplate] });
+    });
+    const testError = new Error('Deletion failed');
+    mockedApi.delete.mockRejectedValue(testError);
+
+    // Act
+    await act(async () => {
+      await useTemplateStore.getState().removeTemplate('1');
+    });
+
+    // Assert
+    expect(mockedApi.delete).toHaveBeenCalledWith('1');
+    expect(useTemplateStore.getState().templates).toEqual([initialTemplate]); // State should not change
+    expect(useTemplateStore.getState().error).toBe('Failed to remove template');
   });
 });
-=======
-      templates: [
-        {
-          id: '1',
-          name: 'Temp',
-          description: null,
-          template_data: {},
-          created_at: '',
-          updated_at: '',
-        },
-      ],
-    } as any)
-    mockedApi.delete.mockResolvedValueOnce({} as any)
-
-    await act(async () => {
-      await useTemplateStore.getState().removeTemplate('1')
-    })
-
-    expect(mockedApi.delete).toHaveBeenCalledWith('1')
-    expect(useTemplateStore.getState().templates).toEqual([])
-  })
-})
->>>>>>> origin/codex/add-delete-buttons-for-templates

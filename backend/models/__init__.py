@@ -26,7 +26,9 @@ from .audit import AuditLog
 from .memory import MemoryEntity, MemoryObservation, MemoryRelation
 
 # Import core project models
-from .project import Project, ProjectMember, ProjectFileAssociation
+from .project import Project
+from .project_member import ProjectMember
+from .project_file_association import ProjectFileAssociation
 
 # Import task models
 from .task import Task, TaskStatus

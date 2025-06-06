@@ -3,7 +3,7 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime  # Import the new TaskStatusEnum
-from ..enums import TaskStatusEnum  # Import explicitly for forward references
+from backend.enums import TaskStatusEnum  # Import explicitly for forward references
 from ..validation import ValidationMixin
 if TYPE_CHECKING:
     pass  # This can be used for forward references if needed

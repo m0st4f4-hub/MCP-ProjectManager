@@ -1,100 +1,108 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-<<<<<<< HEAD
-import { render, screen, TestWrapper } from '@/__tests__/utils/test-utils';
+import { TestWrapper } from '@/__tests__/utils/test-utils';
 import AgentCapabilities from '../AgentCapabilities';
+import { agentCapabilitiesApi } from '@/services/api';
 
+// Mock the API module
+vi.mock('@/services/api', () => ({
+  agentCapabilitiesApi: {
+    list: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+// Mock Chakra UI components that may cause issues in tests
 vi.mock('@chakra-ui/react', async () => {
   const actual = await vi.importActual('@chakra-ui/react');
   return {
     ...actual,
-    useToast: () => vi.fn(),
-    useColorModeValue: (l: any, d: any) => l,
+    useToast: () => vi.fn(), // Suppress toasts
   };
 });
 
-const listMock = vi.fn().mockResolvedValue([]);
-const createMock = vi.fn().mockResolvedValue({});
-
-vi.mock('@/services/api', () => ({
-  agentCapabilitiesApi: {
-    list: listMock,
-    create: createMock,
-    update: vi.fn(),
-    delete: vi.fn(),
-=======
-import { render, screen } from '@/__tests__/utils/test-utils';
-import AgentCapabilities from '../AgentCapabilities';
-
-vi.mock('@/services/api/agent_roles', () => ({
-  agentRolesApi: {
-    getCapabilities: vi.fn().mockResolvedValue([]),
-    addCapability: vi.fn().mockResolvedValue({}),
-    deleteCapability: vi.fn().mockResolvedValue(undefined),
->>>>>>> origin/codex/add-agentcapabilities-component-and-api-integration
-  },
-}));
-
 describe('AgentCapabilities', () => {
   const user = userEvent.setup();
+  const mockCapabilities = [
+    { id: '1', name: 'cap1', description: 'desc1', agent_role_id: 'role1', created_at: new Date().toISOString() },
+    { id: '2', name: 'cap2', description: 'desc2', agent_role_id: 'role1', created_at: new Date().toISOString() },
+  ];
 
   beforeEach(() => {
-    vi.clearAllMocks();
-<<<<<<< HEAD
-    listMock.mockResolvedValue([]);
+    // Reset mocks before each test
+    vi.resetAllMocks();
+    // Provide default mock implementations
+    (agentCapabilitiesApi.list as vi.Mock).mockResolvedValue(mockCapabilities);
+    (agentCapabilitiesApi.create as vi.Mock).mockResolvedValue(mockCapabilities[0]);
+    (agentCapabilitiesApi.delete as vi.Mock).mockResolvedValue({ message: 'Deleted' });
   });
 
-  it('renders without crashing', () => {
-    render(
-      <TestWrapper>
-        <AgentCapabilities agentRoleId="role1" />
-      </TestWrapper>
-    );
-    expect(document.body).toBeInTheDocument();
-  });
-
-  it('handles adding capability', async () => {
+  it('renders capabilities list on load', async () => {
     render(
       <TestWrapper>
         <AgentCapabilities agentRoleId="role1" />
       </TestWrapper>
     );
 
-    const input = screen.getByPlaceholderText('Capability');
-    await user.type(input, 'demo');
-    await user.click(screen.getByRole('button', { name: /add/i }));
+    // Check for loading state initially
+    expect(screen.getByRole('status')).toBeInTheDocument(); // Spinner
 
-    expect(createMock).toHaveBeenCalled();
-  });
-=======
+    // Wait for the API call to resolve and check for the rendered items
+    await waitFor(() => {
+      expect(screen.getByText('cap1')).toBeInTheDocument();
+      expect(screen.getByText('cap2')).toBeInTheDocument();
+    });
+
+    expect(agentCapabilitiesApi.list).toHaveBeenCalledWith('role1');
   });
 
-  it('should render without crashing', async () => {
+  it('allows adding a new capability', async () => {
     render(
-      <AgentCapabilities roleName="BuilderAgent" roleId="1" />,
-      { wrapper: ({ children }) => <div>{children}</div> }
-    );
-    expect(screen.getByText('Name')).toBeInTheDocument();
-  });
-
-  it('should handle user interactions', async () => {
-    render(
-      <AgentCapabilities roleName="BuilderAgent" roleId="1" />,
-      { wrapper: ({ children }) => <div>{children}</div> }
+      <TestWrapper>
+        <AgentCapabilities agentRoleId="role1" />
+      </TestWrapper>
     );
 
-    const buttons = screen.queryAllByRole('button');
-    const inputs = screen.queryAllByRole('textbox');
+    await waitFor(() => {
+      expect(screen.getByText('cap1')).toBeInTheDocument();
+    });
 
-    if (buttons.length > 0) {
-      await user.click(buttons[0]);
-    }
+    const nameInput = screen.getByPlaceholderText('New capability name');
+    const descInput = screen.getByPlaceholderText('Description');
+    const addButton = screen.getByRole('button', { name: /add capability/i });
 
-    if (inputs.length > 0) {
-      await user.type(inputs[0], 'test');
-    }
+    await user.type(nameInput, 'new_cap');
+    await user.type(descInput, 'new_desc');
+    await user.click(addButton);
 
-    expect(document.body).toBeInTheDocument();
+    await waitFor(() => {
+      expect(agentCapabilitiesApi.create).toHaveBeenCalledWith('role1', {
+        name: 'new_cap',
+        description: 'new_desc',
+      });
+    });
   });
->>>>>>> origin/codex/add-agentcapabilities-component-and-api-integration
+
+  it('allows deleting a capability', async () => {
+    render(
+      <TestWrapper>
+        <AgentCapabilities agentRoleId="role1" />
+      </TestWrapper>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('cap1')).toBeInTheDocument();
+    });
+
+    // Find the delete button for the first capability
+    const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+    await user.click(deleteButtons[0]);
+
+    await waitFor(() => {
+      expect(agentCapabilitiesApi.delete).toHaveBeenCalledWith('1');
+    });
+  });
 });

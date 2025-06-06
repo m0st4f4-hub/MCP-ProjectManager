@@ -1,15 +1,8 @@
-<<<<<<< HEAD
-=======
-# MCP Core Tools Router
-
->>>>>>> origin/codex/add-and-register-template_tools-functions
 """
 MCP Core Tools Router - Functionality for Project and Task MCP integration.
 Provides MCP tool definitions.
 """
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 import json
@@ -20,88 +13,55 @@ import logging
 from functools import wraps
 from collections import defaultdict
 import asyncio
-=======
-from fastapi import APIRouter, Depends, HTTPException, Query
-=======
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
->>>>>>> origin/codex/add-in-memory-counters-and-expose-metrics
-from sqlalchemy.orm import Session
-from typing import Optional, Dict
-import logging
-<<<<<<< HEAD
->>>>>>> origin/codex/add-and-register-template_tools-functions
-=======
-from collections import defaultdict
->>>>>>> origin/codex/add-in-memory-counters-and-expose-metrics
 
-from ....database import get_sync_db as get_db
-from ....services.project_service import ProjectService
-from ....services.task_service import TaskService
-from ....services.audit_log_service import AuditLogService
-from ....services.memory_service import MemoryService
-from ....services.project_file_association_service import ProjectFileAssociationService
-<<<<<<< HEAD
-from ....services.event_publisher import publisher
-from ....schemas.project_template import ProjectTemplateCreate
-from ....services.rules_service import RulesService
-from ....services.agent_handoff_service import AgentHandoffService
-from ....services.error_protocol_service import ErrorProtocolService
-from ....schemas.project import ProjectCreate
-from ....schemas.task import TaskCreate, TaskUpdate
-from ....schemas import AgentRuleCreate
-from ....schemas.universal_mandate import UniversalMandateCreate
-from .... import models
-from ....schemas.memory import (
+from ...database import get_sync_db as get_db
+from ...services.project_service import ProjectService
+from ...services.task_service import TaskService
+from ...services.audit_log_service import AuditLogService
+from ...services.memory_service import MemoryService
+from ...services.project_file_association_service import ProjectFileAssociationService
+from ...services.project_template_service import ProjectTemplateService
+from ...services.event_publisher import publisher
+from ...services.rules_service import RulesService
+from ...services.agent_handoff_service import AgentHandoffService
+from ...services.error_protocol_service import ErrorProtocolService
+from ...services.verification_requirement_service import VerificationRequirementService
+from ...schemas.project import ProjectCreate
+from ...schemas.task import TaskCreate, TaskUpdate
+from ...schemas.project_template import ProjectTemplateCreate
+from ...schemas import AgentRuleCreate
+from ...schemas.universal_mandate import UniversalMandateCreate
+from ...schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
     MemoryObservationCreate,
     MemoryRelationCreate
 )
-from ....schemas.api_responses import MetricsResponse, DataResponse
-from ....schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
-from ....schemas.error_protocol import ErrorProtocolCreate
-from ....schemas.verification_requirement import VerificationRequirementCreate
-from ....schemas.mcp_tool_metrics import McpToolMetricsResponse
-from ....mcp_tools.forbidden_action_tools import (
+from ...schemas.workflow import WorkflowCreate
+from ...schemas.api_responses import MetricsResponse, DataResponse
+from ...schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
+from ...schemas.error_protocol import ErrorProtocolCreate
+from ...schemas.agent_verification_requirement import AgentVerificationRequirementCreate
+
+from ...mcp_tools.forbidden_action_tools import (
     add_forbidden_action_tool,
     list_forbidden_actions_tool,
 )
-from ....mcp_tools.capability_tools import (
+from ...mcp_tools.capability_tools import (
     create_capability_tool,
     list_capabilities_tool,
     delete_capability_tool,
 )
-<<<<<<< HEAD
-from ....mcp_tools.verification_requirement_tools import (
+from ...mcp_tools.verification_requirement_tools import (
     create_verification_requirement_tool,
     list_verification_requirements_tool,
     delete_verification_requirement_tool,
-=======
-from ....schemas.universal_mandate import UniversalMandateCreate
-from .... import models
-=======
-from ....services.project_template_service import ProjectTemplateService
-from ....schemas.project import ProjectCreate
-from ....schemas.task import TaskCreate, TaskUpdate
-from ....schemas.project_template import ProjectTemplateCreate
->>>>>>> origin/codex/add-and-register-template_tools-functions
-from ....schemas.memory import (
-    MemoryEntityCreate,
-    MemoryEntityUpdate,
-    MemoryObservationCreate,
-    MemoryRelationCreate
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
 )
-<<<<<<< HEAD
-=======
-from ....schemas.workflow import WorkflowCreate
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
-from .... import models
+from ... import models
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["mcp-tools"])
 
-<<<<<<< HEAD
 # In-memory counters for tool usage
 tool_counters: Dict[str, int] = defaultdict(int)
 
@@ -138,30 +98,6 @@ async def mcp_tools_stream(request: Request):
             publisher.unsubscribe(queue)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
-=======
-# In-memory counters for MCP tool invocations
-tool_counters: Dict[str, int] = defaultdict(int)
-
-
-@router.middleware("http")
-async def count_tool_usage(request: Request, call_next):
-    """Middleware to count MCP tool invocations."""
-    path = request.url.path
-    # Remove router prefix if present
-    if path.startswith("/api/mcp/"):
-        sub_path = path[len("/api/mcp/"):]
-    else:
-        sub_path = path.lstrip("/")
-
-    if sub_path.startswith("mcp-tools/") and not sub_path.startswith(
-        "mcp-tools/metrics"
-    ):
-        tool_name = sub_path[len("mcp-tools/"):]
-        tool_counters[tool_name] += 1
-
-    response = await call_next(request)
-    return response
->>>>>>> origin/codex/add-in-memory-counters-and-expose-metrics
 
 
 def get_db_session():
@@ -376,10 +312,7 @@ async def mcp_list_tasks(
     tags=["mcp-tools"],
     operation_id="update_task_tool",
 )
-<<<<<<< HEAD
 @track_tool_usage("update_task_tool")
-=======
->>>>>>> origin/codex/add-update-and-delete-task-routes
 async def mcp_update_task(
     project_id: str,
     task_number: int,
@@ -398,18 +331,8 @@ async def mcp_update_task(
         audit_service.log_action(
             action="task_updated",
             entity_type="task",
-<<<<<<< HEAD
             entity_id=f"{project_id}-{task_number}",
             changes=task_update.model_dump(exclude_unset=True)
-=======
-<<<<<<< HEAD
-            entity_id=f"{task.project_id}-{task.task_number}",
-            changes=task_update.dict(exclude_unset=True)
-=======
-            entity_id=f"{project_id}-{task_number}",
-            changes=task_update.model_dump(exclude_unset=True)
->>>>>>> origin/codex/add-update-and-delete-task-routes
->>>>>>> 923023da617a254682cf1eb7264238cc87c3f3e1
         )
 
         return {
@@ -421,27 +344,15 @@ async def mcp_update_task(
                 "description": task.description,
                 "status": task.status,
                 "agent_id": task.agent_id,
-<<<<<<< HEAD
                 "created_at": task.created_at.isoformat(),
                 "updated_at": task.updated_at.isoformat() if task.updated_at else None
             }
         }
-<<<<<<< HEAD
-=======
-    except HTTPException:
-        raise
-=======
-                "updated_at": task.updated_at.isoformat() if task.updated_at else None
-            }
-        }
->>>>>>> origin/codex/add-update-and-delete-task-routes
->>>>>>> 923023da617a254682cf1eb7264238cc87c3f3e1
     except Exception as e:
         logger.error(f"MCP update task failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-<<<<<<< HEAD
 @router.delete(
     "/mcp-tools/task/delete",
     tags=["mcp-tools"],
@@ -449,13 +360,6 @@ async def mcp_update_task(
     response_model=DataResponse[bool],
 )
 @track_tool_usage("delete_task_tool")
-=======
-@router.post(
-    "/mcp-tools/task/delete",
-    tags=["mcp-tools"],
-    operation_id="delete_task_tool",
-)
->>>>>>> origin/codex/add-update-and-delete-task-routes
 async def mcp_delete_task(
     project_id: str,
     task_number: int,
@@ -464,51 +368,26 @@ async def mcp_delete_task(
     """MCP Tool: Delete a task."""
     try:
         task_service = TaskService(db)
-<<<<<<< HEAD
         success = task_service.delete_task(project_id, task_number)
         if not success:
             raise HTTPException(status_code=404, detail="Task not found")
 
-=======
-        task = task_service.delete_task(
-            project_id=project_id,
-            task_number=task_number
-        )
->>>>>>> origin/codex/add-update-and-delete-task-routes
         audit_service = AuditLogService(db)
         audit_service.log_action(
             action="task_deleted",
             entity_type="task",
-<<<<<<< HEAD
             entity_id=f"{project_id}-{task_number}"
         )
 
         return DataResponse[bool](data=True, message="Task deleted successfully")
     except HTTPException:
         raise
-=======
-            entity_id=f"{project_id}-{task_number}",
-            changes=None
-        )
-
-        return {
-            "success": True,
-            "task": {
-                "project_id": task.project_id,
-                "task_number": task.task_number,
-                "title": task.title,
-                "description": task.description,
-                "status": task.status
-            }
-        }
->>>>>>> origin/codex/add-update-and-delete-task-routes
     except Exception as e:
         logger.error(f"MCP delete task failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post(
-<<<<<<< HEAD
     "/mcp-tools/project/add-file",
     tags=["mcp-tools"],
     operation_id="add_project_file_tool",
@@ -582,16 +461,6 @@ async def mcp_remove_project_file(
 ):
     """MCP Tool: Disassociate a file from a project."""
     try:
-<<<<<<< HEAD
-        success = service.remove_file_from_project(project_id, file_memory_entity_id)
-        if not success:
-            raise HTTPException(
-                status_code=404, detail="File association not found"
-            )
-        return DataResponse[bool](data=True, message="File removed from project successfully")
-    except ValueError as ve:
-        raise HTTPException(status_code=400, detail=str(ve))
-=======
         service.remove_project_file_association(
             project_id=project_id,
             file_memory_entity_id=file_memory_entity_id
@@ -610,38 +479,22 @@ async def mcp_remove_project_file(
             "success": True,
             "message": "Project file association removed successfully",
         }
->>>>>>> origin/codex/add-and-register-template_tools-functions
     except Exception as e:
         logger.error(f"MCP remove project file failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post(
-<<<<<<< HEAD
     "/mcp-tools/template/create",
     tags=["mcp-tools"],
-<<<<<<< HEAD
-    operation_id="create_project_template_tool",
-)
-@track_tool_usage("create_project_template_tool")
-async def mcp_create_project_template(
-=======
     operation_id="create_template_tool",
 )
 async def mcp_create_template(
->>>>>>> origin/codex/add-and-register-template_tools-functions
     template_data: ProjectTemplateCreate,
     db: Session = Depends(get_db_session),
 ):
     """MCP Tool: Create a new project template."""
     try:
-<<<<<<< HEAD
-        from ...mcp_tools.project_template_tools import create_project_template_tool
-
-        return await create_project_template_tool(template_data, db)
-    except Exception as e:
-        logger.error(f"MCP create project template failed: {e}")
-=======
         service = ProjectTemplateService(db)
         existing = service.get_template_by_name(template_data.name)
         if existing:
@@ -658,65 +511,19 @@ async def mcp_create_template(
         }
     except Exception as e:
         logger.error(f"MCP create template failed: {e}")
->>>>>>> origin/codex/add-and-register-template_tools-functions
-=======
-    "/mcp-tools/workflow/create",
-    tags=["mcp-tools"],
-    operation_id="create_workflow_tool",
-)
-async def mcp_create_workflow(
-    workflow_data: WorkflowCreate,
-    db: Session = Depends(get_db_session)
-):
-    """MCP Tool: Create a new workflow."""
-    try:
-        workflow = models.Workflow(
-            name=workflow_data.name,
-            description=workflow_data.description,
-            workflow_type=workflow_data.workflow_type,
-            entry_criteria=workflow_data.entry_criteria,
-            success_criteria=workflow_data.success_criteria,
-            is_active=workflow_data.is_active,
-        )
-        db.add(workflow)
-        db.commit()
-        db.refresh(workflow)
-        return {"success": True, "workflow_id": workflow.id}
-    except Exception as e:
-        logger.error(f"MCP create workflow failed: {e}")
->>>>>>> origin/codex/add,-register,-and-document-workflow-tools
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get(
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "/mcp-tools/template/list",
-    tags=["mcp-tools"],
-    operation_id="list_project_templates_tool",
-)
-@track_tool_usage("list_project_templates_tool")
-async def mcp_list_project_templates(
-=======
     "/mcp-tools/templates/list",
     tags=["mcp-tools"],
     operation_id="list_templates_tool",
 )
 async def mcp_list_templates(
->>>>>>> origin/codex/add-and-register-template_tools-functions
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db_session),
 ):
-<<<<<<< HEAD
-    """MCP Tool: List all project templates."""
-    try:
-        from ...mcp_tools.project_template_tools import list_project_templates_tool
-
-        return await list_project_templates_tool(skip, limit, db)
-    except Exception as e:
-        logger.error(f"MCP list project templates failed: {e}")
-=======
     """MCP Tool: List project templates."""
     try:
         service = ProjectTemplateService(db)
@@ -735,35 +542,20 @@ async def mcp_list_templates(
         }
     except Exception as e:
         logger.error(f"MCP list templates failed: {e}")
->>>>>>> origin/codex/add-and-register-template_tools-functions
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post(
     "/mcp-tools/template/delete",
     tags=["mcp-tools"],
-<<<<<<< HEAD
-    operation_id="delete_project_template_tool",
-)
-@track_tool_usage("delete_project_template_tool")
-async def mcp_delete_project_template(
-=======
     operation_id="delete_template_tool",
 )
 async def mcp_delete_template(
->>>>>>> origin/codex/add-and-register-template_tools-functions
     template_id: str,
     db: Session = Depends(get_db_session),
 ):
     """MCP Tool: Delete a project template."""
     try:
-<<<<<<< HEAD
-        from ...mcp_tools.project_template_tools import delete_project_template_tool
-
-        return await delete_project_template_tool(template_id, db)
-    except Exception as e:
-        logger.error(f"MCP delete project template failed: {e}")
-=======
         service = ProjectTemplateService(db)
         success = service.delete_template(template_id)
         if not success:
@@ -771,81 +563,10 @@ async def mcp_delete_template(
         return {"success": True, "template_id": template_id}
     except Exception as e:
         logger.error(f"MCP delete template failed: {e}")
->>>>>>> origin/codex/add-and-register-template_tools-functions
-=======
-    "/mcp-tools/workflow/list",
-    tags=["mcp-tools"],
-    operation_id="list_workflows_tool",
-)
-async def mcp_list_workflows(
-    workflow_type: Optional[str] = None,
-    active_only: bool = False,
-    db: Session = Depends(get_db_session)
-):
-    """MCP Tool: List workflows."""
-    try:
-        query = db.query(models.Workflow)
-        if workflow_type:
-            query = query.filter(models.Workflow.workflow_type == workflow_type)
-        if active_only:
-            query = query.filter(models.Workflow.is_active.is_(True))
-        workflows = query.all()
-        return {
-            "success": True,
-            "workflows": [
-                {
-                    "id": w.id,
-                    "name": w.name,
-                    "description": w.description,
-                    "workflow_type": w.workflow_type,
-                    "entry_criteria": w.entry_criteria,
-                    "success_criteria": w.success_criteria,
-                    "is_active": w.is_active,
-                    "created_at": w.created_at.isoformat(),
-                    "updated_at": w.updated_at.isoformat() if w.updated_at else None,
-                }
-                for w in workflows
-            ],
-        }
-    except Exception as e:
-        logger.error(f"MCP list workflows failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.delete(
-    "/mcp-tools/workflow/delete",
-    tags=["mcp-tools"],
-    operation_id="delete_workflow_tool",
-)
-async def mcp_delete_workflow(
-    workflow_id: str,
-    db: Session = Depends(get_db_session)
-):
-    """MCP Tool: Delete a workflow by ID."""
-    try:
-        workflow = db.query(models.Workflow).filter(models.Workflow.id == workflow_id).first()
-        if not workflow:
-            raise HTTPException(status_code=404, detail="Workflow not found")
-        db.delete(workflow)
-        db.commit()
-        return {"success": True}
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"MCP delete workflow failed: {e}")
->>>>>>> origin/codex/add,-register,-and-document-workflow-tools
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post(
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> origin/codex/add-update-and-delete-task-routes
-=======
->>>>>>> origin/codex/add-and-register-template_tools-functions
-=======
->>>>>>> origin/codex/add,-register,-and-document-workflow-tools
     "/mcp-tools/memory/add-entity",
     tags=["mcp-tools"],
     operation_id="add_memory_entity_tool",
@@ -923,20 +644,6 @@ async def mcp_add_memory_observation(
 ):
     """MCP Tool: Add an observation to a memory entity."""
     try:
-<<<<<<< HEAD
-        observation = memory_service.create_observation(entity_id, observation_data)
-        return {
-            "success": True,
-            "observation": {
-                "id": observation.id,
-                "entity_id": observation.entity_id,
-                "content": observation.content,
-                "created_at": observation.created_at.isoformat()
-            }
-        }
-    except ValueError as ve:
-        raise HTTPException(status_code=400, detail=str(ve))
-=======
         observation = memory_service.create_memory_observation(
             entity_id,
             observation_data,
@@ -949,7 +656,6 @@ async def mcp_add_memory_observation(
             changes=observation_data.model_dump(exclude_unset=True)
         )
         return {"success": True, "observation_id": observation.id}
->>>>>>> origin/codex/add-and-register-template_tools-functions
     except Exception as e:
         logger.error(f"MCP add memory observation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1023,42 +729,7 @@ async def mcp_search_memory(
     tags=["mcp-tools"],
     operation_id="search_graph_tool",
 )
-<<<<<<< HEAD
-@track_tool_usage("search_graph_tool")
 async def mcp_search_graph(
-=======
-async def mcp_search_graph(  # noqa: F811
-    query: str,
-    limit: int = 10,
-    memory_service: MemoryService = Depends(get_memory_service),
-):
-    """MCP Tool: Search memory graph."""
-    try:
-        results = memory_service.search_memory_entities(query, limit=limit)
-        return {
-            "success": True,
-            "results": [
-                {
-                    "id": r.id,
-                    "type": r.type,
-                    "name": r.name,
-                    "description": r.description,
-                }
-                for r in results
-            ],
-        }
-    except Exception as e:
-        logger.error(f"MCP search graph failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get(
-    "/mcp-tools/memory/search-graph",
-    tags=["mcp-tools"],
-    operation_id="search_graph_tool",
-)
-async def mcp_search_graph(  # noqa: F811
->>>>>>> origin/codex/add-in-memory-counters-and-expose-metrics
     query: str,
     limit: int = 10,
     memory_service: MemoryService = Depends(get_memory_service),
@@ -1095,16 +766,12 @@ async def mcp_get_memory_content(
 ):
     """MCP Tool: Get the content of a memory entity."""
     try:
-<<<<<<< HEAD
-        content = memory_service.get_entity_content(entity_id)
-=======
         content = memory_service.get_memory_entity_content(entity_id)
         if content is None:
             raise HTTPException(
                 status_code=404,
                 detail="Memory entity content not found",
             )
->>>>>>> origin/codex/add-and-register-template_tools-functions
         return {"success": True, "content": content}
     except ValueError as ve:
         raise HTTPException(status_code=404, detail=str(ve))
@@ -1125,16 +792,12 @@ async def mcp_get_memory_metadata(
 ):
     """MCP Tool: Get the metadata of a memory entity."""
     try:
-<<<<<<< HEAD
-        metadata = memory_service.get_entity_metadata(entity_id)
-=======
         metadata = memory_service.get_memory_entity_metadata(entity_id)
         if metadata is None:
             raise HTTPException(
                 status_code=404,
                 detail="Memory entity metadata not found",
             )
->>>>>>> origin/codex/add-and-register-template_tools-functions
         return {"success": True, "metadata": metadata}
     except ValueError as ve:
         raise HTTPException(status_code=404, detail=str(ve))
@@ -1189,7 +852,6 @@ async def mcp_create_mandate(
 ):
     """MCP Tool: Create a new universal mandate."""
     try:
-<<<<<<< HEAD
         rules_service = RulesService(db)
         created_mandate = rules_service.create_universal_mandate(mandate)
         return {
@@ -1202,23 +864,6 @@ async def mcp_create_mandate(
                 "created_at": created_mandate.created_at.isoformat(),
             },
         }
-=======
-        tool_list = []
-        for route in router.routes:
-            if hasattr(route, "operation_id") and route.operation_id.endswith("_tool"):
-                tool_info = {
-                    "name": route.operation_id,
-                    "path": route.path,
-                    "method": list(route.methods)[0] if route.methods else "GET",
-                    "description": (
-                        route.summary
-                        or route.description
-                        or "No description available"
-                    )
-                }
-                tool_list.append(tool_info)
-        return {"success": True, "tools": tool_list}
->>>>>>> origin/codex/add-and-register-template_tools-functions
     except Exception as e:
         logger.error(f"MCP create mandate failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1542,38 +1187,6 @@ async def mcp_list_forbidden_actions(
 
 
 @router.post(
-<<<<<<< HEAD
-    "/mcp-tools/capability/create",
-    tags=["mcp-tools"],
-    operation_id="create_capability_tool",
-)
-@track_tool_usage("create_capability_tool")
-async def mcp_create_capability(
-    agent_role_id: str,
-    capability: str,
-    description: Optional[str] = None,
-    is_active: bool = True,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: Create a new agent capability."""
-    try:
-        rules_service = RulesService(db)
-        capability_obj = rules_service.create_agent_capability(
-            agent_role_id=agent_role_id,
-            capability=capability,
-            description=description,
-            is_active=is_active,
-        )
-        return {
-            "success": True,
-            "capability": capability_obj.model_dump(mode='json')
-        }
-    except HTTPException as e:
-        logger.error(f"MCP create capability failed: {e.detail}")
-        raise e
-    except Exception as e:
-        logger.error(f"MCP create capability failed: {e}")
-=======
     "/mcp-tools/verification-requirement/create",
     tags=["mcp-tools"],
     operation_id="create_verification_requirement_tool",
@@ -1600,87 +1213,6 @@ async def mcp_create_verification_requirement(
         )
     except Exception as e:
         logger.error(f"MCP create verification requirement failed: {e}")
->>>>>>> origin/codex/add-verification-requirement-tools
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get(
-<<<<<<< HEAD
-    "/mcp-tools/verification-requirement/create",
-    tags=["mcp-tools"],
-    operation_id="create_verification_requirement_tool",
-)
-@track_tool_usage("create_verification_requirement_tool")
-async def mcp_create_verification_requirement(
-    agent_role_id: str,
-    requirement: str,
-    description: Optional[str] = None,
-    is_mandatory: bool = True,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: Create a new agent verification requirement."""
-    try:
-        rules_service = RulesService(db)
-        verification_requirement_obj = rules_service.create_agent_verification_requirement(
-            agent_role_id=agent_role_id,
-            requirement=requirement,
-            description=description,
-            is_mandatory=is_mandatory,
-        )
-        return {
-            "success": True,
-            "verification_requirement": verification_requirement_obj.model_dump(mode='json')
-        }
-    except HTTPException as e:
-        logger.error(f"MCP create verification requirement failed: {e.detail}")
-        raise e
-    except Exception as e:
-        logger.error(f"MCP create verification requirement failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get(
-=======
-<<<<<<< HEAD
->>>>>>> 14b950c31aedbeba84d7312e494d16c0062b0ea5
-    "/mcp-tools/capability/list",
-    tags=["mcp-tools"],
-    operation_id="list_capabilities_tool",
-)
-@track_tool_usage("list_capabilities_tool")
-async def mcp_list_capabilities(
-    agent_role_id: Optional[str] = Query(None, description="Filter by agent role ID."),
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: List agent capabilities."""
-    try:
-        rules_service = RulesService(db)
-        capabilities = rules_service.list_agent_capabilities(agent_role_id)
-        return {
-            "success": True,
-            "capabilities": [c.model_dump(mode='json') for c in capabilities]
-        }
-    except Exception as e:
-        logger.error(f"MCP list capabilities failed: {e}")
-=======
-    "/mcp-tools/verification-requirement/list",
-    tags=["mcp-tools"],
-    operation_id="list_verification_requirements_tool",
-)
-async def mcp_list_verification_requirements(
-    agent_role_id: Optional[str] = Query(None),
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: List verification requirements."""
-    try:
-        from ...mcp_tools.verification_requirement_tools import (
-            list_verification_requirements_tool,
-        )
-
-        return await list_verification_requirements_tool(agent_role_id, db)
-    except Exception as e:
-        logger.error(f"MCP list verification requirements failed: {e}")
->>>>>>> origin/codex/add-verification-requirement-tools
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -1708,42 +1240,23 @@ async def mcp_list_verification_requirements(
 
 
 @router.delete(
-<<<<<<< HEAD
-    "/mcp-tools/capability/delete",
-    tags=["mcp-tools"],
-    operation_id="delete_capability_tool",
-)
-@track_tool_usage("delete_capability_tool")
-async def mcp_delete_capability(
-    capability_id: str,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: Delete an agent capability by ID."""
-    try:
-        rules_service = RulesService(db)
-        success = rules_service.delete_agent_capability(capability_id)
-        return {"success": success, "message": "Capability deleted successfully." if success else "Capability not found."}
-    except Exception as e:
-        logger.error(f"MCP delete capability failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.delete(
     "/mcp-tools/verification-requirement/delete",
     tags=["mcp-tools"],
     operation_id="delete_verification_requirement_tool",
-    response_model=DataResponse[bool],
 )
-@track_tool_usage("delete_verification_requirement_tool")
 async def mcp_delete_verification_requirement(
     requirement_id: str,
     db: Session = Depends(get_db_session),
 ):
-    """MCP Tool: Delete a verification requirement by ID."""
+    """MCP Tool: Delete a verification requirement."""
     try:
-        rules_service = RulesService(db)
-        success = rules_service.delete_agent_verification_requirement(requirement_id)
-        return {"success": success, "message": "Verification requirement deleted successfully." if success else "Verification requirement not found."}
+        from ...mcp_tools.verification_requirement_tools import (
+            delete_verification_requirement_tool,
+        )
+
+        return await delete_verification_requirement_tool(requirement_id, db)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"MCP delete verification requirement failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1819,25 +1332,3 @@ async def mcp_remove_role(
 async def mcp_tools_metrics() -> MetricsResponse:
     """Return usage metrics for MCP tools."""
     return MetricsResponse(metrics=dict(tool_counters))
-=======
-    "/mcp-tools/verification-requirement/delete",
-    tags=["mcp-tools"],
-    operation_id="delete_verification_requirement_tool",
-)
-async def mcp_delete_verification_requirement(
-    requirement_id: str,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: Delete a verification requirement."""
-    try:
-        from ...mcp_tools.verification_requirement_tools import (
-            delete_verification_requirement_tool,
-        )
-
-        return await delete_verification_requirement_tool(requirement_id, db)
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"MCP delete verification requirement failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
->>>>>>> origin/codex/add-verification-requirement-tools

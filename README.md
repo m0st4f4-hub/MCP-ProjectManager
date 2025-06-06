@@ -1,6 +1,6 @@
 Here is the **full, resolved `README.md`** file with all sections and previously conflicting parts properly merged:
 
-````markdown
+```markdown
 [![CI - Main](https://github.com/m0st4f4-hub/MCP-ProjectManager/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/m0st4f4-hub/MCP-ProjectManager/actions/workflows/ci.yml)
 [![npm version](https://badge.fury.io/js/mcp-project-manager-cli.svg)](https://badge.fury.io/js/mcp-project-manager-cli)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
@@ -17,7 +17,7 @@ An open-source, full-stack suite for collaborative project management, empowerin
 
 ```bash
 python start_system.py
-````
+```
 
 This will automatically:
 
@@ -29,10 +29,11 @@ This will automatically:
 ### Alternative Launch Methods
 
 ```bash
-dev_launcher.bat              # Windows batch script
-node dev_launcher.js          # Cross-platform Node.js
-npm run dev                   # NPM script
-powershell dev_launcher.ps1   # PowerShell (Windows)
+# Quick start options:
+scripts/dev/dev_launcher.bat              # Windows batch script
+node scripts/dev/dev_launcher.js          # Cross-platform Node.js
+# OR
+powershell scripts/dev/dev_launcher.ps1   # PowerShell (Windows)
 ```
 
 ### Database Migrations
@@ -40,13 +41,13 @@ powershell dev_launcher.ps1   # PowerShell (Windows)
 Apply pending migrations using the CLI:
 
 ```bash
-node cli.js migrate
+node scripts/utils/cli.js migrate
 ```
 
-See [`DEV_LAUNCHER_GUIDE.md`](./DEV_LAUNCHER_GUIDE.md) for complete setup instructions.
-For an overview of all dev scripts, see [`DEV_SCRIPTS.md`](./DEV_SCRIPTS.md).
-For required environment variables and defaults, check [`ENVIRONMENT_SETUP.md`](./ENVIRONMENT_SETUP.md).
-If you're contributing, read the [CONTRIBUTING.md](./CONTRIBUTING.md) guide.
+See [`docs/02-setup/README.md`](./docs/02-setup/README.md) for complete setup instructions.
+For an overview of all dev scripts, see [`scripts/README.md`](./scripts/README.md).
+For required environment variables and defaults, check [`docs/02-setup/README.md#environment-variables`](./docs/02-setup/README.md#environment-variables).
+If you're contributing, read the [`docs/03-development/README.md`](./docs/03-development/README.md) guide.
 
 ---
 
@@ -65,11 +66,19 @@ If you're contributing, read the [CONTRIBUTING.md](./CONTRIBUTING.md) guide.
 project-manager/
 ├── backend/                # FastAPI service
 ├── frontend/               # Next.js + Chakra UI app
+├── docs/                   # Comprehensive documentation
+│   ├── 01-overview/        # Project overview and introduction
+│   ├── 02-setup/           # Setup and installation guide
+│   ├── 03-development/     # Development guide and standards
+│   ├── 04-api/             # Complete API documentation
+│   ├── 06-agents/          # Agent development guide
+│   └── 08-operations/      # Operations and troubleshooting
+├── scripts/                # Development and utility scripts
+│   ├── dev/                # Development launchers
+│   ├── utils/              # Utility scripts and CLI
+│   └── README.md           # Scripts documentation
 ├── .cursor/                # MCP rules
-├── cli.js                  # Main CLI entry
-├── dev_launcher.*          # Multi-platform launchers
 ├── start_system.py         # One-command setup
-├── *.md                    # Docs
 ├── sql_app.db              # SQLite DB (default)
 ├── .github/                # CI/CD workflows
 ```
@@ -220,10 +229,7 @@ ISC
 - `Makefile`
 - `PROMETHEUS_GRAFANA_SETUP.md`
 - `SYSTEM_GUIDE.md`
-- `cli.js`
-- `dev_launcher.bat`
-- `dev_launcher.js`
-- `dev_launcher.ps1`
+- `USER_FLOWS.md`
 - `final_integration.py`
 - `image-dark.png`
 - `image-light.png`

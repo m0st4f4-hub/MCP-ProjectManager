@@ -250,9 +250,6 @@ async def update_project(
         raise
 
 
-<<<<<<< HEAD
-@router
-=======
 @router.get(
     "/{project_id}/export",
     response_model=DataResponse[dict],
@@ -281,7 +278,6 @@ async def export_project_endpoint(
 
 
 @router.delete(
->>>>>>> origin/4g8jfq-codex/implement-project-export-functionality
     "/{project_id}",
     response_model=DataResponse[bool],
     summary="Delete Project",

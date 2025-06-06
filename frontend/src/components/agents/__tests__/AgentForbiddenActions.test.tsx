@@ -1,109 +1,95 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-<<<<<<< HEAD
-import { render, screen, waitFor } from '@/__tests__/utils/test-utils';
+import { TestWrapper } from '@/__tests__/utils/test-utils';
 import AgentForbiddenActions from '../AgentForbiddenActions';
 import { forbiddenActionsApi } from '@/services/api';
-=======
-import { render, screen } from '@/__tests__/utils/test-utils';
-import AgentForbiddenActions from '../AgentForbiddenActions';
->>>>>>> origin/6iktiw-codex/build-agentforbiddenactions-component
 
+// Mock the API module
+vi.mock('@/services/api');
+
+const mockedApi = vi.mocked(forbiddenActionsApi);
+
+// Mock Chakra UI components
 vi.mock('@chakra-ui/react', async () => {
   const actual = await vi.importActual('@chakra-ui/react');
   return {
     ...actual,
     useToast: () => vi.fn(),
-    useColorModeValue: (light: any, dark: any) => light,
   };
 });
 
-<<<<<<< HEAD
-vi.mock('@/services/api');
-
-const mockedApi = vi.mocked(forbiddenActionsApi);
-
 describe('AgentForbiddenActions', () => {
   const user = userEvent.setup();
+  const mockActions = [
+    { id: '1', action: 'test_action_1', reason: 'reason1', agent_role_id: 'role1', is_active: true, created_at: new Date().toISOString() },
+    { id: '2', action: 'test_action_2', reason: 'reason2', agent_role_id: 'role1', is_active: true, created_at: new Date().toISOString() },
+  ];
+
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockedApi.list.mockResolvedValue([]);
-    mockedApi.create.mockResolvedValue({} as any);
-    mockedApi.delete.mockResolvedValue({ message: 'ok' });
+    vi.resetAllMocks();
+    mockedApi.list.mockResolvedValue(mockActions);
+    mockedApi.create.mockResolvedValue(mockActions[0]);
+    mockedApi.delete.mockResolvedValue({ message: 'Deleted' });
   });
 
-  it('fetches actions on mount', async () => {
+  it('fetches and renders forbidden actions on mount', async () => {
     render(
-      <AgentForbiddenActions agentRoleId="role1" />,
-      { wrapper: ({ children }) => <div>{children}</div> }
+      <TestWrapper>
+        <AgentForbiddenActions agentRoleId="role1" />
+      </TestWrapper>
     );
+
     await waitFor(() => {
       expect(mockedApi.list).toHaveBeenCalledWith('role1');
+      expect(screen.getByText('test_action_1')).toBeInTheDocument();
+      expect(screen.getByText('test_action_2')).toBeInTheDocument();
     });
   });
 
-  it('calls create API when adding an action', async () => {
+  it('allows adding a new forbidden action', async () => {
     render(
-      <AgentForbiddenActions agentRoleId="role1" />,
-      { wrapper: ({ children }) => <div>{children}</div> }
+      <TestWrapper>
+        <AgentForbiddenActions agentRoleId="role1" />
+      </TestWrapper>
     );
 
-    await waitFor(() => expect(mockedApi.list).toHaveBeenCalled());
+    await waitFor(() => {
+      expect(screen.getByText('test_action_1')).toBeInTheDocument();
+    });
 
-    await user.type(screen.getByPlaceholderText('Forbidden action'), 'test');
-    await user.type(screen.getByPlaceholderText('Reason (optional)'), 'because');
-    await user.click(screen.getByText('Add'));
+    const actionInput = screen.getByPlaceholderText('Forbidden action pattern (e.g., shell_exec:*)');
+    const reasonInput = screen.getByPlaceholderText('Reason (optional)');
+    const addButton = screen.getByRole('button', { name: /add action/i });
+
+    await user.type(actionInput, 'new_action');
+    await user.type(reasonInput, 'new_reason');
+    await user.click(addButton);
 
     await waitFor(() => {
       expect(mockedApi.create).toHaveBeenCalledWith('role1', {
-        action: 'test',
-        reason: 'because',
+        action: 'new_action',
+        reason: 'new_reason',
       });
     });
   });
 
-  it('calls delete API when deleting an action', async () => {
-    mockedApi.list.mockResolvedValue([{ id: '1', agent_role_id: 'role1', action: 'A', reason: null, is_active: true, created_at: '' }]);
+  it('allows deleting a forbidden action', async () => {
     render(
-      <AgentForbiddenActions agentRoleId="role1" />,
-      { wrapper: ({ children }) => <div>{children}</div> }
+      <TestWrapper>
+        <AgentForbiddenActions agentRoleId="role1" />
+      </TestWrapper>
     );
 
-    await waitFor(() => expect(screen.getByText('A')).toBeInTheDocument());
+    await waitFor(() => {
+      expect(screen.getByText('test_action_1')).toBeInTheDocument();
+    });
 
-    await user.click(screen.getByText('Delete'));
+    const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
+    await user.click(deleteButtons[0]);
 
     await waitFor(() => {
       expect(mockedApi.delete).toHaveBeenCalledWith('1');
     });
-=======
-describe('AgentForbiddenActions', () => {
-  const user = userEvent.setup();
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should render without crashing', () => {
-    render(<AgentForbiddenActions />, {
-      wrapper: ({ children }) => <div>{children}</div>,
-    });
-    expect(document.body).toBeInTheDocument();
-  });
-
-  it('should allow adding and removing actions', async () => {
-    render(<AgentForbiddenActions />, {
-      wrapper: ({ children }) => <div>{children}</div>,
-    });
-
-    const input = screen.getByPlaceholderText('Enter action');
-    await user.type(input, 'test-action');
-    await user.click(screen.getByRole('button', { name: /add action/i }));
-
-    expect(screen.getAllByTestId('forbidden-action-row')).toHaveLength(1);
-
-    await user.click(screen.getByRole('button', { name: /remove/i }));
-    expect(screen.queryAllByTestId('forbidden-action-row')).toHaveLength(0);
->>>>>>> origin/6iktiw-codex/build-agentforbiddenactions-component
   });
 });

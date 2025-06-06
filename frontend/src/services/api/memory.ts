@@ -103,7 +103,6 @@ export const memoryApi = {
     return response.data;
   },
 
-<<<<<<< HEAD
   // Upload and ingest a file
   uploadFile: async (file: File): Promise<MemoryEntity> => {
     const formData = new FormData();
@@ -116,31 +115,6 @@ export const memoryApi = {
       }
     );
     return response.data;
-=======
-  // Upload a file directly
-  uploadFile: async (file: File): Promise<MemoryEntity> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    const headers: HeadersInit = {};
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (token) {
-      (headers as Record<string, string>).Authorization = `Bearer ${token}`;
-    }
-    const resp = await fetch(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, '/ingest'),
-      {
-        method: 'POST',
-        body: formData,
-        headers,
-      }
-    );
-    if (!resp.ok) {
-      const data = await resp.json().catch(() => ({}));
-      throw new Error(data.detail || resp.statusText);
-    }
-    return (await resp.json()) as MemoryEntity;
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
   },
 
   // Ingest content directly from a URL

@@ -77,3 +77,7 @@ async def list_forbidden_actions_tool(
     except Exception as exc:  # pragma: no cover - unexpected DB failure
         logger.error(f"MCP list forbidden actions failed: {exc}")
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+# Alias for backward compatibility
+add_forbidden_action_tool = create_forbidden_action_tool

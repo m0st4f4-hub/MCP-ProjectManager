@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import or_, select, and_
 
 from .. import models
 from ..schemas.memory import (
@@ -34,139 +35,144 @@ class MemoryService:
         self.db = db
 
     async def create_entity(self, entity_data: MemoryEntityCreate) -> models.MemoryEntity:
-        return await create_memory_entity(self.db, entity_data)
+        """Create a new memory entity."""
+        try:
+            db_entity = models.MemoryEntity(
+                entity_type=entity_data.entity_type,
+                name=entity_data.name,
+                content=entity_data.content,
+                entity_metadata=entity_data.entity_metadata,
+                source=entity_data.source,
+                source_metadata=entity_data.source_metadata,
+                created_by_user_id=entity_data.created_by_user_id,
+            )
+            self.db.add(db_entity)
+            await self.db.commit()
+            await self.db.refresh(db_entity)
+            logger.info(f"Created new memory entity: {db_entity.name} ({db_entity.id})")
+            return db_entity
+        except IntegrityError:
+            await self.db.rollback()
+            raise DuplicateEntityError("MemoryEntity", entity_data.name)
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Error creating memory entity: {e}")
+            raise ServiceError("Error creating memory entity")
 
     async def get_entity(self, entity_id: int) -> Optional[models.MemoryEntity]:
-        return await get_memory_entity(self.db, entity_id)
+        """Get a memory entity by ID."""
+        result = await self.db.execute(select(models.MemoryEntity).where(models.MemoryEntity.id == entity_id))
+        return result.scalar_one_or_none()
 
     async def get_memory_entity_by_id(self, entity_id: int) -> Optional[models.MemoryEntity]:
+        """Get a memory entity by ID (alias for get_entity)."""
         return await self.get_entity(entity_id)
 
     async def get_entities(
         self, skip: int = 0, limit: int = 100
     ) -> List[models.MemoryEntity]:
-        return await get_memory_entities(self.db, skip, limit)
+        """Get all memory entities with pagination."""
+        result = await self.db.execute(select(models.MemoryEntity).offset(skip).limit(limit))
+        return list(result.scalars().all())
 
     async def update_entity(
         self, entity_id: int, entity_update: MemoryEntityUpdate
     ) -> Optional[models.MemoryEntity]:
-        return await update_memory_entity(self.db, entity_id, entity_update)
+        """Update a memory entity."""
+        result = await self.db.execute(select(models.MemoryEntity).where(models.MemoryEntity.id == entity_id))
+        db_entity = result.scalar_one_or_none()
+        if not db_entity:
+            return None
+
+        update_data = entity_update.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(db_entity, field, value)
+
+        try:
+            await self.db.commit()
+            await self.db.refresh(db_entity)
+            logger.info(f"Updated memory entity: {entity_id}")
+            return db_entity
+        except Exception as e:
+            await self.db.rollback()
+            logger.error(f"Error updating memory entity {entity_id}: {e}")
+            raise ServiceError("Error updating memory entity")
 
     async def delete_entity(self, entity_id: int) -> bool:
-        return await delete_memory_entity(self.db, entity_id)
+        """Delete a memory entity."""
+        result = await self.db.execute(select(models.MemoryEntity).where(models.MemoryEntity.id == entity_id))
+        db_entity = result.scalar_one_or_none()
+        if not db_entity:
+            return False
+        await self.db.delete(db_entity)
+        await self.db.commit()
+        return True
 
     async def ingest_file(
         self,
         ingest_input: Union[FileIngestInput, UploadFile, str],
         user_id: Optional[str] = None,
     ) -> models.MemoryEntity:
-        file_path = None
-        upload: Optional[UploadFile] = None
-        if isinstance(ingest_input, UploadFile):
-            upload = ingest_input
-        elif isinstance(ingest_input, FileIngestInput):
-            file_path = ingest_input.file_path
-        else:
-            file_path = str(ingest_input)
-
+        """Ingest a file into memory."""
         try:
-            if upload is not None:
-                filename = upload.filename
-                content_bytes = await upload.read()
-                extension = os.path.splitext(filename)[1].lower()
-                file_info = {
-                    "filename": filename,
-                    "path": None,
-                    "size": len(content_bytes),
-                    "modified_time": None,
-                    "extension": extension,
-                }
-                if extension in [
-                    ".txt",
-                    ".md",
-                    ".py",
-                    ".js",
-                    ".json",
-                    ".yml",
-                    ".yaml",
-                    ".xml",
-                    ".csv",
-                ]:
-                    try:
-                        file_content = content_bytes.decode("utf-8")
-                    except UnicodeDecodeError:
-                        file_content = content_bytes.decode("latin-1")
-                else:
-                    file_content = f"Binary file: {filename}"
+            if isinstance(ingest_input, str):
+                # File path
+                file_path = ingest_input
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                
                 entity_create = MemoryEntityCreate(
                     entity_type="file",
-                    content=file_content,
-                    entity_metadata=file_info,
-                    source="file_upload",
-                    source_metadata={"filename": filename},
+                    name=file_path.split("/")[-1],
+                    content=content,
+                    entity_metadata={"file_path": file_path},
+                    source="file_ingestion",
+                    source_metadata={"file_path": file_path},
                     created_by_user_id=user_id,
                 )
-                return await self.create_entity(entity_create)
-            if file_path is None:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="file_path is required",
-                )
-            if not os.path.exists(file_path):
-                logger.error(
-                    f"File not found during ingestion: {file_path}"
-                )
-                raise EntityNotFoundError("File", file_path)
-
-            file_stat = os.stat(file_path)
-            filename = os.path.basename(file_path)
-            file_info = {
-                "filename": filename,
-                "path": filename,
-                "size": file_stat.st_size,
-                "modified_time": file_stat.st_mtime,
-                "extension": os.path.splitext(file_path)[1].lower(),
-            }
-
-            file_content = ""
-            if file_info["extension"] in [
-                ".txt",
-                ".md",
-                ".py",
-                ".js",
-                ".json",
-                ".yml",
-                ".yaml",
-                ".xml",
-                ".csv",
-            ]:
+            elif isinstance(ingest_input, UploadFile):
+                # UploadFile
+                content = await ingest_input.read()
                 try:
-                    async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
-                        file_content = await f.read()
+                    text_content = content.decode("utf-8")
                 except UnicodeDecodeError:
-                    async with aiofiles.open(file_path, 'r', encoding='latin-1') as f:
-                        file_content = await f.read()
-            else:
-                file_content = f"Binary file: {file_info['filename']}"
+                    try:
+                        text_content = content.decode("latin-1")
+                    except Exception:
+                        text_content = f"Binary file: {ingest_input.filename}"
 
-            entity_create = MemoryEntityCreate(
-                entity_type="file",
-                content=file_content,
-                entity_metadata=file_info,
-                source="file_ingestion",
-                source_metadata={"path": filename},
-                created_by_user_id=user_id
-            )
+                entity_create = MemoryEntityCreate(
+                    entity_type="file",
+                    name=ingest_input.filename or "uploaded_file",
+                    content=text_content,
+                    entity_metadata={
+                        "filename": ingest_input.filename,
+                        "content_type": ingest_input.content_type,
+                        "size": len(content),
+                    },
+                    source="file_upload",
+                    source_metadata=None,
+                    created_by_user_id=user_id,
+                )
+            else:
+                # FileIngestInput
+                entity_create = MemoryEntityCreate(
+                    entity_type="file",
+                    name=ingest_input.name,
+                    content=ingest_input.content,
+                    entity_metadata=ingest_input.metadata,
+                    source="file_ingestion",
+                    source_metadata=ingest_input.source_metadata,
+                    created_by_user_id=user_id,
+                )
+
             return await self.create_entity(entity_create)
         except EntityNotFoundError:
             raise
         except Exception as e:
-            logger.error(f"Error ingesting file {file_path}: {e}")
+            logger.error(f"Error ingesting file: {e}")
             raise ServiceError(f"Error ingesting file: {str(e)}")
 
-<<<<<<< HEAD
-    async def ingest_url(
-=======
     def ingest_uploaded_file(
         self,
         filename: str,
@@ -192,6 +198,7 @@ class MemoryService:
 
             entity_create = MemoryEntityCreate(
                 entity_type="file",
+                name=filename,
                 content=text_content,
                 entity_metadata=file_info,
                 source="file_upload",
@@ -206,16 +213,17 @@ class MemoryService:
                 detail=f"Error ingesting uploaded file: {str(e)}",
             )
 
-    def ingest_url(
->>>>>>> origin/codex/add-file-selection-and-display-results
+    async def ingest_url(
         self, url: str, user_id: Optional[str] = None
     ) -> models.MemoryEntity:
+        """Ingest content from a URL."""
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(url)
             response.raise_for_status()
             entity_create = MemoryEntityCreate(
                 entity_type="url",
+                name=url,
                 content=response.text,
                 entity_metadata={"url": url, "status_code": response.status_code},
                 source="url_ingestion",
@@ -233,9 +241,11 @@ class MemoryService:
         user_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> models.MemoryEntity:
+        """Ingest text content."""
         try:
             entity_create = MemoryEntityCreate(
                 entity_type="text",
+                name="text_content",
                 content=text,
                 entity_metadata=metadata,
                 source="text_ingestion",
@@ -248,44 +258,23 @@ class MemoryService:
             raise ServiceError(f"Error ingesting text: {str(e)}")
 
     async def get_file_content(self, entity_id: int) -> str:
+        """Get file content by entity ID."""
         entity = await self.get_entity(entity_id)
         if not entity:
             raise EntityNotFoundError("MemoryEntity", entity_id)
         return entity.content or ""
 
     async def get_file_metadata(self, entity_id: int) -> Dict[str, Any]:
+        """Get file metadata by entity ID."""
         entity = await self.get_entity(entity_id)
         if not entity:
             raise EntityNotFoundError("MemoryEntity", entity_id)
         return entity.entity_metadata or {}
 
-    async def create_memory_entity(self, entity: MemoryEntityCreate) -> models.MemoryEntity:
-        try:
-            db_entity = models.MemoryEntity(
-                type=entity.type,
-                name=entity.name,
-                description=entity.description,
-                metadata_=entity.metadata_
-            )
-            self.db.add(db_entity)
-            await self.db.commit()
-            await self.db.refresh(db_entity)
-            logger.info(f"Created new memory entity: {db_entity.name} ({db_entity.id})")
-            return db_entity
-        except IntegrityError:
-            await self.db.rollback()
-            raise DuplicateEntityError("MemoryEntity", entity.name)
-        except Exception as e:
-            await self.db.rollback()
-            logger.error(f"Error creating memory entity: {e}")
-            raise ServiceError("Error creating memory entity")
-
     async def get_memory_entity_by_name(self, name: str) -> Optional[models.MemoryEntity]:
-        return (
-            await self.db.query(models.MemoryEntity)
-            .filter(models.MemoryEntity.name == name)
-            .first()
-        )
+        """Get memory entity by name."""
+        result = await self.db.execute(select(models.MemoryEntity).where(models.MemoryEntity.name == name))
+        return result.scalar_one_or_none()
 
     async def get_knowledge_graph(
         self,
@@ -295,45 +284,54 @@ class MemoryService:
         offset: int = 0,
     ) -> Dict[str, List[Any]]:
         """Retrieve entities and relations with optional filters."""
-
-        entity_query = self.db.query(models.MemoryEntity)
+        entity_query = select(models.MemoryEntity)
         if entity_type:
-            entity_query = entity_query.filter(
-                models.MemoryEntity.entity_type == entity_type
-            )
-        entities = await entity_query.offset(offset).limit(limit).all()
+            entity_query = entity_query.where(models.MemoryEntity.entity_type == entity_type)
+        entity_query = entity_query.offset(offset).limit(limit)
+        entity_result = await self.db.execute(entity_query)
+        entities = list(entity_result.scalars().all())
 
-        relation_query = self.db.query(models.MemoryRelation)
+        relation_query = select(models.MemoryRelation)
         if relation_type:
-            relation_query = relation_query.filter(
-                models.MemoryRelation.relation_type == relation_type
-            )
-        relations = await relation_query.offset(offset).limit(limit).all()
+            relation_query = relation_query.where(models.MemoryRelation.relation_type == relation_type)
+        relation_query = relation_query.offset(offset).limit(limit)
+        relation_result = await self.db.execute(relation_query)
+        relations = list(relation_result.scalars().all())
 
         return {"entities": entities, "relations": relations}
 
     async def get_memory_entities(
         self,
-        type: Optional[str] = None,
+        entity_type: Optional[str] = None,
         name: Optional[str] = None,
         skip: int = 0,
         limit: int = 100,
     ) -> List[models.MemoryEntity]:
-        query = self.db.query(models.MemoryEntity)
-        if type:
-            query = query.filter(models.MemoryEntity.type == type)
+        """Get memory entities with filters."""
+        query = select(models.MemoryEntity)
+        conditions = []
+        if entity_type:
+            conditions.append(models.MemoryEntity.entity_type == entity_type)
         if name:
-            query = query.filter(models.MemoryEntity.name == name)
-        return await query.offset(skip).limit(limit).all()
+            conditions.append(models.MemoryEntity.name == name)
+        
+        if conditions:
+            query = query.where(and_(*conditions))
+        
+        query = query.offset(skip).limit(limit)
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
 
     async def get_memory_entities_by_type(
         self, entity_type: str, skip: int = 0, limit: int = 100
     ) -> List[models.MemoryEntity]:
-        return await self.db.query(models.MemoryEntity).filter(
-            models.MemoryEntity.type == entity_type
-        ).offset(skip).limit(limit).all()
+        """Get memory entities by type."""
+        query = select(models.MemoryEntity).where(models.MemoryEntity.entity_type == entity_type).offset(skip).limit(limit)
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
 
     async def delete_memory_entity(self, entity_id: int) -> bool:
+        """Delete memory entity by ID."""
         db_entity = await self.get_memory_entity_by_id(entity_id)
         if not db_entity:
             return False
@@ -344,6 +342,7 @@ class MemoryService:
     async def add_observation_to_entity(
         self, entity_id: int, observation: MemoryObservationCreate
     ) -> models.MemoryObservation:
+        """Add observation to entity."""
         try:
             db_observation = models.MemoryObservation(
                 entity_id=entity_id,
@@ -368,18 +367,27 @@ class MemoryService:
         skip: int = 0,
         limit: int = 100,
     ) -> List[models.MemoryObservation]:
-        query = self.db.query(models.MemoryObservation)
+        """Get observations with filters."""
+        query = select(models.MemoryObservation)
+        conditions = []
         if entity_id:
-            query = query.filter(models.MemoryObservation.entity_id == entity_id)
+            conditions.append(models.MemoryObservation.entity_id == entity_id)
         if search_query:
-            query = query.filter(models.MemoryObservation.content.ilike(f'%{search_query}%'))
-        return await query.offset(skip).limit(limit).all()
+            conditions.append(models.MemoryObservation.content.ilike(f'%{search_query}%'))
+        
+        if conditions:
+            query = query.where(and_(*conditions))
+        
+        query = query.offset(skip).limit(limit)
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
 
-<<<<<<< HEAD
     async def update_observation(
         self, observation_id: int, observation_update: MemoryObservationCreate
     ) -> Optional[models.MemoryObservation]:
-        db_observation = await self.db.query(models.MemoryObservation).filter(models.MemoryObservation.id == observation_id).first()
+        """Update observation."""
+        result = await self.db.execute(select(models.MemoryObservation).where(models.MemoryObservation.id == observation_id))
+        db_observation = result.scalar_one_or_none()
         if not db_observation:
             return None
 
@@ -398,7 +406,8 @@ class MemoryService:
             raise ServiceError("Error updating memory observation")
 
     async def delete_observation(self, observation_id: int) -> bool:
-        db_observation = await self.db.query(models.MemoryObservation).filter(models.MemoryObservation.id == observation_id).first()
+        result = await self.db.execute(select(models.MemoryObservation).where(models.MemoryObservation.id == observation_id))
+        db_observation = result.scalar_one_or_none()
         if not db_observation:
             return False
         try:
@@ -412,73 +421,6 @@ class MemoryService:
             raise ServiceError("Error deleting memory observation")
 
     async def create_memory_relation(
-=======
-    def update_observation(
-        self, observation_id: int, observation_update: MemoryObservationCreate
-    ) -> Optional[models.MemoryObservation]:
-        db_observation = (
-            self.db.query(models.MemoryObservation)
-            .filter(models.MemoryObservation.id == observation_id)
-            .first()
-        )
-        if not db_observation:
-            return None
-
-        update_data = observation_update.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(db_observation, field, value)
-
-        self.db.commit()
-        self.db.refresh(db_observation)
-        logger.info(f"Updated memory observation: {observation_id}")
-        return db_observation
-
-    def delete_observation(self, observation_id: int) -> Optional[models.MemoryObservation]:
-        db_observation = (
-            self.db.query(models.MemoryObservation)
-            .filter(models.MemoryObservation.id == observation_id)
-            .first()
-        )
-        if db_observation:
-            self.db.delete(db_observation)
-            self.db.commit()
-            logger.info(f"Deleted memory observation: {observation_id}")
-        return db_observation
-
-    def update_observation(
-        self, observation_id: int, observation_update: MemoryObservationCreate
-    ) -> Optional[models.MemoryObservation]:
-        db_observation = (
-            self.db.query(models.MemoryObservation)
-            .filter(models.MemoryObservation.id == observation_id)
-            .first()
-        )
-        if not db_observation:
-            return None
-
-        update_data = observation_update.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(db_observation, field, value)
-
-        self.db.commit()
-        self.db.refresh(db_observation)
-        logger.info(f"Updated memory observation: {observation_id}")
-        return db_observation
-
-    def delete_observation(self, observation_id: int) -> Optional[models.MemoryObservation]:
-        db_observation = (
-            self.db.query(models.MemoryObservation)
-            .filter(models.MemoryObservation.id == observation_id)
-            .first()
-        )
-        if db_observation:
-            self.db.delete(db_observation)
-            self.db.commit()
-            logger.info(f"Deleted memory observation: {observation_id}")
-        return db_observation
-
-    def create_memory_relation(
->>>>>>> origin/8tnwtv-codex/extend-memory_service-with-update-and-delete
         self, relation: MemoryRelationCreate
     ) -> models.MemoryRelation:
         try:
@@ -489,7 +431,7 @@ class MemoryService:
                 metadata_=relation.metadata_,
                 created_by_user_id=relation.created_by_user_id
             )
-            self.db.add(db_relation)
+            await self.db.add(db_relation)
             await self.db.commit()
             await self.db.refresh(db_relation)
             logger.info(f"Created new memory relation: {db_relation.from_entity_id}-{db_relation.to_entity_id}-{db_relation.type}")
@@ -505,7 +447,8 @@ class MemoryService:
     async def update_memory_relation(
         self, relation_id: int, relation_update: MemoryRelationCreate
     ) -> models.MemoryRelation:
-        db_relation = await self.db.query(models.MemoryRelation).filter(models.MemoryRelation.id == relation_id).first()
+        result = await self.db.execute(select(models.MemoryRelation).where(models.MemoryRelation.id == relation_id))
+        db_relation = result.scalar_one_or_none()
         if not db_relation:
             raise EntityNotFoundError("MemoryRelation", relation_id)
 
@@ -528,53 +471,34 @@ class MemoryService:
     async def get_memory_relation(
         self, relation_id: int
     ) -> Optional[models.MemoryRelation]:
-        return await self.db.query(models.MemoryRelation).filter(models.MemoryRelation.id == relation_id).first()
+        result = await self.db.execute(select(models.MemoryRelation).where(models.MemoryRelation.id == relation_id))
+        return result.scalar_one_or_none()
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     async def get_relations_for_entity(
-        self, entity_id: int, relation_type: Optional[str] = None
-=======
-=======
->>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
-    def get_relations_for_entity(
         self,
         entity_id: int,
         relation_type: Optional[str] = None,
         skip: int = 0,
         limit: int = 100,
-<<<<<<< HEAD
->>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
-=======
->>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
     ) -> List[models.MemoryRelation]:
-        query = self.db.query(models.MemoryRelation).filter(
-            (models.MemoryRelation.from_entity_id == entity_id) |
-            (models.MemoryRelation.to_entity_id == entity_id)
+        query = select(models.MemoryRelation).where(
+            or_(
+                models.MemoryRelation.from_entity_id == entity_id,
+                models.MemoryRelation.to_entity_id == entity_id
+            )
         )
         if relation_type:
-<<<<<<< HEAD
-            query = query.filter(models.MemoryRelation.type == relation_type)
-=======
-            query = query.filter(models.MemoryRelation.relation_type == relation_type)
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
-=======
-<<<<<<< HEAD
->>>>>>> 77bcf5ef27a2d755e4eaede0da22116c82360753
-        return await query.all()
-=======
-        return query.offset(skip).limit(limit).all()
->>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
-=======
-        return query.offset(skip).limit(limit).all()
->>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
+            query = query.where(models.MemoryRelation.relation_type == relation_type)
+        
+        query = query.offset(skip).limit(limit)
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
 
     async def delete_memory_relation(
         self, relation_id: int
     ) -> bool:
-        db_relation = await self.db.query(models.MemoryRelation).filter(models.MemoryRelation.id == relation_id).first()
+        result = await self.db.execute(select(models.MemoryRelation).where(models.MemoryRelation.id == relation_id))
+        db_relation = result.scalar_one_or_none()
         if not db_relation:
             return False
         await self.db.delete(db_relation)
@@ -585,9 +509,9 @@ class MemoryService:
     async def get_memory_relations_by_type(
         self, relation_type: str, skip: int = 0, limit: int = 100
     ) -> List[models.MemoryRelation]:
-        return await self.db.query(models.MemoryRelation).filter(
-            models.MemoryRelation.type == relation_type
-        ).offset(skip).limit(limit).all()
+        query = select(models.MemoryRelation).where(models.MemoryRelation.relation_type == relation_type).offset(skip).limit(limit)
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
 
     async def get_memory_relations_between_entities(
         self,
@@ -597,42 +521,37 @@ class MemoryService:
         skip: int = 0,
         limit: int = 100,
     ) -> List[models.MemoryRelation]:
-        query = self.db.query(models.MemoryRelation).filter(
-            models.MemoryRelation.from_entity_id == from_entity_id,
-            models.MemoryRelation.to_entity_id == to_entity_id
+        query = select(models.MemoryRelation).where(
+            and_(
+                models.MemoryRelation.from_entity_id == from_entity_id,
+                models.MemoryRelation.to_entity_id == to_entity_id
+            )
         )
         if relation_type:
-            query = query.filter(models.MemoryRelation.type == relation_type)
-        return await query.offset(skip).limit(limit).all()
+            query = query.where(models.MemoryRelation.relation_type == relation_type)
+        
+        query = query.offset(skip).limit(limit)
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
 
     async def search(
         self, query: str, limit: int = 10
     ) -> List[models.MemoryEntity]:
-<<<<<<< HEAD
-        return await self.db.query(models.MemoryEntity).filter(
-            (models.MemoryEntity.content.ilike(f'%{query}%')) |
-            (models.MemoryEntity.name.ilike(f'%{query}%'))
-        ).limit(limit).all()
-=======
-<<<<<<< HEAD
-        return await self.db.query(models.MemoryEntity).filter(models.MemoryEntity.content.ilike(f"%{query}%")).limit(limit).all()
+        search_query = select(models.MemoryEntity).where(
+            or_(
+                models.MemoryEntity.content.ilike(f'%{query}%'),
+                models.MemoryEntity.name.ilike(f'%{query}%')
+            )
+        ).limit(limit)
+        result = await self.db.execute(search_query)
+        return list(result.scalars().all())
 
-    def get_knowledge_graph(self) -> Dict[str, Any]:
-        entities = self.get_memory_entities()
-        relations = self.get_memory_relations()
-
-        graph = {
-            "entities": [entity.to_dict() for entity in entities],
-            "relations": [relation.to_dict() for relation in relations],
-        }
-        return graph
-=======
-        return self.get_memory_entities(name=query, limit=limit)
-
-    def get_knowledge_graph(self) -> Dict[str, List[models.BaseModel]]:
+    async def get_knowledge_graph(self) -> Dict[str, List[models.BaseModel]]:
         """Return all memory entities and relations."""
-        entities = self.db.query(models.MemoryEntity).all()
-        relations = self.db.query(models.MemoryRelation).all()
+        entities_result = await self.db.execute(select(models.MemoryEntity))
+        entities = list(entities_result.scalars().all())
+        
+        relations_result = await self.db.execute(select(models.MemoryRelation))
+        relations = list(relations_result.scalars().all())
+        
         return {"entities": entities, "relations": relations}
->>>>>>> origin/codex/add-get-/graph-route-and-tests
->>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662

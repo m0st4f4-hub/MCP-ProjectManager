@@ -32,7 +32,7 @@ class TaskFileAssociationService:
         # Validation for entity existence should ideally happen before this service call,
         # or be handled within the CRUD create function (which it now is for association existence).
         # Create schema and delegate to CRUD create function
-        task_file_create_schema = schemas.TaskFileAssociationCreate(
+        task_file_create_schema = TaskFileAssociationCreate(
             task_project_id=task_project_id,
             task_task_number=task_task_number,
             file_memory_entity_id=file_memory_entity_id

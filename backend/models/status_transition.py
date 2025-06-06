@@ -1,8 +1,8 @@
-from sqlalchemy import Integer, Enum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Column, Integer, Enum
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
-from ..enums import TaskStatusEnum
+from backend.enums import TaskStatusEnum
 
 class StatusTransition(Base):
     """Allowed status transitions for tasks."""

@@ -10,11 +10,12 @@ MemoryEntity = "MemoryEntity"  # --- MemoryEntity Schemas ---
 class MemoryEntityBase(BaseModel):
     """Base schema for MemoryEntity attributes."""
     entity_type: str = Field(..., description="The type of the memory entity (e.g., 'file', 'url', 'text').")
-    content: Optional[str] = Field(None, description="The main content of the entity.")
+    name: str = Field(..., description="Name or title of the memory entity.")
+    content: str = Field(..., description="The main content of the memory entity.")
     entity_metadata: Optional[Dict[str, Any]] = Field(None, description="Structured metadata about the entity.")
-    source: Optional[str] = Field(None, description="Where the entity came from (e.g., 'file_ingestion', 'web_scrape').")
+    source: str = Field(..., description="Source of the memory entity (e.g., 'file_upload', 'url_ingestion').")
     source_metadata: Optional[Dict[str, Any]] = Field(None, description="Metadata about the source.")
-    created_by_user_id: Optional[str] = Field(None, description="The ID of the user who created the entity, if applicable.")
+    created_by_user_id: Optional[str] = Field(None, description="ID of the user who created this entity.")
 
 class MemoryEntityCreate(MemoryEntityBase):
     """Schema for creating a new MemoryEntity."""
@@ -23,6 +24,7 @@ class MemoryEntityCreate(MemoryEntityBase):
 class MemoryEntityUpdate(BaseModel):
     """Schema for updating an existing MemoryEntity. All fields are optional."""
     entity_type: Optional[str] = Field(None, description="Update entity type.")
+    name: Optional[str] = Field(None, description="Update name.")
     content: Optional[str] = Field(None, description="Update content.")
     entity_metadata: Optional[Dict[str, Any]] = Field(None, description="Update metadata.")
     source: Optional[str] = Field(None, description="Update source.")

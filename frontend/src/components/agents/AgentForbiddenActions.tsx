@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 "use client";
 import React, { useEffect, useState } from "react";
 import {
@@ -11,9 +10,14 @@ import {
   Spinner,
   Text,
   useToast,
+  VStack,
+  HStack,
+  IconButton,
+  Textarea,
 } from "@chakra-ui/react";
+import { DeleteIcon, EditIcon, CheckIcon, CloseIcon } from "@chakra-ui/icons";
 import { forbiddenActionsApi } from "@/services/api";
-import type { AgentForbiddenAction } from "@/types";
+import type { AgentForbiddenAction } from "@/types/agents";
 
 interface AgentForbiddenActionsProps {
   agentRoleId: string;
@@ -25,6 +29,9 @@ const AgentForbiddenActions: React.FC<AgentForbiddenActionsProps> = ({ agentRole
   const [newAction, setNewAction] = useState("");
   const [newReason, setNewReason] = useState("");
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editAction, setEditAction] = useState("");
+  const [editReason, setEditReason] = useState("");
 
   const loadActions = async () => {
     try {
@@ -90,6 +97,40 @@ const AgentForbiddenActions: React.FC<AgentForbiddenActionsProps> = ({ agentRole
     }
   };
 
+  const startEdit = (action: AgentForbiddenAction) => {
+    setEditingId(action.id);
+    setEditAction(action.action);
+    setEditReason(action.reason || '');
+  };
+
+  const handleUpdate = async (id: string) => {
+    setLoading(true);
+    try {
+      await forbiddenActionsApi.update(id, {
+        action: editAction,
+        reason: editReason || null,
+      });
+      setEditingId(null);
+      await loadActions();
+      toast({
+        title: "Forbidden action updated",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to update forbidden action",
+        description: err instanceof Error ? err.message : String(err),
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!actions) {
     return (
       <Flex justify="center" align="center" p="4" minH="100px">
@@ -100,113 +141,113 @@ const AgentForbiddenActions: React.FC<AgentForbiddenActionsProps> = ({ agentRole
 
   return (
     <Box>
-      <Flex mb={2} gap={2}>
-        <Input
-          placeholder="Forbidden action"
-          value={newAction}
-          onChange={(e) => setNewAction(e.target.value)}
-        />
-        <Input
-          placeholder="Reason (optional)"
-          value={newReason}
-          onChange={(e) => setNewReason(e.target.value)}
-        />
-        <Button onClick={handleCreate} isLoading={loading} disabled={!newAction.trim()}>
-          Add
-        </Button>
-      </Flex>
-      {actions.length === 0 ? (
-        <Text>No forbidden actions.</Text>
-      ) : (
+      <VStack spacing={4} align="stretch">
+        {/* Add new forbidden action form */}
+        <Box p={4} border="1px" borderColor="gray.200" borderRadius="md">
+          <Text fontWeight="bold" mb={2}>
+            Add New Forbidden Action
+          </Text>
+          <VStack spacing={2}>
+            <Input
+              placeholder="Action name"
+              value={newAction}
+              onChange={(e) => setNewAction(e.target.value)}
+            />
+            <Textarea
+              placeholder="Reason (optional)"
+              value={newReason}
+              onChange={(e) => setNewReason(e.target.value)}
+            />
+            <Button
+              onClick={handleCreate}
+              isLoading={loading}
+              isDisabled={!newAction.trim()}
+              colorScheme="red"
+              w="full"
+            >
+              Add Forbidden Action
+            </Button>
+          </VStack>
+        </Box>
+
+        {/* Forbidden actions list */}
         <List spacing={2}>
           {actions.map((action) => (
-            <ListItem key={action.id} borderWidth="1px" borderRadius="md" p={2}>
-              <Flex justify="space-between" align="center">
-                <Text>{action.action}</Text>
-                <Button size="sm" colorScheme="red" onClick={() => handleDelete(action.id)}>
-                  Delete
-                </Button>
-              </Flex>
+            <ListItem
+              key={action.id}
+              p={3}
+              border="1px"
+              borderColor="gray.200"
+              borderRadius="md"
+            >
+              {editingId === action.id ? (
+                <VStack spacing={2} align="stretch">
+                  <Input
+                    value={editAction}
+                    onChange={(e) => setEditAction(e.target.value)}
+                  />
+                  <Textarea
+                    value={editReason}
+                    onChange={(e) => setEditReason(e.target.value)}
+                  />
+                  <HStack>
+                    <Button
+                      size="sm"
+                      colorScheme="green"
+                      leftIcon={<CheckIcon />}
+                      onClick={() => handleUpdate(action.id)}
+                      isLoading={loading}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      leftIcon={<CloseIcon />}
+                      onClick={() => setEditingId(null)}
+                    >
+                      Cancel
+                    </Button>
+                  </HStack>
+                </VStack>
+              ) : (
+                <Flex justify="space-between" align="center">
+                  <Box flex={1}>
+                    <Text fontWeight="semibold">{action.action}</Text>
+                    {action.reason && (
+                      <Text fontSize="sm" color="gray.600">
+                        Reason: {action.reason}
+                      </Text>
+                    )}
+                  </Box>
+                  <HStack>
+                    <IconButton
+                      size="sm"
+                      icon={<EditIcon />}
+                      aria-label="Edit forbidden action"
+                      onClick={() => startEdit(action)}
+                    />
+                    <IconButton
+                      size="sm"
+                      icon={<DeleteIcon />}
+                      aria-label="Delete forbidden action"
+                      colorScheme="red"
+                      onClick={() => handleDelete(action.id)}
+                      isLoading={loading}
+                    />
+                  </HStack>
+                </Flex>
+              )}
             </ListItem>
           ))}
         </List>
-      )}
-=======
-'use client';
 
-import React, { useState } from 'react';
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  IconButton,
-  Input,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-} from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
-
-const AgentForbiddenActions: React.FC = () => {
-  const [action, setAction] = useState('');
-  const [actions, setActions] = useState<string[]>([]);
-
-  const handleAdd = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = action.trim();
-    if (!trimmed) return;
-    setActions((prev) => [...prev, trimmed]);
-    setAction('');
-  };
-
-  const handleRemove = (index: number) => {
-    setActions((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  return (
-    <Box p={4}>
-      <Box as="form" onSubmit={handleAdd} mb={4}>
-        <FormControl>
-          <FormLabel htmlFor="forbidden-action">Forbidden Action</FormLabel>
-          <Input
-            id="forbidden-action"
-            value={action}
-            onChange={(e) => setAction(e.target.value)}
-            placeholder="Enter action"
-          />
-        </FormControl>
-        <Button mt={2} type="submit" colorScheme="blue">
-          Add Action
-        </Button>
-      </Box>
-      <Table variant="simple">
-        <Thead>
-          <Tr>
-            <Th>Action</Th>
-            <Th>Remove</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {actions.map((act, idx) => (
-            <Tr key={idx} data-testid="forbidden-action-row">
-              <Td>{act}</Td>
-              <Td>
-                <IconButton
-                  aria-label="Remove"
-                  icon={<DeleteIcon />}
-                  size="sm"
-                  onClick={() => handleRemove(idx)}
-                />
-              </Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
->>>>>>> origin/6iktiw-codex/build-agentforbiddenactions-component
+        {actions.length === 0 && (
+          <Text textAlign="center" color="gray.500" py={4}>
+            No forbidden actions defined yet
+          </Text>
+        )}
+      </VStack>
     </Box>
   );
 };

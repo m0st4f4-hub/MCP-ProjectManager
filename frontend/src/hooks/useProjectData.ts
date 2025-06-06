@@ -1,159 +1,105 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Project, Task } from '../types';
-import { api } from '../services/api';
+import {
+  Project,
+  Task,
+  getProjectById,
+  updateProject as apiUpdateProject,
+  getAllTasksForProject,
+  createTask as apiCreateTask,
+  updateTask as apiUpdateTask,
+  deleteTask as apiDeleteTask,
+} from '../services/api';
+import * as logger from '../utils/logger';
 
-interface UseProjectDataReturn {
-  project: Project | null;
-  tasks: Task[];
-  loading: boolean;
-  error: string | null;
-  refresh: () => Promise<void>;
-  updateProject: (updates: Partial<Project>) => Promise<void>;
-  createTask: (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
-  updateTask: (taskId: string, updates: Partial<Task>) => Promise<void>;
-  deleteTask: (taskId: string) => Promise<void>;
-}
-
-/**
- * Custom hook for managing project data and related tasks
- * @param projectId - The project ID to fetch data for
- * @returns Project data, tasks, and management functions
- */
-<<<<<<< HEAD
-<<<<<<< HEAD
-export function useProjectData(projectId: string | undefined): UseProjectDataReturn {
-=======
-=======
->>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
-export interface ProjectDataOptions {
+export interface UseProjectDataOptions {
   page?: number;
   pageSize?: number;
 }
 
+export interface UseProjectDataResult {
+  project: Project | null;
+  tasks: Task[];
+  loading: boolean;
+  error: string | null;
+  refreshData: () => void;
+  updateProject: (data: Partial<Project>) => Promise<void>;
+  createTask: (data: Omit<Task, 'id' | 'project_id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  updateTask: (taskId: string, data: Partial<Task>) => Promise<void>;
+  deleteTask: (taskId: string) => Promise<void>;
+}
+
+/**
+ * Custom hook to fetch and manage a single project and its associated tasks.
+ * @param projectId The ID of the project.
+ * @param options Pagination options for tasks.
+ * @returns An object with project data, tasks, loading/error states, and management functions.
+ */
 export const useProjectData = (
   projectId: string,
-  options: ProjectDataOptions = {}
+  options: UseProjectDataOptions = {}
 ): UseProjectDataResult => {
-<<<<<<< HEAD
->>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
-=======
->>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-<<<<<<< HEAD
-  
-  const fetchProjectData = useCallback(async () => {
-    if (!projectId) {
-      setProject(null);
-      setTasks([]);
-      setLoading(false);
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Fetch project and tasks in parallel
-      const [projectResponse, tasksResponse] = await Promise.all([
-        api.get(`/projects/${projectId}`),
-        api.get(`/projects/${projectId}/tasks`)
-=======
 
-  const { page = 0, pageSize = 100 } = options;
-
-  const { page = 0, pageSize = 100 } = options;
+  const { page = 0, pageSize = 20 } = options;
 
   const fetchData = useCallback(async () => {
     if (!projectId) return;
+
     setLoading(true);
     setError(null);
     try {
-      const [proj, projTasks] = await Promise.all([
+      const [projectData, tasksData] = await Promise.all([
         getProjectById(projectId),
         getAllTasksForProject(projectId, undefined, undefined, page, pageSize),
-<<<<<<< HEAD
->>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
-=======
->>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
       ]);
-      
-      setProject(projectResponse.data);
-      setTasks(tasksResponse.data);
+      setProject(projectData);
+      setTasks(tasksData);
     } catch (err) {
-      console.error('Failed to fetch project data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch project data');
+      const errorMessage = 'Failed to fetch project data.';
+      setError(errorMessage);
+      logger.error(errorMessage, err);
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
-  
-  const updateProject = useCallback(async (updates: Partial<Project>) => {
-    if (!projectId || !project) return;
-    
-    try {
-      const response = await api.patch(`/projects/${projectId}`, updates);
-      setProject(response.data);
-    } catch (err) {
-      console.error('Failed to update project:', err);
-      throw err;
-    }
-  }, [projectId, project]);
-  
-  const createTask = useCallback(async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => {
-    if (!projectId) return;
-    
-    try {
-      const response = await api.post(`/projects/${projectId}/tasks`, taskData);
-      setTasks(prev => [...prev, response.data]);
-    } catch (err) {
-      console.error('Failed to create task:', err);
-      throw err;
-    }
-  }, [projectId]);
-  
-  const updateTask = useCallback(async (taskId: string, updates: Partial<Task>) => {
-    if (!projectId) return;
-    
-    try {
-      const response = await api.patch(`/projects/${projectId}/tasks/${taskId}`, updates);
-      setTasks(prev => prev.map(task => 
-        task.id === taskId ? response.data : task
-      ));
-    } catch (err) {
-      console.error('Failed to update task:', err);
-      throw err;
-    }
-  }, [projectId]);
-  
-  const deleteTask = useCallback(async (taskId: string) => {
-    if (!projectId) return;
-    
-    try {
-      await api.delete(`/projects/${projectId}/tasks/${taskId}`);
-      setTasks(prev => prev.filter(task => task.id !== taskId));
-    } catch (err) {
-      console.error('Failed to delete task:', err);
-      throw err;
-    }
-  }, [projectId]);
-  
-  // Initial data fetch
+  }, [projectId, page, pageSize]);
+
   useEffect(() => {
-    fetchProjectData();
-  }, [fetchProjectData]);
-  
+    fetchData();
+  }, [fetchData]);
+
+  const updateProject = async (data: Partial<Project>) => {
+    if (!project) return;
+    const updatedProject = await apiUpdateProject(project.id, data);
+    setProject(updatedProject);
+  };
+
+  const createTask = async (data: Omit<Task, 'id' | 'project_id' | 'created_at' | 'updated_at'>) => {
+    const newTask = await apiCreateTask({ ...data, project_id: projectId });
+    setTasks((prev) => [newTask, ...prev]);
+  };
+
+  const updateTask = async (taskId: string, data: Partial<Task>) => {
+    const updatedTask = await apiUpdateTask(taskId, data);
+    setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
+  };
+
+  const deleteTask = async (taskId: string) => {
+    await apiDeleteTask(taskId);
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+  };
+
   return {
     project,
     tasks,
     loading,
     error,
-    refresh: fetchProjectData,
+    refreshData: fetchData,
     updateProject,
     createTask,
     updateTask,
-    deleteTask
+    deleteTask,
   };
-}
+};

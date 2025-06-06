@@ -211,4 +211,3 @@ class MemoryRelationModel(Base):
         Index('idx_memory_source_target', 'source_entity_id', 'target_entity_id'),
         Index('idx_memory_relation_type', 'relation_type', 'strength'),
     )
-"""

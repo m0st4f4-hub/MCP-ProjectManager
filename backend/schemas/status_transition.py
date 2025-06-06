@@ -1,5 +1,6 @@
+from backend.enums import TaskStatusEnum
 from pydantic import BaseModel, ConfigDict
-from ..enums import TaskStatusEnum
+from typing import List
 
 class StatusTransitionBase(BaseModel):
     from_status: TaskStatusEnum

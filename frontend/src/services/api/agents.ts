@@ -84,19 +84,10 @@ export const getAgentByName = async (agent_name: string): Promise<Agent> => {
   };
 };
 
-<<<<<<< HEAD
 export const createAgent = async (agentData: AgentCreateData): Promise<Agent> => {
   const { data: rawAgent } = await request<{ data: RawAgent }>(
     buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, "/"),
-    { method: "POST", body: JSON.stringify(agentData) },
-=======
-export const createAgent = async (
-  agentData: AgentCreateData
-): Promise<Agent> => {
-  const rawAgent = await request<RawAgent>(
-    buildApiUrl(API_CONFIG.ENDPOINTS.AGENTS, '/'),
-    { method: 'POST', body: JSON.stringify(agentData) }
->>>>>>> 923023da617a254682cf1eb7264238cc87c3f3e1
+    { method: "POST", body: JSON.stringify(agentData) }
   );
   return {
     ...rawAgent,

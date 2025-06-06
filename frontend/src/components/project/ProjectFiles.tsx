@@ -1,27 +1,27 @@
 'use client';
-import * as logger from '@/utils/logger';
 
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Input, List, ListItem, useToast } from '@chakra-ui/react';
-<<<<<<< HEAD
-import { mcpApi, memoryApi } from '@/services/api';
-import { useIngestFile } from '@/hooks/useMemory';
-<<<<<<< HEAD
-=======
-=======
-import { memoryApi } from '@/services/api';
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
+import {
+  Box,
+  Button,
+  Input,
+  List,
+  ListItem,
+  Text,
+  useToast,
+  VStack,
+  HStack,
+  Spinner,
+  Heading,
+} from '@chakra-ui/react';
 import {
   getProjectFiles,
   associateFileWithProject,
   disassociateFileFromProject,
-} from '@/services/projects';
-<<<<<<< HEAD
-=======
->>>>>>> origin/codex/add-api-calls-in-projects.ts
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
-import type { ProjectFileAssociation } from '@/services/api/projects';
-import TaskPagination from '../task/TaskPagination';
+  ProjectFileAssociation,
+} from '@/services/api/projects';
+import { memoryApi } from '@/services/api';
+import * as logger from '@/utils/logger';
 
 interface ProjectFilesProps {
   projectId: string;
@@ -33,29 +33,18 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filePath, setFilePath] = useState('');
-  const [uploading, setUploading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [total, setTotal] = useState(0);
-  const itemsPerPage = 10;
-  const { ingestFile } = useIngestFile();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchFiles = async () => {
     setLoading(true);
+    setError(null);
     try {
-<<<<<<< HEAD
-      const response = await getProjectFiles(
-=======
-      const data = await getProjectFiles(
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
-        projectId,
-        currentPage * itemsPerPage,
-        itemsPerPage
-      );
+      const response = await getProjectFiles(projectId, 0, 100); // Fetching first 100, add pagination if needed
       setFiles(response.data);
-      setTotal(response.total);
     } catch (err) {
-      setError('Failed to fetch project files');
-      logger.error(err);
+      const errorMessage = 'Failed to fetch project files.';
+      setError(errorMessage);
+      logger.error(errorMessage, err);
     } finally {
       setLoading(false);
     }
@@ -63,120 +52,80 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
 
   useEffect(() => {
     fetchFiles();
-  }, [projectId, currentPage]);
+  }, [projectId]);
 
-  const handleUpload = async (e: React.FormEvent) => {
+  const handleAssociateFile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!filePath) return;
-    setUploading(true);
+    if (!filePath.trim()) {
+      toast({ title: 'File path cannot be empty.', status: 'warning', duration: 3000 });
+      return;
+    }
+    setIsSubmitting(true);
     try {
-<<<<<<< HEAD
-      const entity = await ingestFile(filePath);
-<<<<<<< HEAD
-      await associateFileWithProject(projectId, {
-=======
-      await mcpApi.projectFile.add({
-        project_id: projectId,
-=======
+      // Ingesting file via memoryApi to get an entity/file ID first
       const entity = await memoryApi.ingestFile(filePath);
-      await associateFileWithProject(projectId, {
->>>>>>> origin/codex/add-api-calls-in-projects.ts
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
-        file_id: String(entity.id),
-      });
+      await associateFileWithProject(projectId, { file_id: entity.id });
+      
+      toast({ title: 'File associated successfully.', status: 'success', duration: 3000 });
       setFilePath('');
-      toast({
-        title: 'File uploaded',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-      fetchFiles();
+      fetchFiles(); // Refresh the list
     } catch (err) {
-      logger.error(err);
-      toast({
-        title: 'Upload failed',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      const errorMsg = 'Failed to associate file.';
+      toast({ title: errorMsg, description: err instanceof Error ? err.message : 'Unknown error', status: 'error', duration: 5000 });
+      logger.error(errorMsg, err);
     } finally {
-      setUploading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleRemove = async (fileId: string) => {
+  const handleRemoveFile = async (fileId: string) => {
     try {
       await disassociateFileFromProject(projectId, fileId);
-      toast({
-        title: 'File removed',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-      fetchFiles();
+      toast({ title: 'File association removed.', status: 'success', duration: 3000 });
+      fetchFiles(); // Refresh the list
     } catch (err) {
-      logger.error(err);
-      toast({
-        title: 'Remove failed',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      const errorMsg = 'Failed to remove file association.';
+      toast({ title: errorMsg, description: err instanceof Error ? err.message : 'Unknown error', status: 'error', duration: 5000 });
+      logger.error(errorMsg, err);
     }
   };
 
-  if (loading) {
-    return <div>Loading files...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
   return (
-    <Box>
-      <h3>Project Files</h3>
-      {files.length === 0 ? (
-        <p>No files associated.</p>
-      ) : (
-        <List>
-          {files.map((file) => (
-            <ListItem
-              key={file.file_id}
-              display="flex"
-              gap={2}
-              alignItems="center"
-            >
-              <span>{file.file_id}</span>
-              <Button size="xs" onClick={() => handleRemove(file.file_id)}>
-                Delete
-              </Button>
-            </ListItem>
-          ))}
+    <Box p={4} borderWidth="1px" borderRadius="md" mt={4}>
+      <Heading size="md" mb={4}>Associated Files</Heading>
+      <VStack as="form" onSubmit={handleAssociateFile} spacing={4} mb={6} align="stretch">
+        <HStack>
+          <Input
+            placeholder="Enter absolute file path to associate"
+            value={filePath}
+            onChange={(e) => setFilePath(e.target.value)}
+            data-testid="file-path-input"
+          />
+          <Button type="submit" colorScheme="blue" isLoading={isSubmitting} data-testid="associate-file-button">
+            Associate File
+          </Button>
+        </HStack>
+      </VStack>
+
+      {loading && <Spinner />}
+      {error && <Text color="red.500">{error}</Text>}
+      
+      {!loading && !error && (
+        <List spacing={3}>
+          {files.length > 0 ? (
+            files.map((file) => (
+              <ListItem key={file.file_id} d="flex" justifyContent="space-between" alignItems="center">
+                <Text fontFamily="monospace">{file.file_id}</Text> 
+                <Button size="sm" colorScheme="red" onClick={() => handleRemoveFile(file.file_id)}>
+                  Remove
+                </Button>
+              </ListItem>
+            ))
+          ) : (
+            <Text>No files associated with this project yet.</Text>
+          )}
         </List>
       )}
-      <form onSubmit={handleUpload} style={{ marginTop: '1rem' }}>
-        <Input
-          value={filePath}
-          onChange={(e) => setFilePath(e.target.value)}
-          placeholder="/path/to/file.txt"
-        />
-        <Button type="submit" mt={2} isLoading={uploading}>
-          Upload
-        </Button>
-      </form>
-      <TaskPagination
-        currentPage={currentPage}
-        itemsPerPage={itemsPerPage}
-        totalItems={total}
-        onPrevious={() => setCurrentPage((p) => Math.max(0, p - 1))}
-        onNext={() =>
-          setCurrentPage((p) =>
-            Math.min(Math.ceil(total / itemsPerPage) - 1, p + 1)
-          )
-        }
-      />
     </Box>
   );
 };

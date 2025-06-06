@@ -4,8 +4,6 @@ import type {
   AgentCapability,
   AgentCapabilityCreateData,
   AgentCapabilityUpdateData,
-<<<<<<< HEAD
-<<<<<<< HEAD
   AgentCapabilityListResponse,
   AgentCapabilityResponse,
 } from '@/types/agents';
@@ -78,64 +76,21 @@ export const agentCapabilitiesApi = {
       { method: 'DELETE' }
     );
   },
-=======
-=======
->>>>>>> origin/codex/add-agent-capabilities-crud-functions
-} from '@/types/agents';
-
-// Fetch capabilities for a given agent role
-export const getAgentCapabilities = async (
-  agentRoleId: string
-): Promise<AgentCapability[]> => {
-  return request<AgentCapability[]>(
-    buildApiUrl(
-      API_CONFIG.ENDPOINTS.RULES,
-      `/roles/${agentRoleId}/capabilities`
-    )
-  );
 };
 
-// Create a new capability for an agent role
-export const createAgentCapability = async (
+// Legacy function exports for backwards compatibility
+export const getAgentCapabilities = (agentRoleId: string) => 
+  agentCapabilitiesApi.list(agentRoleId);
+
+export const createAgentCapability = (
   agentRoleId: string,
   data: AgentCapabilityCreateData
-): Promise<AgentCapability> => {
-  return request<AgentCapability>(
-    buildApiUrl(
-      API_CONFIG.ENDPOINTS.RULES,
-      `/roles/${agentRoleId}/capabilities`
-    ),
-    { method: 'POST', body: JSON.stringify(data) }
-  );
-};
+) => agentCapabilitiesApi.create(agentRoleId, data);
 
-// Update an existing capability
-export const updateAgentCapability = async (
+export const updateAgentCapability = (
   capabilityId: string,
   data: AgentCapabilityUpdateData
-): Promise<AgentCapability> => {
-  return request<AgentCapability>(
-    buildApiUrl(
-      API_CONFIG.ENDPOINTS.RULES,
-      `/roles/capabilities/${capabilityId}`
-    ),
-    { method: 'PUT', body: JSON.stringify(data) }
-  );
-};
+) => agentCapabilitiesApi.update(capabilityId, data);
 
-// Delete a capability
-export const deleteAgentCapability = async (
-  capabilityId: string
-): Promise<{ message: string }> => {
-  return request<{ message: string }>(
-    buildApiUrl(
-      API_CONFIG.ENDPOINTS.RULES,
-      `/roles/capabilities/${capabilityId}`
-    ),
-    { method: 'DELETE' }
-  );
-<<<<<<< HEAD
->>>>>>> origin/codex/add-agent-capabilities-crud-functions
-=======
->>>>>>> origin/codex/add-agent-capabilities-crud-functions
-};
+export const deleteAgentCapability = (capabilityId: string) =>
+  agentCapabilitiesApi.delete(capabilityId);

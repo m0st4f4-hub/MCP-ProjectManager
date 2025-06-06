@@ -2,7 +2,11 @@
 *
 
 # But include the CLI, package.json, and README
-!cli.js
+!scripts/
+!scripts/utils/
+!scripts/utils/cli.js
+!scripts/dev/
+!scripts/dev/dev_launcher.js
 !package.json
 !README.md
 

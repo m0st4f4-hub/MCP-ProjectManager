@@ -22,6 +22,7 @@ class DummyGraphService:
             MemoryEntity(
                 id=1,
                 entity_type="text",
+                name="Entity A",
                 content="a",
                 entity_metadata=None,
                 source="test",
@@ -33,6 +34,7 @@ class DummyGraphService:
             MemoryEntity(
                 id=2,
                 entity_type="text",
+                name="Entity B",
                 content="b",
                 entity_metadata=None,
                 source="test",

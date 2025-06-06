@@ -11,9 +11,8 @@ from ....schemas.universal_mandate import (
 )
 
 router = APIRouter()  # Universal Mandates Endpoints
+
 @router.get("/", response_model=List[UniversalMandate])
-
-
 def get_mandates(
     active_only: bool = True,
     db: Session = Depends(get_db)
@@ -22,8 +21,6 @@ def get_mandates(
     return crud_rules.get_universal_mandates(db, active_only=active_only)
 
 @router.post("/", response_model=UniversalMandate)
-
-
 def create_mandate(
     mandate: UniversalMandateCreate,
     db: Session = Depends(get_db)
@@ -32,8 +29,6 @@ def create_mandate(
     return crud_rules.create_universal_mandate(db, mandate)
 
 @router.put("/{mandate_id}", response_model=UniversalMandate)
-
-
 def update_mandate(
     mandate_id: str,
     mandate_update: UniversalMandateUpdate,
@@ -45,16 +40,7 @@ def update_mandate(
         raise HTTPException(status_code=404, detail="Mandate not found")
     return result
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/codex/add-delete-/mandate_id-endpoint
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 @router.delete("/{mandate_id}")
-
-
 def delete_mandate(
     mandate_id: str,
     db: Session = Depends(get_db),
@@ -63,12 +49,4 @@ def delete_mandate(
     success = crud_rules.delete_universal_mandate(db, mandate_id)
     if not success:
         raise HTTPException(status_code=404, detail="Mandate not found")
-<<<<<<< HEAD
     return {"message": "Universal mandate deleted successfully"}
-=======
-<<<<<<< HEAD
-    return {"message": "Mandate deleted successfully"}
-=======
-    return {"message": "Universal mandate deleted successfully"}
->>>>>>> origin/codex/add-delete-/mandate_id-endpoint
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26

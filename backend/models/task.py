@@ -18,7 +18,7 @@ from typing import List, Optional
 from datetime import datetime
 
 from .base import Base, BaseModel, ArchivedMixin
-from ..enums import TaskStatusEnum
+from backend.enums import TaskStatusEnum
 
 
 class Task(Base, BaseModel, ArchivedMixin):
@@ -27,8 +27,6 @@ class Task(Base, BaseModel, ArchivedMixin):
     __table_args__ = (
         PrimaryKeyConstraint('project_id', 'task_number', name='pk_tasks'),
         Index('ix_tasks_created_at', 'created_at'),
-        Index('ix_tasks_agent_id', 'agent_id'),
-        Index('ix_tasks_project_id', 'project_id'),
         {"sqlite_autoincrement": True},
     )
 

@@ -4,28 +4,26 @@ Comprehensive project management with advanced relationships and validation
 """
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, Index, JSON, Numeric
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, validates
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 from datetime import datetime
 import uuid
 
-Base = declarative_base()
+from .base import Base, JSONText, generate_uuid_with_hyphens
 
 class Project(Base):
     """Main Project Model with comprehensive features"""
     __tablename__ = 'projects'
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=generate_uuid_with_hyphens)
     name = Column(String(255), nullable=False, index=True)
     description = Column(Text)
     status = Column(String(50), default='active', index=True)
     priority = Column(String(20), default='medium', index=True)
     
     # Advanced project metadata
-    metadata_json = Column(JSONB, default={})
-    tags = Column(JSONB, default=[])
-    settings = Column(JSONB, default={})
+    metadata_json = Column(JSONText, default={})
+    tags = Column(JSONText, default=[])
+    settings = Column(JSONText, default={})
     
     # Analytics and tracking
     view_count = Column(Integer, default=0)
@@ -38,16 +36,21 @@ class Project(Base):
     archived_at = Column(DateTime, nullable=True)
     
     # Owner and access control
-    owner_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    team_id = Column(UUID(as_uuid=True), ForeignKey('teams.id'))
+    owner_id = Column(String(36), ForeignKey('users.id'), nullable=False)
+    created_by = Column(String(36), ForeignKey('users.id'), nullable=True)
     visibility = Column(String(20), default='private', index=True)
     
+    # Add is_archived property for compatibility
+    is_archived = Column(Boolean, default=False, nullable=False)
+    
     # Relationships
-    owner = relationship("User", back_populates="owned_projects")
-    team = relationship("Team", back_populates="projects")
+    owner = relationship("User", back_populates="owned_projects", foreign_keys=[owner_id])
+    created_by_user = relationship("User", foreign_keys=[created_by])
     tasks = relationship("Task", back_populates="project", cascade="all, delete-orphan")
-    templates = relationship("ProjectTemplate", back_populates="project")
     audit_logs = relationship("AuditLog", back_populates="project")
+    project_members = relationship("ProjectMember", back_populates="project", cascade="all, delete-orphan")
+    file_associations = relationship("ProjectFileAssociation", back_populates="project", cascade="all, delete-orphan")
+    comments_on_project = relationship("Comment", back_populates="project", cascade="all, delete-orphan")
     
     # Indexes
     __table_args__ = (
@@ -94,7 +97,6 @@ class Project(Base):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'owner_id': str(self.owner_id),
-            'team_id': str(self.team_id) if self.team_id else None,
             'visibility': self.visibility
         }
     
@@ -110,38 +112,3 @@ class Project(Base):
         
         completed_tasks = sum(1 for task in self.tasks if task.status == 'completed')
         return (completed_tasks / len(self.tasks)) * 100.0
-
-
-class ProjectTemplate(Base):
-    """Project Templates for standardized project creation"""
-    __tablename__ = 'project_templates'
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String(255), nullable=False, index=True)
-    description = Column(Text)
-    template_data = Column(JSONB, nullable=False)
-    category = Column(String(100), index=True)
-    is_public = Column(Boolean, default=False)
-    
-    # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Creator
-    created_by = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    
-    # Relationships
-    creator = relationship("User", back_populates="project_templates")
-    project = relationship("Project", back_populates="templates")
-    
-    def to_dict(self):
-        return {
-            'id': str(self.id),
-            'name': self.name,
-            'description': self.description,
-            'template_data': self.template_data,
-            'category': self.category,
-            'is_public': self.is_public,
-            'created_at': self.created_at.isoformat(),
-            'created_by': str(self.created_by)
-        }

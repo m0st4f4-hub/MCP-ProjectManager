@@ -13,13 +13,15 @@ from ..schemas.memory import (
 from fastapi import HTTPException, status
 from typing import List, Optional, Dict, Any
 import logging
-from ..models.memory import MemoryEntity as MemoryEntityModel
+from ..models.memory import MemoryEntity as MemoryEntityModel, MemoryObservation as MemoryObservationModel
 from sqlalchemy import (
     text,
     select,
     update,
     delete,
-    and_  # Import and_ for relationships
+    and_,  # Import and_ for relationships
+    or_,
+    func
 )
 from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession
 from ..models.memory import MemoryRelation as MemoryRelationshipModel
@@ -37,11 +39,18 @@ async def get_entity_by_name(db: AsyncSession, name: str) -> Optional[MemoryEnti
     logger.debug(f"[DEBUG] get_entity_by_name returned: {entity}")
     return entity
 
+
+async def get_memory_entity_by_name(db: AsyncSession, name: str) -> Optional[MemoryEntityModel]:
+    """Alias for get_entity_by_name for compatibility."""
+    return await get_entity_by_name(db, name)
+
+
 async def create_memory_entity(db: AsyncSession, entity: MemoryEntityCreate) -> MemoryEntityModel:
     """Create a new MemoryEntity."""
     logger.debug(f"[DEBUG] create_memory_entity called with entity: {entity.model_dump_json()}")  # Debug print
     db_entity = MemoryEntityModel(
     entity_type=entity.entity_type,
+    name=entity.name,
     content=entity.content,
     entity_metadata=entity.entity_metadata,
     source=entity.source,
@@ -54,6 +63,58 @@ async def create_memory_entity(db: AsyncSession, entity: MemoryEntityCreate) -> 
     logger.debug(f"[DEBUG] create_memory_entity returned: {db_entity}")  # Debug print
     return db_entity
 
+
+async def add_observation_to_entity(
+    db: AsyncSession, 
+    entity_id: int, 
+    observation: MemoryObservationCreate
+) -> MemoryObservationModel:
+    """Add an observation to a memory entity."""
+    logger.debug(f"[DEBUG] add_observation_to_entity called with entity_id: {entity_id}")
+    
+    # Check if entity exists
+    entity = await get_memory_entity(db, entity_id)
+    if not entity:
+        raise HTTPException(status_code=404, detail="Memory entity not found")
+    
+    db_observation = MemoryObservationModel(
+        entity_id=entity_id,
+        content=observation.content,
+        source=observation.source,
+        metadata_=getattr(observation, 'metadata_', {})
+    )
+    db.add(db_observation)
+    await db.commit()
+    await db.refresh(db_observation)
+    logger.debug(f"[DEBUG] add_observation_to_entity returned: {db_observation}")
+    return db_observation
+
+
+async def search_entities(
+    db: AsyncSession, 
+    query: str, 
+    limit: int = 10
+) -> List[MemoryEntityModel]:
+    """Search memory entities by content or metadata."""
+    logger.debug(f"[DEBUG] search_entities called with query: {query}, limit: {limit}")
+    
+    # Search in content and entity_metadata
+    result = await db.execute(
+        select(MemoryEntityModel)
+        .filter(
+            or_(
+                MemoryEntityModel.content.contains(query),
+                func.json_extract(MemoryEntityModel.entity_metadata, '$.name').contains(query),
+                func.json_extract(MemoryEntityModel.entity_metadata, '$.description').contains(query)
+            )
+        )
+        .limit(limit)
+    )
+    entities = result.scalars().all()
+    logger.debug(f"[DEBUG] search_entities returned {len(entities)} entities")
+    return entities
+
+
 async def get_memory_entity(db: AsyncSession, entity_id: int) -> Optional[MemoryEntityModel]:
     """Retrieve a single MemoryEntity by its ID."""
     logger.debug(f"[DEBUG] get_memory_entity called with entity_id: {entity_id}")  # Debug print
@@ -62,6 +123,7 @@ async def get_memory_entity(db: AsyncSession, entity_id: int) -> Optional[Memory
     logger.debug(f"[DEBUG] get_memory_entity returned: {entity}")  # Debug print
     return entity
 
+
 async def get_memory_entities(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[MemoryEntityModel]:
     """Retrieve multiple MemoryEntities with pagination."""
     logger.debug(f"[DEBUG] get_memory_entities called with skip: {skip}, limit: {limit}")  # Debug print
@@ -69,6 +131,7 @@ async def get_memory_entities(db: AsyncSession, skip: int = 0, limit: int = 100)
     entities = result.scalars().all()
     logger.debug(f"[DEBUG] get_memory_entities returned {len(entities)} entities")  # Debug print
     return entities
+
 
 async def update_memory_entity(db: AsyncSession, entity_id: int, entity_update: MemoryEntityUpdate) -> Optional[MemoryEntityModel]:
     """Update a MemoryEntity by ID."""
@@ -85,6 +148,7 @@ async def update_memory_entity(db: AsyncSession, entity_id: int, entity_update: 
             logger.debug(f"[DEBUG] update_memory_entity did not find entity with id {entity_id}")  # Debug print
             return db_entity
 
+
 async def delete_memory_entity(db: AsyncSession, entity_id: int) -> bool:
             """Delete a MemoryEntity by ID."""
             logger.debug(f"[DEBUG] delete_memory_entity called with entity_id: {entity_id}")  # Debug print  # Fetch the entity asynchronously
@@ -96,6 +160,8 @@ async def delete_memory_entity(db: AsyncSession, entity_id: int) -> bool:
                 return True
             logger.debug(f"[DEBUG] delete_memory_entity did not find entity with id {entity_id}")  # Debug print
             return False  # Add more specific retrieval functions if needed (e.g., by type, source, metadata content)
+
+
 async def get_memory_entities_by_source_type(db: AsyncSession, source_type: str, skip: int = 0, limit: int = 100) -> List[MemoryEntityModel]:
             """Retrieve MemoryEntities filtered by source type."""
             logger.debug(f"[DEBUG] get_memory_entities_by_source_type called with source_type: {source_type}")  # Debug print
@@ -103,6 +169,7 @@ async def get_memory_entities_by_source_type(db: AsyncSession, source_type: str,
             entities = result.scalars().all()
             logger.debug(f"[DEBUG] get_memory_entities_by_source_type returned {len(entities)} entities")  # Debug print
             return entities
+
 
 async def get_memory_relations_between_entities(db: AsyncSession, from_entity_id: int, to_entity_id: int, relation_type: str):
             """Retrieve relationships between two entities."""  # This function was implicitly used, converting to async and adding debug
@@ -120,6 +187,7 @@ async def get_memory_relations_between_entities(db: AsyncSession, from_entity_id
             logger.debug(f"[DEBUG] get_memory_relations_between_entities returned {len(relations)} relations")  # Debug print
             return relations
 
+
 async def create_memory_relation(db: AsyncSession, relation: MemoryRelationCreate):
             """Create a memory relationship."""  # This function was implicitly used, converting to async and adding debug
             logger.debug(f"[DEBUG] create_memory_relation called with relation: {relation.model_dump_json()}")  # Debug print  # from backend.models.memory import MemoryRelationship as MemoryRelationshipModel  # Import inside function - REMOVED
@@ -133,6 +201,7 @@ async def create_memory_relation(db: AsyncSession, relation: MemoryRelationCreat
             await db.refresh(db_relationship)
             logger.debug(f"[DEBUG] create_memory_relation returned: {db_relationship}")  # Debug print
             return db_relationship
+
 
 async def delete_memory_relation(db: AsyncSession, relation_id: int):
             """Delete a memory relationship by ID."""  # This function was implicitly used, converting to async and adding debug

@@ -69,11 +69,13 @@ async def call_delete(app, mandate_id="mid"):
         return await client.delete(f"/{mandate_id}")
 
 
-def test_delete_universal_mandate_service_calls_crud():
+@pytest.mark.asyncio
+async def test_delete_universal_mandate_service_calls_crud():
     session = MagicMock()
     service = RulesService(session)
     with patch("backend.services.rules_service.crud_rules.delete_universal_mandate", return_value=True) as mock_del:
-        assert service.delete_universal_mandate("mid") is True
+        result = await service.delete_universal_mandate("mid")
+        assert result is True
         mock_del.assert_called_once_with(session, "mid")
 
 

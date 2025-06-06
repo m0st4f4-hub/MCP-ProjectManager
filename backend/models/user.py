@@ -5,19 +5,16 @@ User and authentication related models.
 from sqlalchemy import String, Boolean, ForeignKey, PrimaryKeyConstraint, Enum
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
+import uuid
 
-try:
-    from .base import Base, BaseModel, generate_uuid_with_hyphens
-except ImportError:
-    from base import Base, BaseModel, generate_uuid_with_hyphens
+from .base import Base, BaseModel, ArchivedMixin
+from backend.enums import UserRoleEnum
 
-try:
-    from ..enums import UserRoleEnum
-except ImportError:
-    from enums import UserRoleEnum
+def generate_uuid_with_hyphens() -> str:
+    """Generate a UUID string with hyphens."""
+    return str(uuid.uuid4())
 
-
-class User(Base, BaseModel):
+class User(Base, BaseModel, ArchivedMixin):
     """User model for authentication and identification."""
     __tablename__ = "users"
 
@@ -39,6 +36,8 @@ class User(Base, BaseModel):
         back_populates="user", cascade="all, delete-orphan")
     audit_logs: Mapped[List["AuditLog"]] = relationship(
         back_populates="user", cascade="all, delete-orphan")
+    owned_projects: Mapped[List["Project"]] = relationship(
+        back_populates="owner", cascade="all, delete-orphan", foreign_keys="Project.owner_id")
 
 
 class UserRole(Base):

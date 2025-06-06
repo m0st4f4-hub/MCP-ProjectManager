@@ -1,24 +1,22 @@
-from fastapi import APIRouter, Depends, status, Query, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
-from ....schemas.file_ingest import FileIngestInput
 
 from ....database import get_sync_db as get_db
 from ....services.memory_service import MemoryService
-from ....schemas.memory import MemoryEntity, MemoryEntityCreate, MemoryEntityUpdate
-from ....services.exceptions import (
-    EntityNotFoundError,
-    DuplicateEntityError,
-    ValidationError
+from ....schemas.memory import (
+    MemoryEntity,
+    MemoryEntityCreate,
+    MemoryEntityUpdate,
 )
+from ....schemas.file_ingest import FileIngestInput
+from ....schemas.api_responses import DataResponse
+from ....models.user import User as UserModel
 from ....auth import get_current_active_user
-from ....models import User as UserModel
+from ....services.exceptions import EntityNotFoundError
 
-router = APIRouter(
-    prefix="/entities",
-    tags=["Memory Entities"],
-)
+router = APIRouter()
 
 
 def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
@@ -26,19 +24,13 @@ def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
 
 
 @router.get("/graph")
-<<<<<<< HEAD
 async def get_memory_graph(
-=======
-<<<<<<< HEAD
-def get_memory_graph(
->>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662
     memory_service: MemoryService = Depends(get_memory_service),
     entity_type: Optional[str] = Query(None),
     relation_type: Optional[str] = Query(None),
     limit: int = Query(100, ge=1),
     offset: int = Query(0, ge=0),
 ):
-<<<<<<< HEAD
     """Retrieve the knowledge graph with optional filters."""
     try:
         return await memory_service.get_knowledge_graph(
@@ -49,20 +41,6 @@ def get_memory_graph(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
-=======
-    """Retrieve the entire knowledge graph."""
-    return memory_service.get_knowledge_graph()
-=======
-def get_knowledge_graph_endpoint(
-    memory_service: MemoryService = Depends(get_memory_service),
-):
-    """Return all memory entities and their relations."""
-    try:
-        return memory_service.get_knowledge_graph()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
->>>>>>> origin/codex/add-get-/graph-route-and-tests
->>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662
 
 # =============================
 # CRUD Endpoints
@@ -230,6 +208,8 @@ def get_file_content_endpoint(
     memory_service: MemoryService = Depends(get_memory_service),
 ):
     content = memory_service.get_file_content(entity_id)
+    if content is None:
+        raise EntityNotFoundError("MemoryEntity", entity_id)
     return {"content": content}
 
 
@@ -239,4 +219,6 @@ def get_file_metadata_endpoint(
     memory_service: MemoryService = Depends(get_memory_service),
 ):
     metadata = memory_service.get_file_metadata(entity_id)
-    return {"metadata": metadata}
+    if metadata is None:
+        raise EntityNotFoundError("MemoryEntity", entity_id)
+    return metadata

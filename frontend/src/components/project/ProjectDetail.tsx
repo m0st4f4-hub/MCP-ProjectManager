@@ -1,9 +1,6 @@
 'use client';
-<<<<<<< HEAD
-import * as logger from '@/utils/logger';
-=======
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 
+import * as logger from '@/utils/logger';
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
@@ -11,10 +8,7 @@ import {
   deleteProject,
   archiveProject,
   unarchiveProject,
-<<<<<<< HEAD
-=======
   exportProject,
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 } from '@/services/api/projects';
 import { Project } from '@/types/project';
 import {
@@ -102,11 +96,7 @@ const ProjectDetail: React.FC = () => {
           duration: 5000,
           isClosable: true,
         });
-<<<<<<< HEAD
         logger.error(err);
-=======
-        console.error(err);
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
       }
     }
   };
@@ -119,11 +109,7 @@ const ProjectDetail: React.FC = () => {
       fetchProject();
     } catch (err) {
       toast({ title: 'Failed to archive project', description: err instanceof Error ? err.message : String(err), status: 'error', duration: 5000, isClosable: true });
-<<<<<<< HEAD
       logger.error(err);
-=======
-      console.error(err);
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
     }
   };
 
@@ -135,10 +121,7 @@ const ProjectDetail: React.FC = () => {
       fetchProject();
     } catch (err) {
       toast({ title: 'Failed to unarchive project', description: err instanceof Error ? err.message : String(err), status: 'error', duration: 5000, isClosable: true });
-<<<<<<< HEAD
       logger.error(err);
-=======
-      console.error(err);
     }
   };
 
@@ -158,9 +141,14 @@ const ProjectDetail: React.FC = () => {
       link.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Failed to export project');
-      console.error(err);
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
+      toast({
+        title: 'Failed to export project',
+        description: err instanceof Error ? err.message : String(err),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      logger.error(err);
     }
   };
 

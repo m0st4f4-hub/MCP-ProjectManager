@@ -10,17 +10,10 @@ import {
   Spinner,
   Text,
   Link,
-<<<<<<< HEAD
-} from "@chakra-ui/react";
-import NextLink from "next/link";
-import { memoryApi } from "@/services/api";
-import type { MemoryEntity } from "@/types/memory";
-=======
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { memoryApi } from '@/services/api';
 import type { MemoryEntity } from '@/types/memory';
->>>>>>> origin/codex/add-memorysearch-component-with-api-query
 
 const MemorySearch: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -34,14 +27,8 @@ const MemorySearch: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-<<<<<<< HEAD
-      const resp = await memoryApi.searchGraph(query);
-      const data = (resp as any).data ?? resp;
-      setResults((data as MemoryEntity[]) || []);
-=======
       const data = await memoryApi.searchGraph(query);
       setResults(data || []);
->>>>>>> origin/codex/add-memorysearch-component-with-api-query
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Search failed');
     } finally {

@@ -1,141 +1,92 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { TestWrapper } from '@/__tests__/utils/test-utils';
 import ProjectCard from '../ProjectCard';
 import { ProjectWithMeta } from '@/types';
 
-<<<<<<< HEAD
-vi.mock('@chakra-ui/react', async () => {
-  const actual = await vi.importActual('@chakra-ui/react');
-  return {
-    ...actual,
-    useToast: () => vi.fn(),
-    useColorModeValue: (light: any, dark: any) => light,
-  };
-});
-
+// Mock project data for testing
 const mockProject: ProjectWithMeta = {
-  id: '1',
-  name: 'Test Project',
-  description: 'desc',
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  id: 'proj_1',
+  name: 'Autonomous Agent Platform',
+  description: 'A platform for managing and orchestrating autonomous agents.',
+  created_at: new Date('2023-10-01T10:00:00Z').toISOString(),
+  updated_at: new Date('2023-10-26T14:30:00Z').toISOString(),
   is_archived: false,
-  status: 'not_started',
-  task_count: 0,
-  completed_task_count: 0,
-=======
-const project: ProjectWithMeta = {
-  id: '1',
-  name: 'Test',
-  description: 'Desc',
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  task_count: 0,
-  status: 'active',
-  is_archived: false,
->>>>>>> origin/5wywo3-codex/finish-splitting-components-and-add-tests
+  status: 'in_progress',
+  task_count: 15,
+  completed_task_count: 5,
+};
+
+const archivedProject: ProjectWithMeta = {
+  ...mockProject,
+  id: 'proj_2',
+  name: 'Archived Initiative',
+  is_archived: true,
+  status: 'completed',
 };
 
 describe('ProjectCard', () => {
-  const user = userEvent.setup();
-<<<<<<< HEAD
+  // Mock handler functions
+  const onEdit = vi.fn();
+  const onArchive = vi.fn();
+  const onUnarchive = vi.fn();
+  const onDelete = vi.fn();
+  const onCopyGet = vi.fn();
+  const onOpenCliPrompt = vi.fn();
 
-=======
->>>>>>> origin/5wywo3-codex/finish-splitting-components-and-add-tests
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-<<<<<<< HEAD
-  it('should render without crashing', () => {
-    render(
-      <TestWrapper>
-        <ProjectCard
-          project={mockProject}
-=======
-  it('renders without crashing', () => {
-    render(
+  const renderComponent = (project: ProjectWithMeta) => {
+    return render(
       <TestWrapper>
         <ProjectCard
           project={project}
->>>>>>> origin/5wywo3-codex/finish-splitting-components-and-add-tests
-          onEdit={vi.fn()}
-          onArchive={vi.fn()}
-          onUnarchive={vi.fn()}
-          onDelete={vi.fn()}
-          onCopyGet={vi.fn()}
-          onOpenCliPrompt={vi.fn()}
+          onEdit={onEdit}
+          onArchive={onArchive}
+          onUnarchive={onUnarchive}
+          onDelete={onDelete}
+          onCopyGet={onCopyGet}
+          onOpenCliPrompt={onOpenCliPrompt}
         />
       </TestWrapper>
     );
-<<<<<<< HEAD
-    expect(
-      screen.getByTestId(`project-card-${mockProject.id}`)
-    ).toBeInTheDocument();
+  };
+
+  it('renders project details correctly', () => {
+    renderComponent(mockProject);
+    expect(screen.getByText('Autonomous Agent Platform')).toBeInTheDocument();
+    expect(screen.getByText('A platform for managing and orchestrating autonomous agents.')).toBeInTheDocument();
+    expect(screen.getByText('5 / 15 Tasks')).toBeInTheDocument();
   });
 
-  it('should handle user interactions', async () => {
-    render(
-      <TestWrapper>
-        <ProjectCard
-          project={mockProject}
-=======
-    expect(screen.getByText('Test')).toBeInTheDocument();
+  it('displays a link to the project detail page', () => {
+    renderComponent(mockProject);
+    const link = screen.getByRole('link', { name: /autonomous agent platform/i });
+    expect(link).toHaveAttribute('href', '/projects/proj_1');
   });
 
-  it('handles props correctly', () => {
-    const props = { testId: 'test-component', 'data-testid': 'test-component' };
-    render(
-      <TestWrapper>
-        <ProjectCard
-          project={project}
-          {...props}
->>>>>>> origin/5wywo3-codex/finish-splitting-components-and-add-tests
-          onEdit={vi.fn()}
-          onArchive={vi.fn()}
-          onUnarchive={vi.fn()}
-          onDelete={vi.fn()}
-          onCopyGet={vi.fn()}
-          onOpenCliPrompt={vi.fn()}
-        />
-      </TestWrapper>
-    );
-<<<<<<< HEAD
-
-    const buttons = screen.getAllByRole('button');
-    if (buttons.length > 0) {
-      await user.click(buttons[0]);
-    }
-
-    expect(
-      screen.getByTestId(`project-card-${mockProject.id}`)
-    ).toBeInTheDocument();
-=======
-    const component = screen.queryByTestId('test-component');
-    expect(component || document.body).toBeInTheDocument();
+  it('calls onArchive when archive button is clicked for an active project', () => {
+    renderComponent(mockProject);
+    const menuButton = screen.getByLabelText('Project Actions');
+    fireEvent.click(menuButton);
+    const archiveButton = screen.getByText('Archive');
+    fireEvent.click(archiveButton);
+    expect(onArchive).toHaveBeenCalledWith(mockProject.id);
   });
 
-  it('handles user interactions', async () => {
-    render(
-      <TestWrapper>
-        <ProjectCard
-          project={project}
-          onEdit={vi.fn()}
-          onArchive={vi.fn()}
-          onUnarchive={vi.fn()}
-          onDelete={vi.fn()}
-          onCopyGet={vi.fn()}
-          onOpenCliPrompt={vi.fn()}
-        />
-      </TestWrapper>
-    );
-    const buttons = screen.queryAllByRole('button');
-    if (buttons.length > 0) {
-      await user.click(buttons[0]);
-    }
-    expect(document.body).toBeInTheDocument();
->>>>>>> origin/5wywo3-codex/finish-splitting-components-and-add-tests
+  it('calls onUnarchive when unarchive button is clicked for an archived project', () => {
+    renderComponent(archivedProject);
+    const menuButton = screen.getByLabelText('Project Actions');
+    fireEvent.click(menuButton);
+    const unarchiveButton = screen.getByText('Unarchive');
+    fireEvent.click(unarchiveButton);
+    expect(onUnarchive).toHaveBeenCalledWith(archivedProject.id);
+  });
+
+  it('calls onDelete when delete button is clicked', () => {
+    renderComponent(mockProject);
+    const menuButton = screen.getByLabelText('Project Actions');
+    fireEvent.click(menuButton);
+    const deleteButton = screen.getByText('Delete');
+    fireEvent.click(deleteButton);
+    expect(onDelete).toHaveBeenCalledWith(mockProject.id);
   });
 });

@@ -19,12 +19,14 @@ class AuditLog(Base, BaseModel):
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=generate_uuid_with_hyphens, index=True)
     user_id: Mapped[Optional[str]] = mapped_column(String(32), ForeignKey("users.id"), nullable=True)
+    project_id: Mapped[Optional[str]] = mapped_column(String(32), ForeignKey("projects.id"), nullable=True)
     action_type: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     details: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     user: Mapped[Optional["User"]] = relationship("User", back_populates="audit_logs")
+    project: Mapped[Optional["Project"]] = relationship("Project", back_populates="audit_logs")
 
 
 class AgentBehaviorLog(Base, BaseModel):

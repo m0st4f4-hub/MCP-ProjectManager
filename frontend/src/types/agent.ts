@@ -135,8 +135,6 @@ export type AgentRole =
   | 'RulesSyncAgent'
   | 'RunnerAgent';
 
-<<<<<<< HEAD
-=======
 // --- Agent Forbidden Action Schemas & Types ---
 export const agentForbiddenActionBaseSchema = z.object({
   agent_role_id: z.string(),
@@ -183,4 +181,3 @@ export interface AgentForbiddenActionListResponse {
   pageSize: number;
   error?: { code: string; message: string; field?: string };
 }
->>>>>>> origin/codex/implement-crud-functions-for-new-backend-routes

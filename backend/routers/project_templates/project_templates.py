@@ -4,15 +4,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from ....database import get_sync_db as get_db
-from ....auth import get_current_active_user
-from ....services.project_template_service import ProjectTemplateService
-from ....schemas.project_template import (
+from backend.database import get_sync_db as get_db
+from backend.auth import get_current_active_user
+from backend.services.project_template_service import ProjectTemplateService
+from backend.schemas.project_template import (
     ProjectTemplate,
     ProjectTemplateCreate,
     ProjectTemplateUpdate  # Import auth dependencies and UserRoleEnum for protection
 )
-from ....models import User as UserModel  # For type hinting current_user
+from backend.models import User as UserModel  # For type hinting current_user
 
 router = APIRouter(
     prefix="/project-templates",

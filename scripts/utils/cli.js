@@ -2,6 +2,9 @@
 
 const { spawnSync } = require('child_process');
 const os = require('os');
+const { Command } = require('commander');
+const { spawn } = require('child_process');
+const path = require('path');
 
 const [major] = process.versions.node.split('.').map(Number);
 if (major < 18) {
@@ -9,11 +12,13 @@ if (major < 18) {
   process.exit(1);
 }
 
-<<<<<<< HEAD
-const { Command } = require('commander');
-const { spawn } = require('child_process');
-const path = require('path');
-const pkg = require('./package.json');
+// Try to load package.json from project root
+let pkg;
+try {
+  pkg = require('../../package.json');
+} catch (e) {
+  pkg = { version: '1.0.0' };
+}
 
 const program = new Command();
 program
@@ -25,7 +30,7 @@ program
   .command('dev')
   .description('Launch backend and frontend in development mode')
   .action(() => {
-    require('./dev_launcher.js');
+    require('../dev/dev_launcher.js');
   });
 
 program
@@ -33,7 +38,7 @@ program
   .description('Run database migrations using Alembic')
   .action(() => {
     const proc = spawn('alembic', ['upgrade', 'head'], {
-      cwd: path.join(__dirname, 'backend'),
+      cwd: path.join(__dirname, '../../backend'),
       stdio: 'inherit',
       shell: true,
     });
@@ -41,21 +46,17 @@ program
   });
 
 const args = process.argv.slice(2);
-if (args.length === 0) {
-  require('./dev_launcher.js');
-} else {
-  program.parse(process.argv);
-}
-=======
-const args = process.argv.slice(2);
 
 if (args[0] === 'setup') {
   const script = os.platform() === 'win32' ? 'init_backend.ps1' : 'init_backend.sh';
   const cmd = os.platform() === 'win32' ? 'powershell' : 'bash';
-  const result = spawnSync(cmd, [script], { stdio: 'inherit' });
+  const result = spawnSync(cmd, [path.join(__dirname, '../../', script)], { stdio: 'inherit' });
   process.exit(result.status);
 }
 
-require('./dev_launcher.js');
->>>>>>> origin/codex/add-setup-helper-for-environment-and-migrations
+if (args.length === 0) {
+  require('../dev/dev_launcher.js');
+} else {
+  program.parse(process.argv);
+}
 

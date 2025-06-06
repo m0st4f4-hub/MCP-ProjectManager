@@ -1,5 +1,5 @@
-import types
 import pytest
+import types
 from fastapi import FastAPI
 from httpx import AsyncClient, ASGITransport
 
@@ -39,19 +39,9 @@ class DummyService:
     async def ingest_url(self, url: str, user_id=None):
         return await self.ingest_text(f"content from {url}", user_id)
 
-<<<<<<< HEAD
-    def ingest_file(self, file, user_id=None):
-        if hasattr(file, "file"):
-            content = file.file.read().decode("utf-8")
-        else:
-            with open(file, "r", encoding="utf-8") as f:
-                content = f.read()
-        return self.ingest_text(content, user_id)
-=======
     def ingest_uploaded_file(self, filename: str, content: bytes, content_type: str, user_id=None):
         text = content.decode("utf-8") if content else ""
         return self.ingest_text(text, user_id)
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
 
     def get_file_content(self, entity_id: int):
         return self.entities[entity_id].content
@@ -152,50 +142,30 @@ async def test_root_ingest_url():
 
 
 @pytest.mark.asyncio
-<<<<<<< HEAD
-<<<<<<< HEAD
-async def test_root_ingest_upload():
-=======
 async def test_get_knowledge_graph():
-    dummy_service.ingest_text("a")
-    dummy_service.ingest_text("b")
->>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662
-=======
-async def test_get_knowledge_graph():
-    dummy_service.ingest_text("a")
-    dummy_service.ingest_text("b")
-=======
-async def test_file_upload_ingest():
->>>>>>> origin/codex/add-file-selection-and-display-results
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
+    await dummy_service.ingest_text("a")
+    await dummy_service.ingest_text("b")
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
     ) as client:
-<<<<<<< HEAD
-<<<<<<< HEAD
-        files = {"file": ("hello.txt", b"upload", "text/plain")}
-        resp = await client.post("/ingest/upload", files=files)
-        assert resp.status_code == 201
-        assert resp.json()["content"] == "upload"
-=======
-=======
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26
         resp = await client.get("/entities/graph")
         assert resp.status_code == 200
         data = resp.json()
         assert "entities" in data and "relations" in data
         assert len(data["entities"]) == 2
         assert data["relations"] == []
-<<<<<<< HEAD
->>>>>>> da7a1f9acfd28696eab90063aaf41536496c5662
-=======
-=======
+
+
+@pytest.mark.asyncio
+async def test_file_upload_ingest():
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
         resp = await client.post(
             "/ingest",
             files={"file": ("sample.txt", b"hello", "text/plain")},
         )
         assert resp.status_code == 201
         assert resp.json()["content"] == "hello"
->>>>>>> origin/codex/add-file-selection-and-display-results
->>>>>>> d85857b55b813ed922e2182b4381bef011fd6a26

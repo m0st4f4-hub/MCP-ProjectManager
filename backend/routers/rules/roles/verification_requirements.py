@@ -1,19 +1,7 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from typing import List, Optional
-=======
-=======
->>>>>>> origin/codex/add-agent-verification-service-and-router
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-<<<<<<< HEAD
->>>>>>> origin/codex/add-agent-verification-service-and-router
-=======
->>>>>>> origin/codex/add-agent-verification-service-and-router
 
 from ....database import get_sync_db as get_db
 from ....services.agent_verification_service import AgentVerificationService
@@ -25,48 +13,12 @@ from ....schemas.agent_verification_requirement import (
 router = APIRouter()
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-@router.get("/", response_model=List[AgentVerificationRequirement])
-def list_verification_requirements(
-    agent_role_id: Optional[str] = Query(None, description="Filter by agent role"),
-    db: Session = Depends(get_db),
-):
-    """List verification requirements, optionally filtered by agent role."""
-    service = AgentVerificationService(db)
-    return service.list_requirements(agent_role_id)
-
-
-@router.post("/", response_model=AgentVerificationRequirement)
-def create_verification_requirement(
-    requirement: AgentVerificationRequirementCreate,
-    db: Session = Depends(get_db),
-):
-    """Create a new verification requirement."""
-    service = AgentVerificationService(db)
-    return service.create_requirement(requirement)
-
-
-@router.delete("/{requirement_id}")
-def delete_verification_requirement(
-    requirement_id: str,
-    db: Session = Depends(get_db),
-):
-    """Delete a verification requirement by ID."""
-    service = AgentVerificationService(db)
-    success = service.delete_requirement(requirement_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Requirement not found")
-    return {"message": "Verification requirement deleted successfully"}
-=======
-=======
->>>>>>> origin/codex/add-agent-verification-service-and-router
 def get_service(db: Session = Depends(get_db)) -> AgentVerificationService:
     return AgentVerificationService(db)
 
 
 @router.get(
-    "/verification-requirements",
+    "/",
     response_model=List[AgentVerificationRequirement],
 )
 def list_verification_requirements(
@@ -77,7 +29,7 @@ def list_verification_requirements(
     return service.list_requirements(agent_role_id)
 
 
-@router.post("/verification-requirements", response_model=AgentVerificationRequirement)
+@router.post("/", response_model=AgentVerificationRequirement)
 def create_verification_requirement(
     requirement: AgentVerificationRequirementCreate,
     service: AgentVerificationService = Depends(get_service),
@@ -86,7 +38,7 @@ def create_verification_requirement(
     return service.create_requirement(requirement)
 
 
-@router.delete("/verification-requirements/{requirement_id}")
+@router.delete("/{requirement_id}")
 def delete_verification_requirement(
     requirement_id: str,
     service: AgentVerificationService = Depends(get_service),
@@ -94,12 +46,5 @@ def delete_verification_requirement(
     """Delete a verification requirement by ID."""
     success = service.delete_requirement(requirement_id)
     if not success:
-        raise HTTPException(
-            status_code=404,
-            detail="Verification requirement not found",
-        )
-    return {"message": "Verification requirement deleted"}
-<<<<<<< HEAD
->>>>>>> origin/codex/add-agent-verification-service-and-router
-=======
->>>>>>> origin/codex/add-agent-verification-service-and-router
+        raise HTTPException(status_code=404, detail="Requirement not found")
+    return {"message": "Verification requirement deleted successfully"}

@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = 60
     USER_RATE_LIMIT_PER_MINUTE: int = 100
 
+    # Redis configuration
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+
     # OAuth configuration
     OAUTH_CLIENT_ID: str = ""
     OAUTH_CLIENT_SECRET: str = ""
