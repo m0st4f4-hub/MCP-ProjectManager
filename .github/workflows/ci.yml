@@ -35,8 +35,15 @@ jobs:
 
       - name: Lint
         run: |
+          set -o pipefail
           cd backend
-          flake8 .
+          flake8 . | tee flake8.log
+
+      - name: Upload flake8 log
+        uses: actions/upload-artifact@v4
+        with:
+          name: flake8-output
+          path: backend/flake8.log
 
       - name: Test with coverage
         run: |
