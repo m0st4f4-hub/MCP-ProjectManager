@@ -181,6 +181,8 @@ export const memoryApi = {
       search_query?: string;
       skip?: number;
       limit?: number;
+      page?: number;
+      pageSize?: number;
     }
   ): Promise<MemoryObservation[]> => {
     const params = new URLSearchParams();
@@ -279,18 +281,13 @@ export const memoryApi = {
   // --- Knowledge Graph APIs ---
   // Get the knowledge graph with optional filters
   getKnowledgeGraph: async (
-<<<<<<< HEAD
     filters?: {
-=======
-    params?: {
->>>>>>> codex/extend-get_knowledge_graph-and-create-hook
       entity_type?: string;
       relation_type?: string;
       limit?: number;
       offset?: number;
     }
   ): Promise<KnowledgeGraph> => {
-<<<<<<< HEAD
     const params = new URLSearchParams();
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
@@ -301,21 +298,6 @@ export const memoryApi = {
     }
     return await request<KnowledgeGraph>(
       buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/graph?${params.toString()}`)
-=======
-    const search = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([k, v]) => {
-        if (v !== undefined && v !== null) {
-          search.append(k, String(v));
-        }
-      });
-    }
-    const response = await request<{ data: KnowledgeGraph }>(
-      buildApiUrl(
-        API_CONFIG.ENDPOINTS.MEMORY,
-        `/graph${search.toString() ? `?${search.toString()}` : ''}`
-      )
->>>>>>> codex/extend-get_knowledge_graph-and-create-hook
     );
   },
 
