@@ -159,6 +159,7 @@ graph TD
 ## File List
 
 - `AgentList.tsx`
+- `agents/AgentCapabilities.tsx`
 - `BulkActionsBar.tsx`
 - `ClientOnly.tsx`
 - `Dashboard.tsx`

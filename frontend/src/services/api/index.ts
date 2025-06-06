@@ -62,6 +62,7 @@ export * from "./mcp";
 export * from "./users";
 export * from "./audit_logs";
 export * from "./project_templates";
+<<<<<<< HEAD
 export * from "./verificationRequirements";
 <<<<<<< HEAD
 >>>>>>> origin/3kceht-codex/create-verificationrequirements-component
@@ -72,3 +73,6 @@ export * from './error_protocols';
 >>>>>>> origin/16bcjg-codex/implement-crud-for-error-protocols
 =======
 >>>>>>> origin/3kceht-codex/create-verificationrequirements-component
+=======
+export * from "./agent_roles";
+>>>>>>> origin/codex/add-agentcapabilities-component-and-api-integration
