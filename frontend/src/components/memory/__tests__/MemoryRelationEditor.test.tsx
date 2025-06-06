@@ -33,7 +33,7 @@ describe('MemoryRelationEditor', () => {
     from_entity_id: 2,
     to_entity_id: 3,
     relation_type: 'related',
-    metadata: null,
+    metadata: {},
     created_at: new Date().toISOString(),
   };
 
@@ -59,6 +59,11 @@ describe('MemoryRelationEditor', () => {
     await user.type(metaInput, '{}');
     await user.click(button);
 
-    await waitFor(() => expect(memoryApi.updateRelation).toHaveBeenCalled());
+    await waitFor(() => expect(memoryApi.updateRelation).toHaveBeenCalledWith(relation.id, {
+      from_entity_id: relation.from_entity_id,
+      to_entity_id: relation.to_entity_id,
+      relation_type: 'updated',
+      metadata: {},
+    }));
   });
 });
