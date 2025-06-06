@@ -28,7 +28,13 @@ __all__ = [
     'add_error_protocol_tool',
     'list_error_protocols_tool',
     'remove_error_protocol_tool',
+<<<<<<< HEAD
     'assign_role_tool',
     'list_roles_tool',
     'remove_role_tool'
+=======
+    'create_verification_requirement_tool',
+    'list_verification_requirements_tool',
+    'delete_verification_requirement_tool'
+>>>>>>> origin/codex/add-verification-requirement-tools
 ]

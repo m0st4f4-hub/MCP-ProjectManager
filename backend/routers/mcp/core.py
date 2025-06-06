@@ -1113,6 +1113,7 @@ async def mcp_list_forbidden_actions(
 
 
 @router.post(
+<<<<<<< HEAD
     "/mcp-tools/capability/create",
     tags=["mcp-tools"],
     operation_id="create_capability_tool",
@@ -1135,10 +1136,39 @@ async def mcp_create_capability(
         )
     except Exception as e:
         logger.error(f"MCP create capability failed: {e}")
+=======
+    "/mcp-tools/verification-requirement/create",
+    tags=["mcp-tools"],
+    operation_id="create_verification_requirement_tool",
+)
+async def mcp_create_verification_requirement(
+    agent_role_id: str,
+    requirement: str,
+    description: Optional[str] = None,
+    is_mandatory: bool = True,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Create a verification requirement for an agent role."""
+    try:
+        from ...mcp_tools.verification_requirement_tools import (
+            create_verification_requirement_tool,
+        )
+
+        return await create_verification_requirement_tool(
+            agent_role_id=agent_role_id,
+            requirement=requirement,
+            description=description,
+            is_mandatory=is_mandatory,
+            db=db,
+        )
+    except Exception as e:
+        logger.error(f"MCP create verification requirement failed: {e}")
+>>>>>>> origin/codex/add-verification-requirement-tools
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get(
+<<<<<<< HEAD
     "/mcp-tools/capability/list",
     tags=["mcp-tools"],
     operation_id="list_capabilities_tool",
@@ -1152,10 +1182,30 @@ async def mcp_list_capabilities(
         return await list_capabilities_tool(agent_role_id, db)
     except Exception as e:
         logger.error(f"MCP list capabilities failed: {e}")
+=======
+    "/mcp-tools/verification-requirement/list",
+    tags=["mcp-tools"],
+    operation_id="list_verification_requirements_tool",
+)
+async def mcp_list_verification_requirements(
+    agent_role_id: Optional[str] = Query(None),
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: List verification requirements."""
+    try:
+        from ...mcp_tools.verification_requirement_tools import (
+            list_verification_requirements_tool,
+        )
+
+        return await list_verification_requirements_tool(agent_role_id, db)
+    except Exception as e:
+        logger.error(f"MCP list verification requirements failed: {e}")
+>>>>>>> origin/codex/add-verification-requirement-tools
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete(
+<<<<<<< HEAD
     "/mcp-tools/capability/delete",
     tags=["mcp-tools"],
     operation_id="delete_capability_tool",
@@ -1246,3 +1296,25 @@ async def mcp_remove_role(
 async def mcp_tools_metrics() -> MetricsResponse:
     """Return usage metrics for MCP tools."""
     return MetricsResponse(metrics=dict(tool_counters))
+=======
+    "/mcp-tools/verification-requirement/delete",
+    tags=["mcp-tools"],
+    operation_id="delete_verification_requirement_tool",
+)
+async def mcp_delete_verification_requirement(
+    requirement_id: str,
+    db: Session = Depends(get_db_session),
+):
+    """MCP Tool: Delete a verification requirement."""
+    try:
+        from ...mcp_tools.verification_requirement_tools import (
+            delete_verification_requirement_tool,
+        )
+
+        return await delete_verification_requirement_tool(requirement_id, db)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP delete verification requirement failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+>>>>>>> origin/codex/add-verification-requirement-tools
