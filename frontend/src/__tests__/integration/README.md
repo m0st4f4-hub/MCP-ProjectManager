@@ -18,6 +18,8 @@ graph TD
 <!-- File List Start -->
 ## File List
 
+- `mcp-metrics.test.tsx`
+- `memory-graph.test.tsx`
 - `mock-missing-files.cjs`
 - `not-found.test.tsx`
 - `task-management.test.tsx`
@@ -26,6 +28,7 @@ graph TD
 - `validate-testing-framework.test.ts`
 
 <!-- File List End -->
+
 
 
 
