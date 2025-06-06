@@ -1,41 +1,98 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
-export interface UseEventSourceResult<T> {
-  lastEvent: T | null;
+interface UseEventSourceOptions {
+  onMessage?: (event: MessageEvent) => void;
+  onError?: (error: Event) => void;
+  onOpen?: (event: Event) => void;
+  enabled?: boolean;
+}
+
+interface UseEventSourceReturn {
+  lastEvent: MessageEvent | null;
+  readyState: number;
+  error: Event | null;
+  close: () => void;
 }
 
 /**
- * Connect to a Server-Sent Events stream and handle incoming messages.
- * @param url - SSE endpoint URL
- * @param onEvent - Optional callback invoked for each parsed event
+ * Custom hook for Server-Sent Events (SSE) connection
+ * @param url - The SSE endpoint URL
+ * @param options - Configuration options
+ * @returns Event source state and controls
  */
-export const useEventSource = <T = any>(
+export function useEventSource(
   url: string,
-  onEvent?: (data: T) => void,
-): UseEventSourceResult<T> => {
-  const [lastEvent, setLastEvent] = useState<T | null>(null);
-  const sourceRef = useRef<EventSource>();
-
+  options: UseEventSourceOptions = {}
+): UseEventSourceReturn {
+  const { onMessage, onError, onOpen, enabled = true } = options;
+  
+  const [lastEvent, setLastEvent] = useState<MessageEvent | null>(null);
+  const [readyState, setReadyState] = useState<number>(EventSource.CLOSED);
+  const [error, setError] = useState<Event | null>(null);
+  
+  const eventSourceRef = useRef<EventSource | null>(null);
+  
+  const close = () => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+      setReadyState(EventSource.CLOSED);
+    }
+  };
+  
   useEffect(() => {
-    const es = new EventSource(url);
-    sourceRef.current = es;
-
-    es.onmessage = (e) => {
-      try {
-        const data = JSON.parse(e.data) as T;
-        setLastEvent(data);
-        onEvent?.(data);
-      } catch (err) {
-        console.warn('Failed to parse SSE message', err);
-      }
-    };
-
+    if (!enabled || !url) {
+      close();
+      return;
+    }
+    
+    try {
+      const eventSource = new EventSource(url);
+      eventSourceRef.current = eventSource;
+      
+      eventSource.onopen = (event) => {
+        setReadyState(EventSource.OPEN);
+        setError(null);
+        onOpen?.(event);
+      };
+      
+      eventSource.onmessage = (event) => {
+        setLastEvent(event);
+        onMessage?.(event);
+      };
+      
+      eventSource.onerror = (event) => {
+        setError(event);
+        setReadyState(eventSource.readyState);
+        onError?.(event);
+      };
+      
+      // Update ready state periodically
+      const interval = setInterval(() => {
+        setReadyState(eventSource.readyState);
+      }, 1000);
+      
+      return () => {
+        clearInterval(interval);
+        eventSource.close();
+      };
+    } catch (err) {
+      console.error('Failed to create EventSource:', err);
+      setError(err as Event);
+    }
+  }, [url, enabled, onMessage, onError, onOpen]);
+  
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
-      es.close();
+      close();
     };
-  }, [url, onEvent]);
-
-  return { lastEvent };
-};
-
-export default useEventSource;
+  }, []);
+  
+  return {
+    lastEvent,
+    readyState,
+    error,
+    close
+  };
+}
