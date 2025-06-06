@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.database import get_sync_db as get_db
+from backend.database import get_db
 from backend.services.user_service import UserService
 from backend.services.audit_log_service import AuditLogService
 
@@ -27,24 +27,24 @@ router = APIRouter(
 )
 
 
-def get_user_service(db: Session = Depends(get_db)) -> UserService:
+async def get_user_service(db: AsyncSession = Depends(get_db)) -> UserService:
     return UserService(db)  # Dependency for AuditLogService
 
 
-def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
+async def get_audit_log_service(db: AsyncSession = Depends(get_db)) -> AuditLogService:
     return AuditLogService(db)
 
 
 @router.post("/", response_model=DataResponse[User])
-def create_user(
+async def create_user(
     user: UserCreate,
     user_service: UserService = Depends(get_user_service),
     audit_log_service: AuditLogService = Depends(get_audit_log_service)  # Inject AuditLogService
 ):
     """Create a new user."""
     try:
-        db_user = user_service.create_user(user=user)  # Log user creation
-        audit_log_service.create_log(
+        db_user = await user_service.create_user(user=user)  # Log user creation
+        await audit_log_service.create_log(
             action="create_user",
             details={"username": user.username}
         )  # Return standardized response
@@ -85,15 +85,15 @@ async def read_user(
         )
 
 @router.get("/", response_model=ListResponse[User])
-def read_users(
+async def read_users(
     pagination: PaginationParams = Depends(),
     user_service: UserService = Depends(get_user_service)
 ):
     """Retrieve a list of users."""
     try:  # Get all users for total count
-        all_users = user_service.get_users(skip=0)
+        all_users = await user_service.get_users(skip=0)
         total = len(all_users)  # Get paginated users
-        users = user_service.get_users(
+        users = await user_service.get_users(
             skip=pagination.offset,
             limit=pagination.page_size
         )  # Convert to Pydantic models

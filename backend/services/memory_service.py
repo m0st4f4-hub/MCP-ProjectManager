@@ -173,7 +173,7 @@ class MemoryService:
             logger.error(f"Error ingesting file: {e}")
             raise ServiceError(f"Error ingesting file: {str(e)}")
 
-    def ingest_uploaded_file(
+    async def ingest_uploaded_file(
         self,
         filename: str,
         content: bytes,
@@ -205,7 +205,7 @@ class MemoryService:
                 source_metadata=None,
                 created_by_user_id=user_id,
             )
-            return self.create_entity(entity_create)
+            return await self.create_entity(entity_create)
         except Exception as e:
             logger.error(f"Error ingesting uploaded file {filename}: {e}")
             raise HTTPException(
@@ -431,7 +431,7 @@ class MemoryService:
                 metadata_=relation.metadata_,
                 created_by_user_id=relation.created_by_user_id
             )
-            await self.db.add(db_relation)
+            self.db.add(db_relation)
             await self.db.commit()
             await self.db.refresh(db_relation)
             logger.info(f"Created new memory relation: {db_relation.from_entity_id}-{db_relation.to_entity_id}-{db_relation.type}")

@@ -6,4 +6,4 @@ from .roles import router as roles_router
 router = APIRouter()
 router.include_router(core_router)
 router.include_router(auth_router)
-router.include_router(roles_router)
+router.include_router(roles_router, prefix="/{user_id}/roles", tags=["User Roles"])

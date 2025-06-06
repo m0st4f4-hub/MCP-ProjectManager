@@ -8,7 +8,7 @@ from ...schemas.api_responses import DataResponse, ListResponse
 from ...services.exceptions import EntityNotFoundError
 from ...enums import UserRoleEnum
 
-router = APIRouter(prefix="/{user_id}/roles", tags=["User Roles"])
+router = APIRouter(tags=["User Roles"])
 
 
 def get_role_service(db: Session = Depends(get_db)) -> UserRoleService:

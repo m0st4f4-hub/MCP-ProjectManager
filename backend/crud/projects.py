@@ -218,42 +218,42 @@ async def get_projects(
 
 
 async def create_project(db: AsyncSession, project: schemas.ProjectCreate, created_by: Optional[str] = None):
-                                            # Use the imported ProjectCreate directly
-                                            # Check if a project with the same name already
-                                            # exists (await the async function)
-                                            existing_project = await get_project_by_name(db, project.name)
-                                            if existing_project:
-                                                raise ValueError(
-                                                    f"Project with name '{project.name}'"
-                                                    " already exists"
-                                                )
+    # Use the imported ProjectCreate directly
+    # Check if a project with the same name already
+    # exists (await the async function)
+    existing_project = await get_project_by_name(db, project.name)
+    if existing_project:
+        raise ValueError(
+            f"Project with name '{project.name}'"
+            " already exists"
+        )
 
-                                            db_project = ProjectModel(
-                                                id=str(uuid.uuid4()),
-                                                name=project.name,
-                                                description=project.description,
-                                                created_by=created_by)
-                                            db.add(db_project)
-                                            await db.commit()
-                                            await db.refresh(db_project)
+    db_project = ProjectModel(
+        id=str(uuid.uuid4()),
+        name=project.name,
+        description=project.description,
+        owner_id=created_by,  # Set owner_id to the user creating the project
+        created_by=created_by)
+    db.add(db_project)
+    await db.commit()
+    await db.refresh(db_project)
 
-                                            # Uncomment MemoryEntity creation
-                                            memory_entity_data = MemoryEntityCreate(
-                                                type="project",
-                                                name=db_project.name,
-                                                description=db_project.description,
-                                                metadata_={
-                                                    "project_id": db_project.id,
-                                                    "created_at":
-                                                        db_project.created_at.isoformat()
-                                                },
-                                                entity_type="project"
-                                            )
-                                            await memory_crud.create_memory_entity(
-                                                db=db,
-                                                entity=memory_entity_data)
+    # Uncomment MemoryEntity creation
+    memory_entity_data = MemoryEntityCreate(
+        entity_type="project",
+        name=db_project.name,
+        content=db_project.description or f"Project: {db_project.name}",  # Add required content field
+        source="project_creation",  # Add required source field
+        entity_metadata={
+            "project_id": db_project.id,
+            "created_at": db_project.created_at.isoformat()
+        }
+    )
+    await memory_crud.create_memory_entity(
+        db=db,
+        entity=memory_entity_data)
 
-                                            return db_project
+    return db_project
 
 
 async def update_project(db: AsyncSession, project_id: str,

@@ -76,7 +76,7 @@ async def test_delete_universal_mandate_service_calls_crud():
     with patch("backend.services.rules_service.crud_rules.delete_universal_mandate", return_value=True) as mock_del:
         result = await service.delete_universal_mandate("mid")
         assert result is True
-        mock_del.assert_called_once_with(session, "mid")
+        mock_del.assert_called_once_with(service, "mid")
 
 
 @pytest.mark.asyncio

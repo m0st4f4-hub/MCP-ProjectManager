@@ -5,13 +5,17 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, validates
-from sqlalchemy.dialects.postgresql import UUID
+# from sqlalchemy.dialects.postgresql import UUID  # Remove PostgreSQL-specific import
 from datetime import datetime
 import uuid
 import enum
 from typing import Dict, Any, Optional
 
 Base = declarative_base()
+
+def generate_uuid():
+    """Generate a string UUID for SQLite compatibility."""
+    return str(uuid.uuid4())
 
 class TaskStatus(enum.Enum):
     PENDING = "pending"
@@ -36,14 +40,14 @@ class EnhancedProject(Base):
     """Enhanced project model with better relationships and validation."""
     __tablename__ = "projects"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=generate_uuid)  # Use String instead of UUID
     name = Column(String(255), nullable=False)
     description = Column(Text)
     status = Column(SQLEnum(ProjectStatus), default=ProjectStatus.ACTIVE, nullable=False)
     
     # Ownership and permissions
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    team_id = Column(UUID(as_uuid=True), ForeignKey("teams.id"), nullable=True)
+    owner_id = Column(String(36), ForeignKey("users.id"), nullable=False)  # Use String instead of UUID
+    # team_id = Column(String(36), ForeignKey("teams.id"), nullable=True)  # Commented out until Team model is created
     
     # Settings and configuration
     settings = Column(JSON, default=dict)
@@ -60,14 +64,14 @@ class EnhancedProject(Base):
     
     # Relationships
     owner = relationship("User", back_populates="owned_projects")
-    team = relationship("Team", back_populates="projects")
+    # team = relationship("Team", back_populates="projects")  # Commented out until Team model is created
     tasks = relationship("EnhancedTask", back_populates="project", cascade="all, delete-orphan")
-    milestones = relationship("Milestone", back_populates="project", cascade="all, delete-orphan")
+    # milestones = relationship("Milestone", back_populates="project", cascade="all, delete-orphan")  # Commented out until Milestone model is created
     
     # Indexes for performance
     __table_args__ = (
         Index("idx_project_owner_status", "owner_id", "status"),
-        Index("idx_project_team_status", "team_id", "status"),
+        # Index("idx_project_team_status", "team_id", "status"),  # Commented out
         Index("idx_project_created_at", "created_at"),
         Index("idx_project_name_search", "name"),
         CheckConstraint("length(name) >= 1", name="project_name_not_empty"),
@@ -90,7 +94,7 @@ class EnhancedProject(Base):
             "description": self.description,
             "status": self.status.value,
             "owner_id": str(self.owner_id),
-            "team_id": str(self.team_id) if self.team_id else None,
+            # "team_id": str(self.team_id) if self.team_id else None,  # Commented out
             "settings": self.settings,
             "metadata": self.metadata_,
             "created_at": self.created_at.isoformat(),
@@ -102,7 +106,7 @@ class EnhancedTask(Base):
     """Enhanced task model with comprehensive tracking."""
     __tablename__ = "tasks"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=generate_uuid)  # Use String instead of UUID
     title = Column(String(500), nullable=False)
     description = Column(Text)
     
@@ -111,10 +115,10 @@ class EnhancedTask(Base):
     priority = Column(SQLEnum(TaskPriority), default=TaskPriority.MEDIUM, nullable=False)
     
     # Relationships
-    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False)
-    assignee_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    reporter_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    parent_task_id = Column(UUID(as_uuid=True), ForeignKey("tasks.id"), nullable=True)
+    project_id = Column(String(36), ForeignKey("projects.id"), nullable=False)
+    assignee_id = Column(String(36), ForeignKey("users.id"), nullable=True)
+    reporter_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    parent_task_id = Column(String(36), ForeignKey("tasks.id"), nullable=True)
     
     # Time tracking
     estimated_hours = Column(Float, nullable=True)
@@ -209,7 +213,7 @@ class User(Base):
     """Enhanced user model."""
     __tablename__ = "users"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=generate_uuid)  # Use String instead of UUID
     username = Column(String(255), unique=True, nullable=False)
     email = Column(String(255), unique=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
@@ -238,7 +242,7 @@ class User(Base):
     owned_projects = relationship("EnhancedProject", back_populates="owner")
     assigned_tasks = relationship("EnhancedTask", foreign_keys="EnhancedTask.assignee_id", back_populates="assignee")
     reported_tasks = relationship("EnhancedTask", foreign_keys="EnhancedTask.reporter_id", back_populates="reporter")
-    team_memberships = relationship("TeamMembership", back_populates="user")
+    # team_memberships = relationship("TeamMembership", back_populates="user")  # Commented out until TeamMembership model is created
     
     __table_args__ = (
         Index("idx_user_email", "email"),
@@ -273,9 +277,9 @@ class TimeLog(Base):
     """Time tracking for tasks."""
     __tablename__ = "time_logs"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    task_id = Column(UUID(as_uuid=True), ForeignKey("tasks.id"), nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=generate_uuid)  # Use String instead of UUID
+    task_id = Column(String(36), ForeignKey("tasks.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     
     hours = Column(Float, nullable=False)
     description = Column(Text)
@@ -298,9 +302,9 @@ class TaskComment(Base):
     """Comments on tasks."""
     __tablename__ = "task_comments"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    task_id = Column(UUID(as_uuid=True), ForeignKey("tasks.id"), nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    id = Column(String(36), primary_key=True, default=generate_uuid)  # Use String instead of UUID
+    task_id = Column(String(36), ForeignKey("tasks.id"), nullable=False)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)

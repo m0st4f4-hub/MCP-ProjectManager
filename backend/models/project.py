@@ -30,6 +30,10 @@ class Project(Base):
     activity_score = Column(Numeric(10, 2), default=0.0)
     completion_percentage = Column(Numeric(5, 2), default=0.0)
     
+    # Computed fields (can be set dynamically)
+    task_count = Column(Integer, default=0)
+    completed_task_count = Column(Integer, default=0)
+    
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

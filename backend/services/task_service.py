@@ -5,12 +5,24 @@ from sqlalchemy.orm import selectinload, joinedload
 from datetime import datetime, timedelta
 from pydantic import BaseModel, validator
 import logging
+from uuid import UUID
+import enum
 
-from backend.models.enhanced_models import EnhancedTask, TaskStatus, TaskPriority, User, EnhancedProject
+from backend.models import Task as RegularTask, Project as RegularProject, User
+from backend.enums import TaskStatusEnum as TaskStatus  # Import only TaskStatus from backend.enums
+# from backend.models.task import TaskStatus, TaskPriority  # Comment out - these don't exist in regular models
+# from backend.models.enhanced_models import EnhancedTask, TaskStatus, TaskPriority, User, EnhancedProject  # Comment out enhanced models
 from backend.services.enhanced_service_base import EnhancedServiceBase
 from .exceptions import ValidationError, NotFoundError, PermissionError
 
 logger = logging.getLogger(__name__)
+
+# Create a simple TaskPriority enum since it doesn't exist in the regular models
+class TaskPriority(enum.Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
 
 # Pydantic schemas
 class TaskCreateSchema(BaseModel):
@@ -82,11 +94,12 @@ class TaskAnalyticsSchema(BaseModel):
     priority_distribution: Dict[str, int]
     status_distribution: Dict[str, int]
 
-class EnhancedTaskService(EnhancedServiceBase[EnhancedTask, TaskCreateSchema, TaskUpdateSchema]):
+class EnhancedTaskService(EnhancedServiceBase[RegularTask, TaskCreateSchema, TaskUpdateSchema]):
     """Enhanced task service with advanced features."""
     
-    def __init__(self):
-        super().__init__(EnhancedTask, "task")
+    def __init__(self, db: AsyncSession = None):
+        super().__init__(RegularTask, "task")
+        self.db = db
     
     def _validate_create(self, data: TaskCreateSchema) -> TaskCreateSchema:
         """Validate task creation data."""
@@ -104,41 +117,59 @@ class EnhancedTaskService(EnhancedServiceBase[EnhancedTask, TaskCreateSchema, Ta
     
     async def create_task(
         self,
+        project_id: UUID,
+        task: TaskCreateSchema,
+        agent_id: Optional[str] = None
+    ) -> RegularTask:
+        """Create a task with the interface expected by the router."""
+        # Convert the project_id to string and set it in the task data
+        task_data = task.model_copy()
+        task_data.project_id = str(project_id)
+        
+        # Use the existing create_task_with_validation method
+        return await self.create_task_with_validation(
+            db=self.db,
+            task_data=task_data,
+            reporter_id=None  # Will be set by the router if needed
+        )
+
+    async def create_task_with_validation(
+        self,
         db: AsyncSession,
         task_data: TaskCreateSchema,
         reporter_id: str
-    ) -> EnhancedTask:
+    ) -> RegularTask:
         """Create a new task with validation."""
         # Validate project exists
-        project_query = select(EnhancedProject).where(EnhancedProject.id == task_data.project_id)
+        project_query = select(RegularProject).where(RegularProject.id == task_data.project_id)
         project_result = await db.execute(project_query)
         project = project_result.scalar_one_or_none()
         
         if not project:
             raise NotFoundError("Project not found")
         
-        # Validate assignee exists if provided
-        if task_data.assignee_id:
-            assignee_query = select(User).where(User.id == task_data.assignee_id)
+        # Validate assignee exists if provided (use assigned_to instead of assignee_id)
+        if hasattr(task_data, 'assigned_to') and task_data.assigned_to:
+            assignee_query = select(User).where(User.id == task_data.assigned_to)
             assignee_result = await db.execute(assignee_query)
             assignee = assignee_result.scalar_one_or_none()
             
             if not assignee:
                 raise NotFoundError("Assignee not found")
         
-        # Validate parent task if provided
-        if task_data.parent_task_id:
-            parent_query = select(EnhancedTask).where(
-                and_(
-                    EnhancedTask.id == task_data.parent_task_id,
-                    EnhancedTask.project_id == task_data.project_id
-                )
-            )
-            parent_result = await db.execute(parent_query)
-            parent_task = parent_result.scalar_one_or_none()
-            
-            if not parent_task:
-                raise ValidationError("Parent task not found in the same project")
+        # Validate parent task if provided (regular Task model doesn't have parent_task_id)
+        # if hasattr(task_data, 'parent_task_id') and task_data.parent_task_id:
+        #     parent_query = select(RegularTask).where(
+        #         and_(
+        #             RegularTask.id == task_data.parent_task_id,
+        #             RegularTask.project_id == task_data.project_id
+        #         )
+        #     )
+        #     parent_result = await db.execute(parent_query)
+        #     parent_task = parent_result.scalar_one_or_none()
+        #     
+        #     if not parent_task:
+        #         raise ValidationError("Parent task not found in the same project")
         
         # Create task
         task = await self.create(
@@ -157,7 +188,7 @@ class EnhancedTaskService(EnhancedServiceBase[EnhancedTask, TaskCreateSchema, Ta
         new_status: TaskStatus,
         user_id: str,
         actual_hours: Optional[float] = None
-    ) -> EnhancedTask:
+    ) -> RegularTask:
         """Update task status with validation and time tracking."""
         task = await self.get_by_id(db, task_id, user_id)
         
@@ -233,24 +264,24 @@ class EnhancedTaskService(EnhancedServiceBase[EnhancedTask, TaskCreateSchema, Ta
         user_id: str = None,
         project_id: str = None,
         days_overdue: int = 0
-    ) -> List[EnhancedTask]:
+    ) -> List[RegularTask]:
         """Get overdue tasks."""
         cutoff_date = datetime.utcnow() - timedelta(days=days_overdue)
         
-        query = select(EnhancedTask).where(
+        query = select(RegularTask).where(
             and_(
-                EnhancedTask.due_date < cutoff_date,
-                EnhancedTask.status.notin_([TaskStatus.COMPLETED, TaskStatus.CANCELLED])
+                RegularTask.due_date < cutoff_date,
+                RegularTask.status.notin_([TaskStatus.COMPLETED, TaskStatus.CANCELLED])
             )
         )
         
         if project_id:
-            query = query.where(EnhancedTask.project_id == project_id)
+            query = query.where(RegularTask.project_id == project_id)
         
         if user_id:
-            query = query.where(EnhancedTask.assignee_id == user_id)
+            query = query.where(RegularTask.assignee_id == user_id)
         
-        query = query.options(selectinload(EnhancedTask.project), selectinload(EnhancedTask.assignee))
+        query = query.options(selectinload(RegularTask.project), selectinload(RegularTask.assignee))
         
         result = await db.execute(query)
         return result.scalars().all()
@@ -264,21 +295,21 @@ class EnhancedTaskService(EnhancedServiceBase[EnhancedTask, TaskCreateSchema, Ta
         date_to: datetime = None
     ) -> TaskAnalyticsSchema:
         """Get task analytics and metrics."""
-        base_query = select(EnhancedTask)
+        base_query = select(RegularTask)
         
         conditions = []
         
         if project_id:
-            conditions.append(EnhancedTask.project_id == project_id)
+            conditions.append(RegularTask.project_id == project_id)
         
         if user_id:
-            conditions.append(EnhancedTask.assignee_id == user_id)
+            conditions.append(RegularTask.assignee_id == user_id)
         
         if date_from:
-            conditions.append(EnhancedTask.created_at >= date_from)
+            conditions.append(RegularTask.created_at >= date_from)
         
         if date_to:
-            conditions.append(EnhancedTask.created_at <= date_to)
+            conditions.append(RegularTask.created_at <= date_to)
         
         if conditions:
             base_query = base_query.where(and_(*conditions))
@@ -340,7 +371,7 @@ class EnhancedTaskService(EnhancedServiceBase[EnhancedTask, TaskCreateSchema, Ta
         task_ids: List[str],
         update_data: Dict[str, Any],
         user_id: str
-    ) -> List[EnhancedTask]:
+    ) -> List[RegularTask]:
         """Bulk update multiple tasks."""
         updated_tasks = []
         
@@ -367,27 +398,147 @@ class EnhancedTaskService(EnhancedServiceBase[EnhancedTask, TaskCreateSchema, Ta
         user_id: str = None,
         project_id: str = None,
         limit: int = 50
-    ) -> List[EnhancedTask]:
+    ) -> List[RegularTask]:
         """Search tasks by title and description."""
         search_conditions = [
-            EnhancedTask.title.ilike(f"%{search_query}%"),
-            EnhancedTask.description.ilike(f"%{search_query}%")
+            RegularTask.title.ilike(f"%{search_query}%"),
+            RegularTask.description.ilike(f"%{search_query}%")
         ]
         
-        query = select(EnhancedTask).where(or_(*search_conditions))
+        query = select(RegularTask).where(or_(*search_conditions))
         
         if project_id:
-            query = query.where(EnhancedTask.project_id == project_id)
+            query = query.where(RegularTask.project_id == project_id)
         
         if user_id:
-            query = query.where(EnhancedTask.assignee_id == user_id)
+            query = query.where(RegularTask.assignee_id == user_id)
         
         query = query.limit(limit).options(
-            selectinload(EnhancedTask.project),
-            selectinload(EnhancedTask.assignee)
+            selectinload(RegularTask.project),
+            selectinload(RegularTask.assignee)
         )
         
         result = await db.execute(query)
+        return result.scalars().all()
+
+    async def create(
+        self,
+        db: AsyncSession,
+        data: TaskCreateSchema,
+        user_id: str = None,
+        reporter_id: str = None
+    ) -> RegularTask:
+        """Create a task with proper field mapping."""
+        # Get the next task number for this project
+        from sqlalchemy import func
+        max_task_number_query = select(func.max(RegularTask.task_number)).where(
+            RegularTask.project_id == data.project_id
+        )
+        result = await db.execute(max_task_number_query)
+        max_task_number = result.scalar() or 0
+        next_task_number = max_task_number + 1
+        
+        # Map schema fields to model fields
+        task_data = {
+            'project_id': data.project_id,
+            'task_number': next_task_number,
+            'title': data.title,
+            'description': getattr(data, 'description', None),
+            'agent_id': getattr(data, 'agent_id', None),
+            'status': getattr(data, 'status', TaskStatus.TO_DO),
+            'assigned_to': getattr(data, 'assigned_to', None),
+            'start_date': getattr(data, 'start_date', None),
+            'due_date': getattr(data, 'due_date', None),
+        }
+        
+        # Create the task
+        task = RegularTask(**task_data)
+        db.add(task)
+        await db.commit()
+        await db.refresh(task)
+        
+        return task
+
+    async def update_task(
+        self,
+        project_id: UUID,
+        task_number: int,
+        task_update: TaskUpdateSchema,
+        user_id: str = None
+    ) -> RegularTask:
+        """Update a task with proper field mapping."""
+        # Find the task
+        task_query = select(RegularTask).where(
+            and_(
+                RegularTask.project_id == str(project_id),
+                RegularTask.task_number == task_number
+            )
+        )
+        result = await self.db.execute(task_query)
+        task = result.scalar_one_or_none()
+        
+        if not task:
+            raise NotFoundError("Task not found")
+        
+        # Update fields that are provided
+        update_data = task_update.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            if hasattr(task, field):
+                setattr(task, field, value)
+        
+        await self.db.commit()
+        await self.db.refresh(task)
+        
+        return task
+
+    async def get_task(
+        self,
+        project_id: UUID,
+        task_number: int
+    ) -> RegularTask:
+        """Get a specific task by project_id and task_number."""
+        task_query = select(RegularTask).where(
+            and_(
+                RegularTask.project_id == str(project_id),
+                RegularTask.task_number == task_number
+            )
+        )
+        result = await self.db.execute(task_query)
+        task = result.scalar_one_or_none()
+        
+        if not task:
+            raise NotFoundError("Task not found")
+        
+        return task
+
+    async def delete_task(
+        self,
+        project_id: UUID,
+        task_number: int
+    ) -> bool:
+        """Delete a specific task by project_id and task_number."""
+        task = await self.get_task(project_id, task_number)
+        
+        await self.db.delete(task)
+        await self.db.commit()
+        
+        return True
+
+    async def get_all_tasks(
+        self,
+        project_id: UUID = None,
+        skip: int = 0,
+        limit: int = 20
+    ) -> List[RegularTask]:
+        """Get all tasks with optional project filter and pagination."""
+        query = select(RegularTask)
+        
+        if project_id:
+            query = query.where(RegularTask.project_id == str(project_id))
+        
+        query = query.offset(skip).limit(limit)
+        
+        result = await self.db.execute(query)
         return result.scalars().all()
 
 # Global task service instance

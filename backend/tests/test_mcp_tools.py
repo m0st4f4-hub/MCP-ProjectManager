@@ -114,7 +114,12 @@ async def test_memory_ingest_and_retrieve(authenticated_client, async_db_session
     from backend.schemas.memory import MemoryEntityCreate
     from backend.crud.memory import create_memory_entity
 
-    entity_schema = MemoryEntityCreate(entity_type="text", content="remember this")
+    entity_schema = MemoryEntityCreate(
+        entity_type="text",
+        name="test memory",
+        content="remember this",
+        source="test"
+    )
     entity = await create_memory_entity(async_db_session, entity_schema)
     mem_id = entity.id
 

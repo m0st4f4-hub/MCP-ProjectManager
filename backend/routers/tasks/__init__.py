@@ -4,14 +4,7 @@ Combines all task-related routers.
 """
 
 from fastapi import APIRouter
-
-# Import minimal working router for now
-try:
-    from .minimal import router as core_router
-    print("Successfully imported tasks minimal router")
-except ImportError as e:
-    print(f"Warning: Could not import tasks minimal router: {e}")
-    core_router = APIRouter()
+from .core.core import router as core_router
 
 # Create main router and include sub-routers
 router = APIRouter()

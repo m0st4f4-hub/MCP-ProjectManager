@@ -14,6 +14,7 @@ httpx
 prometheus-client
 authlib
 slowapi
+redis
 
 # For CI/Dev
 flake8

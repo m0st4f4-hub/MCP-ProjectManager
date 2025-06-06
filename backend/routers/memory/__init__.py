@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 
-from ...database import get_sync_db as get_db
+from ...database import get_db
 from ...services.memory_service import MemoryService
 from ...schemas.memory import MemoryEntity, KnowledgeGraph
 from ...auth import get_current_active_user
@@ -17,7 +17,7 @@ router = APIRouter()
 router.include_router(core_router, prefix="/entities", tags=["Memory Entities"])
 
 
-def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
+def get_memory_service(db: AsyncSession = Depends(get_db)) -> MemoryService:
     return MemoryService(db)
 
 

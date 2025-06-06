@@ -830,16 +830,6 @@ async def mcp_list_tools():
     return {"success": True, "tools": tools}
 
 
-@router.get(
-    "/mcp-tools/metrics",
-    tags=["mcp-tools"],
-    operation_id="mcp_tools_metrics",
-)
-async def mcp_tools_metrics():
-    """Return invocation counts for each MCP tool."""
-    return {"success": True, "metrics": dict(tool_counters)}
-
-
 @router.post(
     "/mcp-tools/rule/mandate/create",
     tags=["mcp-tools"],
@@ -1191,6 +1181,7 @@ async def mcp_list_forbidden_actions(
     tags=["mcp-tools"],
     operation_id="create_verification_requirement_tool",
 )
+@track_tool_usage("create_verification_requirement_tool")
 async def mcp_create_verification_requirement(
     agent_role_id: str,
     requirement: str,
@@ -1317,12 +1308,13 @@ async def mcp_remove_role(
 ):
     """MCP Tool: Remove a role from a user."""
     try:
-        from ...mcp_tools.user_role_tools import remove_role_tool
-
-        await remove_role_tool(user_id, role_name, db)
-        return DataResponse[bool](data=True, message="Role removed")
-    except HTTPException:
-        raise
+        service = UserRoleService(db)
+        success = service.remove_role_from_user(user_id, role_name)
+        if not success:
+            raise EntityNotFoundError("UserRole", f"{user_id}:{role_name}")
+        return DataResponse[bool](data=True, message="Role removed successfully")
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         logger.error(f"MCP remove role failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

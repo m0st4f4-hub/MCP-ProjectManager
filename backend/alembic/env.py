@@ -14,7 +14,7 @@ from backend.models import (  # noqa: F401,E402
 )
 from backend.models import Base  # noqa: F401,E402
 from alembic import context  # noqa: E402
-# from sqlalchemy import engine_from_config  # noqa: F401,E402
+from sqlalchemy import engine_from_config  # noqa: F401,E402
 from logging.config import fileConfig  # noqa: E402
 
 # this is the Alembic Config object,
@@ -49,8 +49,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    # url = config.get_main_option("sqlalchemy.url")  # Original line
-    url = "sqlite://"  # Force in-memory for offline
+    url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -69,14 +68,13 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    # connectable = engine_from_config(  # Original online mode config
-    #     config.get_section(config.config_ini_section, {}),
-    #     prefix="sqlalchemy.",
-    #     poolclass=pool.NullPool,
-    # )
-    # Temporary connectable for in-memory online mode
-    import sqlalchemy
-    connectable = sqlalchemy.create_engine("sqlite://")
+    from sqlalchemy import engine_from_config, pool
+    
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
 
     with connectable.connect() as connection:
         context.configure(
