@@ -11,6 +11,7 @@ import type { MemoryEntity, MemoryEntityFilters } from '@/types/memory';
 interface MemoryActions {
   fetchEntities: (filters?: MemoryEntityFilters) => Promise<void>;
   ingestFile: (filePath: string) => Promise<void>;
+  uploadFile: (file: File) => Promise<void>;
   ingestUrl: (url: string) => Promise<void>;
   ingestText: (text: string) => Promise<void>;
   deleteEntity: (id: number) => Promise<void>;
@@ -65,6 +66,20 @@ const actionsCreator = (
 =======
       set({ ingestionError: handleApiError(err), ingestionLoading: false });
 >>>>>>> origin/codex/add-memorystore-to-manage-entities-and-state
+      throw err;
+    }
+  },
+  uploadFile: async (file: File) => {
+    set({ ingestionLoading: true, ingestionError: null });
+    try {
+      const entity = await memoryApi.uploadFile(file);
+      set((state) => ({
+        entities: [entity, ...state.entities],
+        ingestionLoading: false,
+      }));
+    } catch (err) {
+      handleApiError(err);
+      set({ ingestionError: err instanceof Error ? err.message : String(err), ingestionLoading: false });
       throw err;
     }
   },

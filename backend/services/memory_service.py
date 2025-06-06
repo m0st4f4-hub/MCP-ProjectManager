@@ -113,7 +113,50 @@ class MemoryService:
             logger.error(f"Error ingesting file {file_path}: {e}")
             raise ServiceError(f"Error ingesting file: {str(e)}")
 
+<<<<<<< HEAD
     async def ingest_url(
+=======
+    def ingest_uploaded_file(
+        self,
+        filename: str,
+        content: bytes,
+        content_type: str,
+        user_id: Optional[str] = None,
+    ) -> models.MemoryEntity:
+        """Create a MemoryEntity from an uploaded file."""
+        try:
+            try:
+                text_content = content.decode("utf-8")
+            except UnicodeDecodeError:
+                try:
+                    text_content = content.decode("latin-1")
+                except Exception:
+                    text_content = f"Binary file: {filename}"
+
+            file_info = {
+                "filename": filename,
+                "size": len(content),
+                "content_type": content_type,
+            }
+
+            entity_create = MemoryEntityCreate(
+                entity_type="file",
+                content=text_content,
+                entity_metadata=file_info,
+                source="file_upload",
+                source_metadata=None,
+                created_by_user_id=user_id,
+            )
+            return self.create_entity(entity_create)
+        except Exception as e:
+            logger.error(f"Error ingesting uploaded file {filename}: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error ingesting uploaded file: {str(e)}",
+            )
+
+    def ingest_url(
+>>>>>>> origin/codex/add-file-selection-and-display-results
         self, url: str, user_id: Optional[str] = None
     ) -> models.MemoryEntity:
         try:
