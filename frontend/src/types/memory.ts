@@ -38,16 +38,11 @@ export type MemoryObservationCreateData = z.infer<
   typeof memoryObservationCreateSchema
 >;
 
-export const memoryObservationUpdateSchema =
-  memoryObservationBaseSchema.partial();
+export const memoryObservationUpdateSchema = memoryObservationBaseSchema.partial();
 
 export type MemoryObservationUpdateData = z.infer<
   typeof memoryObservationUpdateSchema
 >;
-
-export const memoryObservationUpdateSchema = memoryObservationBaseSchema.partial();
-
-export type MemoryObservationUpdateData = z.infer<typeof memoryObservationUpdateSchema>;
 
 export const memoryObservationSchema = memoryObservationBaseSchema.extend({
   id: z.number(),
@@ -75,10 +70,6 @@ export const memoryRelationUpdateSchema = memoryRelationBaseSchema.partial();
 export type MemoryRelationUpdateData = z.infer<
   typeof memoryRelationUpdateSchema
 >;
-
-export const memoryRelationUpdateSchema = memoryRelationBaseSchema.partial();
-
-export type MemoryRelationUpdateData = z.infer<typeof memoryRelationUpdateSchema>;
 
 export const memoryRelationSchema = memoryRelationBaseSchema.extend({
   id: z.number(),

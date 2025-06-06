@@ -31,20 +31,6 @@ export const updateRelation = async (
   return response.data;
 };
 
-export const updateRelation = async (
-  relationId: number,
-  data: MemoryRelationUpdateData
-): Promise<MemoryRelation> => {
-  const response = await request<{ data: MemoryRelation }>(
-    buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
-    {
-      method: "PUT",
-      body: JSON.stringify(data),
-    }
-  );
-  return response.data;
-};
-
 // --- Memory Entity APIs ---
 export const memoryApi = {
   // Create a new memory entity
@@ -217,21 +203,6 @@ export const memoryApi = {
     return response.data;
   },
 
-  // Update an observation
-  updateObservation: async (
-    observationId: number,
-    data: MemoryObservationUpdateData
-  ): Promise<MemoryObservation> => {
-    const response = await request<{ data: MemoryObservation }>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/observations/${observationId}`),
-      {
-        method: "PUT",
-        body: JSON.stringify(data),
-      }
-    );
-    return response.data;
-  },
-
   // Delete an observation
   deleteObservation: async (observationId: number): Promise<boolean> => {
     return request<boolean>(
@@ -259,6 +230,33 @@ export const memoryApi = {
     return response.data;
   },
 
+  // List relations with optional filters
+  listRelations: async (
+    filters?: MemoryRelationFilters & { skip?: number; limit?: number }
+  ): Promise<MemoryRelation[]> => {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      });
+    }
+    const response = await request<{ data: MemoryRelation[] }>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations?${params.toString()}`)
+    );
+    return response.data;
+  },
+
+  // Get knowledge graph
+  getKnowledgeGraph: async (): Promise<KnowledgeGraph> => {
+    const response = await request<KnowledgeGraph>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, '/graph')
+    );
+    return response.data;
+  },
+
+  // Update a relation
   updateRelation: async (
     relationId: number,
     data: MemoryRelationUpdateData
@@ -273,45 +271,6 @@ export const memoryApi = {
     return response.data;
   },
 
-  // Update an existing relation
-  updateRelation: async (
-    relationId: number,
-    data: MemoryRelationUpdateData
-  ): Promise<MemoryRelation> => {
-    const response = await request<{ data: MemoryRelation }>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/relations/${relationId}`),
-      {
-        method: "PUT",
-        body: JSON.stringify(data),
-      }
-    );
-    return response.data;
-  },
-
-  // Get relations with filters
-  getRelations: async (
-    filters?: MemoryRelationFilters
-  ): Promise<MemoryRelation[]> => {
-    const params = new URLSearchParams();
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          params.append(key, String(value));
-        }
-      });
-    }
-    const response = await request<{ data: MemoryRelation[] }>(
-      buildApiUrl(
-        API_CONFIG.ENDPOINTS.MEMORY,
-        `/relations?${params.toString()}`
-      )
-    );
-    return response.data;
-  },
-
-  // Update a relation
-  updateRelation,
-
   // Delete a relation
   deleteRelation: async (relationId: number): Promise<boolean> => {
     return request<boolean>(
@@ -320,39 +279,5 @@ export const memoryApi = {
         method: 'DELETE',
       }
     );
-  },
-
-  // --- Knowledge Graph APIs ---
-  // Get the knowledge graph with optional filters
-  getKnowledgeGraph: async (
-    filters?: {
-      entity_type?: string;
-      relation_type?: string;
-      limit?: number;
-      offset?: number;
-    }
-  ): Promise<KnowledgeGraph> => {
-    const params = new URLSearchParams();
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          params.append(key, String(value));
-        }
-      });
-    }
-    return await request<KnowledgeGraph>(
-      buildApiUrl(API_CONFIG.ENDPOINTS.MEMORY, `/graph?${params.toString()}`)
-    );
-  },
-
-  // Search the knowledge graph
-  searchGraph: async (query: string): Promise<MemoryEntity[]> => {
-    const response = await request<{ data: MemoryEntity[] }>(
-      buildApiUrl(
-        API_CONFIG.ENDPOINTS.MEMORY,
-        `/search?q=${encodeURIComponent(query)}`
-      )
-    );
-    return response.data;
   },
 };
