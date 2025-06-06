@@ -70,6 +70,7 @@ async def test_ingest_file_unsupported_encoding(tmp_path):
 
     with patch("aiofiles.open", side_effect=decode_error):
         with pytest.raises(HTTPException):
+<<<<<<< HEAD
             await service.ingest_file(FileIngestInput(file_path=str(tmp_file)))
 
 
@@ -90,3 +91,25 @@ async def test_ingest_large_file(tmp_path):
 
     entity = service.create_entity.call_args.args[0]
     assert entity.content == content
+=======
+            service.ingest_file(FileIngestInput(file_path=str(tmp_file)))
+
+
+def test_get_knowledge_graph():
+    session = MagicMock()
+    entities = [MagicMock(), MagicMock()]
+    relations = [MagicMock()]
+
+    query_entities = MagicMock()
+    query_entities.all.return_value = entities
+    query_relations = MagicMock()
+    query_relations.all.return_value = relations
+
+    session.query.side_effect = [query_entities, query_relations]
+    service = MemoryService(session)
+
+    graph = service.get_knowledge_graph()
+
+    assert graph["entities"] == entities
+    assert graph["relations"] == relations
+>>>>>>> origin/codex/add-get-/graph-route-and-tests

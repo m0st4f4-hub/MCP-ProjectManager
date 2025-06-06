@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // --- Agent Handoff Criteria Schemas ---
 export const agentHandoffCriteriaBaseSchema = z.object({
   agent_role_id: z.string(),
@@ -101,24 +102,43 @@ export interface AgentForbiddenActionListResponse {
   error?: { code: string; message: string; field?: string };
 }
 
+=======
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions
 // --- Agent Capability Schemas ---
 export const agentCapabilityBaseSchema = z.object({
   agent_role_id: z.string(),
   capability: z.string(),
+<<<<<<< HEAD
   description: z.string().nullable().optional(),
+=======
+  description: z.string().optional().nullable(),
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions
   is_active: z.boolean().default(true),
 });
 
 export const agentCapabilityCreateSchema = agentCapabilityBaseSchema.omit({
+<<<<<<< HEAD
   agent_role_id: true,
 });
+=======
+  is_active: true,
+});
+
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions
 export type AgentCapabilityCreateData = z.infer<
   typeof agentCapabilityCreateSchema
 >;
 
 export const agentCapabilityUpdateSchema = agentCapabilityBaseSchema
   .partial()
+<<<<<<< HEAD
   .omit({ agent_role_id: true });
+=======
+  .omit({
+    agent_role_id: true,
+  });
+
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions
 export type AgentCapabilityUpdateData = z.infer<
   typeof agentCapabilityUpdateSchema
 >;
@@ -127,11 +147,21 @@ export const agentCapabilitySchema = agentCapabilityBaseSchema.extend({
   id: z.string(),
   created_at: z.string().datetime({ message: 'Invalid ISO datetime string' }),
 });
+<<<<<<< HEAD
 export type AgentCapability = z.infer<typeof agentCapabilitySchema>;
 
 export interface AgentCapabilityResponse {
   data: AgentCapability;
   error?: unknown;
+=======
+
+export type AgentCapability = z.infer<typeof agentCapabilitySchema>;
+
+// --- Agent Capability API Response Types ---
+export interface AgentCapabilityResponse {
+  data: AgentCapability;
+  error?: { code: string; message: string; field?: string };
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions
 }
 
 export interface AgentCapabilityListResponse {
@@ -139,6 +169,7 @@ export interface AgentCapabilityListResponse {
   total: number;
   page: number;
   pageSize: number;
+<<<<<<< HEAD
   error?: unknown;
 }
 =======
@@ -159,3 +190,13 @@ export const criteriaSchema = criteriaBaseSchema.extend({
 
 export type Criteria = z.infer<typeof criteriaSchema>;
 >>>>>>> origin/codex/add-crud-functions-and-typescript-interfaces
+=======
+  error?: { code: string; message: string; field?: string };
+}
+
+export interface AgentCapabilityFilters {
+  agent_role_id?: string;
+  is_active?: boolean;
+  search?: string;
+}
+>>>>>>> origin/codex/add-agent-capabilities-crud-functions

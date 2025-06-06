@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 Schemas package - contains Pydantic models for API requests/responses.
 """
@@ -5,6 +6,10 @@ from datetime import datetime
 from pydantic.json import ENCODERS_BY_TYPE
 
 ENCODERS_BY_TYPE[datetime] = lambda v: v.isoformat()
+=======
+"""Schemas package - contains Pydantic models for API requests/responses."""
+# flake8: noqa
+>>>>>>> origin/codex/add-agent-verification-service-and-router
 
 # Import and export project schemas
 from .project import (
@@ -102,6 +107,7 @@ from .agent_verification_requirement import (
     AgentVerificationRequirement,
 )
 from .file_ingest import FileIngestInput
+<<<<<<< HEAD
 
 from .error_protocol import (
     ErrorProtocolBase,
@@ -110,3 +116,14 @@ from .error_protocol import (
     ErrorProtocol,
 )
 
+from .agent_verification_requirement import (
+    AgentVerificationRequirementBase,
+    AgentVerificationRequirementCreate,
+    AgentVerificationRequirement,
+=======
+from .agent_handoff_criteria import (
+    AgentHandoffCriteria,
+    AgentHandoffCriteriaCreate,
+    AgentHandoffCriteriaUpdate,
+>>>>>>> origin/codex/add-agent_handoff_service-with-crud-methods
+)
