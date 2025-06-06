@@ -1,6 +1,5 @@
 import { StoreApi } from 'zustand';
-import { createBaseStore, BaseState } from './baseStore';
-import { handleApiError } from '@/lib/apiErrorHandler';
+import { createBaseStore, BaseState, handleApiError } from './baseStore';
 import { memoryApi } from '@/services/api';
 import type { MemoryEntity, MemoryEntityFilters } from '@/types/memory';
 
@@ -38,8 +37,7 @@ const actionsCreator = (
       });
       set({ entities: resp.data, loading: false });
     } catch (err) {
-      handleApiError(err);
-      set({ error: err instanceof Error ? err.message : String(err), loading: false });
+      set({ error: handleApiError(err), loading: false });
     }
   },
   ingestFile: async (filePath: string) => {
@@ -51,8 +49,7 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
-      handleApiError(err);
-      set({ ingestionError: err instanceof Error ? err.message : String(err), ingestionLoading: false });
+      set({ ingestionError: handleApiError(err), ingestionLoading: false });
       throw err;
     }
   },
@@ -65,8 +62,7 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
-      handleApiError(err);
-      set({ ingestionError: err instanceof Error ? err.message : String(err), ingestionLoading: false });
+      set({ ingestionError: handleApiError(err), ingestionLoading: false });
       throw err;
     }
   },
@@ -79,8 +75,7 @@ const actionsCreator = (
         ingestionLoading: false,
       }));
     } catch (err) {
-      handleApiError(err);
-      set({ ingestionError: err instanceof Error ? err.message : String(err), ingestionLoading: false });
+      set({ ingestionError: handleApiError(err), ingestionLoading: false });
       throw err;
     }
   },
@@ -93,8 +88,7 @@ const actionsCreator = (
         loading: false,
       }));
     } catch (err) {
-      handleApiError(err);
-      set({ error: err instanceof Error ? err.message : String(err), loading: false });
+      set({ error: handleApiError(err), loading: false });
       throw err;
     }
   },
