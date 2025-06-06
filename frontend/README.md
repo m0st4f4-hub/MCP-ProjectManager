@@ -100,6 +100,25 @@ This frontend application provides a modern and responsive user interface for ma
 *   **Knowledge Graph Visualization:** View the memory graph via `/api/memory/entities/graph`.
 *   **Friendly Error Pages:** `src/app/not-found.tsx` handles missing routes with a helpful message and link home, while `src/app/error.tsx` displays a generic error message when unexpected issues occur.
 
+## New Pages
+
+- `/projects/[projectId]` – focused project details and task list.
+- `/templates` and subpages for creating or editing templates.
+- `/user-roles` – assign roles to users.
+- `/memory/graph` – interactive knowledge graph visualization.
+- `/mcp-tools/metrics` – runtime metrics dashboard.
+
+## Custom Hooks
+
+- `useProjectData(projectId)` retrieves a project and its tasks.
+- Example:
+  ```tsx
+  const { project, tasks } = useProjectData(id);
+  ```
+- `useFilteredTasks(tasks, filters)` filters tasks by status, search text, etc.
+- `useFilteredProjects(projects, filters, activeProject)` keeps project lists in sync.
+
+
 ---
 
 ## Inception Project: Refactoring Status
