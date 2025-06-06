@@ -19,11 +19,24 @@ interface UseProjectDataReturn {
  * @param projectId - The project ID to fetch data for
  * @returns Project data, tasks, and management functions
  */
+<<<<<<< HEAD
 export function useProjectData(projectId: string | undefined): UseProjectDataReturn {
+=======
+export interface ProjectDataOptions {
+  page?: number;
+  pageSize?: number;
+}
+
+export const useProjectData = (
+  projectId: string,
+  options: ProjectDataOptions = {}
+): UseProjectDataResult => {
+>>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+<<<<<<< HEAD
   
   const fetchProjectData = useCallback(async () => {
     if (!projectId) {
@@ -41,6 +54,19 @@ export function useProjectData(projectId: string | undefined): UseProjectDataRet
       const [projectResponse, tasksResponse] = await Promise.all([
         api.get(`/projects/${projectId}`),
         api.get(`/projects/${projectId}/tasks`)
+=======
+
+  const { page = 0, pageSize = 100 } = options;
+
+  const fetchData = useCallback(async () => {
+    if (!projectId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const [proj, projTasks] = await Promise.all([
+        getProjectById(projectId),
+        getAllTasksForProject(projectId, undefined, undefined, page, pageSize),
+>>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
       ]);
       
       setProject(projectResponse.data);

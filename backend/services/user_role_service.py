@@ -41,6 +41,7 @@ class UserRoleService:
             return True
         return False
 
+<<<<<<< HEAD
     def update_user_role(
         self, user_id: str, current_role_name: str, new_role_name: str
     ) -> Optional[models.UserRole]:
@@ -77,10 +78,16 @@ class UserRoleService:
 
     def get_user_roles(self, user_id: str) -> List[models.UserRole]:
         return (
+=======
+    def get_user_roles(self, user_id: str, skip: int = 0, limit: Optional[int] = 100) -> List[models.UserRole]:
+        query = (
+>>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
             self.db.query(models.UserRole)
             .filter(models.UserRole.user_id == user_id)
-            .all()
         )
+        if limit is not None:
+            query = query.offset(skip).limit(limit)
+        return query.all()
 
     def has_role(self, user_id: str, role_name: str) -> bool:
         return (

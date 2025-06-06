@@ -426,8 +426,17 @@ class MemoryService:
     ) -> Optional[models.MemoryRelation]:
         return await self.db.query(models.MemoryRelation).get(relation_id)
 
+<<<<<<< HEAD
     async def get_relations_for_entity(
         self, entity_id: int, relation_type: Optional[str] = None
+=======
+    def get_relations_for_entity(
+        self,
+        entity_id: int,
+        relation_type: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 100,
+>>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
     ) -> List[models.MemoryRelation]:
         query = self.db.query(models.MemoryRelation).filter(
             (models.MemoryRelation.from_entity_id == entity_id) |
@@ -435,7 +444,11 @@ class MemoryService:
         )
         if relation_type:
             query = query.filter(models.MemoryRelation.relation_type == relation_type)
+<<<<<<< HEAD
         return await query.all()
+=======
+        return query.offset(skip).limit(limit).all()
+>>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
 
     async def delete_memory_relation(
         self, relation_id: int

@@ -65,12 +65,31 @@ def read_relations_between_entities(
 def get_entity_relations(
     entity_id: int = Path(..., description="ID of the entity to retrieve relations for."),
     relation_type: Optional[str] = Query(None, description="Optional relation type to filter by."),
+    skip: int = Query(0, ge=0, description="Records to skip"),
+    limit: int = Query(100, gt=0, description="Max records to return"),
     memory_service: MemoryService = Depends(get_memory_service)
 ):
     """Get all relations for a specific entity (where it is either the source or target)."""
+<<<<<<< HEAD
     return memory_service.get_relations_for_entity(
         entity_id=entity_id, relation_type=relation_type
     )
+=======
+    try:
+        return memory_service.get_relations_for_entity(
+            entity_id=entity_id,
+            relation_type=relation_type,
+            skip=skip,
+            limit=limit
+        )
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {e}",
+        )
+>>>>>>> origin/codex/add-pagination-support-to-backend-and-frontend
 
 @router.put("/relations/{relation_id}", response_model=MemoryRelation)
 
