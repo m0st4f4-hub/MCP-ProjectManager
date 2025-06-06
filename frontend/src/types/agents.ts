@@ -1,14 +1,21 @@
 import { z } from 'zod';
 
+<<<<<<< HEAD
 // --- Agent Handoff Criteria Schemas ---
 export const agentHandoffCriteriaBaseSchema = z.object({
   agent_role_id: z.string(),
   criteria: z.string(),
+=======
+export const criteriaBaseSchema = z.object({
+  agent_role_id: z.string(),
+  criteria: z.string().min(1, 'Criteria is required'),
+>>>>>>> origin/codex/add-crud-functions-and-typescript-interfaces
   description: z.string().nullable().optional(),
   target_agent_role: z.string().nullable().optional(),
   is_active: z.boolean().default(true),
 });
 
+<<<<<<< HEAD
 export const agentHandoffCriteriaCreateSchema = agentHandoffCriteriaBaseSchema;
 export type AgentHandoffCriteriaCreateData = z.infer<
   typeof agentHandoffCriteriaCreateSchema
@@ -134,3 +141,21 @@ export interface AgentCapabilityListResponse {
   pageSize: number;
   error?: unknown;
 }
+=======
+export const criteriaCreateSchema = criteriaBaseSchema.omit({
+  is_active: true,
+});
+
+export type CriteriaCreateData = z.infer<typeof criteriaCreateSchema>;
+
+export const criteriaUpdateSchema = criteriaBaseSchema.partial();
+
+export type CriteriaUpdateData = z.infer<typeof criteriaUpdateSchema>;
+
+export const criteriaSchema = criteriaBaseSchema.extend({
+  id: z.string(),
+  created_at: z.string().datetime({ message: 'Invalid ISO datetime string' }),
+});
+
+export type Criteria = z.infer<typeof criteriaSchema>;
+>>>>>>> origin/codex/add-crud-functions-and-typescript-interfaces

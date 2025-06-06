@@ -3,6 +3,7 @@ import { buildApiUrl, API_CONFIG } from './config';
 import type {
   AgentForbiddenAction,
   AgentForbiddenActionCreateData,
+<<<<<<< HEAD
   AgentForbiddenActionUpdateData,
 } from '@/types/agents';
 
@@ -19,10 +20,29 @@ export const forbiddenActionsApi = {
       buildApiUrl(
         API_CONFIG.ENDPOINTS.RULES,
         `/roles/${roleId}/forbidden-actions`,
+=======
+  AgentForbiddenActionResponse,
+} from '@/types';
+
+/**
+ * CRUD wrapper for agent role forbidden actions endpoints.
+ */
+export const forbiddenActionsApi = {
+  /** Add a forbidden action to an agent role */
+  async create(
+    agentRoleId: string,
+    data: AgentForbiddenActionCreateData
+  ): Promise<AgentForbiddenAction> {
+    const response = await request<AgentForbiddenActionResponse>(
+      buildApiUrl(
+        API_CONFIG.ENDPOINTS.RULES,
+        `/${agentRoleId}/forbidden-actions`
+>>>>>>> origin/codex/implement-crud-functions-for-new-backend-routes
       ),
       {
         method: 'POST',
         body: JSON.stringify(data),
+<<<<<<< HEAD
       },
     );
   },
@@ -68,6 +88,17 @@ export const forbiddenActionsApi = {
         API_CONFIG.ENDPOINTS.RULES,
         `/roles/forbidden-actions/${actionId}`
       ),
+=======
+      }
+    );
+    return response.data;
+  },
+
+  /** Remove a forbidden action by ID */
+  async delete(actionId: string): Promise<{ message: string }> {
+    return request<{ message: string }>(
+      buildApiUrl(API_CONFIG.ENDPOINTS.RULES, `/forbidden-actions/${actionId}`),
+>>>>>>> origin/codex/implement-crud-functions-for-new-backend-routes
       { method: 'DELETE' }
     );
   },
