@@ -2,8 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Input, List, ListItem, useToast } from '@chakra-ui/react';
+<<<<<<< HEAD
 import { mcpApi, memoryApi } from '@/services/api';
 import { useIngestFile } from '@/hooks/useMemory';
+=======
+import { memoryApi } from '@/services/api';
+import {
+  getProjectFiles,
+  associateFileWithProject,
+  disassociateFileFromProject,
+} from '@/services/projects';
+>>>>>>> origin/codex/add-api-calls-in-projects.ts
 import type { ProjectFileAssociation } from '@/services/api/projects';
 import TaskPagination from '../task/TaskPagination';
 
@@ -25,7 +34,7 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
   const fetchFiles = async () => {
     setLoading(true);
     try {
-      const data = await mcpApi.projectFile.list(
+      const data = await getProjectFiles(
         projectId,
         currentPage * itemsPerPage,
         itemsPerPage
@@ -48,9 +57,14 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
     if (!filePath) return;
     setUploading(true);
     try {
+<<<<<<< HEAD
       const entity = await ingestFile(filePath);
       await mcpApi.projectFile.add({
         project_id: projectId,
+=======
+      const entity = await memoryApi.ingestFile(filePath);
+      await associateFileWithProject(projectId, {
+>>>>>>> origin/codex/add-api-calls-in-projects.ts
         file_id: String(entity.id),
       });
       setFilePath('');
@@ -76,9 +90,12 @@ const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
 
   const handleRemove = async (fileId: string) => {
     try {
-      await mcpApi.projectFile.remove({
-        project_id: projectId,
-        file_id: fileId,
+      await disassociateFileFromProject(projectId, fileId);
+      toast({
+        title: 'File removed',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
       });
       fetchFiles();
     } catch (err) {
