@@ -18,7 +18,7 @@ from typing import List, Optional
 from datetime import datetime
 
 from .base import Base, BaseModel, ArchivedMixin
-from backend.enums import TaskStatusEnum
+from enums import TaskStatusEnum
 
 
 class Task(Base, BaseModel, ArchivedMixin):
@@ -44,6 +44,7 @@ class Task(Base, BaseModel, ArchivedMixin):
     # Relationships
     project = relationship("Project", back_populates="tasks")
     agent = relationship("Agent", back_populates="tasks")
+    assignee = relationship("User", foreign_keys=[assigned_to])
     comments: Mapped[List["Comment"]] = relationship("Comment", back_populates="task")
     
     # Add task dependency relationships

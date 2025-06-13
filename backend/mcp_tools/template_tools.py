@@ -4,8 +4,8 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 import logging
 
-from backend.services.project_template_service import ProjectTemplateService
-from backend.schemas.project_template import ProjectTemplateCreate
+from services.project_template_service import ProjectTemplateService
+from schemas.project_template import ProjectTemplateCreate
 
 logger = logging.getLogger(__name__)
 

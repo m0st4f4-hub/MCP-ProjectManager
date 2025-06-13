@@ -5,13 +5,15 @@ Provides high-level business logic for audit logs.
 
 from typing import Optional, List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
 
 # Import CRUD operations
-from backend.crud import audit_logs as audit_log_crud
-from backend.models.audit import AuditLog as AuditLogModel
-from backend.schemas.audit_log import AuditLogCreate, AuditLogUpdate
+from crud import audit_logs as audit_log_crud
+from models.audit import AuditLog as AuditLogModel
+from schemas.audit_log import AuditLogCreate, AuditLogUpdate
 
 from .event_publisher import publisher
+from .exceptions import EntityNotFoundError, ValidationError
 
 
 class AuditLogService:

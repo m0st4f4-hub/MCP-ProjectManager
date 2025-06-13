@@ -5,15 +5,15 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import timedelta
 
-from backend.database import get_db
-from backend.services.user_service import UserService
-from backend.services.audit_log_service import AuditLogService
-from backend.services.exceptions import AuthorizationError
-from backend.config import ACCESS_TOKEN_EXPIRE_MINUTES, OAUTH_REDIRECT_URI, REFRESH_TOKEN_EXPIRE_MINUTES
-from backend.auth import create_access_token, create_refresh_token, verify_refresh_token
-from backend.security import login_tracker, oauth
-from backend.schemas.user import UserCreate
-from backend.enums import UserRoleEnum
+from database import get_db
+from services.user_service import UserService
+from services.audit_log_service import AuditLogService
+from services.exceptions import AuthorizationError
+from config import ACCESS_TOKEN_EXPIRE_MINUTES, OAUTH_REDIRECT_URI, REFRESH_TOKEN_EXPIRE_MINUTES
+from auth import create_access_token, create_refresh_token, verify_refresh_token
+from security import login_tracker, oauth
+from schemas.user import UserCreate
+from enums import UserRoleEnum
 import uuid
 from pydantic import BaseModel
 

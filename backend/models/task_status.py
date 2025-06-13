@@ -4,6 +4,7 @@
 Model definition for task statuses.
 """
 
+from sqlalchemy import Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime, timezone
 from typing import List, Optional

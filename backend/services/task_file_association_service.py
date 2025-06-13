@@ -3,7 +3,7 @@ from .. import models, schemas
 from typing import List, Optional
 from uuid import UUID
 # Import CRUD operations
-from backend.crud.task_file_associations import (
+from crud.task_file_associations import (
     get_task_file_association,
     get_files_for_task,
     create_task_file_association,

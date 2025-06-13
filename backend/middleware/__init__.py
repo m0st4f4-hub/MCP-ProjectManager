@@ -15,7 +15,7 @@ except Exception:  # pragma: no cover - slowapi missing
     SLOWAPI_AVAILABLE = False
 
 from starlette.middleware.base import BaseHTTPMiddleware
-from backend.config.app_config import settings
+from config.app_config import settings
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):

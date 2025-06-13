@@ -6,7 +6,7 @@ This file handles validating file associations without circular imports.
 """
 
 from sqlalchemy.orm import Session
-from backend.crud.utils.file_association_utils import (
+from crud.utils.file_association_utils import (
     file_entity_exists,
     project_entity_exists,
     association_exists,

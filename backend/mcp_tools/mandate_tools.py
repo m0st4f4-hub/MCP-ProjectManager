@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from backend import models
-from backend.schemas.universal_mandate import UniversalMandateCreate
+from schemas.universal_mandate import UniversalMandateCreate
 
 logger = logging.getLogger(__name__)
 

@@ -312,4 +312,3 @@ class DatabaseHealthMonitor:
             performance_analysis["error"] = str(e)
         
         return performance_analysis
-"""

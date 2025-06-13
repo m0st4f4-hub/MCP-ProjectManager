@@ -3,14 +3,14 @@ from sqlalchemy.orm import Session
 from typing import List
 import logging
 
-from ... import models
-from ... import schemas
-from ...database import get_sync_db as get_db
-from ...services.project_member_service import ProjectMemberService
-from ...services.audit_log_service import AuditLogService
-from ...auth import get_current_active_user
-from ...models import User as UserModel  # For type hinting current_user  # Import standardized API response models
-from ...schemas.api_responses import DataResponse, ListResponse
+import models
+import schemas
+from database import get_sync_db as get_db
+from services.project_member_service import ProjectMemberService
+from services.audit_log_service import AuditLogService
+from auth import get_current_active_user
+from models import User as UserModel  # For type hinting current_user  # Import standardized API response models
+from schemas.api_responses import DataResponse, ListResponse
 
 
 router = APIRouter(

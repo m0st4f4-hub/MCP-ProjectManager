@@ -1,38 +1,38 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 import uuid
 
-from ....database import get_db
-from ....services.task_service import TaskService
-from ....services.agent_service import AgentService
+from database import get_db
+from services.task_service import TaskService
+from services.agent_service import AgentService
 
-from ....schemas.task import Task, TaskCreate, TaskUpdate
-from ....schemas.api_responses import DataResponse, ListResponse, PaginationParams
-from ....services.exceptions import (
+from schemas.task import Task, TaskCreate, TaskUpdate
+from schemas.api_responses import DataResponse, ListResponse, PaginationParams
+from services.exceptions import (
     EntityNotFoundError,
     DuplicateEntityError,
     ValidationError,
     AuthorizationError
 )
-from ....enums import TaskStatusEnum
-from ....auth import get_current_active_user
-from ....services.audit_log_service import AuditLogService
-from ....models import User as UserModel
+from enums import TaskStatusEnum
+from auth import get_current_active_user
+from services.audit_log_service import AuditLogService
+from models import User as UserModel
 
 
 router = APIRouter()
 
 
-def get_task_service(db: Session = Depends(get_db)) -> TaskService:
+async def get_task_service(db: AsyncSession = Depends(get_db)) -> TaskService:
     return TaskService(db)
 
 
-def get_agent_service(db: Session = Depends(get_db)) -> AgentService:
+async def get_agent_service(db: AsyncSession = Depends(get_db)) -> AgentService:
     return AgentService(db)
 
 
-def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
+async def get_audit_log_service(db: AsyncSession = Depends(get_db)) -> AuditLogService:
     return AuditLogService(db)
 
 
@@ -40,8 +40,8 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
     "/{project_id}/tasks/",
     response_model=DataResponse[bool],
     summary="Create Task in Project",
-    tags=["Tasks"],
-    operation_id="projects_tasks_create_task"
+    tags=["mcp-tools"],
+    operation_id="create_task"
 )
 
 
@@ -87,8 +87,8 @@ async def create_task_for_project(
     "/{project_id}/tasks/",
     response_model=ListResponse[Task],
     summary="Get Tasks in Project",
-    tags=["Tasks"],
-    operation_id="projects_tasks_get_tasks"
+    tags=["mcp-tools"],
+    operation_id="get_tasks"
 )
 
 
@@ -171,8 +171,8 @@ async def get_tasks_list(
     "/{project_id}/tasks/{task_number}",
     response_model=DataResponse[Task],
     summary="Get Task by Project and Number",
-    tags=["Tasks"],
-    operation_id="projects_tasks_get_task_by_project_and_number"
+    tags=["mcp-tools"],
+    operation_id="get_task_by_number"
 )
 
 

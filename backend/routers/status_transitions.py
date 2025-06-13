@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from backend.database import get_db
-from backend.schemas.status_transition import StatusTransition, StatusTransitionCreate
-from backend.services.status_transition_service import StatusTransitionService
-from backend.auth import get_current_active_user, RoleChecker
-from backend.enums import UserRoleEnum
-from backend.models import User as UserModel
+from database import get_db
+from schemas.status_transition import StatusTransition, StatusTransitionCreate
+from services.status_transition_service import StatusTransitionService
+from auth import get_current_active_user, RoleChecker
+from enums import UserRoleEnum
+from models import User as UserModel
 
 router = APIRouter(
     prefix="/status-transitions",

@@ -1,31 +1,25 @@
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-from sqlalchemy import text
+import platform
+import sys
 
-from ..database import get_db
-from .. import __version__
+from ..database import get_sync_db as get_db
 
-router = APIRouter(tags=["system"])
-
-@router.get("/health", status_code=status.HTTP_200_OK)
-def health_check(db: Session = Depends(get_db)):
-    """Return basic health information."""
-    try:
-        db.execute(text("SELECT 1"))
-        db_status = "connected"
-    except Exception:
-        db_status = "error"
-    return {"status": "healthy", "database": db_status}
-
+router = APIRouter(
+    prefix="/system",
+    tags=["System"],
+)
 
 @router.get("/metrics", include_in_schema=False)
-def metrics() -> Response:
-    """Expose Prometheus metrics."""
-    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
-
+async def get_metrics():
+    """Internal metrics endpoint (excluded from schema)."""
+    return {"metrics": "placeholder"}
 
 @router.get("/version")
-def version() -> dict:
-    """Return the running application version."""
-    return {"version": __version__}
+async def get_version():
+    """Get system version information."""
+    return {
+        "version": "2.0.1",
+        "python_version": sys.version,
+        "platform": platform.platform()
+    }

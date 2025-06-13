@@ -1,235 +1,174 @@
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
-from sqlalchemy.orm import Session
-from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Annotated, List
 import uuid
 
-from ....database import get_sync_db as get_db
+from ....database import get_db
 from ....services.task_dependency_service import TaskDependencyService
-
 from ....schemas.task_dependency import TaskDependency, TaskDependencyCreate
 from ....schemas.api_responses import DataResponse, ListResponse
-from ....services.exceptions import EntityNotFoundError, DuplicateEntityError
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/dependencies",
+    tags=["Task Dependencies"]
+)
 
-
-def get_task_dependency_service(db: Session = Depends(get_db)) -> TaskDependencyService:
+async def get_task_dependency_service(
+    db: Annotated[AsyncSession, Depends(get_db)]
+) -> TaskDependencyService:
     return TaskDependencyService(db)
 
-
-@router.post(
-    "/{project_id}/tasks/{task_number}/dependencies/",
-    response_model=DataResponse[TaskDependency],
-    summary="Add Task Dependency",
-    tags=["Task Dependencies"],
-    operation_id="projects_tasks_add_task_dependency"
-)
-async def add_task_dependency_endpoint(
-    project_id: str,  # This is the successor's project_id
-    task_number: int,  # This is the successor's task_number
-    dependency: TaskDependencyCreate,
-    task_dependency_service: TaskDependencyService = Depends(get_task_dependency_service),
-):
-    """Add a dependency between two tasks."""
-    try:
-        db_dependency = await task_dependency_service.add_task_dependency(
-            successor_project_id=uuid.UUID(project_id),
-            successor_task_number=task_number,
-            predecessor_project_id=uuid.UUID(
-                dependency.predecessor_project_id
-            ),
-            predecessor_task_number=dependency.predecessor_task_number,
-            dependency_type=dependency.dependency_type,
-        )
-        return DataResponse[TaskDependency](
-            data=db_dependency,
-            message="Task dependency added successfully"
-        )
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except DuplicateEntityError as e:
-        raise HTTPException(status_code=409, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {e}"
-        )
-
 @router.get(
-    "/{project_id}/tasks/{task_number}/dependencies/",
+    "/",
     response_model=ListResponse[TaskDependency],
-    summary="Get All Task Dependencies (Both Predecessors and Successors)",
-    tags=["Task Dependencies"],
-    operation_id="projects_tasks_get_all_task_dependencies"
+    summary="Get Task Dependencies",
+    operation_id="get_task_dependencies"
 )
-async def get_all_task_dependencies_endpoint(
-    project_id: str,
-    task_number: int,
-    sort_by: Optional[str] = Query(
-        None, description=(
-            "Field to sort by (e.g., 'predecessor_task.task_number',"
-            "'successor_task.task_number')."
-        )
-    ),  # Adjusted for potential join
-    sort_direction: Optional[str] = Query(
-        None, description="Sort direction: 'asc' or 'desc'."
-    ),
-    dependency_type: Optional[str] = Query(
-        None, description=(
-            "Filter by dependency type (e.g., 'FINISH_TO_START')."
-        )
-    ),  # Assuming TaskDependency model has `type`
-    task_dependency_service: TaskDependencyService = Depends(
-        get_task_dependency_service
-    )
+async def get_task_dependencies(
+    project_id: Annotated[str, Query(description="Project ID")],
+    task_number: Annotated[int, Query(description="Task number")],
+    skip: Annotated[int, Query(0, ge=0, description="Number of dependencies to skip")],
+    limit: Annotated[int, Query(100, ge=1, le=100, description="Maximum number of dependencies to return")],
+    service: Annotated[TaskDependencyService, Depends(get_task_dependency_service)]
 ):
-    """Get all dependencies for a task (both predecessors and successors)."""
+    """Get all dependencies for a task."""
     try:
-        dependencies = await task_dependency_service.get_all_task_dependencies(
-            project_id=uuid.UUID(project_id),
-            task_number=task_number,
-            sort_by=sort_by,
-            sort_direction=sort_direction,
-            dependency_type=dependency_type
+        dependencies = service.get_dependencies_for_task(
+            task_project_id=uuid.UUID(project_id),
+            task_number=task_number
         )
-        return ListResponse[TaskDependency](
+        return ListResponse(
             data=dependencies,
             total=len(dependencies),
-            page=1,  # Assuming no pagination for this specific list endpoint yet
-            page_size=len(dependencies),
-            has_more=False,
-            message=f"Retrieved {len(dependencies)} dependencies"
-                "for task  #{task_number}"
+            message="Task dependencies retrieved successfully"
         )
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {e}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving task dependencies: {str(e)}"
+        )
+
+@router.post(
+    "/",
+    response_model=DataResponse[TaskDependency],
+    status_code=status.HTTP_201_CREATED,
+    summary="Create Task Dependency",
+    operation_id="create_task_dependency"
+)
+async def create_task_dependency(
+    dependency: TaskDependencyCreate,
+    service: Annotated[TaskDependencyService, Depends(get_task_dependency_service)]
+):
+    """Create a new task dependency."""
+    try:
+        new_dependency = await service.add_dependency(
+            predecessor_task_project_id=uuid.UUID(dependency.predecessor_project_id),
+            predecessor_task_number=dependency.predecessor_task_number,
+            successor_task_project_id=uuid.UUID(dependency.successor_project_id),
+            successor_task_number=dependency.successor_task_number,
+            dependency_type=dependency.dependency_type
+        )
+        return DataResponse(
+            data=new_dependency,
+            message="Task dependency created successfully"
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating task dependency: {str(e)}"
         )
 
 @router.get(
-    "/{project_id}/tasks/{task_number}/dependencies/predecessors/",
+    "/predecessors",
     response_model=ListResponse[TaskDependency],
     summary="Get Task Predecessors",
-    tags=["Task Dependencies"],
-    operation_id="projects_tasks_get_task_predecessors"
+    operation_id="get_task_predecessors"
 )
-async def get_task_predecessors_endpoint(
-    project_id: str,
-    task_number: int,
-    sort_by: Optional[str] = Query(
-        None, description="Field to sort by (e.g., \'predecessor_task.task_number\')."),
-    sort_direction: Optional[str] = Query(
-        None, description="Sort direction: \'asc\' or \'desc\'."),
-    dependency_type: Optional[str] = Query(
-        None, description="Filter by dependency type."),
-    task_dependency_service: TaskDependencyService = Depends(get_task_dependency_service)
+async def get_task_predecessors(
+    project_id: Annotated[str, Query(description="Project ID")],
+    task_number: Annotated[int, Query(description="Task number")],
+    service: Annotated[TaskDependencyService, Depends(get_task_dependency_service)]
 ):
-    """Get the predecessors for a specific task."""
+    """Get all predecessor tasks for a given task."""
     try:
-        predecessors = await task_dependency_service.get_task_predecessors(
-            project_id=uuid.UUID(project_id),
-            task_number=task_number,
-            sort_by=sort_by,
-            sort_direction=sort_direction,
-            dependency_type=dependency_type
+        predecessors = service.get_predecessor_tasks(
+            task_project_id=uuid.UUID(project_id),
+            task_number=task_number
         )
-        return ListResponse[TaskDependency](
+        return ListResponse(
             data=predecessors,
             total=len(predecessors),
-            page=1,
-            page_size=len(predecessors),
-            has_more=False,
-            message=f"Retrieved {len(predecessors)} predecessors"
-                "for task  #{task_number}"
+            message="Task predecessors retrieved successfully"
         )
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {e}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving task predecessors: {str(e)}"
         )
 
 @router.get(
-    "/{project_id}/tasks/{task_number}/dependencies/successors/",
+    "/successors",
     response_model=ListResponse[TaskDependency],
     summary="Get Task Successors",
-    tags=["Task Dependencies"],
-    operation_id="projects_tasks_get_task_successors"
+    operation_id="get_task_successors"
 )
-async def get_task_successors_endpoint(
-    project_id: str,
-    task_number: int,
-    sort_by: Optional[str] = Query(
-        None, description="Field to sort by (e.g., \'successor_task.task_number\')."),
-    sort_direction: Optional[str] = Query(
-        None, description="Sort direction: \'asc\' or \'desc\'."),
-    dependency_type: Optional[str] = Query(
-        None, description="Filter by dependency type."),
-    task_dependency_service: TaskDependencyService = Depends(get_task_dependency_service)
+async def get_task_successors(
+    project_id: Annotated[str, Query(description="Project ID")],
+    task_number: Annotated[int, Query(description="Task number")],
+    service: Annotated[TaskDependencyService, Depends(get_task_dependency_service)]
 ):
-    """Get the successors for a specific task."""
+    """Get all successor tasks for a given task."""
     try:
-        successors = await task_dependency_service.get_task_successors(
-            project_id=uuid.UUID(project_id),
-            task_number=task_number,
-            sort_by=sort_by,
-            sort_direction=sort_direction,
-            dependency_type=dependency_type
+        successors = service.get_successor_tasks(
+            task_project_id=uuid.UUID(project_id),
+            task_number=task_number
         )
-        return ListResponse[TaskDependency](
+        return ListResponse(
             data=successors,
             total=len(successors),
-            page=1,
-            page_size=len(successors),
-            has_more=False,
-            message=f"Retrieved {len(successors)} successors for task  #{task_number}"
+            message="Task successors retrieved successfully"
         )
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {e}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving task successors: {str(e)}"
         )
 
 @router.delete(
-    "/{project_id}/tasks/{task_number}/dependencies/{predecessor_project_id}/{predecessor_task_number}",
-    response_model=DataResponse[bool],
+    "/",
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Remove Task Dependency",
-    tags=["Task Dependencies"],
-    operation_id="projects_tasks_remove_task_dependency"
+    operation_id="remove_task_dependency"
 )
-async def remove_task_dependency_endpoint(
-    project_id: str,  # Successor project_id
-    task_number: int,  # Successor task_number
-    predecessor_project_id: str = Path(...,
-        description="ID of the predecessor task\'s project."),
-    predecessor_task_number: int = Path(
-        ..., description="Number of the predecessor task within its project."),
-    task_dependency_service: TaskDependencyService = Depends(get_task_dependency_service),
+async def remove_task_dependency(
+    predecessor_project_id: Annotated[str, Query(description="Predecessor project ID")],
+    predecessor_task_number: Annotated[int, Query(description="Predecessor task number")],
+    successor_project_id: Annotated[str, Query(description="Successor project ID")],
+    successor_task_number: Annotated[int, Query(description="Successor task number")],
+    service: Annotated[TaskDependencyService, Depends(get_task_dependency_service)]
 ):
-    """Remove a dependency between two tasks."""
+    """Remove a task dependency."""
     try:
-        success = await task_dependency_service.remove_task_dependency(
-            successor_project_id=uuid.UUID(project_id),
-            successor_task_number=task_number,
-            predecessor_project_id=uuid.UUID(predecessor_project_id),
-            predecessor_task_number=predecessor_task_number
+        success = service.remove_dependency(
+            predecessor_task_project_id=uuid.UUID(predecessor_project_id),
+            predecessor_task_number=predecessor_task_number,
+            successor_task_project_id=uuid.UUID(successor_project_id),
+            successor_task_number=successor_task_number
         )
         if not success:
-            raise HTTPException(status_code=404, detail="Task dependency not found")
-        return DataResponse[bool](
-            data=True,
-            message="Task dependency removed successfully"
-        )
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Task dependency not found"
+            )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error: {e}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error removing task dependency: {str(e)}"
         )

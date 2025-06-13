@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.crud.projects import get_project  # Assuming a get_project in projects crud
-from backend.crud.agents import get_agent  # Assuming a get_agent in agents crud
+from crud.projects import get_project  # Assuming a get_project in projects crud
+from crud.agents import get_agent  # Assuming a get_agent in agents crud
 from typing import Optional
 
 async def project_exists(db: AsyncSession, project_id: str) -> bool:

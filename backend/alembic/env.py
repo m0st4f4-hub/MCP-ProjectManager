@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..')))
 
 # ADD THIS LINE TO EXPLICITLY IMPORT MODELS
-from backend.models import (  # noqa: F401,E402
+from models import (  # noqa: F401,E402
     Project,
     Agent,
     Task,
@@ -12,7 +12,7 @@ from backend.models import (  # noqa: F401,E402
     MemoryObservation,
     MemoryRelation,
 )
-from backend.models import Base  # noqa: F401,E402
+from models import Base  # noqa: F401,E402
 from alembic import context  # noqa: E402
 from sqlalchemy import engine_from_config  # noqa: F401,E402
 from logging.config import fileConfig  # noqa: E402

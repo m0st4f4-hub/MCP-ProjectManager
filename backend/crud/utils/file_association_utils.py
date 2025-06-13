@@ -7,9 +7,9 @@ This file contains common functionality without circular imports.
 
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, select
-from backend.models import ProjectFileAssociation
+from models import ProjectFileAssociation
 from typing import Union
-from backend.schemas.memory import (
+from schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
     MemoryObservationCreate,

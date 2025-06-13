@@ -2,9 +2,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import or_, func, select, delete
 from backend import models
 from backend import schemas
-from backend.schemas import Project
-from backend.models.project import Project as ProjectModel
-from backend.models.task import Task
+from schemas import Project
+from models.project import Project as ProjectModel
+from models.task import Task
 import uuid
 from typing import Optional, List
 from .project_validation import project_name_exists
@@ -13,8 +13,8 @@ from sqlalchemy.orm import joinedload
 from datetime import datetime, timezone
 
 # Uncomment MemoryEntity related imports
-from backend.schemas.memory import MemoryEntityCreate, MemoryEntityUpdate
-from backend.crud import memory as memory_crud
+from schemas.memory import MemoryEntityCreate, MemoryEntityUpdate
+from crud import memory as memory_crud
 
 
 logger = logging.getLogger(__name__)
@@ -127,33 +127,6 @@ async def get_project_by_name(db: AsyncSession, name: str,
 
     return project
 
-async def get_project_by_name_async(db: AsyncSession, name: str,
-                                    is_archived: Optional[bool] = False):
-                        """Asynchronous version of get_project_by_name."""
-                        stmt = select(ProjectModel).filter(ProjectModel.name == name)
-                        if is_archived is not None:
-                            stmt = stmt.filter(ProjectModel.is_archived == is_archived)
-                            # Add joinedload for tasks to calculate count more efficiently
-                            stmt = stmt.options(joinedload(ProjectModel.tasks))
-
-                            result = await db.execute(stmt)
-                            project = result.scalars().first()
-                            if project:
-                                # Calculate total task count (only non-archived tasks
-                                # for an active project view)
-                                # Filter for non-archived tasks if the project itself is
-                                # not archived (assuming this is the display rule)
-                                project.task_count = (
-                                    sum(1 for task in project.tasks
-                                        if not task.is_archived)
-                                    if project.tasks else 0
-                                )
-                                project.completed_task_count = (
-                                    sum(1 for task in project.tasks if task.status == "completed" and not task.is_archived)
-                                    if project.tasks else 0
-                                )
-                                return project
-
 
 async def get_projects(
     db: AsyncSession,
@@ -218,40 +191,48 @@ async def get_projects(
 
 
 async def create_project(db: AsyncSession, project: schemas.ProjectCreate, created_by: Optional[str] = None):
-    # Use the imported ProjectCreate directly
-    # Check if a project with the same name already
-    # exists (await the async function)
+    """Create a new project using ALL fields from ProjectCreate schema."""
+    # Check if a project with the same name already exists
     existing_project = await get_project_by_name(db, project.name)
     if existing_project:
         raise ValueError(
-            f"Project with name '{project.name}'"
-            " already exists"
+            f"Project with name '{project.name}' already exists"
         )
 
+    # Create project using ALL schema fields
     db_project = ProjectModel(
         id=str(uuid.uuid4()),
         name=project.name,
         description=project.description,
+        status=project.status,  # Use enum from schema
+        priority=project.priority,  # Use enum from schema  
+        visibility=project.visibility,  # Use enum from schema
+        metadata_json=project.metadata_json,  # JSON field
+        tags=project.tags,  # JSON field
+        settings=project.settings,  # JSON field
         owner_id=created_by,  # Set owner_id to the user creating the project
-        created_by=created_by)
+        created_by=created_by,  # Set created_by field
+        created_at=datetime.now(timezone.utc),  # Explicit timestamp
+        updated_at=datetime.now(timezone.utc)   # Explicit timestamp
+    )
     db.add(db_project)
     await db.commit()
     await db.refresh(db_project)
 
-    # Uncomment MemoryEntity creation
+    # Create MemoryEntity
     memory_entity_data = MemoryEntityCreate(
         entity_type="project",
         name=db_project.name,
-        content=db_project.description or f"Project: {db_project.name}",  # Add required content field
-        source="project_creation",  # Add required source field
+        content=db_project.description or f"Project: {db_project.name}",
+        source="project_creation",
         entity_metadata={
             "project_id": db_project.id,
-            "created_at": db_project.created_at.isoformat()
+            "created_at": db_project.created_at.isoformat(),
+            "status": db_project.status.value if db_project.status else None,
+            "priority": db_project.priority.value if db_project.priority else None
         }
     )
-    await memory_crud.create_memory_entity(
-        db=db,
-        entity=memory_entity_data)
+    await memory_crud.create_memory_entity(db=db, entity=memory_entity_data)
 
     return db_project
 

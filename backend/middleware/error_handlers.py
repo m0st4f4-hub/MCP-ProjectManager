@@ -5,7 +5,7 @@ This module provides middleware for handling exceptions in FastAPI routes.
 
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
-from backend.schemas.api_responses import ErrorResponse
+from schemas.api_responses import ErrorResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import logging
@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime, timezone
 
 try:
-    from backend.services.exceptions import (
+    from services.exceptions import (
         ServiceError, EntityNotFoundError, ValidationError,
         DuplicateEntityError, AuthorizationError
     )

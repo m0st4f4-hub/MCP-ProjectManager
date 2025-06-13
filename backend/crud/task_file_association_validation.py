@@ -3,7 +3,7 @@
 """
 Task file association validation functions.
 """  # from sqlalchemy.orm import Session  # Remove synchronous Session import
-from backend.crud import memory as memory_crud
+from crud import memory as memory_crud
 from .utils.task_file_utils import get_task_file_association_direct
 from typing import Union
 from uuid import UUID  # Import AsyncSession for async operations

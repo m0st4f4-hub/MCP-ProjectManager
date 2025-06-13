@@ -1,10 +1,14 @@
 """
-Consolidated models package with all models and utilities available.
+Models package for the task manager application.
+Exports all model classes for easy importing.
 """
+
+# Import the declarative base first
+from database import Base
 
 # Import base utilities first
 try:
-    from ..database import Base
+    from database import Base
 except ImportError:
     from database import Base
 

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import logging
 
-from backend.services.task_service import TaskService
+from services.task_service import TaskService
 from backend import schemas
 
 logger = logging.getLogger(__name__)

@@ -8,7 +8,7 @@ async def project_name_exists(db: AsyncSession, name: str, exclude_project_id: O
     Returns True if a project with the given name already exists.
     Optionally excludes a project by its ID when checking for duplicates.
     """
-    from backend.crud.projects import get_project_by_name  # Await the async function call
+    from crud.projects import get_project_by_name  # Await the async function call
     project = await get_project_by_name(db, name)
     if project:
         if exclude_project_id and project.id == exclude_project_id:

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
+from backend import models
+from schemas.agent_capability import AgentCapabilityCreate, AgentCapabilityUpdate
 from typing import List, Optional
-from .. import models
 import uuid
 
 
@@ -73,3 +74,55 @@ class AgentCapabilityService:
         self.db.delete(db_cap)
         self.db.commit()
         return True
+
+    def create_capability(self, capability: AgentCapabilityCreate) -> models.AgentCapability:
+        db_capability = models.AgentCapability(**capability.model_dump())
+        self.db.add(db_capability)
+        self.db.commit()
+        self.db.refresh(db_capability)
+        return db_capability
+
+    def get_capability(self, capability_id: str) -> Optional[models.AgentCapability]:
+        return (
+            self.db.query(models.AgentCapability)
+            .filter(models.AgentCapability.id == capability_id)
+            .first()
+        )
+
+    def get_capabilities(self, skip: int = 0, limit: int = 100) -> List[models.AgentCapability]:
+        return self.db.query(models.AgentCapability).offset(skip).limit(limit).all()
+
+    def get_capabilities_by_agent(self, agent_id: str) -> List[models.AgentCapability]:
+        return (
+            self.db.query(models.AgentCapability)
+            .filter(models.AgentCapability.agent_id == agent_id)
+            .all()
+        )
+
+    def update_capability(
+        self, capability_id: str, capability_update: AgentCapabilityUpdate
+    ) -> Optional[models.AgentCapability]:
+        db_capability = self.get_capability(capability_id)
+        if not db_capability:
+            return None
+        update_data = capability_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_capability, key, value)
+        self.db.commit()
+        self.db.refresh(db_capability)
+        return db_capability
+
+    def delete_capability(self, capability_id: str) -> bool:
+        db_capability = self.get_capability(capability_id)
+        if not db_capability:
+            return False
+        self.db.delete(db_capability)
+        self.db.commit()
+        return True
+
+    def get_capabilities_by_category(self, category: str) -> List[models.AgentCapability]:
+        return (
+            self.db.query(models.AgentCapability)
+            .filter(models.AgentCapability.category == category)
+            .all()
+        )

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session, joinedload
 from .. import models
-from backend.schemas.comment import CommentCreate, CommentUpdate
+from schemas.comment import CommentCreate, CommentUpdate
 from typing import List, Optional
 import uuid
 import json  # Import json for details field handling  # Import async equivalents and necessary functions

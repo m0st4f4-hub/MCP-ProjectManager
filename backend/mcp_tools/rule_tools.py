@@ -2,9 +2,9 @@ import logging
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from backend.services.rules_service import RulesService
-from backend.schemas import AgentRuleCreate
-from backend.schemas.universal_mandate import UniversalMandateCreate
+from services.rules_service import RulesService
+from schemas import AgentRuleCreate
+from schemas.universal_mandate import UniversalMandateCreate
 
 logger = logging.getLogger(__name__)
 

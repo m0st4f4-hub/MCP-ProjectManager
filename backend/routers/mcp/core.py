@@ -26,6 +26,8 @@ from ...services.rules_service import RulesService
 from ...services.agent_handoff_service import AgentHandoffService
 from ...services.error_protocol_service import ErrorProtocolService
 from ...services.verification_requirement_service import VerificationRequirementService
+from ...services.user_role_service import UserRoleService
+from ...services.exceptions import EntityNotFoundError
 from ...schemas.project import ProjectCreate
 from ...schemas.task import TaskCreate, TaskUpdate
 from ...schemas.project_template import ProjectTemplateCreate
@@ -85,17 +87,19 @@ def track_tool_usage(name: str):
 @router.get("/mcp-tools/stream", tags=["mcp-tools"], include_in_schema=False)
 async def mcp_tools_stream(request: Request):
     """Stream server events via Server-Sent Events."""
-    queue = publisher.subscribe()
+    # Temporarily disabled for debugging
+    # queue = publisher.subscribe()
 
     async def event_generator():
         try:
-            while True:
-                event = await queue.get()
-                yield f"data: {json.dumps(event)}\n\n"
+            # while True:
+            #     event = await queue.get()
+            #     yield f"data: {json.dumps(event)}\n\n"
+            yield f"data: {json.dumps({'type': 'test', 'message': 'MCP tools working'})}\n\n"
         except asyncio.CancelledError:
             pass
-        finally:
-            publisher.unsubscribe(queue)
+        # finally:
+        #     publisher.unsubscribe(queue)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 

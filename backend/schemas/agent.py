@@ -20,6 +20,9 @@ class AgentBase(BaseModel):
     name: str = Field(
         ..., description="The unique name of the agent."
     )
+    description: Optional[str] = Field(
+        None, description="Detailed description of the agent's purpose and capabilities."
+    )
     is_archived: bool = Field(
         False, description="Whether the agent is archived."
     )
@@ -36,6 +39,9 @@ class AgentUpdate(BaseModel):
     """Schema for updating an existing agent. All fields are optional."""
     name: Optional[str] = Field(
         None, description="New name for the agent."
+    )
+    description: Optional[str] = Field(
+        None, description="New description for the agent."
     )
     is_archived: Optional[bool] = Field(
         None, description="Set the archived status of the agent."
@@ -78,7 +84,7 @@ class AgentRuleBase(BaseModel):
         ..., description="ID of the agent this rule is associated with."
     )
     rule_type: str = Field(
-        ..., description="Type of the rule (e.e., 'constraint', 'guideline')."
+        ..., description="Type of the rule (e.g., 'constraint', 'guideline')."
     )
     rule_content: str = Field(
         ..., description="The actual content/text of the rule."

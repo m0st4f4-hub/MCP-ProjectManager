@@ -3,11 +3,11 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import json
-from backend import models
-from backend.models.audit import AuditLog as AuditLogModel
-from backend.schemas.audit_log import AuditLogCreate, AuditLogUpdate  # Import async equivalents and necessary functions
+from models.audit import AuditLog as AuditLogModel
+from schemas.audit_log import AuditLogCreate, AuditLogUpdate  # Import async equivalents and necessary functions
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
+from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
 
 async def create_audit_log(db: AsyncSession, audit_log: AuditLogCreate) -> AuditLogModel:
@@ -36,14 +36,14 @@ entity_type: str,
 entity_id: str,
 skip: int = 0,
 limit: int = 100
-) -> List[models.AuditLog]:  # Eagerly load user if needed  # Use async execute with select, offset, and limit
+) -> List[AuditLogModel]:  # Eagerly load user if needed  # Use async execute with select, offset, and limit
     result = await db.execute(
-    select(models.AuditLog)  # .options(joinedload(models.AuditLog.user))  # Uncomment if user  # relationship needs to be eagerly loaded
+    select(AuditLogModel)  # .options(joinedload(models.AuditLog.user))  # Uncomment if user  # relationship needs to be eagerly loaded
     .filter(
-    models.AuditLog.entity_type == entity_type,
-    models.AuditLog.entity_id == entity_id
+    AuditLogModel.entity_type == entity_type,
+    AuditLogModel.entity_id == entity_id
     )
-    .order_by(models.AuditLog.timestamp.desc())
+    .order_by(AuditLogModel.timestamp.desc())
     .offset(skip)
     .limit(limit)
     )  # Use .scalars().all() for multiple results
@@ -55,11 +55,11 @@ db: AsyncSession,
 user_id: str,
 skip: int = 0,
 limit: int = 100
-) -> List[models.AuditLog]:  # Eagerly load user if needed  # Use async execute with select, offset, and limit
+) -> List[AuditLogModel]:  # Eagerly load user if needed  # Use async execute with select, offset, and limit
     result = await db.execute(
-    select(models.AuditLog)  # .options(joinedload(models.AuditLog.user))  # Uncomment if user  # relationship needs to be eagerly loaded
-    .filter(models.AuditLog.user_id == user_id)
-    .order_by(models.AuditLog.timestamp.desc())
+    select(AuditLogModel)  # .options(joinedload(models.AuditLog.user))  # Uncomment if user  # relationship needs to be eagerly loaded
+    .filter(AuditLogModel.user_id == user_id)
+    .order_by(AuditLogModel.timestamp.desc())
     .offset(skip)
     .limit(limit)
     )  # Use .scalars().all() for multiple results

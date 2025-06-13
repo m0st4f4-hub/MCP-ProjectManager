@@ -8,7 +8,7 @@ from typing import List, Optional
 import uuid
 
 from .base import Base, BaseModel, ArchivedMixin
-from backend.enums import UserRoleEnum
+from enums import UserRoleEnum
 
 def generate_uuid_with_hyphens() -> str:
     """Generate a UUID string with hyphens."""
@@ -38,6 +38,8 @@ class User(Base, BaseModel, ArchivedMixin):
         back_populates="user", cascade="all, delete-orphan")
     owned_projects: Mapped[List["Project"]] = relationship(
         back_populates="owner", cascade="all, delete-orphan", foreign_keys="Project.owner_id")
+    assigned_tasks: Mapped[List["Task"]] = relationship(
+        foreign_keys="Task.assigned_to")
 
 
 class UserRole(Base):

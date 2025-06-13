@@ -25,9 +25,7 @@ from .project import (  # noqa: F401
     ProjectUpdate,
     ProjectMember,
     ProjectMemberCreate,
-    ProjectMemberUpdate,
-    ProjectFileAssociation,
-    ProjectFileAssociationCreate
+    ProjectMemberUpdate
 )
 from .agent_handoff_criteria import (  # noqa: F401
     AgentHandoffCriteria,
@@ -67,8 +65,7 @@ _SCHEMAS = [
     ProjectMember,
     ProjectMemberCreate,
     ProjectMemberUpdate,
-    ProjectFileAssociation,
-    ProjectFileAssociationCreate,
+
     AgentHandoffCriteria,
     AgentHandoffCriteriaCreate,
     AgentHandoffCriteriaUpdate,

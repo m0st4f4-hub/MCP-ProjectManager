@@ -1,175 +1,278 @@
-import sys
-import os
+"""
+FastAPI Task Manager Application
+Following FastAPI best practices and documentation patterns.
+"""
+
 import logging
 import logging.config
 from contextlib import asynccontextmanager
 from typing import Dict, Any
 
-from fastapi import FastAPI, Request, Response, Depends, status
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-# Add the project root to the Python path
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+# Database and config imports
+from database import get_db, engine, Base
+from config import settings
+from app_middleware import init_middleware
+from metrics import setup_metrics
 
-from backend.database import get_db, Base, engine
-from backend.middleware import init_middleware
-from backend.config import settings
-from backend.schemas import _schema_init  # noqa: F401
-from backend.metrics import setup_metrics
-
-try:
-    from fastapi_mcp import FastApiMCP
-except ImportError:
-    FastApiMCP = None
-
-# Logging configuration
-log_config = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "uvicorn_standard": {"fmt": "%(asctime)s - %(levelname)s - %(message)s"}
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "uvicorn_standard",
-            "stream": "ext://sys.stderr",
-        }
-    },
-    "loggers": {
-        "uvicorn": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "uvicorn.error": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        "uvicorn.access": {"handlers": ["console"], "level": "INFO", "propagate": False},
-    },
-}
-logging.config.dictConfig(log_config)
+# Router imports with error handling
 logger = logging.getLogger(__name__)
 
-
-def include_app_routers(app: FastAPI):
-    """Include all application routers."""
-    logger.info("Including all application routers...")
-    
-    # Import only the routers that actually exist
-    try:
-        from backend.routers import users
-        app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
-        logger.info("Successfully included users router")
-    except ImportError as e:
-        logger.warning(f"Could not import users router: {e}")
-    
-    try:
-        from backend.routers import projects
-        app.include_router(projects.router, prefix="/api/v1/projects", tags=["projects"])
-        logger.info("Successfully included projects router")
-    except ImportError as e:
-        logger.warning(f"Could not import projects router: {e}")
-    
-    try:
-        from backend.routers import tasks
-        app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
-        logger.info("Successfully included tasks router")
-    except ImportError as e:
-        logger.warning(f"Could not import tasks router: {e}")
-    
-    # Add other routers one by one as they become available
-    logger.info("Router inclusion complete.")
+# Security scheme
+security = HTTPBearer()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager."""
-    logger.info("Starting Task Manager Backend...")
+    """
+    Application lifespan manager.
+    Handles startup and shutdown logic.
+    """
+    # Startup
+    logger.info("🚀 Starting Task Manager API...")
     
-    # Startup Dashboard
-    print("\n" + "="*80)
-    print(" " * 25 + ">> STARTUP DASHBOARD <<")
-    print("="*80 + "\n")
+    # Create database tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     
-    # API Routes
-    print("--- Registered API Routes ---")
-    if app.router.routes:
-        for route in app.router.routes:
-            if hasattr(route, "path") and hasattr(route, "methods"):
-                print(f"  - Path: {route.path}, Methods: {list(route.methods)}, Name: {getattr(route, 'name', 'N/A')}")
-            else:
-                print(f"  - Other Route/Mount: {route}")
-    else:
-        print("  No API routes found.")
-    print("\n" + "-"*80 + "\n")
-
-    # MCP Tools
-    print("--- MCP Tools ---")
-    mcp_instance = getattr(app.state, "mcp_instance", None)
-    if mcp_instance and hasattr(mcp_instance, "tools"):
-        tools = mcp_instance.tools
-        print(f"MCP Tools found: {len(tools) if tools else 0}")
-        if tools:
-            print(str(tools)[:500] + "..." if len(str(tools)) > 500 else str(tools))
-    else:
-        print("  No MCP tools found.")
+    logger.info("✅ Database tables created/verified")
     
-    print("\n" + "="*80)
-    print(" " * 20 + ">> END OF STARTUP DASHBOARD <<")
-    print("="*80 + "\n")
+    # Display startup info
+    print("\n" + "="*60)
+    print(" " * 15 + "TASK MANAGER API")
+    print("="*60)
+    print(f"Environment: {'Development' if settings.DEBUG else 'Production'}")
+    print(f"Database: {settings.DATABASE_URL}")
+    print(f"API Version: {app.version}")
+    print("="*60 + "\n")
     
     yield
-    logger.info("Shutting down Task Manager Backend...")
+    
+    # Shutdown
+    logger.info("🛑 Shutting down Task Manager API...")
 
 
-def create_app() -> FastAPI:
-    """Creates and configures the FastAPI application."""
+def create_application() -> FastAPI:
+    """
+    Create and configure the FastAPI application.
+    Follows FastAPI best practices for application factory pattern.
+    """
+    
+    # Create FastAPI instance with comprehensive configuration
     app = FastAPI(
         title="Task Manager API",
+        description="""
+        A comprehensive task management system with user authentication,
+        project management, and MCP (Model Context Protocol) integration.
+        
+        ## Features
+        
+        * **User Management**: Registration, authentication, role-based access
+        * **Project Management**: Create, manage, and collaborate on projects
+        * **Task Management**: Comprehensive task tracking with dependencies
+        * **Agent System**: AI agent integration for automated assistance
+        * **Memory System**: Context-aware memory for improved interactions
+        * **MCP Integration**: Model Context Protocol for enhanced AI capabilities
+        
+        ## Authentication
+        
+        This API uses Bearer token authentication. Include your token in the
+        Authorization header as: `Bearer your_token_here`
+        """,
         version="2.0.1",
-        description="Task Manager with MCP integration",
+        terms_of_service="https://example.com/terms/",
+        contact={
+            "name": "API Support",
+            "url": "https://example.com/contact/",
+            "email": "support@example.com",
+        },
+        license_info={
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT",
+        },
         lifespan=lifespan,
+        docs_url="/docs" if settings.debug else None,
+        redoc_url="/redoc" if settings.debug else None,
     )
     
+    # Configure CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.CORS_ORIGINS or ["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
+        allow_origins=settings.cors_origins,
+        allow_credentials=settings.cors_allow_credentials,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         allow_headers=["*"],
     )
     
-    init_middleware(app)
+    # Initialize middleware
+    init_middleware(app, debug=settings.debug)
+    
+    # Add trusted host middleware for production
+    if not settings.debug:
+        app.add_middleware(
+            TrustedHostMiddleware,
+            allowed_hosts=["localhost", "127.0.0.1", "*.example.com"]
+        )
+    
+    # Setup metrics
     setup_metrics(app)
-    include_app_routers(app)
     
-    # Basic routes
-    @app.get("/")
-    async def root():
-        return {"message": "Welcome to the Task Manager API"}
-
-    @app.get("/health", status_code=status.HTTP_200_OK)
-    async def health_check(db: Session = Depends(get_db)) -> Dict[str, str]:
-        try:
-            await db.execute(text("SELECT 1"))
-            return {"status": "healthy", "database": "connected"}
-        except Exception as e:
-            logger.error(f"Health check DB error: {e}")
-            return {"status": "healthy", "database": "error"}
+    # Include routers
+    include_routers(app)
     
-    # MCP setup
-    if FastApiMCP:
-        try:
-            mcp_instance = FastApiMCP(app, name="Task Manager MCP")
-            mcp_instance.mount()
-            app.state.mcp_instance = mcp_instance
-            logger.info("MCP instance created and mounted")
-        except Exception as e:
-            logger.error(f"Failed to create MCP instance: {e}")
-            app.state.mcp_instance = None
-    else:
-        app.state.mcp_instance = None
-        logger.info("FastApiMCP not available, continuing without MCP")
-
+    # Global exception handler
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request, exc):
+        logger.error(f"Global exception: {exc}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error"}
+        )
+    
+    # Add health check and root endpoints
+    add_core_endpoints(app)
+    
     return app
 
-app = create_app()
+
+def include_routers(app: FastAPI) -> None:
+    """
+    Include all application routers with proper error handling.
+    Follows FastAPI best practices for router organization.
+    """
+    routers_config = [
+        ("routers.auth", "", "authentication"),  # Auth router already has prefix
+        ("routers.users", "/api/v1/users", "users"),
+        ("routers.projects", "/api/v1/projects", "projects"),
+        ("routers.tasks", "/api/v1/tasks", "tasks"),
+        # ("routers.agents", "/api/v1/agents", "agents"),  # TODO: Implement agents router
+        # ("routers.memory", "/api/v1/memory", "memory"),  # TODO: Fix memory router imports
+        # ("routers.audit_logs", "/api/v1/audit", "audit"),  # TODO: Implement audit router
+    ]
+    
+    for module_path, prefix, tag in routers_config:
+        try:
+            module = __import__(module_path, fromlist=["router"])
+            router = getattr(module, "router")
+            app.include_router(
+                router,
+                prefix=prefix,
+                tags=[tag]
+            )
+            logger.info(f"✅ Included {tag} router")
+        except (ImportError, AttributeError) as e:
+            logger.warning(f"⚠️  Could not import {tag} router: {e}")
+            # Continue loading other routers even if one fails
+
+
+def add_core_endpoints(app: FastAPI) -> None:
+    """
+    Add core application endpoints following FastAPI patterns.
+    """
+    
+    @app.get(
+        "/",
+        summary="Root endpoint",
+        description="Welcome message and API information",
+        response_description="API welcome message",
+        tags=["system"]
+    )
+    async def root() -> Dict[str, str]:
+        """Root endpoint returning API information."""
+        return {
+            "message": "Welcome to Task Manager API",
+            "version": "2.0.1",
+            "docs": "/docs",
+            "status": "operational"
+        }
+    
+    @app.get(
+        "/health",
+        summary="Health check",
+        description="Check API and database health status",
+        response_description="Health status information",
+        status_code=status.HTTP_200_OK,
+        tags=["system"]
+    )
+    async def health_check(
+        db: AsyncSession = Depends(get_db)
+    ) -> Dict[str, Any]:
+        """
+        Health check endpoint that verifies:
+        - API is running
+        - Database connectivity
+        - Current timestamp
+        """
+        from datetime import datetime
+        
+        health_status = {
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "version": "2.0.1",
+            "environment": "development" if settings.debug else "production"
+        }
+        
+        # Test database connection
+        try:
+            await db.execute(text("SELECT 1"))
+            health_status["database"] = "connected"
+        except Exception as e:
+            logger.error(f"Database health check failed: {e}")
+            health_status["database"] = "error"
+            health_status["status"] = "degraded"
+        
+        return health_status
+    
+    @app.get(
+        "/info",
+        summary="API Information",
+        description="Detailed API information and configuration",
+        tags=["system"]
+    )
+    async def api_info() -> Dict[str, Any]:
+        """Get detailed API information."""
+        return {
+            "title": app.title,
+            "description": "Task Management API with advanced features",
+            "version": app.version,
+            "debug_mode": settings.debug,
+            "features": [
+                "User Authentication",
+                "Project Management", 
+                "Task Tracking",
+                "Agent System",
+                "Memory Integration",
+                "Rate Limiting",
+                "Metrics Collection"
+            ]
+        }
+
+
+# Create the application instance
+app = create_application()
+
+
+if __name__ == "__main__":
+    import uvicorn
+    
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO if settings.debug else logging.WARNING,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    
+    # Run the application
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=settings.debug,
+        log_level="info" if settings.debug else "warning"
+    )

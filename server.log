@@ -1,0 +1,488 @@
+INFO:     Will watch for changes in these directories: ['D:\\mcp\\task-manager']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [20732] using WatchFiles
+Process SpawnProcess-1:
+Traceback (most recent call last):
+  File "C:\Python313\Lib\multiprocessing\process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Python313\Lib\multiprocessing\process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 66, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 70, in serve
+    await self._serve(sockets)
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 77, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\config.py", line 435, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "C:\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "D:\mcp\task-manager\backend\main.py", line 19, in <module>
+    from backend.middleware import init_middleware
+  File "D:\mcp\task-manager\backend\middleware\__init__.py", line 5, in <module>
+    from .error_handlers import register_exception_handlers
+  File "D:\mcp\task-manager\backend\middleware\error_handlers.py", line 8, in <module>
+    from backend.schemas.api_responses import ErrorResponse
+  File "D:\mcp\task-manager\backend\schemas\__init__.py", line 5, in <module>
+    from .project import (
+    ...<15 lines>...
+    )
+ImportError: cannot import name 'ProjectFileAssociationBase' from 'backend.schemas.project' (D:\mcp\task-manager\backend\schemas\project.py)
+WARNING:  WatchFiles detected changes in 'backend\schemas\__init__.py'. Reloading...
+WARNING:  WatchFiles detected changes in 'backend\schemas\__init__.py'. Reloading...
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=20732, pipe_handle=540)
+                                                  ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "C:\Python313\Lib\multiprocessing\spawn.py", line 132, in _main
+    self = reduction.pickle.load(from_parent)
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\__init__.py", line 1, in <module>
+    from uvicorn.config import Config
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\config.py", line 3, in <module>
+    import asyncio
+  File "C:\Python313\Lib\asyncio\__init__.py", line 8, in <module>
+    from .base_events import *
+  File "C:\Python313\Lib\asyncio\base_events.py", line 40, in <module>
+    from . import events
+  File "C:\Python313\Lib\asyncio\events.py", line 18, in <module>
+    import contextvars
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1022, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1118, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1217, in get_data
+KeyboardInterrupt
+Process SpawnProcess-3:
+Traceback (most recent call last):
+  File "C:\Python313\Lib\multiprocessing\process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Python313\Lib\multiprocessing\process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 66, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 70, in serve
+    await self._serve(sockets)
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 77, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\config.py", line 435, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "C:\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "D:\mcp\task-manager\backend\main.py", line 19, in <module>
+    from backend.middleware import init_middleware
+  File "D:\mcp\task-manager\backend\middleware\__init__.py", line 5, in <module>
+    from .error_handlers import register_exception_handlers
+  File "D:\mcp\task-manager\backend\middleware\error_handlers.py", line 8, in <module>
+    from backend.schemas.api_responses import ErrorResponse
+  File "D:\mcp\task-manager\backend\schemas\__init__.py", line 44, in <module>
+    from .task import (
+    ...<6 lines>...
+    )
+ImportError: cannot import name 'TaskInDBBase' from 'backend.schemas.task' (D:\mcp\task-manager\backend\schemas\task.py)
+WARNING:  WatchFiles detected changes in 'backend\schemas\__init__.py'. Reloading...
+WARNING:  WatchFiles detected changes in 'backend\schemas\__init__.py'. Reloading...
+Process SpawnProcess-4:
+Traceback (most recent call last):
+  File "C:\Python313\Lib\multiprocessing\process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Python313\Lib\multiprocessing\process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 66, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 70, in serve
+    await self._serve(sockets)
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 77, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\config.py", line 435, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "C:\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "D:\mcp\task-manager\backend\main.py", line 21, in <module>
+    from backend.schemas import _schema_init  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\schemas\_schema_init.py", line 22, in <module>
+    from .project import (  # noqa: F401
+    ...<8 lines>...
+    )
+ImportError: cannot import name 'ProjectFileAssociation' from 'backend.schemas.project' (D:\mcp\task-manager\backend\schemas\project.py)
+WARNING:  WatchFiles detected changes in 'backend\schemas\__init__.py'. Reloading...
+Fatal Python error: init_import_site: Failed to import the site module
+Python runtime state: initialized
+Traceback (most recent call last):
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176, in exec_module
+  File "<frozen site>", line 73, in <module>
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176, in exec_module
+  File "<frozen os>", line 29, in <module>
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap>", line 1176, in exec_module
+  File "<frozen _collections_abc>", line 320, in <module>
+  File "<frozen abc>", line 115, in register
+  File "<frozen abc>", line 123, in __subclasscheck__
+  File "<frozen _collections_abc>", line 316, in __subclasshook__
+  File "<frozen _collections_abc>", line 115, in _check_methods
+KeyboardInterrupt
+Process SpawnProcess-6:
+Traceback (most recent call last):
+  File "C:\Python313\Lib\multiprocessing\process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Python313\Lib\multiprocessing\process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 66, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 70, in serve
+    await self._serve(sockets)
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 77, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\config.py", line 435, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "C:\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "D:\mcp\task-manager\backend\main.py", line 21, in <module>
+    from backend.schemas import _schema_init  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\schemas\_schema_init.py", line 22, in <module>
+    from .project import (  # noqa: F401
+    ...<8 lines>...
+    )
+ImportError: cannot import name 'ProjectFileAssociation' from 'backend.schemas.project' (D:\mcp\task-manager\backend\schemas\project.py)
+WARNING:  WatchFiles detected changes in 'backend\schemas\_schema_init.py'. Reloading...
+WARNING:  WatchFiles detected changes in 'backend\schemas\_schema_init.py'. Reloading...
+Process SpawnProcess-7:
+Traceback (most recent call last):
+  File "C:\Python313\Lib\multiprocessing\process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Python313\Lib\multiprocessing\process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+    ~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 66, in run
+    return asyncio.run(self.serve(sockets=sockets))
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 70, in serve
+    await self._serve(sockets)
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\server.py", line 77, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\config.py", line 435, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "C:\Python313\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "D:\mcp\task-manager\backend\main.py", line 184, in <module>
+    app = create_app()
+  File "D:\mcp\task-manager\backend\main.py", line 147, in create_app
+    include_app_routers(app)
+    ~~~~~~~~~~~~~~~~~~~^^^^^
+  File "D:\mcp\task-manager\backend\main.py", line 59, in include_app_routers
+    from backend.routers import users
+  File "D:\mcp\task-manager\backend\routers\users\__init__.py", line 2, in <module>
+    from .core.core import router as core_router
+  File "D:\mcp\task-manager\backend\routers\users\core\core.py", line 38, in <module>
+    @router.post("/", response_model=DataResponse[User], status_code=status.HTTP_201_CREATED)
+                                                                     ^^^^^^
+NameError: name 'status' is not defined
+WARNING:  WatchFiles detected changes in 'backend\schemas\_schema_init.py'. Reloading...
+WARNING:  WatchFiles detected changes in 'backend\routers\users\core\core.py'. Reloading...
+Started server process [16996]
+Waiting for application startup.
+Application startup complete.
+Traceback (most recent call last):
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\starlette\routing.py", line 699, in lifespan
+    await receive()
+  File "D:\mcp\task-manager\backend\.venv\Lib\site-packages\uvicorn\lifespan\on.py", line 137, in receive
+    return await self.receive_queue.get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\asyncio\queues.py", line 186, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+         Warning: Could not import projects files router
+
+================================================================================
+                         >> STARTUP DASHBOARD <<
+================================================================================
+
+--- Registered API Routes ---
+  - Path: /openapi.json, Methods: ['GET', 'HEAD'], Name: openapi
+  - Path: /docs, Methods: ['GET', 'HEAD'], Name: swagger_ui_html
+  - Path: /docs/oauth2-redirect, Methods: ['GET', 'HEAD'], Name: swagger_ui_redirect
+  - Path: /redoc, Methods: ['GET', 'HEAD'], Name: redoc_html
+  - Path: /metrics, Methods: ['GET'], Name: metrics
+  - Path: /api/v1/users/, Methods: ['POST'], Name: create_user_endpoint
+  - Path: /api/v1/users/{user_id}, Methods: ['GET'], Name: get_user_endpoint
+  - Path: /api/v1/users/, Methods: ['GET'], Name: get_users_endpoint
+  - Path: /api/v1/users/{user_id}, Methods: ['PUT'], Name: update_user_endpoint
+  - Path: /api/v1/users/{user_id}, Methods: ['DELETE'], Name: delete_user_endpoint
+  - Path: /api/v1/users/auth/token, Methods: ['POST'], Name: login_for_access_token_form
+  - Path: /api/v1/users/auth/login, Methods: ['POST'], Name: login_for_access_token_json
+  - Path: /api/v1/users/auth/refresh, Methods: ['POST'], Name: refresh_access_token
+  - Path: /api/v1/users/auth/logout, Methods: ['POST'], Name: logout
+  - Path: /api/v1/users/auth/oauth/login, Methods: ['GET'], Name: oauth_login
+  - Path: /api/v1/users/auth/oauth/callback, Methods: ['GET'], Name: oauth_callback
+  - Path: /api/v1/users/{user_id}/roles/, Methods: ['POST'], Name: assign_role
+  - Path: /api/v1/users/{user_id}/roles/, Methods: ['GET'], Name: list_roles
+  - Path: /api/v1/users/{user_id}/roles/{role}, Methods: ['PUT'], Name: update_role
+  - Path: /api/v1/users/{user_id}/roles/{role}, Methods: ['DELETE'], Name: remove_role
+  - Path: /api/v1/projects/projects/, Methods: ['POST'], Name: create_project_endpoint
+  - Path: /api/v1/projects/projects/, Methods: ['GET'], Name: get_projects_endpoint
+  - Path: /api/v1/projects/projects/{project_id}, Methods: ['GET'], Name: get_project_endpoint
+  - Path: /api/v1/projects/projects/{project_id}, Methods: ['PUT'], Name: update_project_endpoint
+  - Path: /api/v1/projects/projects/{project_id}, Methods: ['DELETE'], Name: delete_project_endpoint
+  - Path: /api/v1/projects/projects/{project_id}/members, Methods: ['POST'], Name: add_project_member_endpoint
+  - Path: /api/v1/projects/projects/{project_id}/members/{user_id}, Methods: ['DELETE'], Name: remove_project_member_endpoint
+  - Path: /api/v1/projects/projects/{project_id}/members, Methods: ['GET'], Name: get_project_members_endpoint
+  - Path: /api/v1/projects/members/{project_id}/members/, Methods: ['GET'], Name: get_project_members_endpoint
+  - Path: /api/v1/projects/members/{project_id}/members/, Methods: ['POST'], Name: add_project_member_endpoint
+  - Path: /api/v1/projects/members/{project_id}/members/{user_id}, Methods: ['DELETE'], Name: remove_project_member_endpoint
+  - Path: /api/v1/projects/planning/generate-planning-prompt/, Methods: ['POST'], Name: generate_planning_prompt_endpoint
+  - Path: /api/v1/{project_id}/tasks/, Methods: ['POST'], Name: create_task_for_project
+  - Path: /api/v1/{project_id}/tasks/, Methods: ['GET'], Name: get_tasks_list
+  - Path: /api/v1/{project_id}/tasks/{task_number}, Methods: ['GET'], Name: read_task
+  - Path: /api/v1/{project_id}/tasks/{task_number}/archive, Methods: ['POST'], Name: archive_task_endpoint
+  - Path: /api/v1/{project_id}/tasks/{task_number}/unarchive, Methods: ['POST'], Name: unarchive_task_endpoint
+  - Path: /api/v1/{project_id}/tasks/{task_number}, Methods: ['PUT'], Name: update_task
+  - Path: /api/v1/{project_id}/tasks/{task_number}, Methods: ['DELETE'], Name: delete_task
+  - Path: /, Methods: ['GET'], Name: root
+  - Path: /health, Methods: ['GET'], Name: health_check
+  - Path: /mcp, Methods: ['GET'], Name: handle_mcp_connection
+  - Path: /mcp/messages/, Methods: ['POST'], Name: handle_post_message
+
+--------------------------------------------------------------------------------
+
+--- MCP Tools ---
+  Error listing MCP tools: 'FastApiMCP' object has no attribute 'list_tools'
+
+================================================================================
+                    >> END OF STARTUP DASHBOARD <<
+================================================================================
+
+WARNING:  WatchFiles detected changes in 'backend\routers\users\core\core.py'. Reloading...
+Started server process [11336]
+Waiting for application startup.
+Application startup complete.
+WARNING:  WatchFiles detected changes in 'test_mcp.py'. Reloading...
+Shutting down
+Waiting for application shutdown.
+Application shutdown complete.
+Finished server process [11336]
+  Warning: Could not import projects files router
+
+================================================================================
+                         >> STARTUP DASHBOARD <<
+================================================================================
+
+--- Registered API Routes ---
+  - Path: /openapi.json, Methods: ['HEAD', 'GET'], Name: openapi
+  - Path: /docs, Methods: ['HEAD', 'GET'], Name: swagger_ui_html
+  - Path: /docs/oauth2-redirect, Methods: ['HEAD', 'GET'], Name: swagger_ui_redirect
+  - Path: /redoc, Methods: ['HEAD', 'GET'], Name: redoc_html
+  - Path: /metrics, Methods: ['GET'], Name: metrics
+  - Path: /api/v1/users/, Methods: ['POST'], Name: create_user_endpoint
+  - Path: /api/v1/users/{user_id}, Methods: ['GET'], Name: get_user_endpoint
+  - Path: /api/v1/users/, Methods: ['GET'], Name: get_users_endpoint
+  - Path: /api/v1/users/{user_id}, Methods: ['PUT'], Name: update_user_endpoint
+  - Path: /api/v1/users/{user_id}, Methods: ['DELETE'], Name: delete_user_endpoint
+  - Path: /api/v1/users/auth/token, Methods: ['POST'], Name: login_for_access_token_form
+  - Path: /api/v1/users/auth/login, Methods: ['POST'], Name: login_for_access_token_json
+  - Path: /api/v1/users/auth/refresh, Methods: ['POST'], Name: refresh_access_token
+  - Path: /api/v1/users/auth/logout, Methods: ['POST'], Name: logout
+  - Path: /api/v1/users/auth/oauth/login, Methods: ['GET'], Name: oauth_login
+  - Path: /api/v1/users/auth/oauth/callback, Methods: ['GET'], Name: oauth_callback
+  - Path: /api/v1/users/{user_id}/roles/, Methods: ['POST'], Name: assign_role
+  - Path: /api/v1/users/{user_id}/roles/, Methods: ['GET'], Name: list_roles
+  - Path: /api/v1/users/{user_id}/roles/{role}, Methods: ['PUT'], Name: update_role
+  - Path: /api/v1/users/{user_id}/roles/{role}, Methods: ['DELETE'], Name: remove_role
+  - Path: /api/v1/projects/projects/, Methods: ['POST'], Name: create_project_endpoint
+  - Path: /api/v1/projects/projects/, Methods: ['GET'], Name: get_projects_endpoint
+  - Path: /api/v1/projects/projects/{project_id}, Methods: ['GET'], Name: get_project_endpoint
+  - Path: /api/v1/projects/projects/{project_id}, Methods: ['PUT'], Name: update_project_endpoint
+  - Path: /api/v1/projects/projects/{project_id}, Methods: ['DELETE'], Name: delete_project_endpoint
+  - Path: /api/v1/projects/projects/{project_id}/members, Methods: ['POST'], Name: add_project_member_endpoint
+  - Path: /api/v1/projects/projects/{project_id}/members/{user_id}, Methods: ['DELETE'], Name: remove_project_member_endpoint
+  - Path: /api/v1/projects/projects/{project_id}/members, Methods: ['GET'], Name: get_project_members_endpoint
+  - Path: /api/v1/projects/members/{project_id}/members/, Methods: ['GET'], Name: get_project_members_endpoint
+  - Path: /api/v1/projects/members/{project_id}/members/, Methods: ['POST'], Name: add_project_member_endpoint
+  - Path: /api/v1/projects/members/{project_id}/members/{user_id}, Methods: ['DELETE'], Name: remove_project_member_endpoint
+  - Path: /api/v1/projects/planning/generate-planning-prompt/, Methods: ['POST'], Name: generate_planning_prompt_endpoint
+  - Path: /api/v1/{project_id}/tasks/, Methods: ['POST'], Name: create_task_for_project
+  - Path: /api/v1/{project_id}/tasks/, Methods: ['GET'], Name: get_tasks_list
+  - Path: /api/v1/{project_id}/tasks/{task_number}, Methods: ['GET'], Name: read_task
+  - Path: /api/v1/{project_id}/tasks/{task_number}/archive, Methods: ['POST'], Name: archive_task_endpoint
+  - Path: /api/v1/{project_id}/tasks/{task_number}/unarchive, Methods: ['POST'], Name: unarchive_task_endpoint
+  - Path: /api/v1/{project_id}/tasks/{task_number}, Methods: ['PUT'], Name: update_task
+  - Path: /api/v1/{project_id}/tasks/{task_number}, Methods: ['DELETE'], Name: delete_task
+  - Path: /, Methods: ['GET'], Name: root
+  - Path: /health, Methods: ['GET'], Name: health_check
+  - Path: /mcp, Methods: ['GET'], Name: handle_mcp_connection
+  - Path: /mcp/messages/, Methods: ['POST'], Name: handle_post_message
+
+--------------------------------------------------------------------------------
+
+--- MCP Tools ---
+  Error listing MCP tools: 'FastApiMCP' object has no attribute 'list_tools'
+
+================================================================================
+                    >> END OF STARTUP DASHBOARD <<
+================================================================================
+
+WARNING:  WatchFiles detected changes in 'test_mcp.py'. Reloading...
+Started server process [14404]
+Waiting for application startup.
+Application startup complete.

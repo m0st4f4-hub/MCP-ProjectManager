@@ -1,134 +1,139 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
-from typing import List  # Import logging at the top of the file
-import logging
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Annotated, List
 
-from ... import models
-from ... import schemas
-from ...database import get_sync_db as get_db
-from ...services.project_file_association_service import ProjectFileAssociationService
-from ...services.audit_log_service import AuditLogService
-from ...auth import get_current_active_user
-from ...models import User as UserModel  # For type hinting current_user  # Import standardized API response models
-from ...schemas.api_responses import (
-    DataResponse,
-    ListResponse  # Import Pydantic for bulk association schema
-)
-from pydantic import BaseModel
-
-
-class BulkFileAssociationInput(BaseModel):
-    file_memory_entity_ids: List[int]
-
+import models
+import schemas
+from database import get_db
+from services.project_file_association_service import ProjectFileAssociationService
+from services.audit_log_service import AuditLogService
+from schemas.project import ProjectFileAssociation, ProjectFileAssociationCreate
+from schemas.api_responses import DataResponse, ListResponse
+from auth import get_current_active_user
+from models import User as UserModel
 
 router = APIRouter(
     prefix="/{project_id}/files",
     tags=["Project Files"],
-)  # Dependency to get ProjectFileAssociationService instance
+    dependencies=[Depends(get_current_active_user)]
+)
 
+async def get_project_file_association_service(
+    db: Annotated[AsyncSession, Depends(get_db)]
+) -> ProjectFileAssociationService:
+    return ProjectFileAssociationService(db)
 
-def get_project_file_association_service(db: Session = Depends(get_db)) -> ProjectFileAssociationService:
-    return ProjectFileAssociationService(db)  # Dependency for AuditLogService
-
-
-def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
+async def get_audit_log_service(
+    db: Annotated[AsyncSession, Depends(get_db)]
+) -> AuditLogService:
     return AuditLogService(db)
 
-
-@router.get("/", response_model=ListResponse[schemas.ProjectFileAssociation], summary="Get Project Files", operation_id="get_project_files")
-
-
-async def get_project_files_endpoint(
-    project_id: str,
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1),
-    project_file_service: ProjectFileAssociationService = Depends(get_project_file_association_service)
+@router.get(
+    "/",
+    response_model=ListResponse[ProjectFileAssociation],
+    summary="Get Project Files",
+    operation_id="get_project_files"
+)
+async def get_project_files(
+    project_id: Annotated[str, Path(description="Project ID")],
+    service: Annotated[ProjectFileAssociationService, Depends(get_project_file_association_service)],
+    current_user: Annotated[UserModel, Depends(get_current_active_user)],
+    skip: Annotated[int, Query(ge=0, description="Number of files to skip")] = 0,
+    limit: Annotated[int, Query(ge=1, le=100, description="Maximum number of files to return")] = 100
 ):
-    """Get files associated with a project with pagination."""
+    """Get all files associated with a project."""
     try:
-        all_files = await project_file_service.get_project_files(project_id, skip=0, limit=None)
-        files = await project_file_service.get_project_files(project_id, skip=skip, limit=limit)
-        total = len(all_files)
-        return ListResponse[schemas.ProjectFileAssociation](
+        files = await service.get_files_for_project(
+            project_id=project_id,
+            skip=skip,
+            limit=limit
+        )
+        return ListResponse(
             data=files,
-            total=total,
-            page=skip // limit + 1,
-            page_size=limit,
-            has_more=skip + len(files) < total,
-            message=f"Retrieved {len(files)} project files"
+            total=len(files),
+            message="Project files retrieved successfully"
         )
     except Exception as e:
-        logging.error(f"Error in GET /projects/{project_id}/files: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error: {str(e)}")
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving project files: {str(e)}"
+        )
 
-
-@router.post("/", response_model=DataResponse[schemas.ProjectFileAssociation], summary="Associate File with Project", operation_id="associate_project_file")
-
-
-async def associate_project_file_endpoint(
-    project_id: str,
-    file_data: dict,
-    project_file_service: ProjectFileAssociationService = Depends(get_project_file_association_service),
-    current_user: UserModel = Depends(get_current_active_user),
-    audit_log_service: AuditLogService = Depends(get_audit_log_service)
+@router.post(
+    "/",
+    response_model=DataResponse[ProjectFileAssociation],
+    status_code=status.HTTP_201_CREATED,
+    summary="Associate File with Project",
+    operation_id="associate_file_with_project"
+)
+async def associate_file_with_project(
+    project_id: Annotated[str, Path(description="Project ID")],
+    association: ProjectFileAssociationCreate,
+    service: Annotated[ProjectFileAssociationService, Depends(get_project_file_association_service)],
+    audit_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
+    current_user: Annotated[UserModel, Depends(get_current_active_user)]
 ):
     """Associate a file with a project."""
-    try:  # Extract file_id from file_data (frontend sends file_id, backend expects file_memory_entity_id)
-        file_id = file_data.get("file_id")
-
-        if not file_id:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="file_id is required")  # Convert file_id to file_memory_entity_id (assuming they're the same for now)
-        file_memory_entity_id = int(file_id) if isinstance(file_id, str) and file_id.isdigit() else file_id
-
-        file_association = await project_file_service.associate_file_with_project(
-            project_id=project_id, file_memory_entity_id=file_memory_entity_id
-        )  # Log file association
-        await audit_log_service.create_log(
-            action="associate_project_file",
+    try:
+        # Ensure the association is for the correct project
+        association.project_id = project_id
+        
+        new_association = await service.create_association(association)
+        
+        # Log the action
+        await audit_service.log_action(
             user_id=current_user.id,
-            details={"project_id": project_id, "file_memory_entity_id": file_memory_entity_id}
-        )  # Return standardized response
-        return DataResponse[schemas.ProjectFileAssociation](
-            data=file_association,
+            action="associate_file_with_project",
+            resource_type="project_file_association",
+            resource_id=str(new_association.id),
+            details={"project_id": project_id, "file_id": association.file_memory_entity_id}
+        )
+        
+        return DataResponse(
+            data=new_association,
             message="File associated with project successfully"
         )
     except Exception as e:
-        logging.error(f"Error in POST /projects/{project_id}/files: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error: {str(e)}")
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error associating file with project: {str(e)}"
+        )
 
-
-@router.delete("/{file_id}", response_model=DataResponse[bool], summary="Disassociate File from Project", operation_id="disassociate_project_file")
-
-
-async def disassociate_project_file_endpoint(
-    project_id: str,
-    file_id: str,
-    project_file_service: ProjectFileAssociationService = Depends(get_project_file_association_service),
-    current_user: UserModel = Depends(get_current_active_user),
-    audit_log_service: AuditLogService = Depends(get_audit_log_service)
+@router.delete(
+    "/{association_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove File Association",
+    operation_id="remove_project_file_association"
+)
+async def remove_file_association(
+    project_id: Annotated[str, Path(description="Project ID")],
+    association_id: Annotated[str, Path(description="Association ID")],
+    service: Annotated[ProjectFileAssociationService, Depends(get_project_file_association_service)],
+    audit_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
+    current_user: Annotated[UserModel, Depends(get_current_active_user)]
 ):
-    """Disassociate a file from a project."""
-    try:  # Convert file_id to file_memory_entity_id
-        file_memory_entity_id = int(file_id) if file_id.isdigit() else file_id
-
-        success = await project_file_service.disassociate_file_from_project(
-            project_id=project_id, file_memory_entity_id=file_memory_entity_id
-        )
-
+    """Remove a file association from a project."""
+    try:
+        success = await service.delete_association(association_id)
         if not success:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project file association not found")  # Log file disassociation
-        await audit_log_service.create_log(
-            action="disassociate_project_file",
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="File association not found"
+            )
+        
+        # Log the action
+        await audit_service.log_action(
             user_id=current_user.id,
-            details={"project_id": project_id, "file_memory_entity_id": file_memory_entity_id}
-        )  # Return standardized response
-        return DataResponse[bool](
-            data=True,
-            message="File disassociated from project successfully"
+            action="remove_file_from_project",
+            resource_type="project_file_association", 
+            resource_id=association_id,
+            details={"project_id": project_id}
         )
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        logging.error(f"Error in DELETE /projects/{project_id}/files/{file_id}: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error: {str(e)}")
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error removing file association: {str(e)}"
+        )

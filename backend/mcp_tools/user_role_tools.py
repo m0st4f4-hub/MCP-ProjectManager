@@ -3,7 +3,7 @@
 import logging
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from backend.services.user_role_service import UserRoleService
+from services.user_role_service import UserRoleService
 
 logger = logging.getLogger(__name__)
 

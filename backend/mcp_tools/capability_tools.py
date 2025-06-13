@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import logging
 
-from backend.services.agent_capability_service import AgentCapabilityService
-from backend.schemas.agent_capability import AgentCapabilityCreate
+from services.agent_capability_service import AgentCapabilityService
+from schemas.agent_capability import AgentCapabilityCreate
 
 logger = logging.getLogger(__name__)
 

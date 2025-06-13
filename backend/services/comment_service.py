@@ -5,7 +5,7 @@ import uuid
 # Import specific schema classes from their files
 from ..schemas.comment import CommentCreate, CommentUpdate
 # Import CRUD operations
-from backend.crud.comments import (
+from crud.comments import (
     get_comment,
     get_comments_by_task,
     create_comment,

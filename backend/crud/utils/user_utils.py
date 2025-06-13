@@ -5,7 +5,7 @@ User-related utility functions to avoid circular imports.
 """
 
 from sqlalchemy.orm import Session
-from backend.models import User
+from models import User
 
 
 def username_exists_check(db: Session, username: str) -> bool:

@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func
 from .. import models  # from .. import models, schemas  # Removed schema import
-from backend.schemas.task import TaskCreate, TaskUpdate
+from schemas.task import TaskCreate, TaskUpdate
 from typing import List, Optional, Union
-from backend.enums import TaskStatusEnum
+from enums import TaskStatusEnum
 from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession  # Import validation helpers
 from .task_validation import (
     project_exists,
@@ -47,11 +47,11 @@ async def create_task(db: AsyncSession, project_id: str, task: TaskCreate, agent
         title=task.title,
         description=task.description,
         status=task.status if isinstance(task.status, TaskStatusEnum) else task.status,
-        is_archived=task.is_archived,
         agent_id=agent_id_to_assign,
         assigned_to=task.assigned_to,
         start_date=task.start_date,
         due_date=task.due_date
+        # is_archived defaults to False in model, don't need to set explicitly
     )
     db.add(db_task)
     await db.commit()
@@ -93,15 +93,8 @@ async def update_task(db: AsyncSession, project_id: str, task_number: int, task:
     """Update a task by project ID and task number."""
     db_task = await get_task_by_project_and_number(db, project_id, task_number)
     if db_task:
-        # Handle agent update: If agent_name is provided, find agent ID and validate
-        if task.agent_name is not None:
-            from . import agents as crud_agents
-            agent = await crud_agents.get_agent_by_name(db, name=task.agent_name)
-            if not agent:
-                raise ValueError(f"Agent with name '{task.agent_name}' not found.")
-            db_task.agent_id = agent.id
         # If agent_id is provided directly in update, validate existence
-        elif task.agent_id is not None:
+        if task.agent_id is not None:
             if not await agent_exists(db, task.agent_id):
                 raise ValueError(f"Agent with ID {task.agent_id} not found.")
             db_task.agent_id = task.agent_id
@@ -112,8 +105,6 @@ async def update_task(db: AsyncSession, project_id: str, task_number: int, task:
             db_task.description = task.description
         if task.status is not None:
             db_task.status = task.status if isinstance(task.status, TaskStatusEnum) else task.status
-        if task.is_archived is not None:
-            db_task.is_archived = task.is_archived
         if task.assigned_to is not None:
             db_task.assigned_to = task.assigned_to
         if task.start_date is not None:
@@ -168,8 +159,6 @@ async def update_task_by_project_and_number(
             db_task.description = task.description
         if task.status is not None:
             db_task.status = task.status if isinstance(task.status, TaskStatusEnum) else task.status
-        if task.is_archived is not None:
-            db_task.is_archived = task.is_archived
         if task.assigned_to is not None:
             db_task.assigned_to = task.assigned_to
         if task.start_date is not None:

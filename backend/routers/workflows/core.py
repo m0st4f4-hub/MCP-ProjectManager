@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Path, Query
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Annotated, List, Optional
 
-from ...database import get_sync_db as get_db
+from ...database import get_db
 from ...services.workflow_service import WorkflowService
 from ...schemas.workflow import Workflow, WorkflowCreate, WorkflowUpdate
 from ...schemas.api_responses import DataResponse, ListResponse
@@ -15,7 +16,7 @@ router = APIRouter(
 )
 
 
-def get_workflow_service(db: Session = Depends(get_db)) -> WorkflowService:
+async def get_workflow_service(db: Annotated[AsyncSession, Depends(get_db)]) -> WorkflowService:
     return WorkflowService(db)
 
 
@@ -23,74 +24,138 @@ def get_workflow_service(db: Session = Depends(get_db)) -> WorkflowService:
     "/",
     response_model=DataResponse[Workflow],
     status_code=status.HTTP_201_CREATED,
+    summary="Create Workflow",
+    operation_id="create_workflow"
 )
-def create_workflow(
+async def create_workflow(
     workflow: WorkflowCreate,
-    workflow_service: WorkflowService = Depends(get_workflow_service),
-    current_user: UserModel = Depends(get_current_active_user),
+    workflow_service: Annotated[WorkflowService, Depends(get_workflow_service)]
 ):
-    db_workflow = workflow_service.create_workflow(workflow)
-    return DataResponse[Workflow](
-        data=Workflow.model_validate(db_workflow),
-        message="Workflow created successfully",
-    )
+    """Create a new workflow."""
+    try:
+        new_workflow = await workflow_service.create_workflow(workflow)
+        return DataResponse(
+            data=new_workflow,
+            message="Workflow created successfully"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error creating workflow: {str(e)}"
+        )
 
 
-@router.get("/", response_model=ListResponse[Workflow])
-def list_workflows(
-    skip: int = Query(0),
-    limit: int = Query(100),
-    workflow_service: WorkflowService = Depends(get_workflow_service),
+@router.get(
+    "/",
+    response_model=ListResponse[Workflow],
+    summary="Get Workflows",
+    operation_id="get_workflows"
+)
+async def get_workflows(
+    skip: Annotated[int, Query(0, ge=0, description="Number of workflows to skip")],
+    limit: Annotated[int, Query(100, ge=1, le=100, description="Maximum number of workflows to return")],
+    workflow_service: Annotated[WorkflowService, Depends(get_workflow_service)]
 ):
-    workflows = workflow_service.get_workflows(skip=skip, limit=limit)
-    return ListResponse[Workflow](
-        data=[Workflow.model_validate(wf) for wf in workflows],
-        total=len(workflows),
-        page=skip // limit + 1 if limit else 1,
-        page_size=limit,
-        has_more=False,
-        message=f"Retrieved {len(workflows)} workflows",
-    )
+    """Get all workflows with pagination."""
+    try:
+        workflows = await workflow_service.get_workflows(skip=skip, limit=limit)
+        return ListResponse(
+            data=workflows,
+            total=len(workflows),
+            message="Workflows retrieved successfully"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving workflows: {str(e)}"
+        )
 
 
-@router.get("/{workflow_id}", response_model=DataResponse[Workflow])
-def read_workflow(
-    workflow_id: str = Path(...),
-    workflow_service: WorkflowService = Depends(get_workflow_service),
+@router.get(
+    "/{workflow_id}",
+    response_model=DataResponse[Workflow],
+    summary="Get Workflow",
+    operation_id="get_workflow"
+)
+async def get_workflow(
+    workflow_id: Annotated[str, Path(description="Workflow ID")],
+    workflow_service: Annotated[WorkflowService, Depends(get_workflow_service)]
 ):
-    db_workflow = workflow_service.get_workflow(workflow_id)
-    if db_workflow is None:
-        raise HTTPException(status_code=404, detail="Workflow not found")
-    return DataResponse[Workflow](
-        data=Workflow.model_validate(db_workflow),
-        message="Workflow retrieved successfully",
-    )
+    """Get a specific workflow by ID."""
+    try:
+        workflow = await workflow_service.get_workflow(workflow_id)
+        if not workflow:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Workflow not found"
+            )
+        return DataResponse(
+            data=workflow,
+            message="Workflow retrieved successfully"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving workflow: {str(e)}"
+        )
 
 
-@router.put("/{workflow_id}", response_model=DataResponse[Workflow])
-def update_workflow(
-    workflow_id: str,
+@router.put(
+    "/{workflow_id}",
+    response_model=DataResponse[Workflow],
+    summary="Update Workflow",
+    operation_id="update_workflow"
+)
+async def update_workflow(
+    workflow_id: Annotated[str, Path(description="Workflow ID")],
     workflow_update: WorkflowUpdate,
-    workflow_service: WorkflowService = Depends(get_workflow_service),
+    workflow_service: Annotated[WorkflowService, Depends(get_workflow_service)]
 ):
-    db_workflow = workflow_service.update_workflow(workflow_id, workflow_update)
-    if db_workflow is None:
-        raise HTTPException(status_code=404, detail="Workflow not found")
-    return DataResponse[Workflow](
-        data=Workflow.model_validate(db_workflow),
-        message="Workflow updated successfully",
-    )
+    """Update an existing workflow."""
+    try:
+        updated_workflow = await workflow_service.update_workflow(workflow_id, workflow_update)
+        if not updated_workflow:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Workflow not found"
+            )
+        return DataResponse(
+            data=updated_workflow,
+            message="Workflow updated successfully"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error updating workflow: {str(e)}"
+        )
 
 
-@router.delete("/{workflow_id}", response_model=DataResponse[bool])
-def delete_workflow(
-    workflow_id: str,
-    workflow_service: WorkflowService = Depends(get_workflow_service),
+@router.delete(
+    "/{workflow_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete Workflow",
+    operation_id="delete_workflow"
+)
+async def delete_workflow(
+    workflow_id: Annotated[str, Path(description="Workflow ID")],
+    workflow_service: Annotated[WorkflowService, Depends(get_workflow_service)]
 ):
-    success = workflow_service.delete_workflow(workflow_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Workflow not found")
-    return DataResponse[bool](
-        data=True,
-        message="Workflow deleted",
-    )
+    """Delete a workflow."""
+    try:
+        success = await workflow_service.delete_workflow(workflow_id)
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Workflow not found"
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting workflow: {str(e)}"
+        )

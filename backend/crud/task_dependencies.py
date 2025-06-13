@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import List, Optional
 from ..models import TaskDependency  # from ..schemas import TaskDependencyCreate  # Old import
-from backend.schemas.task_dependency import TaskDependencyCreate  # Direct import
+from schemas.task_dependency import TaskDependencyCreate  # Direct import
 from fastapi import HTTPException
 from .task_dependency_validation import is_circular_dependency
 from .utils.dependency_utils import is_self_dependency

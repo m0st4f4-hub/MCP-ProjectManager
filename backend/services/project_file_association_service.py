@@ -1,13 +1,15 @@
 from sqlalchemy.orm import Session, joinedload
 from .. import models, schemas
 from typing import List, Optional
-from backend.crud.project_file_associations import (
-    get_project_file_association,
-    get_project_files,
+from sqlalchemy.ext.asyncio import AsyncSession
+from crud.project_file_associations import (
     create_project_file_association,
+    get_project_file_association,
+    get_project_file_associations_by_project,
     delete_project_file_association
 )
-from ..schemas.project import ProjectFileAssociationCreate
+from schemas.project import ProjectFileAssociation, ProjectFileAssociationCreate
+from .exceptions import EntityNotFoundError
 
 
 class ProjectFileAssociationService:
@@ -20,7 +22,7 @@ class ProjectFileAssociationService:
     async def get_files_for_project(
         self, project_id: str, skip: int = 0, limit: Optional[int] = 100
     ):
-        return await get_project_files(self.db, project_id, skip=skip, limit=limit)
+        return await get_project_file_associations_by_project(self.db, project_id, skip=skip, limit=limit)
 
     async def get_project_files(
         self, project_id: str, skip: int = 0, limit: Optional[int] = 100

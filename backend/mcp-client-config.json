@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "task-manager": {
+      "url": "http://localhost:8001/mcp",
+      "description": "Task Manager MCP Server - AI-powered project and task management",
+      "version": "2.0.1",
+      "tools": [
+        "get_root",
+        "health_check", 
+        "create_project",
+        "get_projects",
+        "get_project_by_id",
+        "create_task",
+        "get_tasks", 
+        "get_task_by_number",
+        "add_memory_entity",
+        "search_memory",
+        "add_memory_observation",
+        "add_memory_relation"
+      ]
+    }
+  }
+}

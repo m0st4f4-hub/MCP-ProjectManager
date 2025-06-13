@@ -7,17 +7,28 @@ from .project import (
     ProjectCreate,
     ProjectUpdate,
     Project,
-    ProjectFileAssociationBase,
-    ProjectFileAssociationCreate,
-    ProjectFileAssociation,
-    ProjectTemplateBase,
-    ProjectTemplateCreate,
-    ProjectTemplateUpdate,
-    ProjectTemplate,
     ProjectMemberBase,
     ProjectMemberCreate,
     ProjectMemberUpdate,
     ProjectMember,
+    ProjectFileAssociationBase,
+    ProjectFileAssociationCreate,
+    ProjectFileAssociation,
+)
+
+# Import project template schemas
+from .project_template import (
+    ProjectTemplateBase,
+    ProjectTemplateCreate,
+    ProjectTemplateUpdate,
+    ProjectTemplate,
+)
+
+# Import file association schemas
+from .file_association import (
+    TaskFileAssociationBase,
+    TaskFileAssociationCreate,
+    TaskFileAssociation,
 )
 
 # Import and export user schemas  
@@ -38,8 +49,6 @@ from .task import (
     TaskCreate,
     TaskUpdate,
     Task,
-    TaskInDBBase,
-    TaskInDB,
 )
 
 # Import and export task dependency schemas

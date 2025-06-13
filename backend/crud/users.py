@@ -1,5 +1,5 @@
 """
-CRUD operations for users.
+CRUD operations for User model.
 """
 
 from typing import List, Optional
@@ -7,10 +7,12 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy import and_, or_
+import uuid
 
-from .. import models
-from backend.schemas.user import UserCreate, UserUpdate
-from backend.enums import UserRoleEnum
+import models
+from schemas.user import UserCreate, UserUpdate
+from enums import UserRoleEnum
 from passlib.context import CryptContext
 
 # --------------------------------------------------------------------------- #

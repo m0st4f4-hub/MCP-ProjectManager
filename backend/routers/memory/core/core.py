@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
-from sqlalchemy.orm import Session
-from typing import List, Optional, Dict, Any
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Annotated, List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
-from ....database import get_sync_db as get_db
+from ....database import get_db
 from ....services.memory_service import MemoryService
 from ....schemas.memory import (
     MemoryEntity,
@@ -11,15 +11,18 @@ from ....schemas.memory import (
     MemoryEntityUpdate,
 )
 from ....schemas.file_ingest import FileIngestInput
-from ....schemas.api_responses import DataResponse
+from ....schemas.api_responses import DataResponse, ListResponse
 from ....models.user import User as UserModel
 from ....auth import get_current_active_user
 from ....services.exceptions import EntityNotFoundError
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/entities",
+    tags=["Memory Entities"]
+)
 
 
-def get_memory_service(db: Session = Depends(get_db)) -> MemoryService:
+async def get_memory_service(db: Annotated[AsyncSession, Depends(get_db)]) -> MemoryService:
     return MemoryService(db)
 
 
@@ -47,76 +50,154 @@ async def get_memory_graph(
 # =============================
 
 
-@router.post("/", response_model=MemoryEntity, status_code=status.HTTP_201_CREATED)
-def create_memory_entity_endpoint(
-    entity_data: MemoryEntityCreate,
-    memory_service: MemoryService = Depends(get_memory_service),
+@router.get(
+    "/",
+    response_model=ListResponse[MemoryEntity],
+    summary="Get Memory Entities",
+    operation_id="get_memory_entities"
+)
+async def get_memory_entities(
+    skip: Annotated[int, Query(0, ge=0, description="Number of entities to skip")],
+    limit: Annotated[int, Query(100, ge=1, le=100, description="Maximum number of entities to return")],
+    source_type: Annotated[Optional[str], Query(None, description="Filter by source type")],
+    search: Annotated[Optional[str], Query(None, description="Search entities by content")],
+    memory_service: Annotated[MemoryService, Depends(get_memory_service)]
 ):
-    return memory_service.create_entity(entity_data)
-
-
-@router.get("/{entity_id}", response_model=MemoryEntity)
-def read_memory_entity_endpoint(
-    entity_id: int = Path(...),
-    memory_service: MemoryService = Depends(get_memory_service),
-):
-    db_entity = memory_service.get_entity(entity_id)
-    if db_entity is None:
-        raise EntityNotFoundError("MemoryEntity", entity_id)
-    return db_entity
-
-
-@router.get("/", response_model=List[MemoryEntity])
-def list_memory_entities_endpoint(
-    type: Optional[str] = Query(None),
-    name: Optional[str] = Query(None),
-    skip: int = Query(0),
-    limit: int = Query(100),
-    memory_service: MemoryService = Depends(get_memory_service),
-):
-    return memory_service.get_entities(type=type, name=name, skip=skip, limit=limit)
-
-
-@router.get("/by-type/{entity_type}", response_model=List[MemoryEntity])
-def read_entities_by_type(
-    entity_type: str = Path(...),
-    memory_service: MemoryService = Depends(get_memory_service),
-    skip: int = Query(0),
-    limit: int = Query(100),
-):
-    return memory_service.get_entities_by_type(
-        entity_type=entity_type,
-        skip=skip,
-        limit=limit,
-    )
-
-
-@router.put("/{entity_id}", response_model=MemoryEntity)
-def update_memory_entity_endpoint(
-    entity_update: MemoryEntityUpdate,
-    entity_id: int = Path(...),
-    memory_service: MemoryService = Depends(get_memory_service),
-):
-    db_entity = memory_service.update_entity(entity_id, entity_update)
-    if db_entity is None:
-        raise EntityNotFoundError("MemoryEntity", entity_id)
-    return db_entity
-
-
-@router.delete("/{entity_id}", response_model=DataResponse[bool])
-def delete_memory_entity_endpoint(
-    entity_id: int = Path(...),
-    memory_service: MemoryService = Depends(get_memory_service),
-):
+    """Get all memory entities with optional filtering."""
     try:
-        success = memory_service.delete_entity(entity_id)
-        if not success:
-            raise EntityNotFoundError("MemoryEntity", entity_id)
-        return DataResponse[bool](data=True, message="Memory entity deleted successfully")
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        if search:
+            entities = await memory_service.search_entities(search, limit=limit)
+            total = len(entities)
+        elif source_type:
+            entities = await memory_service.get_entities_by_source_type(
+                source_type=source_type, skip=skip, limit=limit
+            )
+            total = len(entities)
+        else:
+            entities = await memory_service.get_entities(skip=skip, limit=limit)
+            total = len(entities)
+        
+        return ListResponse(
+            data=entities,
+            total=total,
+            message="Memory entities retrieved successfully"
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving memory entities: {str(e)}"
+        )
+
+@router.post(
+    "/",
+    response_model=DataResponse[MemoryEntity],
+    status_code=status.HTTP_201_CREATED,
+    summary="Create Memory Entity",
+    operation_id="create_memory_entity"
+)
+async def create_memory_entity(
+    entity: MemoryEntityCreate,
+    memory_service: Annotated[MemoryService, Depends(get_memory_service)]
+):
+    """Create a new memory entity."""
+    try:
+        new_entity = await memory_service.create_entity(entity)
+        return DataResponse(
+            data=new_entity,
+            message="Memory entity created successfully"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error creating memory entity: {str(e)}"
+        )
+
+@router.get(
+    "/{entity_id}",
+    response_model=DataResponse[MemoryEntity],
+    summary="Get Memory Entity",
+    operation_id="get_memory_entity"
+)
+async def get_memory_entity(
+    entity_id: Annotated[int, Path(description="Entity ID")],
+    memory_service: Annotated[MemoryService, Depends(get_memory_service)]
+):
+    """Get a specific memory entity by ID."""
+    try:
+        entity = await memory_service.get_memory_entity_by_id(entity_id)
+        if not entity:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Memory entity not found"
+            )
+        return DataResponse(
+            data=entity,
+            message="Memory entity retrieved successfully"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving memory entity: {str(e)}"
+        )
+
+@router.put(
+    "/{entity_id}",
+    response_model=DataResponse[MemoryEntity],
+    summary="Update Memory Entity",
+    operation_id="update_memory_entity"
+)
+async def update_memory_entity(
+    entity_id: Annotated[int, Path(description="Entity ID")],
+    entity_update: MemoryEntityUpdate,
+    memory_service: Annotated[MemoryService, Depends(get_memory_service)]
+):
+    """Update an existing memory entity."""
+    try:
+        updated_entity = await memory_service.update_entity(entity_id, entity_update)
+        if not updated_entity:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Memory entity not found"
+            )
+        return DataResponse(
+            data=updated_entity,
+            message="Memory entity updated successfully"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error updating memory entity: {str(e)}"
+        )
+
+@router.delete(
+    "/{entity_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete Memory Entity",
+    operation_id="delete_memory_entity"
+)
+async def delete_memory_entity(
+    entity_id: Annotated[int, Path(description="Entity ID")],
+    memory_service: Annotated[MemoryService, Depends(get_memory_service)]
+):
+    """Delete a memory entity."""
+    try:
+        success = await memory_service.delete_entity(entity_id)
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Memory entity not found"
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting memory entity: {str(e)}"
+        )
 
 # =============================
 # Ingestion Inputs

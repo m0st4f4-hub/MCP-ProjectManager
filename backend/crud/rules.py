@@ -486,3 +486,144 @@ async def get_universal_mandates(
     query = query.offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
+
+
+# Add async versions of key CRUD functions
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+# Async versions of key functions for the async routers
+async def get_workflows(db: AsyncSession, skip: int = 0, limit: int = 100):
+    """Async version: Get workflows with pagination."""
+    result = await db.execute(
+        select(models.Workflow).offset(skip).limit(limit)
+    )
+    return result.scalars().all()
+
+async def create_workflow(db: AsyncSession, workflow: Any):
+    """Async version: Create a new workflow."""
+    db_workflow = models.Workflow(**workflow.model_dump())
+    db.add(db_workflow)
+    await db.commit()
+    await db.refresh(db_workflow)
+    return db_workflow
+
+async def update_workflow(db: AsyncSession, workflow_id: str, workflow_update: Any):
+    """Async version: Update an existing workflow."""
+    result = await db.execute(
+        select(models.Workflow).filter(models.Workflow.id == workflow_id)
+    )
+    db_workflow = result.scalar_one_or_none()
+    if not db_workflow:
+        return None
+    
+    update_data = workflow_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_workflow, key, value)
+    
+    await db.commit()
+    await db.refresh(db_workflow)
+    return db_workflow
+
+async def get_agent_rule_violations(db: AsyncSession, agent_name: str = None, skip: int = 0, limit: int = 100):
+    """Async version: Get agent rule violations with optional filtering."""
+    query = select(models.AgentRuleViolation)
+    
+    if agent_name:
+        query = query.filter(models.AgentRuleViolation.agent_name == agent_name)
+    
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
+
+async def create_agent_rule_violation(db: AsyncSession, violation: Any):
+    """Async version: Create a new agent rule violation."""
+    db_violation = models.AgentRuleViolation(**violation.model_dump())
+    db.add(db_violation)
+    await db.commit()
+    await db.refresh(db_violation)
+    return db_violation
+
+async def get_agent_rule_violation(db: AsyncSession, violation_id: str):
+    """Async version: Get a specific agent rule violation."""
+    result = await db.execute(
+        select(models.AgentRuleViolation).filter(models.AgentRuleViolation.id == violation_id)
+    )
+    return result.scalar_one_or_none()
+
+async def get_universal_mandates(db: AsyncSession, active_only: bool = True, skip: int = 0, limit: int = 100):
+    """Async version: Get universal mandates with optional filtering."""
+    query = select(models.UniversalMandate)
+    
+    if active_only:
+        query = query.filter(models.UniversalMandate.is_active == True)
+    
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
+
+async def create_universal_mandate(db: AsyncSession, mandate: Any):
+    """Async version: Create a new universal mandate."""
+    db_mandate = models.UniversalMandate(**mandate.model_dump())
+    db.add(db_mandate)
+    await db.commit()
+    await db.refresh(db_mandate)
+    return db_mandate
+
+async def get_universal_mandate(db: AsyncSession, mandate_id: str):
+    """Async version: Get a specific universal mandate."""
+    result = await db.execute(
+        select(models.UniversalMandate).filter(models.UniversalMandate.id == mandate_id)
+    )
+    return result.scalar_one_or_none()
+
+async def update_universal_mandate(db: AsyncSession, mandate_id: str, mandate_update: Any):
+    """Async version: Update an existing universal mandate."""
+    result = await db.execute(
+        select(models.UniversalMandate).filter(models.UniversalMandate.id == mandate_id)
+    )
+    db_mandate = result.scalar_one_or_none()
+    if not db_mandate:
+        return None
+    
+    update_data = mandate_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_mandate, key, value)
+    
+    await db.commit()
+    await db.refresh(db_mandate)
+    return db_mandate
+
+async def get_agent_prompt_template(db: AsyncSession, agent_name: str):
+    """Async version: Get prompt template for an agent."""
+    result = await db.execute(
+        select(models.AgentPromptTemplate).filter(models.AgentPromptTemplate.agent_name == agent_name)
+    )
+    return result.scalar_one_or_none()
+
+async def create_agent_prompt_template(db: AsyncSession, agent_name: str, template: Any):
+    """Async version: Create a new agent prompt template."""
+    template_data = template.model_dump()
+    template_data['agent_name'] = agent_name
+    db_template = models.AgentPromptTemplate(**template_data)
+    db.add(db_template)
+    await db.commit()
+    await db.refresh(db_template)
+    return db_template
+
+async def update_agent_prompt_template(db: AsyncSession, agent_name: str, template_update: Any):
+    """Async version: Update an existing agent prompt template."""
+    result = await db.execute(
+        select(models.AgentPromptTemplate).filter(models.AgentPromptTemplate.agent_name == agent_name)
+    )
+    db_template = result.scalar_one_or_none()
+    if not db_template:
+        return None
+    
+    update_data = template_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_template, key, value)
+    
+    await db.commit()
+    await db.refresh(db_template)
+    return db_template

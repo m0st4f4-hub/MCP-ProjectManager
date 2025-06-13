@@ -3,7 +3,7 @@ from sqlalchemy import or_, func, select
 from .. import models
 from typing import List, Optional
 from uuid import UUID
-from backend.crud.task_dependencies import create_task_dependency
+from crud.task_dependencies import create_task_dependency
 # Removed import that was causing issues
 from ..schemas.task_dependency import TaskDependencyCreate
 import logging

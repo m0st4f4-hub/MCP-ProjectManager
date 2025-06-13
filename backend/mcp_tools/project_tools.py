@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import logging
 
-from backend.database import get_db
-from backend.services.project_service import ProjectService
-from backend.services.audit_log_service import AuditLogService
+from database import get_db
+from services.project_service import ProjectService
+from services.audit_log_service import AuditLogService
 from backend import schemas
 
 logger = logging.getLogger(__name__)

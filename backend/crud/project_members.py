@@ -6,8 +6,8 @@ from sqlalchemy import (
     update  # Import necessary for async operations
 )
 from typing import List, Optional
-from ..models import ProjectMember  # from backend.schemas import ProjectMemberCreate, ProjectMemberUpdate  # Removed package import
-from backend.schemas.project import ProjectMemberCreate, ProjectMemberUpdate
+from ..models import ProjectMember  # from schemas import ProjectMemberCreate, ProjectMemberUpdate  # Removed package import
+from schemas.project import ProjectMemberCreate, ProjectMemberUpdate
 from .project_member_validation import member_exists  # Assuming member_exists is async or will be handled
 from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession  # Assuming member_exists is now async or will be awaited appropriately where called
 from sqlalchemy.orm import selectinload

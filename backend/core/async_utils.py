@@ -8,7 +8,7 @@ from sqlalchemy.pool import QueuePool
 import redis.asyncio as redis
 import time
 
-from backend.config.app_config import settings
+from config.app_config import settings
 
 logger = logging.getLogger(__name__)
 

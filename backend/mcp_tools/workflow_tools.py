@@ -6,7 +6,7 @@ from typing import Optional
 import logging
 
 from backend import models
-from backend.schemas.workflow import WorkflowCreate
+from schemas.workflow import WorkflowCreate
 
 logger = logging.getLogger(__name__)
 

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "task-manager-remote": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://localhost:8001/mcp",
+        "8080"
+      ],
+      "description": "Task Manager via mcp-remote bridge (supports OAuth when implemented)",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}

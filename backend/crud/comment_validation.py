@@ -1,8 +1,8 @@
 # Placeholder for comment-related validation logic.  # from sqlalchemy.orm import Session  # Remove synchronous Session import
-from backend.crud.tasks import get_task_by_project_and_number  # Import the correct function
-from backend.crud.projects import get_project  # Assuming a get_project in projects crud
-from backend.crud.users import get_user  # Assuming a get_user in users crud
-from backend.crud.agents import get_agent  # Import get_agent
+from crud.tasks import get_task_by_project_and_number  # Import the correct function
+from crud.projects import get_project  # Assuming a get_project in projects crud
+from crud.users import get_user  # Assuming a get_user in users crud
+from crud.agents import get_agent  # Import get_agent
 from typing import Union
 import uuid  # Import AsyncSession for async operations
 from sqlalchemy.ext.asyncio import AsyncSession  # Convert to async function and use AsyncSession

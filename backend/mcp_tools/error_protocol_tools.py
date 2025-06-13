@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import logging
 
-from backend.services.error_protocol_service import ErrorProtocolService
-from backend.schemas.error_protocol import ErrorProtocolCreate
+from services.error_protocol_service import ErrorProtocolService
+from schemas.error_protocol import ErrorProtocolCreate
 
 logger = logging.getLogger(__name__)
 

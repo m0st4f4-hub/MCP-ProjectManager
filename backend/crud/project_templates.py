@@ -3,8 +3,8 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from backend.models.project_template import ProjectTemplate as ProjectTemplateModel
-from backend.schemas.project_template import (
+from models.project_template import ProjectTemplate as ProjectTemplateModel
+from schemas.project_template import (
     ProjectTemplateCreate,
     ProjectTemplateUpdate
 )

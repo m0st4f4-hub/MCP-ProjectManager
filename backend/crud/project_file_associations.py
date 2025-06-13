@@ -8,9 +8,9 @@ from sqlalchemy import and_
 from typing import List, Optional
 from ..models import ProjectFileAssociation
 # from ..schemas import ProjectFileAssociationCreate, MemoryEntityCreate, MemoryRelationCreate  # Removed package import
-# from backend.schemas.project_file_association import ProjectFileAssociationCreate  # Incorrect import
-from backend.schemas.project import ProjectFileAssociationCreate  # Correct import location
-from backend.schemas.memory import (
+# from schemas.project_file_association import ProjectFileAssociationCreate  # Incorrect import
+from schemas.project import ProjectFileAssociationCreate  # Correct import location
+from schemas.memory import (
     MemoryEntityCreate,
     MemoryRelationCreate  # Import necessary for async
 )
@@ -19,7 +19,7 @@ from sqlalchemy import select, delete  # Import select and delete for async
 import logging
 
 logger = logging.getLogger(__name__)  # Import memory_crud
-from backend.crud import memory as memory_crud  # Import async utility functions
+from crud import memory as memory_crud  # Import async utility functions
 from .project_file_association_validation import (
     file_entity_exists,
     project_entity_exists,

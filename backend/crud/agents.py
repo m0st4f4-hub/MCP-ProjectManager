@@ -1,13 +1,18 @@
-from sqlalchemy.orm import Session
-from .. import models
+"""
+CRUD operations for Agent model.
+"""
+
 from typing import List, Optional
-import uuid  # from .. import schemas  # Removed package import
-from backend.schemas.agent import (
-    AgentCreate,
-    AgentUpdate  # Import async equivalents and necessary functions
-)
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, or_  # Convert to async function and use AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
+from sqlalchemy import or_
+
+import models
+from schemas.agent import (
+    AgentCreate,
+    AgentUpdate,
+)
 
 
 async def create_agent(db: AsyncSession, agent: AgentCreate) -> models.Agent:
@@ -24,19 +29,19 @@ async def create_agent(db: AsyncSession, agent: AgentCreate) -> models.Agent:
     db.add(db_agent)
     await db.commit()
     await db.refresh(db_agent)
-    return db_agent  # Convert to async function and use AsyncSession
+    return db_agent
 
 
 async def get_agent(db: AsyncSession, agent_id: str) -> Optional[models.Agent]:
     """Get a single agent by ID."""
     result = await db.execute(select(models.Agent).filter(models.Agent.id == agent_id))
-    return result.scalar_one_or_none()  # Convert to async function and use AsyncSession
+    return result.scalar_one_or_none()
 
 
 async def get_agent_by_name(db: AsyncSession, name: str) -> Optional[models.Agent]:
     """Get a single agent by name."""
     result = await db.execute(select(models.Agent).filter(models.Agent.name == name))
-    return result.scalar_one_or_none()  # Convert to async function and use AsyncSession
+    return result.scalar_one_or_none()
 
 
 async def get_agents(
@@ -81,7 +86,7 @@ async def update_agent(db: AsyncSession, agent_id: str, agent_update: AgentUpdat
                 db_agent.name = agent_update.name
                 await db.commit()
                 await db.refresh(db_agent)
-                return db_agent  # Convert to async function and use AsyncSession
+                return db_agent
 
 async def delete_agent(db: AsyncSession, agent_id: str) -> Optional[models.Agent]:
     """Delete an agent."""

@@ -40,9 +40,7 @@ async def get_entity_by_name(db: AsyncSession, name: str) -> Optional[MemoryEnti
     return entity
 
 
-async def get_memory_entity_by_name(db: AsyncSession, name: str) -> Optional[MemoryEntityModel]:
-    """Alias for get_entity_by_name for compatibility."""
-    return await get_entity_by_name(db, name)
+# get_memory_entity_by_name removed - use get_entity_by_name directly
 
 
 async def create_memory_entity(db: AsyncSession, entity: MemoryEntityCreate) -> MemoryEntityModel:
@@ -173,7 +171,7 @@ async def get_memory_entities_by_source_type(db: AsyncSession, source_type: str,
 
 async def get_memory_relations_between_entities(db: AsyncSession, from_entity_id: int, to_entity_id: int, relation_type: str):
             """Retrieve relationships between two entities."""  # This function was implicitly used, converting to async and adding debug
-            logger.debug(f"[DEBUG] get_memory_relations_between_entities called with from: {from_entity_id}, to: {to_entity_id}, type: {relation_type}")  # Debug print  # from backend.models.memory import MemoryRelationship as MemoryRelationshipModel  # Import inside function to avoid circular dep if needed - REMOVED
+            logger.debug(f"[DEBUG] get_memory_relations_between_entities called with from: {from_entity_id}, to: {to_entity_id}, type: {relation_type}")  # Debug print  # from models.memory import MemoryRelationship as MemoryRelationshipModel  # Import inside function to avoid circular dep if needed - REMOVED
             result = await db.execute(
             select(MemoryRelationshipModel).filter(
             and_(
@@ -190,7 +188,7 @@ async def get_memory_relations_between_entities(db: AsyncSession, from_entity_id
 
 async def create_memory_relation(db: AsyncSession, relation: MemoryRelationCreate):
             """Create a memory relationship."""  # This function was implicitly used, converting to async and adding debug
-            logger.debug(f"[DEBUG] create_memory_relation called with relation: {relation.model_dump_json()}")  # Debug print  # from backend.models.memory import MemoryRelationship as MemoryRelationshipModel  # Import inside function - REMOVED
+            logger.debug(f"[DEBUG] create_memory_relation called with relation: {relation.model_dump_json()}")  # Debug print  # from models.memory import MemoryRelationship as MemoryRelationshipModel  # Import inside function - REMOVED
             db_relationship = MemoryRelationshipModel(
             from_entity_id=relation.from_entity_id,
             to_entity_id=relation.to_entity_id,
@@ -205,7 +203,7 @@ async def create_memory_relation(db: AsyncSession, relation: MemoryRelationCreat
 
 async def delete_memory_relation(db: AsyncSession, relation_id: int):
             """Delete a memory relationship by ID."""  # This function was implicitly used, converting to async and adding debug
-            logger.debug(f"[DEBUG] delete_memory_relation called with relation_id: {relation_id}")  # Debug print  # from backend.models.memory import MemoryRelationship as MemoryRelationshipModel  # Import inside function - REMOVED
+            logger.debug(f"[DEBUG] delete_memory_relation called with relation_id: {relation_id}")  # Debug print  # from models.memory import MemoryRelationship as MemoryRelationshipModel  # Import inside function - REMOVED
             stmt = delete(MemoryRelationshipModel).where(MemoryRelationshipModel.id == relation_id)
             result = await db.execute(stmt)  # No commit needed here if caller handles it, but adding for completeness
             await db.commit()

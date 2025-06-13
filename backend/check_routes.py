@@ -21,7 +21,7 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-        from backend.main import app
+        from main import app
     except Exception as e:  # pragma: no cover - simple utility
         print(f"Error: {e}")
         import traceback

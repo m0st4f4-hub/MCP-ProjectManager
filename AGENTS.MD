@@ -1,15 +1,8 @@
-Understood. I will conduct an in-depth analysis of the MCP Project Manager repository (backend and frontend) and supplement it with targeted external research to identify best practices for AGENTS.md authoring and Codex prompt engineering.
-
-This will allow me to generate a highly optimized, repository-specific AGENTS.md that aligns with the current architecture, toolchain, and development conventions—and elevates agent productivity to its peak potential.
-
-I'll report back with the complete AGENTS.md draft once research is complete.
-
-
 # AGENTS.md for MCP Project Manager
 
-This repository is a **Task Manager** built with **FastAPI** (backend) and **Next.js** (frontend), designed for human-agent collaboration via the **Model Context Protocol (MCP)**. The backend provides REST APIs for projects, tasks, users, and memory services.  There are also helper scripts (`scripts/dev/dev_launcher.js` for cross-platform use, `scripts/dev/dev_launcher.bat`/`.ps1` for Windows PowerShell) that clear ports 8000/3000 and start the backend with Uvicorn and frontend with `npm run dev`.  The FastAPI backend is launched (in dev) via `uvicorn backend.main:app --reload` and serves on `http://localhost:8000` with docs at `/docs`.
+This repository is a **Task Manager** built with **FastAPI** (backend) and **Next.js** (frontend), designed for human-agent collaboration via the **Model Context Protocol (MCP)**. The backend provides **46 REST API routes** for projects, tasks, users, agents, and memory services with filtering, enum management, and standardized response models.
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 # One-command setup and launch
@@ -24,140 +17,302 @@ node scripts/dev/dev_launcher.js          # Cross-platform Node.js
 npm run dev     # runs scripts/dev/dev_launcher.bat (on Windows) or you can run `node scripts/dev/dev_launcher.js` cross-platform
 ```
 
-## Tech Stack & Structure
+## 🏗️ Tech Stack & Architecture
 
-* **Backend (API/MCP Server):** FastAPI (Python 3.x) with SQLAlchemy and Pydantic for data models, Alembic for migrations, and SQLite (default, or PostgreSQL via `.env`).  The backend code lives under `backend/`, with `main.py` defining the FastAPI app and routes, `models.py` for ORM models, `schemas/` for Pydantic types, and `alembic/` for DB migrations.  A built-in **Knowledge Graph/Memory service** lets agents store and retrieve structured data (see `backend/crud/memory.py` and related models).  The FastAPI app also integrates the MCP framework (`fastapi-mcp`) to expose agent tools based on the `.cursor/rules` files.
+### **Backend (API/MCP Server)**
+FastAPI (Python 3.8+) with **46 API routes** featuring:
+- **Filtering**: Projects by status/priority/visibility, Tasks by agent/status, Users by role/active status
+- **Unified Enum System**: Centralized in `backend/enums.py` with `/api/v1/enums/` endpoints
+- **Response Models**: `DataResponse[T]` and `ListResponse[T]` with pagination
+- **Archive Management**: Soft deletion with restore across Projects, Tasks, Agents
+- **Search**: Full-text search across names, descriptions, and relevant fields
 
-* **Frontend (Web GUI):** Next.js (React + TypeScript) with Chakra UI for styling and Zustand for state management.  The frontend code is in `frontend/`, with React components under `frontend/src/`, public assets in `frontend/public/`, and configuration files (`next.config.mjs`, `tsconfig.json`, etc) at the root of `frontend/`.  The frontend communicates with the backend API (e.g. via fetch or React Query) and supports features like task dependencies, file attachments, theming, etc.
+**Core Components:**
+- `main.py`: FastAPI app with 46 routes
+- `models/`: Database models with enum integration
+- `schemas/`: Pydantic models with validation
+- `services/`: Business logic with filtering and pagination
+- `routers/`: API endpoints organized by domain
+- `enums.py`: **Unified enum definitions**
+- Memory Service: Knowledge graph with relationship mapping
 
-* **CLI & Dev Launcher:** A Node.js CLI (`scripts/utils/cli.js` in the repo, published as `mcp-project-manager-cli`) uses Commander.js to bootstrap and run the suite.  This CLI automates dependency installs, project setup, and launching of both backend and frontend services.  There are also helper scripts (`scripts/dev/dev_launcher.js` for cross-platform use, `scripts/dev/dev_launcher.bat`/`.ps1` for Windows PowerShell) that clear ports 8000/3000 and start the backend with Uvicorn and frontend with `npm run dev`.  The FastAPI backend is launched (in dev) via `uvicorn backend.main:app --reload` and serves on `http://localhost:8000` with docs at `/docs`.
+### **Frontend (Web GUI)**
+Next.js (React + TypeScript) with Chakra UI, featuring:
+- **Dynamic Filtering**: Dropdown population from enum endpoints
+- **Search**: Real-time filtering across all entity types
+- **Status Management**: Visual status indicators and workflow transitions
+- **Responsive Design**: Optimized for both desktop and mobile
 
-* **MCP and .cursor rules:**  Agent behaviors and tools are defined via Model Context Protocol rules (`.mdc` files) in the `.cursor/rules/` folder.  The CLI copies or updates these rules so that the MCP server (fastapi-mcp) can use them.  Agents can invoke backend APIs (CRUD endpoints, memory service, etc.) as tools via MCP, as well as custom CLI commands.
+### **API Categories (46 Routes)**
 
-## Setup & Bootstrapping
+#### **Projects** (`/api/v1/projects/`) - 8 Routes
+- `GET /` - filtering (status, priority, visibility, search, archived, owner)
+- `POST /` - Create with enum validation
+- `GET /{id}` - Details with relationships
+- `PUT /{id}` - Update with status workflow
+- `POST /{id}/archive` - Archive with audit logging
+- `POST /{id}/unarchive` - Restore functionality
+- `DELETE /{id}` - Admin-only deletion
+- **Project Status**: `active`, `completed`, `paused`, `archived`, `cancelled`
+- **Priority Levels**: `low`, `medium`, `high`, `critical`
+- **Visibility**: `private`, `team`, `public`
 
-To set up a fresh dev environment, follow these steps (examples use Unix-style shell commands):
+#### **Tasks** (`/api/v1/projects/{project_id}/tasks/`) - 12 Routes
+- `GET /` - filtering (agent, status, search, archived, sorting)
+- `POST /` - Create with project association
+- `GET /{task_number}` - Project-scoped task details
+- `PUT /{task_number}` - Update with status validation
+- `POST /{task_number}/archive` - Archive with workflow preservation
+- `POST /{task_number}/unarchive` - Restore with history
+- **Task Status**: 18 workflow states including context acquisition, planning, execution, verification
+- **Dependencies**: Predecessor/successor relationships with types
 
-1. **Backend environment:**
+#### **Users** (`/api/v1/users/`) - 6 Routes
+- `GET /` - Role-based filtering (role, active status, search across username/email/full_name)
+- `POST /` - Create user (admin only)
+- `GET /{id}` - User details with roles
+- `PUT /{id}` - Update (self or admin)
+- `DELETE /{id}` - Archive user (admin only)
+- **Multi-role Support**: Users can have multiple roles with permissions
 
-   ```bash
-   cd backend
-   python3 -m venv .venv            # create a Python venv
-   source .venv/bin/activate       # activate it
-   pip install fastapi uvicorn sqlalchemy alembic python-dotenv aiosqlite   # core deps
-   # If using PostgreSQL, create backend/.env with DATABASE_* vars (then adjust `backend/database.py`)
-   ```
+#### **Agents** (`/api/v1/agents/`) - 8 Routes
+- `GET /` - Status filtering (status, search, archived, capabilities)
+- `POST /` - Register with capability validation
+- `GET /{id}` - Agent details with status
+- `PUT /{id}` - Update capabilities and status
+- `POST /{id}/archive` - Archive with task reassignment
+- `POST /{id}/unarchive` - Restore with capability validation
+- **Agent Management**: Status tracking, capability assignment, task integration
 
-   This installs FastAPI, Uvicorn, SQLAlchemy, Alembic, etc.  (The `cli.js` can also do this automatically.)
+#### **Enums** (`/api/v1/enums/`) - 5 Routes
+- `GET /project-status` - Available project statuses for dropdowns
+- `GET /project-priority` - Available priority levels
+- `GET /project-visibility` - Available visibility options
+- `GET /project-member-role` - Available member roles
+- `GET /task-status` - Available task statuses for workflow UI
 
-2. **Frontend environment:**
+#### **Memory & Knowledge Graph** (`/api/v1/memory/`) - 4+ Routes
+- `POST /ingest/upload` - File upload to knowledge graph
+- `POST /ingest-url` - URL content ingestion
+- `POST /ingest-text` - Text processing and storage
+- `GET /entities/graph` - Retrieve knowledge graph with pagination
 
-   ```bash
-   cd frontend
-   npm install   # install Node dependencies
-   ```
+#### **MCP Tools** (`/mcp-tools/`) - 3+ Routes
+- Agent automation and management endpoints
+- Metrics with usage tracking
+- Stream event subscription for real-time updates
 
-   (This installs Next.js, React, Chakra UI, Zustand, and all frontend packages.)
+## 🎯 Agent Capabilities
 
-3. **Database setup:**
-   Apply migrations with Alembic (this will create the SQLite `sql_app.db` if needed):
+### **Filtering & Search**
+Agents can utilize filtering across all entities:
 
-   ```bash
-   cd backend
-   python -m alembic upgrade head
-   ```
+```python
+# Project filtering example
+GET /api/v1/projects/?status=active&priority=high&search=urgent&is_archived=false&sort_by=created_at&sort_direction=desc
 
-   If switching to PostgreSQL, define a `.env` and rerun `alembic upgrade head` to initialize the new database.
+# Task filtering with agent assignment
+GET /api/v1/projects/{project_id}/tasks/?agent_id=agent123&status=IN_PROGRESS&search=debug&is_archived=false
 
-4. **Starting servers:**  You can launch both servers with one command:
+# User management with role filtering
+GET /api/v1/users/?role_filter=ENGINEER&is_active=true&search=john&sort_by=created_at
+```
 
-   ```bash
-   npm run dev     # runs dev_launcher.bat (on Windows) or you can run `node dev_launcher.js` cross-platform
-   ```
+### **Enum-Driven Development**
+Agents should utilize enum endpoints for status management:
 
-   This clears ports 8000/3000 and starts the backend (`uvicorn`) and frontend (`next dev`) concurrently.  Alternatively, run them manually:
+```python
+# Get available statuses for UI dropdowns
+GET /api/v1/enums/project-status  # Returns: ['active', 'completed', 'paused', 'archived', 'cancelled']
+GET /api/v1/enums/task-status     # Returns: 18 workflow statuses
+```
 
-   ```bash
-   cd backend; uvicorn main:app --reload --host 0.0.0.0 --port 8000
-   cd frontend; npm run dev
-   ```
+### **Archive Management Pattern**
+Soft deletion with restore capabilities:
 
-   The backend API will be at **[http://localhost:8000](http://localhost:8000)** (with docs at `/docs`), and the frontend at \*\*[http://localhost:3000\*\*:contentReference\[oaicite:20\]{index=20}\:contentReference\[oaicite:21\]{index=21}](http://localhost:3000**:contentReference[oaicite:20]{index=20}:contentReference[oaicite:21]{index=21}).
+```python
+# Archive entities (preserves data and relationships)
+POST /api/v1/projects/{id}/archive
+POST /api/v1/projects/{project_id}/tasks/{task_number}/archive
+POST /api/v1/agents/{id}/archive
 
-## Build, Test, and Lint
+# Restore archived entities
+POST /api/v1/projects/{id}/unarchive
+POST /api/v1/projects/{project_id}/tasks/{task_number}/unarchive
+POST /api/v1/agents/{id}/unarchive
+```
 
-* **Build:** For production or CI, run
+### **Response Models**
+All endpoints use standardized response patterns:
 
-  ```bash
-  cd frontend && npm run build   # builds Next.js frontend (output in .next)
-  ```
+```typescript
+// Single item responses
+interface DataResponse<T> {
+  data: T;
+  message: string;
+  timestamp: string;
+}
 
-  (After building frontend, you may bundle/install backend requirements with `npm run build:all`, which triggers `npm run build` then `pip install -r backend/requirements.txt`.)
+// List responses with pagination
+interface ListResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  has_more: boolean;
+  message: string;
+}
+```
 
-* **Type-check:**
-  The frontend uses TypeScript. Run `npx tsc --noEmit` or `npm run type-check` to catch TS errors.  ESLint is set up for both backend and frontend. The frontend's ESLint script is `npm run lint` (using Next.js's config), and there is `npm run fix` to auto-fix ESLint issues.  The backend code should be linted with flake8; a helper `comprehensive_flake8_fixer.py` is provided to auto-clean common issues.
+## 🛠️ Setup & Bootstrapping
 
-* **Tests:**
+### **Backend Environment**
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate       # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-  * **Frontend tests:** Use Vitest (unit/integration) and Playwright (E2E). You can run all tests via `npm run test:all`.  Specific commands include `npm run test:unit`, `npm run test:integration`, `npm run test:e2e`, or launch the test UI (`npm run test:ui`, `npm run test:e2e:ui`). Coverage can be generated with `npm run test:coverage`.  (These scripts are defined in `frontend/package.json`.)
-  * **Backend tests:** Run `pytest` in the `backend/` directory. For example:
+### **Database Setup with Models**
+```bash
+cd backend
+python -m alembic upgrade head  # Creates tables with schema
+python init_db.py              # Seeds with example data including enums
+```
 
-    ```bash
-    cd backend
-    .venv/bin/pytest tests/ -v
-    ```
+### **Verify API**
+```bash
+# Start backend (46 routes should load)
+uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 
-    (On Windows this is `.venv\Scripts\pytest.exe tests -v` as in `package.json`.)  Include any new tests for new features and aim for high coverage.
+# Verify structure
+curl http://localhost:8000/docs  # Should show 46 organized endpoints
+curl http://localhost:8000/api/v1/enums/project-status  # Test new enum endpoints
+```
 
-* **Lint/Format:**
-  Always fix lint errors and format code before committing. For JS/TS, use `npm run fix` (ESLint auto-fix) and `npm run format` (Prettier) in the `frontend/` directory.  For Python, run flake8 and use the provided fixer as needed.  The project enforces consistent style: uppercase naming where required, no unused imports, line length limits, etc.  (The `comprehensive_flake8_fixer.py` demonstrates the strict backend style rules.)
+## 🧪 Testing & Validation
 
-## Coding Standards & Commit Style
+### **API Testing with Features**
+```bash
+# Backend tests with coverage
+cd backend
+pytest tests/ -v --cov=backend --cov-report=html
 
-* **Coding conventions:** Follow the patterns in the codebase.  Use clear, descriptive names (avoid abbreviations).  The repository includes many detailed READMEs (e.g. component-level READMEs under `frontend/src/`)—study them to match existing styles.  Always handle errors and edge cases.  Write comments/docstrings only where necessary (code should be self-explanatory).
+# Test filtering
+pytest tests/test_projects_crud.py::test_project_filtering -v
+pytest tests/test_tasks_crud.py::test_task_filtering -v
+```
 
-* **Commits/PRs:** Use concise, imperative commit messages (e.g. "Add feature X", "Fix bug in Y") and follow Conventional Commit style (prefix with `feat:`, `fix:`, `docs:`, etc).  If an `AGENTS.md` rule specifies a PR title or message format, the agent should follow it.  Include issue or ticket references if applicable.  Each PR should include a summary of changes; if tests or linting are required, mention that in the PR description.
+### **Frontend Tests with Enum Integration**
+```bash
+cd frontend
+npm run test:unit      # Test enum dropdown components
+npm run test:e2e       # Test filtering workflows
+npm run test:coverage  # Ensure enum integration covered
+```
 
-* **Citation:** When the agent makes changes, it should cite relevant code or docs as evidence of correctness (as Codex does).  For example, when fixing a bug, run tests and cite the test output and logs.  See Codex docs for guidance on citation style.
+## 🎯 Agent Development Guidelines
 
-## Allowed Languages & Directories
+### **Status Management Best Practices**
+1. **Always use enum endpoints** for status validation
+2. **Check available statuses** before transitions
+3. **Use archive/unarchive** instead of hard deletion
+4. **Validate enum values** in business logic
 
-* **Languages:** Only use the languages present in the repo: **Python** (3.8+) for backend, **JavaScript/TypeScript** for frontend and CLI, and **Markdown** for docs.  Do not introduce other languages or frameworks.  Tests should be written in TypeScript (frontend) or Python/Pytest (backend) as shown.
+### **Filtering Implementation**
+1. **Implement pagination** for all list endpoints
+2. **Support multiple filter combinations** 
+3. **Provide search across relevant fields**
+4. **Include total counts** for UI pagination
 
-* **Directories to avoid editing:** Do **not** modify or inspect the following:
+### **Response Model Consistency**
+1. **Use DataResponse[T]** for single items
+2. **Use ListResponse[T]** for collections
+3. **Include meaningful messages** in responses
+4. **Handle errors with consistent format**
 
-  * `backend/.venv/` – the Python virtualenv (ignore entirely).
-  * `frontend/node_modules/` and `frontend/.next/` – dependency caches/build artifacts.
-  * Any `*.db` files (e.g. `sql_app.db`). These are generated databases, not source.
-  * Auto-generated files or logs (`*.log`, `.DS_Store`, etc).
-    The agent should focus on source files under `backend/`, `frontend/src/`, `cli.js`, `.cursor/rules/`, etc, and should *not* write code outside these areas.
+### **Archive Management**
+1. **Implement soft deletion** with archive flags
+2. **Preserve relationships** during archival
+3. **Provide restore functionality**
+4. **Log archive/restore operations**
 
-## Environment & Compatibility
+## 🔧 Development Workflow
 
-* **Python:** The project targets **Python 3.8+** (recommend 3.11+).  Use `python3` accordingly.
-* **Node:** Requires **Node.js 18+** and npm (v18.x or higher).  (Official docs also mention Node 16+ for older code, but prefer 18+ since TypeScript and Next.js versions may require it.)
-* **OS:** Development is supported on macOS, Linux, or Windows (PowerShell). The dev launcher scripts handle OS differences.
-* **Dependencies:** The root `package.json` manages CLI dependencies; `frontend/package.json` manages all frontend deps (Next.js 15, React 18, Chakra UI, Zustand, etc).  The `backend/requirements.txt` or `pyproject.toml` (if present) lists Python packages. Use those for installs.
+### **Model Updates**
+When updating models, ensure enum consistency:
+```bash
+# Generate migration after model changes
+cd backend
+alembic revision --autogenerate -m "Model with new enums"
+alembic upgrade head
+```
 
-## Agent Tools & Advanced Features
+### **Endpoint Development**
+Follow the patterns:
+1. **Add filtering parameters** to GET endpoints
+2. **Use enum validation** in request schemas
+3. **Implement archive/unarchive** for entities
+4. **Add enum endpoints** for new entity types
 
-* **CLI & Dev Tools:** The agent can invoke the CLI and launcher as "tools".  For example, run `npx mcp-project-manager` (or `node cli.js`) to use the integrated CLI, or execute `python start_system.py` to start the entire system.  The agent should quote full commands and work in the project root unless otherwise needed.
+### **Testing New Features**
+1. **Test filtering combinations** thoroughly
+2. **Verify enum endpoint responses**
+3. **Test archive/restore workflows**
+4. **Validate response model consistency**
 
-* **MCP (.cursor) Rules:** The `.cursor/rules/` folder contains Model Context Protocol rule files (`.mdc`) that define agent behaviors and tasks.  When planning agent actions, follow the patterns in these rules.  For instance, custom MCP tools are defined here.  The agent should *not* modify these rule files directly (they are auto-loaded), but can use them as guidance.
+## 🧠 Architecture Understanding
 
-* **Task Templates:** When describing or breaking down tasks, use clear templates.  For multi-step tasks, use numbered or bullet lists to structure steps.  (For example: "1. Do X. 2. Then do Y.")  This ensures clarity and reproducibility.
+The architecture provides:
 
-* **Memory Service:** The backend's **Knowledge Graph/Memory** allows storing and retrieving facts.  Use memory endpoints (`/memory`) to create or query memory tags if useful.  For example, to recall context or associated files, attach memory entities to tasks via the API.  (See `backend/routers/memory.py` for usage.)  These memory entries persist across sessions and help maintain context.
+```mermaid
+graph TD
+    agent((AI Agent)) -->|MCP Protocol| api[API Layer]
+    api -->|Filtering & Search| services[Service Layer]
+    services -->|Models| db[(Database)]
+    api -->|Enum Management| enums[Unified Enums]
+    api -->|Archive Management| archive[Soft Deletion]
+    api -->|Memory Graph| memory[(Knowledge Store)]
+```
 
-* **Tool Invocation:** The agent can run any shell command listed in the project.  Common tools include `uvicorn`, `npm`, `pytest`, etc.  Always ensure the correct working directory (e.g. run backend commands in `backend/`, frontend commands in `frontend/`).  The dev scripts show examples: e.g. `spawn('npm', ['run','dev'], { cwd: 'frontend', shell: true })`.  Use absolute or relative paths to avoid ambiguity if needed.
+### **Key Architectural Principles**
+1. **Single Source of Truth**: Enums centralized in `backend/enums.py`
+2. **Patterns**: All endpoints follow same structure
+3. **Filtering**: Search and filter capabilities
+4. **Soft Deletion**: Archive/restore instead of hard deletes
+5. **Validation**: Enum-based validation throughout
 
-## Prompting Guidelines
+## 🎯 Agent Task Examples
 
-* **Be explicit and deterministic.**  Give precise instructions, avoid vague terms. For multi-step tasks, use numbered lists.  Specify exact function or variable names rather than "it" or "that".
-* **Follow specs and docs.**  Refer to README/ARCHITECTURE docs for context.  Use the technology and naming conventions shown there.
-* **Run tests and cite results.**  After making code changes, run the test suite (both frontend and backend) and include test output citations to verify correctness. Also run `npm run lint` or flake8 and fix any errors.
-* **Commit process:** Draft the change, then produce a commit message summarizing the change. The commit message should be imperative (e.g. "Fix database null bug"), and can mention related issues or tests run.
-* **Memory:** If an agent needs to remember something across interactions, store it using the memory service (e.g. "store task IDs with tag 'todo'"). Then later recall with the same tag.
-* **Review:** Finally, re-run all tests and lint/format, ensure everything passes cleanly, and provide citations of the passing output.
+### **Project Management Task**
+```python
+# 1. Get available project statuses
+statuses = GET /api/v1/enums/project-status
 
-By following this guide, the Codex agent will understand how to navigate the code, set up the environment, and adhere to this project's conventions and quality standards.
+# 2. Filter active high-priority projects
+projects = GET /api/v1/projects/?status=active&priority=high&is_archived=false
+
+# 3. Update project with status transition
+PUT /api/v1/projects/{id} {"status": "completed"}
+
+# 4. Archive completed project
+POST /api/v1/projects/{id}/archive
+```
+
+### **Task Workflow Management**
+```python
+# 1. Get available task statuses for workflow
+task_statuses = GET /api/v1/enums/task-status
+
+# 2. Filter tasks by agent and status
+tasks = GET /api/v1/projects/{id}/tasks/?agent_id=agent123&status=IN_PROGRESS
+
+# 3. Transition task status
+PUT /api/v1/projects/{id}/tasks/{task_number} {"status": "COMPLETED"}
+
+# 4. Archive completed task
+POST /api/v1/projects/{id}/tasks/{task_number}/archive
+```
+
+This architecture provides agents with APIs for project and task management with filtering, status management, and data integrity features.

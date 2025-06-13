@@ -2,7 +2,7 @@
 from sqlalchemy import and_
 from typing import List, Optional, Union
 from ..models import TaskFileAssociation  # from ..schemas import TaskFileAssociationCreate, MemoryEntityCreate, MemoryRelationCreate  # Removed package import
-from backend.schemas.file_association import TaskFileAssociationCreate
+from schemas.file_association import TaskFileAssociationCreate
 import uuid  # Import the memory crud operations
 from .task_file_association_validation import (
     task_entity_exists,

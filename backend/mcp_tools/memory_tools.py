@@ -7,15 +7,15 @@ from sqlalchemy.orm import Session
 from typing import Dict, Any
 import logging
 
-from backend.crud.memory import (
+from crud.memory import (
     create_memory_entity,
     create_memory_relation,
     add_observation_to_entity,
     search_entities,
     get_memory_entity_by_name,
 )
-from backend.services.memory_service import MemoryService
-from backend.schemas.memory import (
+from services.memory_service import MemoryService
+from schemas.memory import (
     MemoryEntityCreate,
     MemoryRelationCreate,
     MemoryObservationCreate,
