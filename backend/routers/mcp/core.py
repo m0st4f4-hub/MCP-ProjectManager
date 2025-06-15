@@ -6,7 +6,7 @@ Provides MCP tool definitions.
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 import json
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List, Dict, Any
 import uuid
 import logging
@@ -14,7 +14,7 @@ from functools import wraps
 from collections import defaultdict
 import asyncio
 
-from ...database import get_sync_db as get_db
+from ...database import get_db
 from ...services.project_service import ProjectService
 from ...services.task_service import TaskService
 from ...services.audit_log_service import AuditLogService
@@ -104,39 +104,36 @@ async def mcp_tools_stream(request: Request):
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
-def get_db_session():
+async def get_db_session():
     """Database session dependency."""
-    db = next(get_db())
-    try:
+    async for db in get_db():
         yield db
-    finally:
-        db.close()
 
 
-def get_memory_service(db: Session = Depends(get_db_session)) -> MemoryService:
+def get_memory_service(db: AsyncAsyncSession = Depends(get_db_session)) -> MemoryService:
     return MemoryService(db)
 
 
 def get_project_file_service(
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ) -> ProjectFileAssociationService:
     return ProjectFileAssociationService(db)
 
 
 def get_agent_handoff_service(
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ) -> AgentHandoffService:
     return AgentHandoffService(db)
 
 
 def get_error_protocol_service(
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ) -> ErrorProtocolService:
     return ErrorProtocolService(db)
 
 
 def get_verification_requirement_service(
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ) -> VerificationRequirementService:
     return VerificationRequirementService(db)
 
@@ -149,7 +146,7 @@ def get_verification_requirement_service(
 @track_tool_usage("create_project_tool")
 async def mcp_create_project(
     project_data: ProjectCreate,
-    db: Session = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """MCP Tool: Create a new project."""
     try:
@@ -189,7 +186,7 @@ async def mcp_create_project(
 @track_tool_usage("create_task_tool")
 async def mcp_create_task(
     task_data: TaskCreate,
-    db: Session = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """MCP Tool: Create a new task."""
     try:
@@ -237,7 +234,7 @@ async def mcp_list_projects(
     skip: int = Query(0, ge=0, description="Number of records to skip."),
     limit: int = Query(100, gt=0, description="Maximum records to return."),
     is_archived: Optional[bool] = None,
-    db: Session = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """MCP Tool: List all projects."""
     try:
@@ -279,7 +276,7 @@ async def mcp_list_tasks(
     agent_id: Optional[str] = None,
     skip: int = Query(0, ge=0, description="Number of records to skip."),
     limit: int = Query(100, gt=0, description="Maximum records to return."),
-    db: Session = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """MCP Tool: List tasks with filtering."""
     try:
@@ -321,7 +318,7 @@ async def mcp_update_task(
     project_id: str,
     task_number: int,
     task_update: TaskUpdate,
-    db: Session = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """MCP Tool: Update an existing task."""
     try:
@@ -367,7 +364,7 @@ async def mcp_update_task(
 async def mcp_delete_task(
     project_id: str,
     task_number: int,
-    db: Session = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """MCP Tool: Delete a task."""
     try:
@@ -495,7 +492,7 @@ async def mcp_remove_project_file(
 )
 async def mcp_create_template(
     template_data: ProjectTemplateCreate,
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: Create a new project template."""
     try:
@@ -526,7 +523,7 @@ async def mcp_create_template(
 async def mcp_list_templates(
     skip: int = 0,
     limit: int = 100,
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: List project templates."""
     try:
@@ -556,7 +553,7 @@ async def mcp_list_templates(
 )
 async def mcp_delete_template(
     template_id: str,
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: Delete a project template."""
     try:
@@ -842,7 +839,7 @@ async def mcp_list_tools():
 @track_tool_usage("create_mandate_tool")
 async def mcp_create_mandate(
     mandate: UniversalMandateCreate,
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: Create a new universal mandate."""
     try:
@@ -870,7 +867,7 @@ async def mcp_create_mandate(
 )
 async def mcp_list_mandates(
     active_only: bool = True,
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: List universal mandates."""
     try:
@@ -903,7 +900,7 @@ async def mcp_list_mandates(
 )
 async def mcp_delete_mandate(
     mandate_id: str,
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: Delete a universal mandate."""
     try:
@@ -938,7 +935,7 @@ async def mcp_delete_mandate(
 @track_tool_usage("create_agent_rule_tool")
 async def mcp_create_agent_rule(
     rule: AgentRuleCreate,
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: Create a new agent rule."""
     try:
@@ -1147,7 +1144,7 @@ async def mcp_create_forbidden_action(
     agent_role_id: str,
     action: str,
     reason: Optional[str] = None,
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: Create a forbidden action for an agent role."""
     try:
@@ -1170,7 +1167,7 @@ async def mcp_create_forbidden_action(
 @track_tool_usage("list_forbidden_actions_tool")
 async def mcp_list_forbidden_actions(
     agent_role_id: Optional[str] = Query(None),
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: List forbidden actions for agent roles."""
     try:
@@ -1191,7 +1188,7 @@ async def mcp_create_verification_requirement(
     requirement: str,
     description: Optional[str] = None,
     is_mandatory: bool = True,
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: Create a verification requirement for an agent role."""
     try:
@@ -1219,7 +1216,7 @@ async def mcp_create_verification_requirement(
 @track_tool_usage("list_verification_requirements_tool")
 async def mcp_list_verification_requirements(
     agent_role_id: Optional[str] = Query(None, description="Filter by agent role ID."),
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: List agent verification requirements."""
     try:
@@ -1241,7 +1238,7 @@ async def mcp_list_verification_requirements(
 )
 async def mcp_delete_verification_requirement(
     requirement_id: str,
-    db: Session = Depends(get_db_session),
+    db: AsyncSession = Depends(get_db_session),
 ):
     """MCP Tool: Delete a verification requirement."""
     try:
@@ -1254,73 +1251,6 @@ async def mcp_delete_verification_requirement(
         raise
     except Exception as e:
         logger.error(f"MCP delete verification requirement failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post(
-    "/mcp-tools/user-role/assign",
-    tags=["mcp-tools"],
-    operation_id="assign_role_tool",
-)
-@track_tool_usage("assign_role_tool")
-async def mcp_assign_role(
-    user_id: str,
-    role_name: str,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: Assign a role to a user."""
-    try:
-        from ...mcp_tools.user_role_tools import assign_role_tool
-
-        return await assign_role_tool(user_id, role_name, db)
-    except Exception as e:
-        logger.error(f"MCP assign role failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get(
-    "/mcp-tools/user-role/list",
-    tags=["mcp-tools"],
-    operation_id="list_roles_tool",
-)
-@track_tool_usage("list_roles_tool")
-async def mcp_list_roles(
-    user_id: str,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: List roles assigned to a user."""
-    try:
-        from ...mcp_tools.user_role_tools import list_roles_tool
-
-        return await list_roles_tool(user_id, db)
-    except Exception as e:
-        logger.error(f"MCP list roles failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.delete(
-    "/mcp-tools/user-role/remove",
-    tags=["mcp-tools"],
-    operation_id="remove_role_tool",
-    response_model=DataResponse[bool],
-)
-@track_tool_usage("remove_role_tool")
-async def mcp_remove_role(
-    user_id: str,
-    role_name: str,
-    db: Session = Depends(get_db_session),
-):
-    """MCP Tool: Remove a role from a user."""
-    try:
-        service = UserRoleService(db)
-        success = service.remove_role_from_user(user_id, role_name)
-        if not success:
-            raise EntityNotFoundError("UserRole", f"{user_id}:{role_name}")
-        return DataResponse[bool](data=True, message="Role removed successfully")
-    except EntityNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        logger.error(f"MCP remove role failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

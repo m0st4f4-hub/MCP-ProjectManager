@@ -4,21 +4,18 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, List, Optional
 
-from database import get_db
-from auth import get_current_active_user
-from services.project_template_service import ProjectTemplateService
-from schemas.project_template import (
+from backend.database import get_db
+from backend.services.project_template_service import ProjectTemplateService
+from backend.schemas.project_template import (
     ProjectTemplate,
     ProjectTemplateCreate,
     ProjectTemplateUpdate
 )
-from schemas.api_responses import DataResponse, ListResponse
-from models import User as UserModel
+from backend.schemas.api_responses import DataResponse, ListResponse
 
 router = APIRouter(
     prefix="/project-templates",
     tags=["Project Templates"],
-    dependencies=[Depends(get_current_active_user)]
 )
 
 async def get_project_template_service(
@@ -32,12 +29,12 @@ async def get_project_template_service(
     summary="Get Project Templates",
     operation_id="get_project_templates"
 )
-async def get_templates(
-    skip: Annotated[int, Query(0, ge=0, description="Number of templates to skip")],
-    limit: Annotated[int, Query(100, ge=1, le=100, description="Maximum number of templates to return")],
-    template_service: Annotated[ProjectTemplateService, Depends(get_project_template_service)]
+async def get_project_templates(
+    template_service: Annotated[ProjectTemplateService, Depends(get_project_template_service)],
+    skip: Annotated[int, Query(description="Number of templates to skip")] = 0,
+    limit: Annotated[int, Query(description="Maximum number of templates to return")] = 100,
 ):
-    """Get all project templates with pagination."""
+    """Get a list of project templates."""
     try:
         templates = template_service.get_templates(skip=skip, limit=limit)
         return ListResponse(
@@ -91,7 +88,6 @@ async def get_template(
 async def create_template(
     template: ProjectTemplateCreate,
     template_service: Annotated[ProjectTemplateService, Depends(get_project_template_service)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)]
 ):
     """Create a new project template."""
     try:
@@ -116,7 +112,6 @@ async def update_template(
     template_id: Annotated[str, Path(description="Template ID")],
     template_update: ProjectTemplateUpdate,
     template_service: Annotated[ProjectTemplateService, Depends(get_project_template_service)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)]
 ):
     """Update an existing project template."""
     try:
@@ -147,7 +142,6 @@ async def update_template(
 async def delete_template(
     template_id: Annotated[str, Path(description="Template ID")],
     template_service: Annotated[ProjectTemplateService, Depends(get_project_template_service)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)]
 ):
     """Delete a project template."""
     try:

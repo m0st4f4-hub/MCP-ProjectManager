@@ -1,6 +1,6 @@
 import enum
 
-__all__ = ["TaskStatusEnum", "UserRoleEnum", "ActionType", "ProjectStatus", "ProjectPriority", "ProjectVisibility", "ProjectMemberRole"]
+__all__ = ["TaskStatusEnum", "ActionType", "ProjectStatus", "ProjectPriority", "ProjectVisibility", "ProjectMemberRole"]
 
 class TaskStatusEnum(enum.Enum):
     """Enum for standardized task statuses."""
@@ -21,15 +21,6 @@ class TaskStatusEnum(enum.Enum):
     FAILED = "Failed"
     IN_PROGRESS_AWAITING_SUBTASK = "In Progress Awaiting Subtask"
     PENDING_RECOVERY_ATTEMPT = "Pending Recovery Attempt"
-
-class UserRoleEnum(enum.Enum):
-    """Enum for user roles."""
-    ADMIN = "admin"
-    MANAGER = "manager"
-    ENGINEER = "engineer"
-    VIEWER = "viewer"
-    USER = "user"
-    AGENT = "agent"  # For AI agents if they have user accounts
 
 class ActionType(enum.Enum):
     """Enum for audit log action types."""

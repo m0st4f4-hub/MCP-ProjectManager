@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from sqlalchemy.orm import Session
 from typing import Annotated, List, Optional
@@ -20,9 +19,9 @@ router = APIRouter(
     operation_id="get_rule_violations"
 )
 def get_rule_violations(
-    agent_name: Annotated[Optional[str], Query(None, description="Filter by agent name")],
-    resolved: Annotated[Optional[bool], Query(None, description="Filter by resolution status")],
-    db: Annotated[Session, Depends(get_db)]
+    db: Annotated[Session, Depends(get_db)],
+    agent_name: Annotated[Optional[str], Query(description="Filter by agent name")] = None,
+    resolved: Annotated[Optional[bool], Query(description="Filter by resolution status")] = None,
 ):
     """
     Get rule violations with optional filters.

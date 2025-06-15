@@ -3,14 +3,14 @@ from sqlalchemy.orm import Session
 from typing import List
 import logging
 
-import models
-import schemas
-from database import get_sync_db as get_db
-from services.project_member_service import ProjectMemberService
-from services.audit_log_service import AuditLogService
-from auth import get_current_active_user
-from models import User as UserModel  # For type hinting current_user  # Import standardized API response models
-from schemas.api_responses import DataResponse, ListResponse
+from backend import models
+from backend import schemas
+from backend.database import get_sync_db as get_db
+from backend.services.project_member_service import ProjectMemberService
+from backend.services.audit_log_service import AuditLogService
+# from backend.auth import get_current_active_user  # Removed for single-user mode
+# from backend.models import User as UserModel  # For type hinting current_user  # Import standardized API response models  # Removed for single-user mode
+from backend.schemas.api_responses import DataResponse, ListResponse
 
 
 router = APIRouter(
@@ -60,8 +60,7 @@ async def get_project_members_endpoint(
 async def add_project_member_endpoint(
     project_id: str,
     member_data: schemas.ProjectMemberCreate,
-    project_member_service: ProjectMemberService = Depends(get_project_member_service),
-    current_user: UserModel = Depends(get_current_active_user),
+    project_member_service: ProjectMemberService = Depends(get_project_member_service),    # current_user: ...  # Removed for single-user mode,
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Add a member to a project."""
@@ -96,8 +95,7 @@ async def add_project_member_endpoint(
 async def remove_project_member_endpoint(
     project_id: str,
     user_id: str,
-    project_member_service: ProjectMemberService = Depends(get_project_member_service),
-    current_user: UserModel = Depends(get_current_active_user),
+    project_member_service: ProjectMemberService = Depends(get_project_member_service),    # current_user: ...  # Removed for single-user mode,
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Remove a member from a project."""

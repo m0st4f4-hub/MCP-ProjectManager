@@ -2,22 +2,22 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, List, Optional
 
-from database import get_db
-from services.project_service import ProjectService
-from services.audit_log_service import AuditLogService
-from schemas.project import (
+from backend.database import get_db
+from backend.services.project_service import ProjectService
+from backend.services.audit_log_service import AuditLogService
+from backend.schemas.project import (
     Project as ProjectSchema,
     ProjectCreate,
     ProjectUpdate
 )
-from schemas.api_responses import DataResponse, ListResponse, PaginationParams
-from services.exceptions import EntityNotFoundError, DuplicateEntityError, ValidationError
-from auth import get_current_active_user, RequireRole
-from enums import UserRoleEnum, ProjectStatus, ProjectPriority, ProjectVisibility
-from models import User as UserModel
+from backend.schemas.api_responses import DataResponse, ListResponse, PaginationParams
+from backend.services.exceptions import EntityNotFoundError, DuplicateEntityError, ValidationError
+# from backend.auth import get_current_active_user, RequireRole  # Removed for single-user mode
+from backend.enums import ProjectStatus, ProjectPriority, ProjectVisibility
+# from backend.models import User as UserModel  # Removed for single-user mode
 
 router = APIRouter(
-    prefix="/projects",
+    prefix="",
     tags=["Projects"],
 )
 
@@ -29,7 +29,7 @@ async def get_audit_log_service(db: Annotated[AsyncSession, Depends(get_db)]) ->
 
 @router.post(
     "/", 
-    response_model=DataResponse[ProjectSchema], 
+    response_model=DataResponse, 
     status_code=status.HTTP_201_CREATED,
     summary="Create Project",
     operation_id="create_project",
@@ -39,7 +39,7 @@ async def create_project_endpoint(
     project_data: ProjectCreate,
     project_service: Annotated[ProjectService, Depends(get_project_service)],
     audit_log_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
-    current_user: Annotated[UserModel, Depends(RequireRole(allowed_roles=[UserRoleEnum.ADMIN, UserRoleEnum.MANAGER]))]
+    # current_user: Annotated[UserModel, Depends(RequireRole(allowed_roles=[UserRoleEnum.ADMIN, UserRoleEnum.MANAGER]))]  # Removed for single-user mode
 ):
     """
     Create a new project. Only accessible by Admins and Managers.
@@ -51,11 +51,11 @@ async def create_project_endpoint(
     - **visibility**: Project visibility (PUBLIC, PRIVATE, INTERNAL)
     """
     try:
-        new_project = await project_service.create_project(project_data, current_user)
+        new_project = await project_service.create_project(project_data)
         await audit_log_service.create_log(
             action="create_project",
             details={"project_name": new_project.name},
-            user_id=current_user.id
+            user_id="00000000-0000-0000-0000-000000000000"  # Placeholder
         )
         return DataResponse(data=ProjectSchema.model_validate(new_project), message="Project created successfully")
     except DuplicateEntityError as e:
@@ -67,14 +67,13 @@ async def create_project_endpoint(
 
 @router.get(
     "/", 
-    response_model=ListResponse[ProjectSchema],
+    response_model=ListResponse,
     summary="Get Projects",
     operation_id="get_projects",
     tags=["mcp-tools"]
 )
 async def get_projects_endpoint(
     project_service: Annotated[ProjectService, Depends(get_project_service)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)],
     pagination: Annotated[PaginationParams, Depends()],
     status_filter: Annotated[Optional[ProjectStatus], Query(description="Filter projects by status")] = None,
     priority_filter: Annotated[Optional[ProjectPriority], Query(description="Filter projects by priority")] = None,
@@ -117,7 +116,7 @@ async def get_projects_endpoint(
 
 @router.get(
     "/{project_id}", 
-    response_model=DataResponse[ProjectSchema],
+    response_model=DataResponse,
     summary="Get Project by ID",
     operation_id="get_project_by_id",
     tags=["mcp-tools"]
@@ -125,7 +124,6 @@ async def get_projects_endpoint(
 async def get_project_endpoint(
     project_id: Annotated[str, Path(description="ID of the project to retrieve")],
     project_service: Annotated[ProjectService, Depends(get_project_service)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)]
 ):
     """
     Get a project by its ID.
@@ -140,7 +138,7 @@ async def get_project_endpoint(
 
 @router.put(
     "/{project_id}", 
-    response_model=DataResponse[ProjectSchema],
+    response_model=DataResponse,
     summary="Update Project",
     operation_id="update_project"
 )
@@ -149,7 +147,6 @@ async def update_project_endpoint(
     project_data: ProjectUpdate,
     project_service: Annotated[ProjectService, Depends(get_project_service)],
     audit_log_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)]
 ):
     """
     Update a project's information.
@@ -169,7 +166,7 @@ async def update_project_endpoint(
         await audit_log_service.create_log(
             action="update_project",
             details={"project_id": project_id, "updated_fields": project_data.model_dump(exclude_unset=True)},
-            user_id=current_user.id
+            user_id="00000000-0000-0000-0000-000000000000"  # Placeholder
         )
         return DataResponse(data=ProjectSchema.model_validate(updated_project), message="Project updated successfully")
     except EntityNotFoundError:
@@ -179,7 +176,7 @@ async def update_project_endpoint(
 
 @router.post(
     "/{project_id}/archive", 
-    response_model=DataResponse[ProjectSchema],
+    response_model=DataResponse,
     summary="Archive Project",
     operation_id="archive_project"
 )
@@ -187,7 +184,7 @@ async def archive_project_endpoint(
     project_id: Annotated[str, Path(description="ID of the project to archive")],
     project_service: Annotated[ProjectService, Depends(get_project_service)],
     audit_log_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
-    current_user: Annotated[UserModel, Depends(RequireRole(allowed_roles=[UserRoleEnum.ADMIN, UserRoleEnum.MANAGER]))]
+    # current_user: Annotated[UserModel, Depends(RequireRole(allowed_roles=[UserRoleEnum.ADMIN, UserRoleEnum.MANAGER]))]  # Removed for single-user mode
 ):
     """
     Archive a project. Only accessible by Admins and Managers.
@@ -199,7 +196,7 @@ async def archive_project_endpoint(
         await audit_log_service.create_log(
             action="archive_project",
             details={"project_id": project_id},
-            user_id=current_user.id
+            user_id="00000000-0000-0000-0000-000000000000"  # Placeholder
         )
         return DataResponse(data=ProjectSchema.model_validate(archived_project), message="Project archived successfully")
     except EntityNotFoundError:
@@ -209,7 +206,7 @@ async def archive_project_endpoint(
 
 @router.post(
     "/{project_id}/unarchive", 
-    response_model=DataResponse[ProjectSchema],
+    response_model=DataResponse,
     summary="Unarchive Project",
     operation_id="unarchive_project"
 )
@@ -217,7 +214,7 @@ async def unarchive_project_endpoint(
     project_id: Annotated[str, Path(description="ID of the project to unarchive")],
     project_service: Annotated[ProjectService, Depends(get_project_service)],
     audit_log_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
-    current_user: Annotated[UserModel, Depends(RequireRole(allowed_roles=[UserRoleEnum.ADMIN, UserRoleEnum.MANAGER]))]
+    # current_user: Annotated[UserModel, Depends(RequireRole(allowed_roles=[UserRoleEnum.ADMIN, UserRoleEnum.MANAGER]))]  # Removed for single-user mode
 ):
     """
     Unarchive a project. Only accessible by Admins and Managers.
@@ -229,7 +226,7 @@ async def unarchive_project_endpoint(
         await audit_log_service.create_log(
             action="unarchive_project",
             details={"project_id": project_id},
-            user_id=current_user.id
+            user_id="00000000-0000-0000-0000-000000000000"  # Placeholder
         )
         return DataResponse(data=ProjectSchema.model_validate(unarchived_project), message="Project unarchived successfully")
     except EntityNotFoundError:
@@ -247,19 +244,25 @@ async def delete_project_endpoint(
     project_id: Annotated[str, Path(description="ID of the project to delete")],
     project_service: Annotated[ProjectService, Depends(get_project_service)],
     audit_log_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
-    current_user: Annotated[UserModel, Depends(RequireRole(allowed_roles=[UserRoleEnum.ADMIN]))]
 ):
     """
-    Delete a project permanently. Only accessible by Admins.
+    Deletes a project. This action is permanent.
     
     This action cannot be undone. Consider archiving instead.
     """
     try:
-        await project_service.delete_project(project_id)
-        await audit_log_service.create_log(
-            action="delete_project",
-            details={"project_id": project_id},
-            user_id=current_user.id
-        )
+        # Check authorization (e.g., if current_user is admin)
+        success = await project_service.delete_project(project_id)
+        if success:
+            await audit_log_service.create_log(
+                action="delete_project",
+                details={"project_id": project_id},
+                user_id="00000000-0000-0000-0000-000000000000"  # Placeholder
+            )
+            return
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
     except EntityNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting project: {e}")

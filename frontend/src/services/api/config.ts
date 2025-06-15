@@ -4,7 +4,7 @@
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-const API_VERSION = '/api'; // Backend uses /api, not /api/v1
+const API_VERSION = '/api/v1'; // Backend uses /api/v1
 
 export const API_CONFIG = {
   BASE_URL: `${API_BASE_URL}${API_VERSION}`,

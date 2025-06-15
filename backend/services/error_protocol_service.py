@@ -3,8 +3,8 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 
-from .. import models
-from ..schemas.error_protocol import ErrorProtocolCreate
+from backend import models
+from backend.schemas.error_protocol import ErrorProtocolCreate
 
 
 class ErrorProtocolService:

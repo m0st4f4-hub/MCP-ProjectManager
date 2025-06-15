@@ -3,22 +3,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 import uuid
 
-from database import get_db
-from services.task_service import TaskService
-from services.agent_service import AgentService
+from backend.database import get_db
+from backend.services.task_service import TaskService
+from backend.services.agent_service import AgentService
 
-from schemas.task import Task, TaskCreate, TaskUpdate
-from schemas.api_responses import DataResponse, ListResponse, PaginationParams
-from services.exceptions import (
+from backend.schemas.task import Task, TaskCreate, TaskUpdate
+from backend.schemas.api_responses import DataResponse, ListResponse, PaginationParams
+from backend.services.exceptions import (
     EntityNotFoundError,
     DuplicateEntityError,
     ValidationError,
     AuthorizationError
 )
-from enums import TaskStatusEnum
-from auth import get_current_active_user
-from services.audit_log_service import AuditLogService
-from models import User as UserModel
+from backend.enums import TaskStatusEnum
+# from backend.auth import get_current_active_user  # Removed for single-user mode
+from backend.services.audit_log_service import AuditLogService
+# from backend.models import User as UserModel  # Removed for single-user mode
 
 
 router = APIRouter()
@@ -48,8 +48,7 @@ async def get_audit_log_service(db: AsyncSession = Depends(get_db)) -> AuditLogS
 async def create_task_for_project(
     project_id: str,
     task: TaskCreate,
-    task_service: TaskService = Depends(get_task_service),
-    current_user: UserModel = Depends(get_current_active_user),
+    task_service: TaskService = Depends(get_task_service),    # current_user: ...  # Removed for single-user mode,
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Create a new task in a project."""
@@ -213,8 +212,7 @@ async def read_task(
 async def archive_task_endpoint(
     project_id: str,
     task_number: int,
-    task_service: TaskService = Depends(get_task_service),
-    current_user: UserModel = Depends(get_current_active_user),
+    task_service: TaskService = Depends(get_task_service),    # current_user: ...  # Removed for single-user mode,
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Archive a task by setting is_archived to True."""
@@ -257,8 +255,7 @@ async def archive_task_endpoint(
 async def unarchive_task_endpoint(
     project_id: str,
     task_number: int,
-    task_service: TaskService = Depends(get_task_service),
-    current_user: UserModel = Depends(get_current_active_user),
+    task_service: TaskService = Depends(get_task_service),    # current_user: ...  # Removed for single-user mode,
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Unarchive a task by setting is_archived to False."""
@@ -302,8 +299,7 @@ async def update_task(
     project_id: str,
     task_number: int,
     task_update: TaskUpdate,
-    task_service: TaskService = Depends(get_task_service),
-    current_user: UserModel = Depends(get_current_active_user),
+    task_service: TaskService = Depends(get_task_service),    # current_user: ...  # Removed for single-user mode,
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Update a task by project and task number."""
@@ -352,8 +348,7 @@ async def update_task(
 async def delete_task(
     project_id: str,
     task_number: int,
-    task_service: TaskService = Depends(get_task_service),
-    current_user: UserModel = Depends(get_current_active_user),
+    task_service: TaskService = Depends(get_task_service),    # current_user: ...  # Removed for single-user mode,
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Delete a task by project ID and task number."""

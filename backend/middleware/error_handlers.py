@@ -13,27 +13,14 @@ import traceback
 import uuid
 from datetime import datetime, timezone
 
-try:
-    from services.exceptions import (
-        ServiceError, EntityNotFoundError, ValidationError,
-        DuplicateEntityError, AuthorizationError
-    )
-except ImportError:
-    # Define fallback exceptions if services module is not available
-    class ServiceError(Exception):
-        pass
-    
-    class EntityNotFoundError(ServiceError):
-        pass
-    
-    class ValidationError(ServiceError):
-        pass
-    
-    class DuplicateEntityError(ServiceError):
-        pass
-    
-    class AuthorizationError(ServiceError):
-        pass
+from backend.services.exceptions import (
+    ServiceError,
+    EntityNotFoundError,
+    ValidationError,
+    DuplicateEntityError,
+    AuthorizationError,
+    ConflictError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +32,7 @@ async def service_exception_handler(request: Request, exc: ServiceError):
         status_code = status.HTTP_404_NOT_FOUND
     elif isinstance(exc, ValidationError):
         status_code = status.HTTP_400_BAD_REQUEST
-    elif isinstance(exc, DuplicateEntityError):
+    elif isinstance(exc, (DuplicateEntityError, ConflictError)):
         status_code = status.HTTP_409_CONFLICT
     elif isinstance(exc, AuthorizationError):
         status_code = status.HTTP_403_FORBIDDEN

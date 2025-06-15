@@ -2,8 +2,8 @@ from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .. import models
-from ..schemas.agent_error_protocol import (
+from backend import models
+from backend.schemas.agent_error_protocol import (
     AgentErrorProtocol,
     AgentErrorProtocolCreate,
     AgentErrorProtocolUpdate,

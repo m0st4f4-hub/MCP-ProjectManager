@@ -3,10 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, List, Optional
 import uuid
 
-from database import get_db  # Use proper async db
-from schemas.comment import Comment, CommentCreate, CommentUpdate
-from schemas.api_responses import DataResponse, ListResponse
-from crud.comments import (
+from backend.database import get_db
+from backend.schemas.comment import Comment, CommentCreate, CommentUpdate
+from backend.schemas.api_responses import DataResponse, ListResponse
+from backend.crud.comments import (
     get_comment,
     get_comments_by_task,
     create_comment,
@@ -21,7 +21,7 @@ router = APIRouter(
 
 @router.post(
     "/", 
-    response_model=DataResponse[Comment], 
+    response_model=DataResponse, 
     status_code=status.HTTP_201_CREATED,
     summary="Create Comment", 
     operation_id="create_comment"
@@ -40,7 +40,7 @@ async def create_comment_endpoint(
     """
     try:
         db_comment = await create_comment(db=db, comment_create=comment_create)
-        return DataResponse[Comment](
+        return DataResponse(
             data=Comment.model_validate(db_comment),
             message="Comment created successfully"
         )
@@ -49,7 +49,7 @@ async def create_comment_endpoint(
 
 @router.get(
     "/{comment_id}", 
-    response_model=DataResponse[Comment], 
+    response_model=DataResponse, 
     summary="Get Comment by ID", 
     operation_id="get_comment_by_id"
 )
@@ -65,23 +65,23 @@ async def get_comment_by_id_endpoint(
     db_comment = await get_comment(db, comment_id)
     if db_comment is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
-    return DataResponse[Comment](
+    return DataResponse(
         data=Comment.model_validate(db_comment),
         message="Comment retrieved successfully"
     )
 
 @router.get(
     "/task/{task_project_id}/{task_task_number}", 
-    response_model=ListResponse[Comment], 
+    response_model=ListResponse, 
     summary="Get Comments by Task", 
     operation_id="get_comments_by_task"
 )
 async def get_comments_by_task_endpoint(
+    db: Annotated[AsyncSession, Depends(get_db)],
     task_project_id: Annotated[uuid.UUID, Path(description="Project ID of the task")],
     task_task_number: Annotated[int, Path(description="Task number within the project")],
-    skip: Annotated[int, Query(0, description="Skip the first N comments")],
-    limit: Annotated[int, Query(100, description="Limit the number of comments returned")],
-    db: Annotated[AsyncSession, Depends(get_db)]
+    skip: Annotated[int, Query(description="Skip the first N comments")] = 0,
+    limit: Annotated[int, Query(description="Limit the number of comments returned")] = 100
 ):
     """
     Retrieves comments for a specific task.
@@ -95,7 +95,7 @@ async def get_comments_by_task_endpoint(
         skip=skip, 
         limit=limit
     )
-    return ListResponse[Comment](
+    return ListResponse(
         data=[Comment.model_validate(comment) for comment in comments],
         total=len(comments),  # This is incorrect for pagination, but a placeholder
         page=int(skip/limit) + 1 if limit > 0 else 1,  # Placeholder
@@ -106,7 +106,7 @@ async def get_comments_by_task_endpoint(
 
 @router.put(
     "/{comment_id}", 
-    response_model=DataResponse[Comment], 
+    response_model=DataResponse, 
     summary="Update Comment", 
     operation_id="update_comment"
 )
@@ -123,14 +123,14 @@ async def update_comment_endpoint(
     db_comment = await update_comment(db, comment_id=comment_id, comment_update=comment_update)
     if db_comment is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
-    return DataResponse[Comment](
+    return DataResponse(
         data=Comment.model_validate(db_comment),
         message="Comment updated successfully"
     )
 
 @router.delete(
     "/{comment_id}", 
-    response_model=DataResponse[bool], 
+    response_model=DataResponse, 
     status_code=status.HTTP_200_OK,
     summary="Delete Comment", 
     operation_id="delete_comment"
@@ -147,7 +147,7 @@ async def delete_comment_endpoint(
     success = await delete_comment(db, comment_id=comment_id)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
-    return DataResponse[bool](
+    return DataResponse(
         data=True,
         message="Comment deleted successfully"
     )

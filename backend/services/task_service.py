@@ -5,10 +5,10 @@ from sqlalchemy import and_, func, or_
 from typing import List, Optional, Tuple
 import uuid
 
-import models
-from schemas.task import TaskCreate, TaskUpdate
-from schemas.comment import CommentCreate
-from enums import TaskStatusEnum
+import backend.models as models
+from backend.schemas.task import TaskCreate, TaskUpdate
+from backend.schemas.comment import CommentCreate
+from backend.enums import TaskStatusEnum
 from .exceptions import EntityNotFoundError, ValidationError
 from .utils import service_transaction
 

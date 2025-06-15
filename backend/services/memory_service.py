@@ -10,22 +10,22 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_, select, and_
 
-from .. import models
-from ..schemas.memory import (
+from backend import models
+from backend.schemas.memory import (
     MemoryEntityCreate,
     MemoryEntityUpdate,
     MemoryObservationCreate,
     MemoryRelationCreate,
 )
-from ..schemas.file_ingest import FileIngestInput
-from ..crud.memory import (
+from backend.schemas.file_ingest import FileIngestInput
+from backend.crud.memory import (
     create_memory_entity,
     get_memory_entity,
     get_memory_entities,
     update_memory_entity,
     delete_memory_entity,
 )
-from ..services.exceptions import ServiceError, EntityNotFoundError, DuplicateEntityError
+from backend.services.exceptions import ServiceError, EntityNotFoundError, DuplicateEntityError
 
 logger = logging.getLogger(__name__)
 

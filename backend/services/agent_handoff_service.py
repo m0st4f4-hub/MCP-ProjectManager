@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from .. import models
-from ..schemas.agent_handoff_criteria import (
+from backend import models
+from backend.schemas.agent_handoff_criteria import (
     AgentHandoffCriteriaCreate,
     AgentHandoffCriteriaUpdate,
 )

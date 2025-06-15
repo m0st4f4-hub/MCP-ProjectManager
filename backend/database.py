@@ -10,10 +10,10 @@ from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
-    async_sessionmaker,
     create_async_engine,
     AsyncEngine
 )
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.pool import StaticPool
 from dotenv import load_dotenv
@@ -59,7 +59,7 @@ engine: AsyncEngine = create_async_engine(
 )
 
 # Create async session factory
-async_session_maker = async_sessionmaker(
+async_session_maker = sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False
@@ -104,7 +104,7 @@ async def init_db() -> None:
     """
     async with engine.begin() as conn:
         # Import all models to register them with Base
-        import models  # noqa: F401
+        import backend.models  # noqa: F401
         
         # Create all tables
         await conn.run_sync(Base.metadata.create_all)
@@ -137,7 +137,7 @@ test_engine: AsyncEngine = create_async_engine(
 )
 
 # Test session factory
-test_async_session_maker = async_sessionmaker(
+test_async_session_maker = sessionmaker(
     test_engine,
     class_=AsyncSession,
     expire_on_commit=False
@@ -164,7 +164,7 @@ async def get_test_db() -> AsyncGenerator[AsyncSession, None]:
 async def init_test_db() -> None:
     """Initialize test database tables."""
     async with test_engine.begin() as conn:
-        import models  # noqa: F401
+        import backend.models  # noqa: F401
         await conn.run_sync(Base.metadata.create_all)
 
 

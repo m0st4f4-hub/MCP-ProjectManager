@@ -5,10 +5,11 @@ from sqlalchemy import func, and_, or_
 from typing import List, Optional, Tuple
 import uuid
 from datetime import datetime
+from uuid import UUID
 
-from .. import models
-from ..schemas.project import ProjectCreate, ProjectUpdate, ProjectMemberCreate, ProjectMemberUpdate
-from ..enums import ProjectStatus, ProjectPriority, ProjectVisibility
+from backend import models
+from backend.schemas.project import ProjectCreate, ProjectUpdate
+from backend.enums import ProjectStatus, ProjectPriority, ProjectVisibility
 from .exceptions import EntityNotFoundError, DuplicateEntityError, ValidationError
 from .utils import service_transaction
 
@@ -103,35 +104,28 @@ class ProjectService:
         
         return projects, total_count
 
-    @service_transaction
-    async def create_project(self, project_data: ProjectCreate, created_by: models.User) -> models.Project:
-        existing_project_query = select(models.Project).where(models.Project.name == project_data.name)
-        result = await self.db.execute(existing_project_query)
-        if result.scalar_one_or_none():
+    async def get_project_by_name(self, name: str) -> Optional[models.Project]:
+        result = await self.db.execute(
+            select(models.Project).filter(models.Project.name == name)
+        )
+        return result.scalar_one_or_none()
+
+    async def create_project(self, project_data: ProjectCreate) -> models.Project:
+        # Hardcode owner_id for single-user mode
+        owner_id = "00000000-0000-0000-0000-000000000000"  # Placeholder UUID
+
+        existing_project = await self.get_project_by_name(project_data.name)
+        if existing_project:
             raise DuplicateEntityError("Project", project_data.name)
 
         db_project = models.Project(
-            **project_data.model_dump(exclude={"owner_id"}),
-            id=str(uuid.uuid4()),
-            owner_id=created_by.id,
-            created_by=created_by.id
+            **project_data.model_dump(),
+            owner_id=owner_id,
+            id=str(uuid.uuid4())
         )
         self.db.add(db_project)
-        await self.db.flush()
-
-        # Add creator as owner
-        owner_member = models.ProjectMember(
-            project_id=db_project.id,
-            user_id=created_by.id,
-            role='owner'
-        )
-        self.db.add(owner_member)
-        await self.db.flush()
-        
-        await self.db.refresh(db_project, attribute_names=['owner', 'members'])
-        # Manually refresh the user relationship on the new member
-        await self.db.refresh(owner_member, attribute_names=['user'])
-
+        await self.db.commit()
+        await self.db.refresh(db_project)
         return db_project
 
     @service_transaction
@@ -171,47 +165,10 @@ class ProjectService:
         await self.db.refresh(db_project)
         return db_project
 
-    @service_transaction
-    async def delete_project(self, project_id: str):
+    async def delete_project(self, project_id: str) -> bool:
         db_project = await self.get_project(project_id)
+        if not db_project:
+            return False
         await self.db.delete(db_project)
-        await self.db.flush()
-        return {"message": "Project deleted successfully"}
-
-    @service_transaction
-    async def add_member(self, project_id: str, member_data: ProjectMemberCreate) -> models.ProjectMember:
-        # Ensure project and user exist
-        await self.get_project(project_id)
-        # TODO: Add user existence check
-        
-        new_member = models.ProjectMember(**member_data.model_dump())
-        self.db.add(new_member)
-        await self.db.flush()
-        await self.db.refresh(new_member, attribute_names=['user'])
-        return new_member
-
-    @service_transaction
-    async def remove_member(self, project_id: str, user_id: str):
-        query = select(models.ProjectMember).where(
-            models.ProjectMember.project_id == project_id,
-            models.ProjectMember.user_id == user_id
-        )
-        result = await self.db.execute(query)
-        member = result.scalar_one_or_none()
-        
-        if not member:
-            raise EntityNotFoundError("Project Member", f"user_id: {user_id}")
-
-        if member.role == 'owner':
-            raise ValidationError("Cannot remove the project owner.")
-
-        await self.db.delete(member)
-        await self.db.flush()
-        return {"message": "Member removed successfully"}
-
-    async def get_members(self, project_id: str) -> List[models.ProjectMember]:
-        query = select(models.ProjectMember).where(models.ProjectMember.project_id == project_id).options(
-            selectinload(models.ProjectMember.user)
-        )
-        result = await self.db.execute(query)
-        return result.scalars().all()
+        await self.db.commit()
+        return True

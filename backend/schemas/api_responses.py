@@ -1,68 +1,32 @@
 """
-API response models for consistent API responses.
-This module defines Pydantic models for API responses.
+Simple API response schemas for single-user mode.
 """
-
-from typing import Generic, TypeVar, List, Dict, Any, Optional
-from pydantic import BaseModel, Field, ConfigDict, field_serializer
-from datetime import datetime, UTC  # Generic type for data
+from pydantic import BaseModel, Field
+from typing import Optional, Any, List, Dict, TypeVar, Generic
 
 T = TypeVar('T')
 
-
-class BaseResponse(BaseModel):
-    """Base response model for all API responses."""
-    success: bool = True
-    message: str = "Operation successful"
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    
-    @field_serializer('timestamp')
-    def serialize_timestamp(self, value: datetime) -> str:
-        return value.isoformat()
+class DataResponse(BaseModel, Generic[T]):
+    """Standard data response wrapper."""
+    data: T = Field(..., description="Response data")
+    message: Optional[str] = Field(None, description="Optional message")
 
 
-class DataResponse(BaseResponse, Generic[T]):
-    """Response model for single entity responses."""
-    data: T
-
-
-class ListResponse(BaseResponse, Generic[T]):
-    """Response model for list responses with pagination."""
-    data: List[T]
-    total: int
-    page: int = 1
-    page_size: int
-    has_more: bool = False
+class ListResponse(BaseModel, Generic[T]):
+    """Standard list response wrapper."""
+    data: List[T] = Field(..., description="List of items")
+    total: int = Field(..., description="Total number of items")
+    page: Optional[int] = Field(None, description="Current page number")
+    page_size: Optional[int] = Field(None, description="Number of items per page")
 
 
 class ErrorResponse(BaseModel):
-    """Response model for error responses."""
-    success: bool = False
-    message: str
-    error_code: Optional[str] = None
-    error_details: Optional[Dict[str, Any]] = None
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    
-    @field_serializer('timestamp')
-    def serialize_timestamp(self, value: datetime) -> str:
-        return value.isoformat()
+    """Standard error response."""
+    error: str = Field(..., description="Error message")
+    details: Optional[Dict[str, Any]] = Field(None, description="Additional error details")
 
 
 class PaginationParams(BaseModel):
-    """Model for pagination parameters."""
-    page: int = 1
-    page_size: int = 100
-
-    @property
-    def offset(self) -> int:
-        return (self.page - 1) * self.page_size
-
-    @property
-    def limit(self) -> int:
-        return self.page_size
-
-
-class MetricsResponse(BaseResponse):
-    """Response model for tool usage metrics."""
-
-    metrics: Dict[str, int] = Field(default_factory=dict)
+    """Pagination parameters."""
+    skip: int = Field(default=0, ge=0, description="Number of items to skip")
+    limit: int = Field(default=100, ge=1, le=1000, description="Number of items to return")

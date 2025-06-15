@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, func, select
-from .. import models
+from backend import models
 from typing import List, Optional
 from uuid import UUID
 from crud.task_dependencies import create_task_dependency
 # Removed import that was causing issues
-from ..schemas.task_dependency import TaskDependencyCreate
+from backend.schemas.task_dependency import TaskDependencyCreate
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..services.exceptions import ValidationError

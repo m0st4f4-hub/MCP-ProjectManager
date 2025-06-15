@@ -2,15 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, List
 
-import models
-import schemas
-from database import get_db
-from services.project_file_association_service import ProjectFileAssociationService
-from services.audit_log_service import AuditLogService
-from schemas.project import ProjectFileAssociation, ProjectFileAssociationCreate
-from schemas.api_responses import DataResponse, ListResponse
-from auth import get_current_active_user
-from models import User as UserModel
+from backend import models
+from backend import schemas
+from backend.database import get_db
+from backend.services.project_file_association_service import ProjectFileAssociationService
+from backend.services.audit_log_service import AuditLogService
+from backend.schemas.project import ProjectFileAssociation, ProjectFileAssociationCreate
+from backend.schemas.api_responses import DataResponse, ListResponse
+# from backend.auth import get_current_active_user  # Removed for single-user mode
+# from backend.models import User as UserModel  # Removed for single-user mode
 
 router = APIRouter(
     prefix="/{project_id}/files",
@@ -36,8 +36,7 @@ async def get_audit_log_service(
 )
 async def get_project_files(
     project_id: Annotated[str, Path(description="Project ID")],
-    service: Annotated[ProjectFileAssociationService, Depends(get_project_file_association_service)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)],
+    service: Annotated[ProjectFileAssociationService, Depends(get_project_file_association_service)],    # current_user: ...  # Removed for single-user mode],
     skip: Annotated[int, Query(ge=0, description="Number of files to skip")] = 0,
     limit: Annotated[int, Query(ge=1, le=100, description="Maximum number of files to return")] = 100
 ):
@@ -70,8 +69,7 @@ async def associate_file_with_project(
     project_id: Annotated[str, Path(description="Project ID")],
     association: ProjectFileAssociationCreate,
     service: Annotated[ProjectFileAssociationService, Depends(get_project_file_association_service)],
-    audit_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)]
+    audit_service: Annotated[AuditLogService, Depends(get_audit_log_service)],    # current_user: ...  # Removed for single-user mode]
 ):
     """Associate a file with a project."""
     try:
@@ -109,8 +107,7 @@ async def remove_file_association(
     project_id: Annotated[str, Path(description="Project ID")],
     association_id: Annotated[str, Path(description="Association ID")],
     service: Annotated[ProjectFileAssociationService, Depends(get_project_file_association_service)],
-    audit_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)]
+    audit_service: Annotated[AuditLogService, Depends(get_audit_log_service)],    # current_user: ...  # Removed for single-user mode]
 ):
     """Remove a file association from a project."""
     try:

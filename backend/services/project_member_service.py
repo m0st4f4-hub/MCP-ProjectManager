@@ -11,7 +11,7 @@ from ..crud.project_members import (
     delete_project_member,
     update_project_member
 )
-from ..schemas.project import ProjectMemberCreate, ProjectMemberUpdate
+from backend.schemas.project import ProjectMemberCreate, ProjectMemberUpdate
 from ..models import ProjectMember
 from .exceptions import EntityNotFoundError
 

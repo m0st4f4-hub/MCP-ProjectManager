@@ -1,52 +1,39 @@
-# Task ID: <taskId>  # Agent Role: CodeStructureSpecialist  # Request ID: <requestId>  # Project: task-manager  # Timestamp: <timestamp>
-
 """
-Model definition for project members.
+Project member model - Simplified for single-user mode.
+This model may not be needed in single-user mode but kept for compatibility.
 """
 
-from sqlalchemy import (
-    Column,
-    String,
-    ForeignKey,
-    DateTime,
-    UniqueConstraint,
-    PrimaryKeyConstraint
-)
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from datetime import datetime, timezone
-from typing import Optional
+from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Enum
+from sqlalchemy.orm import relationship
+from datetime import datetime
+import enum
 
-from .base import Base
+from .base import Base, BaseModel
 
 
-class ProjectMember(Base):
+class ProjectMemberRole(enum.Enum):
+    """Project member roles."""
+    OWNER = "owner"
+    ADMIN = "admin"
+    MEMBER = "member"
+    VIEWER = "viewer"
+
+
+class ProjectMember(Base, BaseModel):
     """
-    Represents a user membership in a project.
-
-    Attributes:
-    project_id: Foreign key linking to the parent Project's ID.
-    user_id: Foreign key linking to the User's ID.
-    role: The role of the user in the project (e.g., "owner", "member", "viewer").
-    created_at: Timestamp when the membership was created.
-    updated_at: Timestamp when the membership was last updated.
-    project: ORM relationship to the parent Project.
-    user: ORM relationship to the User.
+    Project member model - Simplified for single-user mode.
+    May not be actively used but kept for schema compatibility.
     """
     __tablename__ = "project_members"
-    __table_args__ = (PrimaryKeyConstraint('project_id', 'user_id'),)
 
-    project_id: Mapped[str] = mapped_column(
-        String(32), ForeignKey("projects.id"))
-    user_id: Mapped[str] = mapped_column(String(32), ForeignKey("users.id"))
-    role: Mapped[str] = mapped_column(String)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-        nullable=True)
-    
+    project_id = Column(String(36), ForeignKey("projects.id"), nullable=False)
+    user_identifier = Column(String(255), nullable=False, default="local_user")
+    role = Column(Enum(ProjectMemberRole), default=ProjectMemberRole.OWNER, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    joined_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
     # Relationships
-    project: Mapped["Project"] = relationship(back_populates="project_members")
-    user: Mapped["User"] = relationship(back_populates="project_memberships")
+    project = relationship("Project", back_populates="project_members")
+
+    def __repr__(self):
+        return f"<ProjectMember(project_id={self.project_id}, role={self.role.value})>"

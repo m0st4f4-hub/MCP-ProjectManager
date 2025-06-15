@@ -1,7 +1,7 @@
 """Tests for Agents API endpoints."""
 import pytest
 from fastapi import status
-from models.agent import Agent
+from backend.models.agent import Agent
 
 
 def test_agent_model_creation(db_session):

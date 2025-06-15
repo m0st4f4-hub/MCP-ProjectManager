@@ -5,11 +5,15 @@ Validation logic for project file associations.
 This file handles validating file associations without circular imports.
 """
 
-from sqlalchemy.orm import Session
-from crud.utils.file_association_utils import (
-    file_entity_exists,
-    project_entity_exists,
-    association_exists,
-    get_association  # Export the utility functions to maintain the same interface
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from typing import Optional
+
+from .. import models
+from .utils.file_association_utils import (
+    get_project_entity,
+    get_file_entity,
+    get_association_between_entities,
 )
+
 __all__ = ["file_entity_exists", "project_entity_exists", "association_exists", "get_association"]

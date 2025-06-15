@@ -1,116 +1,32 @@
 """
-Service layer for audit log operations.
-Provides high-level business logic for audit logs.
+Service for managing audit logs.
 """
-
-from typing import Optional, List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
-
-# Import CRUD operations
-from crud import audit_logs as audit_log_crud
-from models.audit import AuditLog as AuditLogModel
-from schemas.audit_log import AuditLogCreate, AuditLogUpdate
-
-from .event_publisher import publisher
-from .exceptions import EntityNotFoundError, ValidationError
-
+from typing import List, Optional
+from backend import models
+from sqlalchemy import select
 
 class AuditLogService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create_log(
-        self,
-        action: str,
-        user_id: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None
-    ) -> AuditLogModel:
-        """Helper method to create an audit log entry.
-
-        Args:
-            action: Description of the action.
-            user_id: ID of the user performing the action (if any).
-            details: JSON-serializable dictionary of action details.
-        Returns:
-            The created AuditLog database model instance.
-        """
-        audit_log_create = AuditLogCreate(
+    async def create_log(self, user_id: str, action: str, details: Optional[dict] = None) -> models.AuditLog:
+        """Creates a new audit log entry."""
+        log_entry = models.AuditLog(
             user_id=user_id,
             action=action,
             details=details
         )
-        # Create the audit log entry using the CRUD function
-        # Pass the async session to the CRUD function
-        db_log = await audit_log_crud.create_audit_log(self.db, audit_log_create)
-        await publisher.publish(
-            {"type": "audit_log", "log": audit_log_create.model_dump()}
-        )
-        return db_log
+        self.db.add(log_entry)
+        await self.db.commit()
+        await self.db.refresh(log_entry)
+        return log_entry
 
-    async def get_log(self, audit_log_id: str) -> Optional[AuditLogModel]:
-        """Retrieve a single audit log entry by its ID."""
-        return await audit_log_crud.get_audit_log(db=self.db, audit_log_id=audit_log_id)
-
-    async def get_logs(
-        self,
-        skip: int = 0,
-        limit: int = 100,
-        user_id: Optional[str] = None,
-        action_filter: Optional[str] = None
-    ) -> List[AuditLogModel]:
-        """Retrieve audit logs with optional filtering and pagination."""
-        return await audit_log_crud.get_audit_logs(
-            db=self.db,
-            skip=skip,
-            limit=limit,
-            user_id=user_id,
-            action=action_filter
+    async def get_logs(self, skip: int = 0, limit: int = 100) -> List[models.AuditLog]:
+        """Retrieves a list of audit logs."""
+        result = await self.db.execute(
+            select(models.AuditLog)
+            .offset(skip)
+            .limit(limit)
         )
-
-    async def update_log(
-        self,
-        audit_log_id: str,
-        audit_log_update: AuditLogUpdate
-    ) -> Optional[AuditLogModel]:
-        """Update an audit log entry."""
-        return await audit_log_crud.update_audit_log(
-            db=self.db,
-            audit_log_id=audit_log_id,
-            audit_log_update=audit_log_update
-        )
-
-    async def delete_log(self, audit_log_id: str) -> bool:
-        """Delete an audit log entry and return True if it was deleted, False if not found."""
-        log = await self.get_log(audit_log_id)
-        if not log:
-            return False
-        return await audit_log_crud.delete_audit_log(
-            db=self.db,
-            log_id=audit_log_id
-        )
-
-    async def log_user_action(
-        self,
-        user_id: str,
-        action: str,
-        details: Optional[Dict[str, Any]] = None
-    ) -> AuditLogModel:
-        """Convenience method to log user actions."""
-        return await self.create_log(
-            action=action,
-            user_id=user_id,
-            details=details
-        )
-
-    async def log_system_action(
-        self,
-        action: str,
-        details: Optional[Dict[str, Any]] = None
-    ) -> AuditLogModel:
-        """Convenience method to log system actions."""
-        return await self.create_log(
-            action=action,
-            user_id=None,  # System actions don't have a user
-            details=details
-        )
+        return result.scalars().all() 

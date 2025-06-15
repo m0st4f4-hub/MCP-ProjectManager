@@ -1,74 +1,21 @@
-# Task ID: <taskId>
-# Agent Role: CodeStructureSpecialist
-# Request ID: <requestId>
-# Project: task-manager
-# Timestamp: <timestamp>
-
-"""Pydantic schemas for Audit Logs."""
-
-from pydantic import BaseModel, ConfigDict, Field
+"""
+Pydantic schemas for audit logs.
+"""
+from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-# --- AuditLog Schemas ---
-
-
 class AuditLogBase(BaseModel):
-    """Base schema for audit log attributes."""
-    user_id: Optional[str] = Field(
-        None,
-        description=(
-            "ID of the user performing the action, "
-            "if applicable."
-        ),
-    )
-    action: str = Field(
-        ...,
-        description=(
-            "Description of the action performed (e.g., 'user_login', "
-            "'create_project')."
-        ),
-    )
-    details: Optional[Dict[str, Any]] = Field(
-        None, description="Additional details about the action, in JSON format."
-    )
-
+    user_id: str = Field(..., description="The ID of the user who performed the action.")
+    action: str = Field(..., description="The action that was performed.")
+    details: Optional[Dict[str, Any]] = Field(None, description="Details of the action.")
 
 class AuditLogCreate(AuditLogBase):
-    """Schema for creating a new audit log entry."""
-    pass  # Inherits all fields from AuditLogBase
-
-
-class AuditLogUpdate(BaseModel):
-    """Schema for updating an audit log entry."""
-    action: Optional[str] = Field(
-        None,
-        description="Updated description of the action performed."
-    )
-    details: Optional[Dict[str, Any]] = Field(
-        None, 
-        description="Updated additional details about the action."
-    )
-
+    pass
 
 class AuditLog(AuditLogBase):
-    """Schema for representing an audit log entry in API responses."""
-    id: str = Field(
-        ...,
-        description=(
-            "Unique identifier for the audit log "
-            "entry."
-        ),
-    )
+    id: int = Field(..., description="The unique ID of the audit log.")
+    created_at: datetime = Field(..., description="The timestamp when the action occurred.")
 
-    timestamp: datetime = Field(
-        ...,
-        description=(
-            "Timestamp of when the action "
-            "occurred."
-        ),
-    )
-
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    class Config:
+        from_attributes = True 

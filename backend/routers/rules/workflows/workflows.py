@@ -19,10 +19,10 @@ router = APIRouter(
     operation_id="get_workflows"
 )
 async def get_workflows(
-    workflow_type: Annotated[Optional[str], Query(None, description="Filter by workflow type")],
-    skip: Annotated[int, Query(0, ge=0, description="Number of workflows to skip")],
-    limit: Annotated[int, Query(100, ge=1, le=100, description="Maximum number of workflows to return")],
-    db: Annotated[AsyncSession, Depends(get_db)]
+    db: Annotated[AsyncSession, Depends(get_db)],
+    workflow_type: Annotated[Optional[str], Query(description="Filter by workflow type")] = None,
+    skip: Annotated[int, Query(ge=0, description="Number of workflows to skip")] = 0,
+    limit: Annotated[int, Query(ge=1, le=100, description="Maximum number of workflows to return")] = 100
 ):
     """Get all workflows with optional filtering."""
     try:

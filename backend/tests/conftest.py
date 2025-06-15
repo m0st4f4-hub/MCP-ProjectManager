@@ -9,13 +9,13 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from typing import AsyncGenerator
 
-from database import get_db, Base
-from main import app
-from models.user import User
-from models.agent import Agent
-from models.project import Project
-from models.task import Task
-from enums import UserRoleEnum, ProjectStatus, ProjectPriority, TaskStatusEnum, ProjectVisibility
+from backend.database import get_db, Base
+from backend.main import app
+from backend.models.user import User
+from backend.models.agent import Agent
+from backend.models.project import Project
+from backend.models.task import Task
+from backend.enums import UserRoleEnum, ProjectStatus, ProjectPriority, TaskStatusEnum, ProjectVisibility
 
 # Test database URL
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./test.db"

@@ -8,8 +8,8 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy import or_
 
-import models
-from schemas.agent import (
+from backend import models
+from backend.schemas.agent import (
     AgentCreate,
     AgentUpdate,
 )

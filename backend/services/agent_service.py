@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-import models
+import backend.models as models
 from typing import List, Optional
-from schemas.agent import AgentCreate, AgentUpdate
-from crud.agents import (
+from backend.schemas.agent import AgentCreate, AgentUpdate
+from backend.crud.agents import (
     create_agent,
     get_agent,
     get_agent_by_name,
@@ -10,7 +10,8 @@ from crud.agents import (
     update_agent,
     delete_agent
 )
-from crud.agent_validation import agent_name_exists
+from backend.crud.agent_validation import agent_name_exists
+from sqlalchemy.future import select
 
 
 class AgentService:
@@ -78,48 +79,55 @@ class AgentService:
         await self.db.refresh(agent)
         return agent
 
-    async def add_rule_to_agent(
-        self, agent_id: str, rule_id: str
-    ) -> Optional[models.AgentRule]:
+    async def add_role_to_agent(
+        self, agent_id: str, role_id: str
+    ) -> Optional[models.AgentRole]:
         agent = await get_agent(self.db, agent_id)
         if not agent:
             return None
         
-        # Need to use async query pattern
-        from sqlalchemy.future import select
-        stmt = select(models.AgentRule).where(
-            models.AgentRule.agent_id == agent_id,
-            models.AgentRule.rule_id == rule_id
+        stmt = select(models.AgentRole).where(
+            models.AgentRole.agent_id == agent_id,
+            models.AgentRole.role_id == role_id
         )
         result = await self.db.execute(stmt)
-        existing_rule = result.scalar_one_or_none()
+        existing_role = result.scalar_one_or_none()
         
-        if existing_rule:
-            return existing_rule
+        if existing_role:
+            return existing_role
 
-        db_agent_rule = models.AgentRule(agent_id=agent_id, rule_id=rule_id)
-        self.db.add(db_agent_rule)
+        db_agent_role = models.AgentRole(agent_id=agent_id, role_id=role_id)
+        self.db.add(db_agent_role)
         await self.db.commit()
-        await self.db.refresh(db_agent_rule)
-        return db_agent_rule
+        await self.db.refresh(db_agent_role)
+        return db_agent_role
 
-    async def remove_rule_from_agent(self, agent_id: str, rule_id: str) -> bool:
-        from sqlalchemy.future import select
-        stmt = select(models.AgentRule).where(
-            models.AgentRule.agent_id == agent_id,
-            models.AgentRule.rule_id == rule_id
+    async def remove_role_from_agent(self, agent_id: str, role_id: str) -> bool:
+        stmt = select(models.AgentRole).where(
+            models.AgentRole.agent_id == agent_id,
+            models.AgentRole.role_id == role_id
         )
         result = await self.db.execute(stmt)
-        db_agent_rule = result.scalar_one_or_none()
+        db_agent_role = result.scalar_one_or_none()
         
-        if db_agent_rule:
-            await self.db.delete(db_agent_rule)
+        if db_agent_role:
+            await self.db.delete(db_agent_role)
             await self.db.commit()
             return True
         return False
 
-    async def get_agent_rules(self, agent_id: str) -> List[models.AgentRule]:
-        from sqlalchemy.future import select
-        stmt = select(models.AgentRule).where(models.AgentRule.agent_id == agent_id)
+    async def get_agent_roles(self, agent_id: str) -> List[models.AgentRole]:
+        stmt = select(models.AgentRole).where(models.AgentRole.agent_id == agent_id)
         result = await self.db.execute(stmt)
         return result.scalars().all()
+
+    async def get_agent_role(
+        self, agent_id: str, role_name: str
+    ) -> Optional[models.AgentRole]:
+        query = (
+            select(models.AgentRole)
+            .join(models.Agent.roles)
+            .where(models.AgentRole.name == role_name)
+        )
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()

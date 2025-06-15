@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 
 # Uncomment MemoryEntity related imports
 from schemas.memory import MemoryEntityCreate, MemoryEntityUpdate
-from crud import memory as memory_crud
+from backend.crud import memory as memory_crud
 
 
 logger = logging.getLogger(__name__)

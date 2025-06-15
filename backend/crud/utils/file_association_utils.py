@@ -7,20 +7,32 @@ This file contains common functionality without circular imports.
 
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, select
-from models import ProjectFileAssociation
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Union
-from schemas.memory import (
+from typing import List, Optional, Dict, Any
+import logging
+
+from ... import models
+from ...schemas.memory import (
     MemoryEntityCreate,
-    MemoryEntityUpdate,
-    MemoryObservationCreate,
     MemoryRelationCreate,
 )
 from fastapi import HTTPException, status
-from typing import List, Optional, Dict, Any
-from sqlalchemy.ext.asyncio import AsyncSession  # Import AsyncSession
-import logging
 
 logger = logging.getLogger(__name__)
+
+async def get_project_entity(db: AsyncSession, project_id: str) -> Optional[models.MemoryEntity]:
+    """Get the memory entity for a project."""
+    return await db.execute(
+        select(models.MemoryEntity).where(
+            models.MemoryEntity.entity_type == "project",
+            models.MemoryEntity.name == f"project_{project_id}"
+        )
+    ).scalar_one_or_none()
+
+async def get_file_entity(db: AsyncSession, file_memory_entity_id: int) -> Optional[models.MemoryEntity]:
+    """Get the memory entity for a file."""
+    return await db.get(models.MemoryEntity, file_memory_entity_id)
 
 async def get_association(db: AsyncSession, project_id: str, file_memory_entity_id: int):
     """
@@ -28,10 +40,10 @@ async def get_association(db: AsyncSession, project_id: str, file_memory_entity_
     This avoids circular imports by being in a separate module.
     """
     result = await db.execute(
-    select(ProjectFileAssociation).filter(
+    select(models.ProjectFileAssociation).filter(
     and_(
-    ProjectFileAssociation.project_id == project_id,
-    ProjectFileAssociation.file_memory_entity_id == file_memory_entity_id
+    models.ProjectFileAssociation.project_id == project_id,
+    models.ProjectFileAssociation.file_memory_entity_id == file_memory_entity_id
     )
     )
     )

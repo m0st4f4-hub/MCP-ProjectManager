@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, List, Optional
 
-from database import get_db
-from services.agent_service import AgentService
-from schemas.agent import Agent, AgentCreate, AgentUpdate
-from schemas.api_responses import DataResponse, ListResponse, PaginationParams
+from backend.database import get_db
+from backend.services.agent_service import AgentService
+from backend.schemas.agent import Agent, AgentCreate, AgentUpdate
+from backend.schemas.api_responses import DataResponse, ListResponse, PaginationParams
 
 async def get_agent_service(db: Annotated[AsyncSession, Depends(get_db)]) -> AgentService:
     """Dependency that provides an AgentService instance."""
@@ -34,13 +34,13 @@ async def create_agent(
 
 @router.get("/", response_model=ListResponse[Agent], summary="Get Agents", operation_id="get_agents")
 async def get_agent_list(
+    agent_service: Annotated[AgentService, Depends(get_agent_service)],
     pagination: Annotated[PaginationParams, Depends()],
-    search: Annotated[Optional[str], Query(None, description="Search term for agent names and descriptions")],
-    status: Annotated[Optional[str], Query(None, description="Filter by agent status")],
-    is_archived: Annotated[Optional[bool], Query(None, description="Filter by archived status")],
-    sort_by: Annotated[Optional[str], Query("created_at", description="Field to sort by")],
-    sort_direction: Annotated[Optional[str], Query("desc", description="Sort direction: asc or desc")],
-    agent_service: Annotated[AgentService, Depends(get_agent_service)]
+    search: Annotated[Optional[str], Query(description="Search term for agent names and descriptions")] = None,
+    status: Annotated[Optional[str], Query(description="Filter by agent status")] = None,
+    is_archived: Annotated[Optional[bool], Query(description="Filter by archived status")] = None,
+    sort_by: Annotated[Optional[str], Query(description="Field to sort by")] = "created_at",
+    sort_direction: Annotated[Optional[str], Query(description="Sort direction: asc or desc")] = "desc",
 ):
     """Retrieves a list of registered agents with optional filtering and pagination."""
     try:

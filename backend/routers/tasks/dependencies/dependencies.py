@@ -3,10 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, List
 import uuid
 
-from ....database import get_db
-from ....services.task_dependency_service import TaskDependencyService
-from ....schemas.task_dependency import TaskDependency, TaskDependencyCreate
-from ....schemas.api_responses import DataResponse, ListResponse
+from backend.database import get_db
+from backend.services.task_dependency_service import TaskDependencyService
+from backend.schemas.task_dependency import TaskDependency, TaskDependencyCreate
+from backend.schemas.api_responses import DataResponse, ListResponse
 
 router = APIRouter(
     prefix="/dependencies",

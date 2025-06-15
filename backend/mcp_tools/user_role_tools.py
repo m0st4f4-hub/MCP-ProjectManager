@@ -1,3 +1,5 @@
+# File should be deleted as user role management is deprecated.
+
 """MCP Tools for managing user roles."""
 
 import logging

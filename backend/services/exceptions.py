@@ -1,47 +1,58 @@
 """
-Service exceptions for consistent error handling.
-This module defines custom exceptions for the service layer.
+Simple exceptions for single-user mode.
 """
+from fastapi import HTTPException, status
 
-class ServiceError(Exception):
-    """Base class for service layer exceptions."""
+
+class TaskManagerException(Exception):
+    """Base exception for task manager."""
     pass
 
-class EntityNotFoundError(ServiceError):
-    """Raised when an entity is not found."""
-    def __init__(self, entity_type: str, entity_id: str):
-        self.entity_type = entity_type
-        self.entity_id = entity_id
-        self.message = f"{entity_type} with ID {entity_id} not found"
-        super().__init__(self.message)
 
-class ValidationError(ServiceError):
-    """Raised when validation fails."""
-    def __init__(self, message: str):
-        self.message = message
-        super().__init__(message)
+class NotFoundError(TaskManagerException):
+    """Resource not found exception."""
+    pass
 
-class DuplicateEntityError(ServiceError):
-    """Raised when attempting to create a duplicate entity."""
-    def __init__(self, entity_type: str, identifier: str):
-        self.entity_type = entity_type
-        self.identifier = identifier
-        self.message = f"{entity_type} with identifier {identifier} already exists"
-        super().__init__(self.message)
 
-class AuthorizationError(ServiceError):
-    """Raised when an operation is not authorized."""
-    def __init__(self, message: str = "Operation not authorized"):
-        self.message = message
-        super().__init__(message)
+class ValidationError(TaskManagerException):
+    """Validation error exception."""
+    pass
 
-class DependencyError(ServiceError):
-    """Raised when a dependency operation fails."""
-    def __init__(self, dependency: str, message: str):
-        self.dependency = dependency
-        self.message = f"Dependency error in {dependency}: {message}"
-        super().__init__(self.message)
 
-# Aliases for compatibility
-NotFoundError = EntityNotFoundError
-PermissionError = AuthorizationError
+class ConflictError(TaskManagerException):
+    """Conflict error exception."""
+    pass
+
+
+class DuplicateEntityError(ConflictError):
+    """Duplicate entity found."""
+    def __init__(self, entity_name: str, entity_id: str):
+        super().__init__(f"{entity_name} with id '{entity_id}' already exists.")
+
+
+class EntityNotFoundError(TaskManagerException):
+    """Entity not found exception."""
+    pass
+
+
+class ServiceError(TaskManagerException):
+    """Service error exception."""
+    pass
+
+
+class AuthorizationError(TaskManagerException):
+    """Authorization error exception."""
+    pass
+
+
+# FastAPI HTTP Exceptions for convenience
+def not_found_exception(detail: str = "Resource not found"):
+    return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
+
+
+def validation_exception(detail: str = "Validation error"):
+    return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
+
+
+def conflict_exception(detail: str = "Resource conflict"):
+    return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)

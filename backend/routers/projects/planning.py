@@ -6,11 +6,11 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from database import get_sync_db as get_db
-from services.audit_log_service import AuditLogService
-from auth import get_current_active_user
-from models import User as UserModel  # For type hinting current_user  # Import standardized API response models
-from schemas.api_responses import DataResponse
+from backend.database import get_sync_db as get_db
+from backend.services.audit_log_service import AuditLogService
+# from backend.auth import get_current_active_user  # Removed for single-user mode
+# from backend.models import User as UserModel  # For type hinting current_user  # Import standardized API response models  # Removed for single-user mode
+from backend.schemas.api_responses import DataResponse
 
 
 router = APIRouter(
@@ -27,8 +27,7 @@ def get_audit_log_service(db: Session = Depends(get_db)) -> AuditLogService:
 
 
 async def generate_planning_prompt_endpoint(
-    request_data: dict,
-    current_user: UserModel = Depends(get_current_active_user),
+    request_data: dict,    # current_user: ...  # Removed for single-user mode,
     audit_log_service: AuditLogService = Depends(get_audit_log_service)
 ):
     """Generate a project manager planning prompt based on a goal."""

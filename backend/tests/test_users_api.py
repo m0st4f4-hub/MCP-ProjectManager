@@ -1,8 +1,8 @@
 """Tests for Users API endpoints."""
 import pytest
 from fastapi import status
-from enums import UserRole
-from models.user import User
+from backend.enums import UserRoleEnum
+from backend.models.user import User
 
 
 def test_create_user(client):
@@ -12,7 +12,7 @@ def test_create_user(client):
         "email": "newuser@example.com",
         "full_name": "New User",
         "password": "password123",
-        "roles": [UserRole.ENGINEER.value]
+        "roles": [UserRoleEnum.ENGINEER.value]
     }
     
     response = client.post("/api/v1/users/", json=user_data)
@@ -41,8 +41,8 @@ def test_filter_users_by_role(client, db_session):
         email="admin@example.com",
         full_name="Admin User",
         hashed_password="hashedpassword",
-        is_active=True,
-        roles=[UserRole.ADMIN]
+        disabled=False,
+        roles=[UserRoleEnum.ADMIN]
     )
     
     db_session.add(admin_user)
@@ -62,8 +62,8 @@ def test_search_users(client, db_session):
         email="search@example.com",
         full_name="Search Test User",
         hashed_password="hashedpassword",
-        is_active=True,
-        roles=[UserRole.ENGINEER]
+        disabled=False,
+        roles=[UserRoleEnum.ENGINEER]
     )
     
     db_session.add(searchable_user)

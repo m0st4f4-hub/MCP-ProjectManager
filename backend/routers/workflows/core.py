@@ -6,13 +6,10 @@ from ...database import get_db
 from ...services.workflow_service import WorkflowService
 from ...schemas.workflow import Workflow, WorkflowCreate, WorkflowUpdate
 from ...schemas.api_responses import DataResponse, ListResponse
-from ...auth import get_current_active_user
-from ...models import User as UserModel
 
 router = APIRouter(
     prefix="/workflows",
     tags=["Workflows"],
-    dependencies=[Depends(get_current_active_user)],
 )
 
 
@@ -27,13 +24,13 @@ async def get_workflow_service(db: Annotated[AsyncSession, Depends(get_db)]) -> 
     summary="Create Workflow",
     operation_id="create_workflow"
 )
-async def create_workflow(
-    workflow: WorkflowCreate,
-    workflow_service: Annotated[WorkflowService, Depends(get_workflow_service)]
+async def create_workflow_endpoint(
+    workflow_data: WorkflowCreate,
+    workflow_service: Annotated[WorkflowService, Depends(WorkflowService.get_instance)],
 ):
     """Create a new workflow."""
     try:
-        new_workflow = await workflow_service.create_workflow(workflow)
+        new_workflow = await workflow_service.create_workflow(workflow_data)
         return DataResponse(
             data=new_workflow,
             message="Workflow created successfully"
@@ -51,12 +48,12 @@ async def create_workflow(
     summary="Get Workflows",
     operation_id="get_workflows"
 )
-async def get_workflows(
-    skip: Annotated[int, Query(0, ge=0, description="Number of workflows to skip")],
-    limit: Annotated[int, Query(100, ge=1, le=100, description="Maximum number of workflows to return")],
-    workflow_service: Annotated[WorkflowService, Depends(get_workflow_service)]
+async def get_workflows_endpoint(
+    workflow_service: Annotated[WorkflowService, Depends(WorkflowService.get_instance)],
+    skip: Annotated[int, Query(description="Number of workflows to skip")] = 0,
+    limit: Annotated[int, Query(description="Maximum number of workflows to return")] = 100,
 ):
-    """Get all workflows with pagination."""
+    """Get all workflows."""
     try:
         workflows = await workflow_service.get_workflows(skip=skip, limit=limit)
         return ListResponse(

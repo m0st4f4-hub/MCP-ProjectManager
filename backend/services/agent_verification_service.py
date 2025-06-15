@@ -1,8 +1,8 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 
-from .. import models
-from ..schemas.agent_verification_requirement import (
+from backend import models
+from backend.schemas.agent_verification_requirement import (
     AgentVerificationRequirementCreate,
 )
 

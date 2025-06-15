@@ -7,13 +7,6 @@ from .project import (
     ProjectCreate,
     ProjectUpdate,
     Project,
-    ProjectMemberBase,
-    ProjectMemberCreate,
-    ProjectMemberUpdate,
-    ProjectMember,
-    ProjectFileAssociationBase,
-    ProjectFileAssociationCreate,
-    ProjectFileAssociation,
 )
 
 # Import project template schemas
@@ -31,16 +24,30 @@ from .file_association import (
     TaskFileAssociation,
 )
 
-# Import and export user schemas  
-from .user import (
-    UserBase,
-    UserCreate,
-    UserUpdate,
-    User,
-    UserRoleBase,
-    UserRoleCreate,
-    UserRoleUpdate,
-    UserRole,
+# User schemas removed for single-user mode
+
+# Import comment schemas
+from .comment import (
+    CommentBase,
+    CommentCreate,
+    CommentUpdate,
+    Comment,
+)
+
+# Import API response schemas
+from .api_responses import (
+    DataResponse,
+    ListResponse,
+    ErrorResponse,
+    PaginationParams,
+)
+
+# Import agent role schemas
+from .agent_role import (
+    AgentRoleBase,
+    AgentRoleCreate,
+    AgentRoleUpdate,
+    AgentRole,
 )
 
 # Import and export task schemas
@@ -110,3 +117,11 @@ from .agent_verification_requirement import (
 )
 
 from .file_ingest import FileIngestInput
+
+# Import error protocol schemas
+from .error_protocol import (
+    ErrorProtocolBase,
+    ErrorProtocolCreate,
+    ErrorProtocolUpdate,
+    ErrorProtocol,
+)

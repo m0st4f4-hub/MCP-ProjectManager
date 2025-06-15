@@ -1,8 +1,8 @@
 """Tests for Tasks API endpoints."""
 import pytest
 from fastapi import status
-from enums import TaskStatus
-from models.task import Task
+from backend.enums import TaskStatusEnum
+from backend.models.task import Task
 
 
 def test_create_task(client, sample_project, sample_agent):
@@ -10,7 +10,7 @@ def test_create_task(client, sample_project, sample_agent):
     task_data = {
         "title": "New Test Task",
         "description": "A new task for testing",
-        "status": TaskStatus.TODO.value,
+        "status": TaskStatusEnum.TO_DO.value,
         "project_id": sample_project.id,
         "agent_id": sample_agent.id
     }
@@ -39,7 +39,7 @@ def test_filter_tasks_by_status(client, db_session, sample_project, sample_agent
     todo_task = Task(
         title="TODO Task",
         description="Task in TODO status",
-        status=TaskStatus.TODO,
+        status=TaskStatusEnum.TODO,
         project_id=sample_project.id,
         agent_id=sample_agent.id,
         task_number=100

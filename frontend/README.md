@@ -145,9 +145,6 @@ While significant progress has been made, particularly with the `TaskItem` compo
 *   **`Dashboard.tsx` (`src/components/Dashboard.tsx`):**
     *   **Status:** Refactoring Incomplete.
     *   **Notes:** Currently 587 lines. Still requires significant modularization. (Original Target: Dream Level 4)
-<<<<<<< HEAD
-*   **`TaskList.tsx` (`src/components/TaskList.tsx`
-=======
 *   **`TaskList.tsx` (`src/components/TaskList.tsx`):**
     *   **Status:** Refactoring Incomplete.
     *   **Notes:** Currently 296 lines. Still requires modularization. (Original Target: Dream Level 3)
@@ -229,8 +226,3 @@ graph TD
 - `vitest.config.ts`
 
 <!-- File List End -->
-
-
-
-
->>>>>>> 923f8c0e234708d78bfe6a726e4852740ac20323

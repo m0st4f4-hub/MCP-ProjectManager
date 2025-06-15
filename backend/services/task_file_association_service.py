@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
-from .. import models, schemas
+from backend import models, schemas
 from typing import List, Optional
 from uuid import UUID
 # Import CRUD operations
@@ -10,7 +10,7 @@ from crud.task_file_associations import (
     delete_task_file_association
 )
 # Import schema for TaskFileAssociationCreate
-from ..schemas.file_association import TaskFileAssociationCreate
+from backend.schemas.file_association import TaskFileAssociationCreate
 
 
 class TaskFileAssociationService:

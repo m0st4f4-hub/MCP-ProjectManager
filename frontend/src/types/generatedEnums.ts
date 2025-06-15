@@ -21,15 +21,6 @@ export enum TaskStatus {
   PENDING_RECOVERY_ATTEMPT = 'Pending Recovery Attempt',
 }
 
-export enum UserRole {
-  ADMIN = 'admin',
-  MANAGER = 'manager',
-  ENGINEER = 'engineer',
-  VIEWER = 'viewer',
-  USER = 'user',
-  AGENT = 'agent',
-}
-
 export enum ActionType {
   CREATE = 'create',
   READ = 'read',

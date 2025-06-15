@@ -7,7 +7,7 @@ This service provides verification requirement management functionality.
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from ..models.agent_verification_requirement import AgentVerificationRequirement
-from ..schemas.agent_verification_requirement import (
+from backend.schemas.agent_verification_requirement import (
     AgentVerificationRequirementCreate,
     AgentVerificationRequirement as AgentVerificationRequirementSchema
 )

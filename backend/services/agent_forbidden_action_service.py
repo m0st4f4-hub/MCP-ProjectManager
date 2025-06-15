@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .. import models
+from backend import models
 from ..crud import rules as crud_rules
 
 

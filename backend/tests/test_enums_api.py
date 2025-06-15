@@ -1,7 +1,7 @@
 """Tests for Enums API endpoints."""
 import pytest
 from fastapi import status
-from enums import TaskStatusEnum, ProjectStatus, ProjectPriority, UserRoleEnum
+from backend.enums import TaskStatusEnum, ProjectStatus, ProjectPriority, UserRoleEnum
 
 
 def test_enum_endpoints_not_implemented(client):

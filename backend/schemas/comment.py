@@ -1,46 +1,14 @@
-# Task ID: <taskId>
-# Agent Role: ImplementationSpecialist
-# Request ID: <requestId>
-# Project: task-manager
-# Timestamp: <timestamp>
-
+"""
+Simple comment schema for single-user mode.
+"""
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 from datetime import datetime
 
-# Forward references for relationships
-Task = "Task"
-Project = "Project"
-User = "User"
-
-# --- Comment Schemas ---
-
 
 class CommentBase(BaseModel):
     """Base schema for comment attributes."""
-    task_project_id: Optional[str] = Field(
-        None,
-        description=(
-            "The ID of the associated task's project (if applicable)."
-        ),
-    )
-    task_task_number: Optional[int] = Field(
-        None,
-        description=(
-            "The number of the associated task within its project "
-            "(if applicable)."
-        ),
-    )
-    project_id: Optional[str] = Field(
-        None,
-        description="The ID of the associated project (if applicable)."
-    )
-    author_id: str = Field(
-        ..., description="The ID of the author of the comment."
-    )
-    content: str = Field(
-        ..., description="The content of the comment."
-    )
+    content: str = Field(..., description="Content of the comment.")
 
 
 class CommentCreate(CommentBase):
@@ -48,58 +16,15 @@ class CommentCreate(CommentBase):
     pass
 
 
-class CommentUpdate(CommentBase):
+class CommentUpdate(BaseModel):
     """Schema for updating an existing comment."""
-    # All fields are optional for updates
-    task_project_id: Optional[str] = Field(
-        None,
-        description=(
-            "The ID of the associated task's project (if applicable)."
-        ),
-    )
-    task_task_number: Optional[int] = Field(
-        None,
-        description=(
-            "The number of the associated task within its project "
-            "(if applicable)."
-        ),
-    )
-    project_id: Optional[str] = Field(
-        None,
-        description="The ID of the associated project (if applicable)."
-    )
-    author_id: Optional[str] = Field(
-        None, description="The ID of the author of the comment."
-    )
-    content: Optional[str] = Field(
-        None, description="The content of the comment."
-    )
+    content: Optional[str] = None
 
 
 class Comment(CommentBase):
     """Schema for representing a comment in API responses."""
-    id: str = Field(
-        ...,
-        description="Unique identifier for the comment."
-    )
-    created_at: datetime = Field(
-        ..., description="Timestamp when the comment was created."
-    )
-    updated_at: Optional[datetime] = Field(
-        None,
-        description="Timestamp when the comment was last updated."
-    )
-    # Relationships
-    task: Optional[Task] = Field(
-        None, description="The task this comment is on (if applicable)."
-    )
-    project: Optional[Project] = Field(
-        None, description="The project this comment is on (if applicable)."
-    )
-    author: User = Field(
-        ...,
-        description="The author of the comment."
-    )
+    id: str = Field(..., description="Unique identifier for the comment.")
+    created_at: datetime = Field(..., description="When the comment was created.")
+    updated_at: datetime = Field(..., description="When the comment was last updated.")
 
     model_config = ConfigDict(from_attributes=True)
-    # Note: model_rebuild() is called in main.py after all schemas are loaded

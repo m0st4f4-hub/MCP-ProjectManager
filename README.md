@@ -16,7 +16,7 @@ An open-source, full-stack suite for collaborative project management, empowerin
 ### One-Command Development Setup
 
 ```bash
-python start_system.py
+python launcher.py
 ```
 
 This will automatically:
@@ -30,7 +30,7 @@ This will automatically:
 
 ```bash
 # Quick start options:
-scripts/dev/dev_launcher.bat              # Windows batch script
+python launcher.py                        # Cross-platform Python script
 node scripts/dev/dev_launcher.js          # Cross-platform Node.js
 # OR
 powershell scripts/dev/dev_launcher.ps1   # PowerShell (Windows)
@@ -215,13 +215,6 @@ In the frontend, call `memoryApi.uploadFile(file)` after selecting a file in the
 - `useFilteredProjects(projects, filters)` – Project filtering with status, priority, and visibility
 - `useEnumValues(enumType)` – Fetch enum values for dropdowns and filters
 
-## 📸 UI Screenshots
-
-![Light theme](./image-light.png)
-![Dark theme](./image-dark.png)
-
----
-
 ## 🖥️ Manual Setup (Optional)
 
 ### Backend
@@ -333,4 +326,3 @@ Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for pre-commit hooks, commit st
 
 For detailed API documentation, see [`backend/README.md`](./backend/README.md).
 For frontend development guidelines, see [`frontend/README.md`](./frontend/README.md).
-```

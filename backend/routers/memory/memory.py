@@ -10,11 +10,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, List, Optional, Dict, Any
 
-from ...database import get_db
-from ...schemas.memory import MemoryEntityCreate
-from ...schemas.api_responses import DataResponse, ListResponse, PaginationParams
-from ...auth import get_current_active_user
-from ...models import User as UserModel
+from backend.database import get_db
+from backend.schemas.memory import MemoryEntityCreate
+from backend.schemas.api_responses import DataResponse, ListResponse, PaginationParams
+# from backend.auth import get_current_active_user  # Removed for single-user mode
+# from backend.models import User as UserModel  # Removed for single-user mode
 
 router = APIRouter()
 
@@ -29,8 +29,7 @@ router = APIRouter()
 )
 async def add_memory_entity(
     entity_data: MemoryEntityCreate,
-    db: Annotated[AsyncSession, Depends(get_db)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)]
+    db: Annotated[AsyncSession, Depends(get_db)],    # current_user: ...  # Removed for single-user mode]
 ):
     """
     Add a new entity to the memory system.
@@ -59,8 +58,7 @@ async def add_memory_entity(
 )
 async def search_memory_entities(
     query: Annotated[str, Query(description="Search term to find in memory entities")],
-    db: Annotated[AsyncSession, Depends(get_db)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],    # current_user: ...  # Removed for single-user mode],
     limit: Annotated[int, Query(description="Maximum number of results", ge=1, le=100)] = 10
 ):
     """Search through the memory system to find relevant entities."""
@@ -93,8 +91,7 @@ async def search_memory_entities(
 async def add_memory_observation(
     entity_id: Annotated[int, Path(description="ID of the memory entity")],
     observation_data: Dict[str, Any],
-    db: Annotated[AsyncSession, Depends(get_db)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)]
+    db: Annotated[AsyncSession, Depends(get_db)],    # current_user: ...  # Removed for single-user mode]
 ):
     """Add an observation to an existing memory entity."""
     return DataResponse(
@@ -118,8 +115,7 @@ async def add_memory_observation(
 )
 async def add_memory_relation(
     relation_data: Dict[str, Any],
-    db: Annotated[AsyncSession, Depends(get_db)],
-    current_user: Annotated[UserModel, Depends(get_current_active_user)]
+    db: Annotated[AsyncSession, Depends(get_db)],    # current_user: ...  # Removed for single-user mode]
 ):
     """Create relationships between memory entities."""
     return DataResponse(

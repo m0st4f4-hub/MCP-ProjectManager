@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from crud.agents import get_agent_by_name
+from backend.crud.agents import get_agent_by_name
 from typing import Optional
 
 async def agent_name_exists(db: AsyncSession, name: str, exclude_agent_id: Optional[str] = None) -> bool:

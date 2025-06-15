@@ -1,8 +1,8 @@
 """Tests for Projects API endpoints."""
 import pytest
 from fastapi import status
-from enums import ProjectStatus, ProjectPriority, ProjectVisibility
-from models.project import Project
+from backend.enums import ProjectStatus, ProjectPriority, ProjectVisibility
+from backend.models.project import Project
 
 
 def test_create_project(client, sample_user):
@@ -16,7 +16,7 @@ def test_create_project(client, sample_user):
         "owner_id": sample_user.id
     }
     
-    response = client.post("/api/v1/projects/projects/", json=project_data)
+    response = client.post("/api/v1/projects/", json=project_data)
     assert response.status_code == status.HTTP_201_CREATED
     
     data = response.json()
@@ -30,7 +30,7 @@ def test_create_project(client, sample_user):
 
 def test_get_projects_list(client, sample_project):
     """Test getting list of projects with pagination."""
-    response = client.get("/api/v1/projects/projects/")
+    response = client.get("/api/v1/projects/")
     assert response.status_code == status.HTTP_200_OK
     
     data = response.json()
@@ -43,7 +43,7 @@ def test_get_projects_list(client, sample_project):
 
 def test_get_project_by_id(client, sample_project):
     """Test getting a specific project by ID."""
-    response = client.get(f"/api/v1/projects/projects/{sample_project.id}")
+    response = client.get(f"/api/v1/projects/{sample_project.id}")
     assert response.status_code == status.HTTP_200_OK
     
     data = response.json()
@@ -54,7 +54,7 @@ def test_get_project_by_id(client, sample_project):
 
 def test_get_project_not_found(client):
     """Test getting non-existent project returns 404."""
-    response = client.get("/api/v1/projects/projects/99999")
+    response = client.get("/api/v1/projects/99999")
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -66,7 +66,7 @@ def test_update_project(client, sample_project):
         "priority": ProjectPriority.LOW.value
     }
     
-    response = client.put(f"/api/v1/projects/projects/{sample_project.id}", json=update_data)
+    response = client.put(f"/api/v1/projects/{sample_project.id}", json=update_data)
     assert response.status_code == status.HTTP_200_OK
     
     data = response.json()
@@ -78,14 +78,14 @@ def test_update_project(client, sample_project):
 
 def test_delete_project(client, sample_project):
     """Test deleting a project."""
-    response = client.delete(f"/api/v1/projects/projects/{sample_project.id}")
+    response = client.delete(f"/api/v1/projects/{sample_project.id}")
     assert response.status_code == status.HTTP_200_OK
     
     data = response.json()
     assert data["success"] is True
     
     # Verify project is deleted
-    get_response = client.get(f"/api/v1/projects/projects/{sample_project.id}")
+    get_response = client.get(f"/api/v1/projects/{sample_project.id}")
     assert get_response.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -103,7 +103,7 @@ def test_filter_projects_by_status(client, db_session, sample_user):
     db_session.add(active_project)
     db_session.commit()
     
-    response = client.get("/api/v1/projects/projects/?status=active")
+    response = client.get("/api/v1/projects/?status=active")
     assert response.status_code == status.HTTP_200_OK
     
     data = response.json()
@@ -124,7 +124,7 @@ def test_filter_projects_by_priority(client, db_session, sample_user):
     db_session.add(high_project)
     db_session.commit()
     
-    response = client.get("/api/v1/projects/projects/?priority=high")
+    response = client.get("/api/v1/projects/?priority=high")
     assert response.status_code == status.HTTP_200_OK
     
     data = response.json()
@@ -145,7 +145,7 @@ def test_search_projects(client, db_session, sample_user):
     db_session.add(searchable_project)
     db_session.commit()
     
-    response = client.get("/api/v1/projects/projects/?search=alpha")
+    response = client.get("/api/v1/projects/?search=alpha")
     assert response.status_code == status.HTTP_200_OK
     
     data = response.json()
@@ -154,7 +154,7 @@ def test_search_projects(client, db_session, sample_user):
 
 def test_archive_project(client, sample_project):
     """Test archiving a project."""
-    response = client.post(f"/api/v1/projects/projects/{sample_project.id}/archive")
+    response = client.post(f"/api/v1/projects/{sample_project.id}/archive")
     assert response.status_code == status.HTTP_200_OK
     
     data = response.json()
@@ -166,7 +166,7 @@ def test_unarchive_project(client, db_session, sample_project):
     sample_project.is_archived = True
     db_session.commit()
     
-    response = client.post(f"/api/v1/projects/projects/{sample_project.id}/unarchive")
+    response = client.post(f"/api/v1/projects/{sample_project.id}/unarchive")
     assert response.status_code == status.HTTP_200_OK
     
     data = response.json()
@@ -192,7 +192,7 @@ def test_pagination(client, db_session, sample_user):
     db_session.commit()
     
     # Test first page
-    response = client.get("/api/v1/projects/projects/?page=1&page_size=10")
+    response = client.get("/api/v1/projects/?page=1&page_size=10")
     assert response.status_code == status.HTTP_200_OK
     
     data = response.json()

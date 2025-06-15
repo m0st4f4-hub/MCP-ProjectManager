@@ -1,115 +1,73 @@
 """
-Models package for the task manager application.
-Exports all model classes for easy importing.
+Models package for the task manager application - Simplified.
 """
 
-# Import the declarative base first
-from database import Base
-
-# Import base utilities first
-try:
-    from database import Base
-except ImportError:
-    from database import Base
-
-# Import essential base utilities and make them available
+from backend.database import Base
 from .base import (
     BaseModel,
     JSONText,
     generate_uuid,
     generate_uuid_with_hyphens,
-    ArchivedMixin,
-    ProjectMemberRole
+    ArchivedMixin
 )
 
-# Import user and audit models
-from .user import User, UserRole
-from .audit import AuditLog
-
-# Import memory models
+# Core models only for now
+from .project import Project, ProjectFileAssociation
+from .task import Task, TaskStatus
+from .comment import Comment
+from .agent_role import AgentRole
+from .agent_capability import AgentCapability
+from .agent_forbidden_action import AgentForbiddenAction
+from .agent_verification_requirement import AgentVerificationRequirement
+from .agent_handoff_criteria import AgentHandoffCriteria
+from .agent_error_protocol import AgentErrorProtocol
+from .agent_prompt_template import AgentPromptTemplate
+from .universal_mandate import UniversalMandate
+from .workflow import Workflow, WorkflowStep
+from .project_template import ProjectTemplate
 from .memory import MemoryEntity, MemoryObservation, MemoryRelation
 
-# Import core project models
-from .project import Project
-from .project_member import ProjectMember
-from .project_file_association import ProjectFileAssociation
+# Simple agent model
+try:
+    from .agent import Agent
+except:
+    # Create a minimal agent model if import fails
+    from sqlalchemy import Column, String, Text
+    class Agent(Base, BaseModel):
+        __tablename__ = "agents"
+        name = Column(String(255), nullable=False, unique=True)
+        description = Column(Text, nullable=True)
 
-# Import task models
-from .task import Task, TaskStatus
+# Simple audit model
+from .audit import AuditLog
 
-# Import agent models
-from .agent import Agent, AgentRule, AgentRole
-
-# Import additional agent models
-from .agent_capability import AgentCapability
-from .agent_error_protocol import AgentErrorProtocol
-from .agent_forbidden_action import AgentForbiddenAction
-from .agent_handoff_criteria import AgentHandoffCriteria
-from .agent_verification_requirement import AgentVerificationRequirement
-
-# Import task-related models
-from .task_dependency import TaskDependency
-from .task_file_association import TaskFileAssociation
-from .status_transition import StatusTransition
-
-# Import comment model
-from .comment import Comment
-
-# Import additional models
-from .project_template import ProjectTemplate
-from .workflow import Workflow, WorkflowStep, AgentPromptTemplate
-from .universal_mandate import UniversalMandate
-
-# Export all available models and utilities
+# Export essential models only
 __all__ = [
-    # Base utilities
     'Base',
     'BaseModel',
     'JSONText',
     'generate_uuid',
     'generate_uuid_with_hyphens',
     'ArchivedMixin',
-    'ProjectMemberRole',
-
-    # Core models
-    'User',
-    'UserRole',
     'Project',
     'Task',
-    'Agent',
-    'Comment',
-
-    # Project models
-    'ProjectMember',
-    'ProjectFileAssociation',
-    'ProjectTemplate',
-
-    # Task models
     'TaskStatus',
-    'TaskDependency',
-    'TaskFileAssociation',
-    'StatusTransition',
-
-    # Agent models
-    'AgentRule',
+    'Agent',
+    'AuditLog',
+    'Comment',
     'AgentRole',
     'AgentCapability',
-    'AgentErrorProtocol',
     'AgentForbiddenAction',
-    'AgentHandoffCriteria',
     'AgentVerificationRequirement',
-
-    # Memory models
+    'AgentHandoffCriteria',
+    'AgentErrorProtocol',
+    'AgentPromptTemplate',
+    'UniversalMandate',
+    'Workflow',
+    'WorkflowStep',
+    'ProjectFileAssociation',
+    'ProjectTemplate',
     'MemoryEntity',
     'MemoryObservation',
     'MemoryRelation',
-
-    # Audit model
-    'AuditLog',
-
-    # Additional models
-    'Workflow',
-    'WorkflowStep',
-    'AgentPromptTemplate',
-    'UniversalMandate',
 ]

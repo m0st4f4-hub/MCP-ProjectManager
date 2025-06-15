@@ -1,9 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List, Optional
+from fastapi import Depends
 
-from backend import models
-from schemas.workflow import WorkflowCreate, WorkflowUpdate
+from .. import models
+from ..schemas.workflow import WorkflowCreate, WorkflowUpdate
+from ..services.exceptions import EntityNotFoundError
+from ..database import get_db
 
 
 class WorkflowService:
@@ -11,6 +14,10 @@ class WorkflowService:
 
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    @classmethod
+    async def get_instance(cls, db: AsyncSession = Depends(get_db)):
+        return cls(db)
 
     async def create_workflow(self, workflow: WorkflowCreate) -> models.Workflow:
         db_workflow = models.Workflow(**workflow.model_dump())

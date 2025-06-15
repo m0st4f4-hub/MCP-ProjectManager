@@ -83,7 +83,7 @@ class RulesService:
         agent_role = crud_rules.get_agent_role_by_name(self.db, agent_name)
         if not agent_role:
             # Create a default agent role if it doesn't exist
-            from ..schemas import AgentRoleCreate
+            from backend.schemas import AgentRoleCreate
             agent_role = crud_rules.create_agent_role(self.db, AgentRoleCreate(
                 name=agent_name,
                 display_name=agent_name.replace("_", " ").title(),
@@ -91,7 +91,7 @@ class RulesService:
                 is_active=True
             ))
 
-        from ..schemas.agent_behavior_log import AgentBehaviorLogCreate
+        from backend.schemas.agent_behavior_log import AgentBehaviorLogCreate
         behavior_log = AgentBehaviorLogCreate(
             agent_name=agent_name,
             agent_role_id=agent_role.id if agent_role else None,
@@ -115,7 +115,7 @@ class RulesService:
         agent_role = crud_rules.get_agent_role_by_name(self.db, agent_name)
         if not agent_role:
             # Create a default agent role if it doesn't exist
-            from ..schemas import AgentRoleCreate
+            from backend.schemas import AgentRoleCreate
             agent_role = crud_rules.create_agent_role(self.db, AgentRoleCreate(
                 name=agent_name,
                 display_name=agent_name.replace("_", " ").title(),
@@ -123,7 +123,7 @@ class RulesService:
                 is_active=True
             ))
 
-        from ..schemas.agent_rule_violation import AgentRuleViolationCreate
+        from backend.schemas.agent_rule_violation import AgentRuleViolationCreate
         violation = AgentRuleViolationCreate(
             agent_name=agent_name,
             agent_role_id=agent_role.id if agent_role else None,
@@ -319,7 +319,7 @@ class RulesService:
 
     def _create_universal_mandates(self):
         """Create default universal mandates"""
-        from ..schemas.universal_mandate import UniversalMandateCreate
+        from backend.schemas.universal_mandate import UniversalMandateCreate
 
         default_mandates = [
             {
@@ -360,11 +360,11 @@ class RulesService:
 
     def _create_default_agent_roles(self):
         """Create default agent roles"""
-        from ..schemas.agent_role import AgentRoleCreate
-        from ..schemas.agent_capability import AgentCapabilityCreate
-        from ..schemas.handoff_criteria import HandoffCriteriaCreate
-        from ..schemas.verification_requirement import VerificationRequirementCreate
-        from ..schemas.error_protocol import ErrorProtocolCreate
+        from backend.schemas.agent_role import AgentRoleCreate
+        from backend.schemas.agent_capability import AgentCapabilityCreate
+        from backend.schemas.handoff_criteria import HandoffCriteriaCreate
+        from backend.schemas.verification_requirement import VerificationRequirementCreate
+        from backend.schemas.error_protocol import ErrorProtocolCreate
 
         default_roles = [
             {
