@@ -8,8 +8,6 @@ from backend import schemas
 from backend.database import get_sync_db as get_db
 from backend.services.project_member_service import ProjectMemberService
 from backend.services.audit_log_service import AuditLogService
-# from backend.auth import get_current_active_user  # Removed for single-user mode
-# from backend.models import User as UserModel  # For type hinting current_user  # Import standardized API response models  # Removed for single-user mode
 from backend.schemas.api_responses import DataResponse, ListResponse
 
 
@@ -76,7 +74,7 @@ async def add_project_member_endpoint(
         )  # Log member addition
         await audit_log_service.create_log(
             action="add_project_member",
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
             details={"project_id": project_id, "added_user_id": user_id, "role": role}
         )  # Return standardized response
         return DataResponse[schemas.ProjectMember](
@@ -108,7 +106,7 @@ async def remove_project_member_endpoint(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project member not found")  # Log member removal
         await audit_log_service.create_log(
             action="remove_project_member",
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
             details={"project_id": project_id, "removed_user_id": user_id}
         )  # Return standardized response
         return DataResponse[bool](

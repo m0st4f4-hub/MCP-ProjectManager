@@ -12,8 +12,6 @@ from ....schemas.memory import (
 )
 from ....schemas.file_ingest import FileIngestInput
 from ....schemas.api_responses import DataResponse, ListResponse
-from ....models.user import User as UserModel
-from ....auth import get_current_active_user
 from ....services.exceptions import EntityNotFoundError
 
 router = APIRouter(
@@ -57,11 +55,11 @@ async def get_memory_graph(
     operation_id="get_memory_entities"
 )
 async def get_memory_entities(
-    skip: Annotated[int, Query(0, ge=0, description="Number of entities to skip")],
-    limit: Annotated[int, Query(100, ge=1, le=100, description="Maximum number of entities to return")],
-    source_type: Annotated[Optional[str], Query(None, description="Filter by source type")],
-    search: Annotated[Optional[str], Query(None, description="Search entities by content")],
-    memory_service: Annotated[MemoryService, Depends(get_memory_service)]
+    skip: int = Query(0, ge=0, description="Number of entities to skip"),
+    limit: int = Query(100, ge=1, le=100, description="Maximum number of entities to return"),
+    source_type: Optional[str] = Query(None, description="Filter by source type"),
+    search: Optional[str] = Query(None, description="Search entities by content"),
+    memory_service: MemoryService = Depends(get_memory_service)
 ):
     """Get all memory entities with optional filtering."""
     try:
@@ -225,12 +223,11 @@ class TextIngestInput(BaseModel):
 async def ingest_file_endpoint(
     ingest_input: FileIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
-    current_user: UserModel = Depends(get_current_active_user),
 ):
     try:
         return await memory_service.ingest_file(
             ingest_input=ingest_input,
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
         )
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -248,12 +245,11 @@ async def ingest_file_endpoint(
 async def ingest_url_endpoint(
     ingest_input: UrlIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
-    current_user: UserModel = Depends(get_current_active_user),
 ):
     try:
         return await memory_service.ingest_url(
             url=ingest_input.url,
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to ingest url: {e}")
@@ -267,12 +263,11 @@ async def ingest_url_endpoint(
 async def ingest_text_endpoint(
     ingest_input: TextIngestInput,
     memory_service: MemoryService = Depends(get_memory_service),
-    current_user: UserModel = Depends(get_current_active_user),
 ):
     try:
         return await memory_service.ingest_text(
             text=ingest_input.text,
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
             metadata=ingest_input.metadata,
         )
     except Exception as e:

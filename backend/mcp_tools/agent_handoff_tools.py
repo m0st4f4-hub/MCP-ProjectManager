@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import logging
 
-from services.agent_handoff_service import AgentHandoffService
-from schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
+from backend.services.agent_handoff_service import AgentHandoffService
+from backend.schemas.agent_handoff_criteria import AgentHandoffCriteriaCreate
 
 logger = logging.getLogger(__name__)
 

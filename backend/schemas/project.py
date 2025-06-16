@@ -60,3 +60,7 @@ class ProjectFileAssociationCreate(BaseModel):
     project_id: str
     file_memory_entity_id: int
 
+class ProjectFileAssociation(ProjectFileAssociationCreate):
+    """Schema for representing a project file association in API responses."""
+    model_config = ConfigDict(from_attributes=True)
+

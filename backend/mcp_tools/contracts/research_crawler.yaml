@@ -1,0 +1,246 @@
+name: research_crawler
+display_name: Research Crawler & Knowledge Extractor  
+description: Crawl web pages, extract structured information, and store findings in the memory system for agent research workflows
+version: 1.0.0
+category: research
+tags:
+  - web_crawling
+  - research
+  - knowledge_extraction
+  - content_analysis
+
+timeout_seconds: 60
+max_retries: 2
+rate_limit_per_minute: 30
+
+parameters:
+  - name: action
+    type: string
+    description: Action to perform (crawl, extract, search, summarize)
+    required: true
+    enum: [crawl, extract, search, summarize]
+    
+  - name: url
+    type: string
+    description: Target URL for crawling or extraction (required for crawl, extract)
+    required: false
+    pattern: "^https?://.+$"
+    max_length: 2000
+    
+  - name: search_query
+    type: string
+    description: Search query for finding relevant web content (required for search)
+    required: false
+    min_length: 3
+    max_length: 500
+    
+  - name: extraction_type
+    type: string
+    description: Type of information to extract
+    required: false
+    enum: [text, links, metadata, structured_data, code_snippets, tables]
+    default: text
+    
+  - name: max_depth
+    type: integer
+    description: Maximum crawl depth for following links
+    required: false
+    min_value: 1
+    max_value: 3
+    default: 1
+    
+  - name: max_pages
+    type: integer
+    description: Maximum number of pages to crawl
+    required: false
+    min_value: 1
+    max_value: 20
+    default: 5
+    
+  - name: content_filters
+    type: object
+    description: Filters for content extraction (keywords, domains, file types)
+    required: false
+    
+  - name: output_format
+    type: string
+    description: Format for extracted content
+    required: false
+    enum: [markdown, json, plain_text, structured]
+    default: markdown
+    
+  - name: include_metadata
+    type: boolean
+    description: Include page metadata in results
+    required: false
+    default: true
+    
+  - name: follow_links
+    type: boolean
+    description: Whether to follow internal links during crawling
+    required: false
+    default: false
+    
+  - name: respect_robots
+    type: boolean
+    description: Respect robots.txt and crawl delays
+    required: false
+    default: true
+    
+  - name: user_agent
+    type: string
+    description: Custom user agent string for requests
+    required: false
+    max_length: 200
+    
+  - name: store_in_memory
+    type: boolean
+    description: Store extracted content in memory system
+    required: false
+    default: true
+    
+  - name: tag_content
+    type: array
+    description: Tags to apply to stored memory entities
+    required: false
+    
+  - name: analysis_level
+    type: string
+    description: Level of content analysis to perform
+    required: false
+    enum: [basic, detailed, comprehensive]
+    default: basic
+
+response:
+  type: object
+  description: Research crawler operation result
+  schema:
+    type: object
+    properties:
+      success:
+        type: boolean
+      action:
+        type: string
+      data:
+        type: object
+      metrics:
+        type: object
+      message:
+        type: string
+    required: [success, action]
+
+errors:
+  - code: URL_NOT_ACCESSIBLE
+    message: Target URL could not be accessed or returned an error
+    recoverable: true
+    
+  - code: CONTENT_EXTRACTION_FAILED
+    message: Failed to extract meaningful content from the page
+    recoverable: true
+    
+  - code: RATE_LIMIT_EXCEEDED
+    message: Too many requests, please wait before retrying
+    recoverable: true
+    
+  - code: INVALID_URL_FORMAT
+    message: Provided URL is not in a valid format
+    recoverable: false
+    
+  - code: ROBOTS_TXT_BLOCKED
+    message: Site's robots.txt prohibits crawling
+    recoverable: false
+    
+  - code: CONTENT_TOO_LARGE
+    message: Page content exceeds maximum processing size
+    recoverable: false
+
+usage_examples:
+  - description: Crawl a documentation page and extract structured content
+    parameters:
+      action: crawl
+      url: "https://docs.example.com/api-reference"
+      extraction_type: structured_data
+      max_depth: 2
+      max_pages: 10
+      output_format: markdown
+      store_in_memory: true
+      tag_content: ["documentation", "api", "reference"]
+      analysis_level: detailed
+    response:
+      success: true
+      action: crawl
+      data:
+        pages_crawled: 8
+        content_extracted: true
+        memory_entities_created: 8
+        extracted_content:
+          - url: "https://docs.example.com/api-reference"
+            title: "API Reference Guide"
+            content: "# API Reference\n\nThis guide covers..."
+            structure:
+              headings: ["Introduction", "Authentication", "Endpoints"]
+              links: 15
+              code_blocks: 8
+        storage_info:
+          entity_ids: ["mem_001", "mem_002", "mem_003"]
+          tags_applied: ["documentation", "api", "reference"]
+      metrics:
+        total_time_seconds: 12.5
+        pages_per_second: 0.64
+        content_size_bytes: 45680
+        
+  - description: Search for information on a specific topic
+    parameters:
+      action: search
+      search_query: "machine learning model deployment best practices"
+      max_pages: 5
+      analysis_level: comprehensive
+      store_in_memory: true
+      tag_content: ["ml", "deployment", "best_practices"]
+    response:
+      success: true
+      action: search
+      data:
+        search_results: 5
+        relevant_pages: 3
+        key_insights:
+          - "Use containerization for consistent deployment environments"
+          - "Implement model versioning and rollback strategies"
+          - "Monitor model performance in production"
+        summary: "Best practices for ML model deployment focus on..."
+        
+  - description: Extract specific data from a webpage
+    parameters:
+      action: extract
+      url: "https://example.com/product-list"
+      extraction_type: tables
+      output_format: json
+      include_metadata: true
+    response:
+      success: true
+      action: extract
+      data:
+        extracted_tables: 2
+        content:
+          - table_id: 1
+            headers: ["Product", "Price", "Stock"]
+            rows: 25
+            data: [["Widget A", "$19.99", "In Stock"], ...]
+        metadata:
+          page_title: "Product Catalog"
+          last_modified: "2025-06-15T10:30:00Z"
+          content_length: 15680
+
+implementation_class: ResearchCrawlerTool
+dependencies: 
+  - requests
+  - beautifulsoup4
+  - lxml
+
+notes: |
+  The Research Crawler Tool provides web crawling and content extraction capabilities for agent research workflows.
+  It can crawl single pages or follow links to gather comprehensive information, extract structured data,
+  and automatically store findings in the memory system for later retrieval and analysis.
+  
+  The tool respects robots.txt by default and implements rate limiting to be a good web citizen.
+  Content is analyzed and tagged automatically to improve searchability in the memory system.

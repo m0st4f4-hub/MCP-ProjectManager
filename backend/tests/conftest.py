@@ -11,11 +11,10 @@ from typing import AsyncGenerator
 
 from backend.database import get_db, Base
 from backend.main import app
-from backend.models.user import User
 from backend.models.agent import Agent
 from backend.models.project import Project
 from backend.models.task import Task
-from backend.enums import UserRoleEnum, ProjectStatus, ProjectPriority, TaskStatusEnum, ProjectVisibility
+from backend.enums import ProjectStatus, ProjectPriority, TaskStatusEnum, ProjectVisibility
 
 # Test database URL
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./test.db"

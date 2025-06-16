@@ -22,7 +22,7 @@ async def get_workflow_service(db: Annotated[AsyncSession, Depends(get_db)]) -> 
     response_model=DataResponse[Workflow],
     status_code=status.HTTP_201_CREATED,
     summary="Create Workflow",
-    operation_id="create_workflow"
+    operation_id="create_new_workflow"
 )
 async def create_workflow_endpoint(
     workflow_data: WorkflowCreate,
@@ -46,7 +46,7 @@ async def create_workflow_endpoint(
     "/",
     response_model=ListResponse[Workflow],
     summary="Get Workflows",
-    operation_id="get_workflows"
+    operation_id="list_all_workflows"
 )
 async def get_workflows_endpoint(
     workflow_service: Annotated[WorkflowService, Depends(WorkflowService.get_instance)],
@@ -103,7 +103,7 @@ async def get_workflow(
     "/{workflow_id}",
     response_model=DataResponse[Workflow],
     summary="Update Workflow",
-    operation_id="update_workflow"
+    operation_id="update_existing_workflow"
 )
 async def update_workflow(
     workflow_id: Annotated[str, Path(description="Workflow ID")],

@@ -40,6 +40,8 @@ class Task(Base, BaseModel, ArchivedMixin):
     
     # Relationships (simplified)
     project = relationship("Project", back_populates="tasks")
+    agent = relationship("Agent", back_populates="tasks")
+    task_files = relationship("TaskFileAssociation", back_populates="task", cascade="all, delete-orphan")
     
     @property
     def id(self) -> str:

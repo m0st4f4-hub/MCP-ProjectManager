@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from backend import models
-from schemas.agent_capability import AgentCapabilityCreate, AgentCapabilityUpdate
+from backend.schemas.agent_capability import AgentCapabilityCreate, AgentCapabilityUpdate
 from typing import List, Optional
 import uuid
 

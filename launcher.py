@@ -15,16 +15,43 @@ from pathlib import Path
 import shutil
 import threading
 from typing import List, Optional
+import platform
 
 class TaskManagerLauncher:
     def __init__(self):
+        # Stylized ASCII art banner
+        print("\033[96m" + r"""
+  _______             _     __  __                                  
+ |__   __|           | |   |  \/  |                                 
+    | | __ _ _ __ ___| |__ | \  / | __ _ _ __   __ _  __ _  ___ _ __ 
+    | |/ _` | '__/ __| '_ \| |\/| |/ _` | '_ \ / _` |/ _` |/ _ \ '__|
+    | | (_| | | | (__| | | | |  | | (_| | | | | (_| | (_| |  __/ |   
+    |_|\__,_|_|  \___|_| |_|_|  |_|\__,_|_| |_|\__,_|\__, |\___|_|   
+                                                     __/ |          
+                                                    |___/           
+""" + "\033[0m")
+        print("\033[95mWelcome to the Task Manager Launcher!\033[0m\n")
         # Project root is where this script is located
         self.root_dir = Path(__file__).parent
         self.backend_dir = self.root_dir / "backend"
         self.processes: List[subprocess.Popen] = []
         
-        print(f"Project root: {self.root_dir}")
-        print(f"Backend directory: {self.backend_dir}")
+        # Python version check
+        py_version = sys.version_info
+        print(f"Detected Python version: \033[94m{platform.python_version()}\033[0m\n")
+        if py_version.major == 3 and py_version.minor >= 12:
+            print("\033[93m[WARNING] Python 3.12+ detected. Some packages (e.g., aiohttp) may not be fully compatible.\033[0m")
+            print("If you encounter build errors, consider using Python 3.11 or lower for best compatibility.\n")
+
+        print(f"Project root: \033[92m{self.root_dir}\033[0m")
+        print(f"Backend directory: \033[92m{self.backend_dir}\033[0m\n")
+
+        # Check for Windows package managers
+        self.is_windows = os.name == 'nt'
+        self.has_winget = shutil.which('winget') is not None
+        self.has_choco = shutil.which('choco') is not None
+        if self.is_windows:
+            print(f"winget available: \033[92m{self.has_winget}\033[0m | choco available: \033[92m{self.has_choco}\033[0m\n")
 
     def signal_handler(self, signum, frame):
         """Handle interrupt signals gracefully."""
@@ -125,16 +152,108 @@ class TaskManagerLauncher:
         for port in ports:
             self.clear_port(port)
 
+    def ensure_windows_dependency(self, dep_name, winget_id=None, choco_id=None, custom_cmd=None):
+        """Try to install a dependency using winget or choco if available."""
+        if not self.is_windows:
+            return False
+        print(f"\033[96mChecking for {dep_name}...\033[0m")
+        if dep_name.lower() in ["vs_buildtools.exe", "visual c++ build tools", "msvc", "c++ build tools"]:
+            # Special handling for Visual C++ Build Tools
+            found = shutil.which("cl.exe") is not None
+            if found:
+                print(f"\033[92mMicrosoft Visual C++ Build Tools are already installed.\033[0m")
+                return True
+            # Try winget first
+            if self.has_winget:
+                print(f"\033[93mMicrosoft Visual C++ Build Tools not found. Attempting to install with winget...\033[0m")
+                self.run_command(
+                    'winget install --id=Microsoft.VisualStudio.2022.BuildTools -e',
+                    "Installing Microsoft Visual C++ Build Tools via winget"
+                )
+                if shutil.which("cl.exe") is not None:
+                    print(f"\033[92mMicrosoft Visual C++ Build Tools installed successfully.\033[0m")
+                    return True
+            # Fallback to choco
+            if self.has_choco:
+                print(f"\033[93mAttempting to install Microsoft Visual C++ Build Tools with choco...\033[0m")
+                self.run_command(
+                    'choco install microsoft-visual-cpp-build-tools -y',
+                    "Installing Microsoft Visual C++ Build Tools via choco"
+                )
+                if shutil.which("cl.exe") is not None:
+                    print(f"\033[92mMicrosoft Visual C++ Build Tools installed successfully.\033[0m")
+                    return True
+            print(f"\033[91mFailed to install Microsoft Visual C++ Build Tools. Please install it manually.\033[0m")
+            print("To install manually, run (as Administrator):\n")
+            print("  winget install --id=Microsoft.VisualStudio.2022.BuildTools -e")
+            print("or, if you have Chocolatey:")
+            print("  choco install microsoft-visual-cpp-build-tools -y\n")
+            print("For more details, see:")
+            print("  https://winstall.app/apps/Microsoft.VisualStudio.2022.BuildTools")
+            print("  https://community.chocolatey.org/packages/microsoft-visual-cpp-build-tools\n")
+            return False
+        # Default logic for other dependencies
+        if custom_cmd:
+            found = shutil.which(dep_name) is not None
+            if not found:
+                print(f"\033[93m{dep_name} not found. Attempting to install...\033[0m")
+                self.run_command(custom_cmd, f"Installing {dep_name}")
+                return shutil.which(dep_name) is not None
+            return True
+        if shutil.which(dep_name):
+            print(f"\033[92m{dep_name} is already installed.\033[0m")
+            return True
+        if self.has_winget and winget_id:
+            print(f"\033[93m{dep_name} not found. Attempting to install with winget...\033[0m")
+            self.run_command(f'winget install --id {winget_id} -e --accept-package-agreements --accept-source-agreements', f"Installing {dep_name} via winget")
+        elif self.has_choco and choco_id:
+            print(f"\033[93m{dep_name} not found. Attempting to install with choco...\033[0m")
+            self.run_command(f'choco install {choco_id} -y', f"Installing {dep_name} via choco")
+        else:
+            print(f"\033[91mNo package manager found to install {dep_name}. Please install it manually.\033[0m")
+            return False
+        # Re-check after install attempt
+        if shutil.which(dep_name):
+            print(f"\033[92m{dep_name} installed successfully.\033[0m")
+            return True
+        print(f"\033[91mFailed to install {dep_name}. Please install it manually.\033[0m")
+        return False
+
+    def auto_install_system_dependencies(self):
+        """Auto-install system dependencies using winget or choco if available."""
+        system_deps = [
+            # name, winget_id, choco_id
+            ("git", "Git.Git", "git"),
+            ("psql", "PostgreSQL.PostgreSQL", "postgresql"),
+            ("sqlite3", "SQLite.sqlite", "sqlite"),
+        ]
+        installed = []
+        for dep, winget_id, choco_id in system_deps:
+            if self.ensure_windows_dependency(dep, winget_id=winget_id, choco_id=choco_id):
+                installed.append(dep)
+        if installed:
+            print(f"\n\033[92mSystem dependencies installed or already present: {', '.join(installed)}\033[0m\n")
+
     def setup_backend(self):
         """Set up the backend environment."""
-        print("\nSetting up Backend Environment")
-        print("-" * 40)
-        
+        print("\n\033[96mSetting up Backend Environment\033[0m")
+        print("\033[90m" + "-" * 40 + "\033[0m")
         venv_path = self.backend_dir / ".venv"
         python_cmd = str(
             venv_path / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
         )
-        
+        requirements_file = self.backend_dir / "requirements.txt"
+
+        if self.is_windows:
+            print("\033[96mChecking for required Windows build tools...\033[0m")
+            # Use new logic for Visual C++ Build Tools
+            self.ensure_windows_dependency('visual c++ build tools')
+            # Then ensure Python and pip
+            self.ensure_windows_dependency('python', winget_id='Python.Python.3', choco_id='python')
+            self.ensure_windows_dependency('pip', winget_id='Python.Python.3', choco_id='python')
+            # Auto-install other system dependencies
+            self.auto_install_system_dependencies()
+
         # Check if virtual environment exists
         if not venv_path.exists():
             print("Creating Python virtual environment...")
@@ -145,32 +264,31 @@ class TaskManagerLauncher:
                 timeout=120
             ):
                 return False
-        
-        # Install core dependencies if needed
-        requirements_file = self.backend_dir / "requirements.txt"
+
         if requirements_file.exists():
             pip_cmd = str(venv_path / ("Scripts/pip.exe" if os.name == 'nt' else "bin/pip"))
-            
             # First upgrade pip
-            self.run_command(
+            pip_upgrade_success = self.run_command(
                 f'"{pip_cmd}" install --upgrade pip',
                 "Upgrading pip",
                 cwd=self.backend_dir,
                 timeout=60
             )
-            
-            # Try to install with pre-compiled wheels first
-            print("Installing backend dependencies...")
+            if not pip_upgrade_success:
+                print("\n[WARNING] pip upgrade failed. This may cause issues with installing some dependencies.")
+                print(f"To manually upgrade pip, run:")
+                print(f"    {pip_cmd} install --upgrade pip")
+                print("If you see permission errors, try running your terminal as Administrator.")
+                print("If you are inside a virtual environment, ensure it is activated before running the command.\n")
+            print("\033[96mInstalling backend dependencies...\033[0m")
             success = self.run_command(
                 f'"{pip_cmd}" install -r requirements.txt --prefer-binary',
                 "Installing dependencies (preferred binary)",
                 cwd=self.backend_dir,
                 timeout=300
             )
-            
             if not success:
-                print("   Standard installation failed, trying essential packages...")
-                # Fallback: Install essential packages individually  
+                print("   \033[93mStandard installation failed, trying essential packages...\033[0m")
                 essential_packages = [
                     "fastapi", "uvicorn[standard]", "sqlalchemy", "alembic",
                     "psycopg2-binary", "python-dotenv", "fastapi-mcp==0.1.3",
@@ -179,7 +297,7 @@ class TaskManagerLauncher:
                     "email-validator>=2.0.0", "redis",
                     "flake8", "pytest", "pytest-asyncio", "pytest-cov"
                 ]
-                
+                failed_packages = []
                 success_count = 0
                 for package in essential_packages:
                     if self.run_command(
@@ -189,27 +307,43 @@ class TaskManagerLauncher:
                         timeout=60
                     ):
                         success_count += 1
-                
+                    else:
+                        failed_packages.append(package)
                 # Try aiohttp separately with binary wheel
-                if not self.run_command(
+                aiohttp_result = self.run_command(
                     f'"{pip_cmd}" install aiohttp==3.9.1 --only-binary=aiohttp',
                     "Installing aiohttp (binary wheel)",
                     cwd=self.backend_dir,
                     timeout=60
-                ):
-                    print("   Warning: aiohttp installation failed (requires Visual C++ Build Tools)")
-                    print("   Backend will work for most functionality without aiohttp")
-                
+                )
+                if not aiohttp_result:
+                    print("\n\033[93m[WARNING] aiohttp installation failed.\033[0m")
+                    print("aiohttp requires Microsoft Visual C++ 14.0 or greater to build from source on Windows.")
+                    print("You can download and install the required build tools from:")
+                    print("  https://visualstudio.microsoft.com/downloads/?q=build+tools\n")
+                    print("After installing, restart your terminal and re-run the launcher, or manually run:")
+                    print(f"    {pip_cmd} install aiohttp==3.9.1 --only-binary=aiohttp\n")
+                    print("If you do not need aiohttp-based features, you may ignore this warning. Most backend functionality will work without it.")
+                    print("For more help, see the official Microsoft documentation:")
+                    print("  https://learn.microsoft.com/en-us/answers/questions/419525/microsoft-visual-c-14-0-or-greater-is-required\n")
+                    print("\033[90m[Tip] If you see 'Failed building wheel for aiohttp', it's almost always a missing C++ build tools issue.\033[0m\n")
+                if failed_packages:
+                    print("\n\033[91m[ERROR] The following essential packages failed to install:\033[0m")
+                    for pkg in failed_packages:
+                        print(f"  - {pkg}")
+                    print("\n\033[93mCommon fixes:\033[0m")
+                    print("- Ensure you are using a supported Python version (3.7-3.11 recommended)")
+                    print("- Upgrade pip to the latest version")
+                    print("- Install Microsoft Visual C++ Build Tools for Windows: https://visualstudio.microsoft.com/downloads/?q=build+tools")
+                    print("- Check your internet connection and PyPI access\n")
+                    print("You can try installing failed packages manually after addressing the above suggestions.\n")
                 if success_count < len(essential_packages) // 2:
-                    print("ERROR: Critical dependency installation failed")
+                    print("\033[91mERROR: Critical dependency installation failed\033[0m")
                     return False
                 else:
-                    print("Warning: Some dependencies may have installation issues")
-        
-        print("* Backend environment ready")
+                    print("\033[93mWarning: Some dependencies may have installation issues\033[0m")
+        print("\033[92m* Backend environment ready\033[0m\n")
         return True
-
-
 
     def start_backend_server(self, variant: str = "default"):
         """Start the backend server in the current terminal."""
@@ -255,8 +389,6 @@ class TaskManagerLauncher:
         except Exception as e:
             print(f"ERROR: Error starting backend: {e}")
             return None
-
-
 
     def wait_for_servers(self):
         """Wait for the backend server to run."""
@@ -315,29 +447,48 @@ class TaskManagerLauncher:
         print("\n* Backend dependencies installed successfully!")
         return True
 
+    def start_frontend_server(self):
+        """Start the frontend server in a separate terminal window."""
+        frontend_dir = Path(__file__).parent / "frontend"
+        if not frontend_dir.exists():
+            print("ERROR: Frontend directory not found.")
+            return None
+        print("Starting frontend on http://localhost:3000 (in a new terminal window)")
+        try:
+            if os.name == "nt":
+                # Windows: use 'start' to open a new terminal
+                cmd = ["start", "cmd", "/k", "npm run dev"]
+                subprocess.Popen(cmd, cwd=frontend_dir, shell=True)
+            else:
+                # Unix: try x-terminal-emulator, gnome-terminal, or fallback
+                terminal_cmds = [
+                    ["x-terminal-emulator", "-e", "npm run dev"],
+                    ["gnome-terminal", "--", "npm", "run", "dev"],
+                    ["konsole", "-e", "npm", "run", "dev"],
+                    ["xfce4-terminal", "-e", "npm run dev"],
+                    ["xterm", "-e", "npm run dev"]
+                ]
+                for cmd in terminal_cmds:
+                    try:
+                        subprocess.Popen(cmd, cwd=frontend_dir)
+                        break
+                    except FileNotFoundError:
+                        continue
+                else:
+                    print("ERROR: No supported terminal emulator found to launch frontend.")
+                    return None
+            print("Frontend launch command issued.")
+            return True
+        except Exception as e:
+            print(f"ERROR: Error starting frontend: {e}")
+            return None
+
     def run_backend_only(self, variant: str = "default"):
-        """Run only the backend server."""
-        print("=" * 60)
-        print("    Task Manager Backend Server")
-        print("=" * 60)
-        
-        if not self.check_directories():
-            return False
-        
-        self.clear_ports([8000])
-        
-        # Setup backend environment
-        if not self.setup_backend():
-            return False
-        
-        # Start backend server
-        backend_process = self.start_backend_server(variant)
-        if not backend_process:
-            return False
-        
-        # Wait for the server
+        """Run the backend server only (no install/setup)."""
+        print("\nStarting backend server (no install/setup)...")
+        # Assume venv and dependencies are already present
+        self.start_backend_server(variant)
         self.wait_for_servers()
-        
         return True
 
     def run_backend_server_main(self):
@@ -401,7 +552,7 @@ def main():
         else:
             variant = "core" if args.core else "minimal" if args.minimal else "default"
             success = launcher.run_backend_only(variant)
-            
+        
         return 0 if success else 1
         
     except Exception as e:

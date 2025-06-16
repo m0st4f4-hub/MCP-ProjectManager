@@ -13,7 +13,10 @@ from .. import models
 from .utils.file_association_utils import (
     get_project_entity,
     get_file_entity,
-    get_association_between_entities,
+    get_association,
+    file_entity_exists,
+    project_entity_exists,
+    association_exists,
 )
 
 __all__ = ["file_entity_exists", "project_entity_exists", "association_exists", "get_association"]

@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 import logging
 
-from services.project_file_association_service import ProjectFileAssociationService
+from backend.services.project_file_association_service import ProjectFileAssociationService
 
 logger = logging.getLogger(__name__)
 

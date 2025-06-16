@@ -53,6 +53,9 @@ async def get_project_files(
     logger.debug(f"[DEBUG] get_project_files returned {len(files)} files")  # Debug print
     return files
 
+# Alias for backward compatibility
+get_project_file_associations_by_project = get_project_files
+
 
 async def create_project_file_association(db: AsyncSession, project_file: ProjectFileAssociationCreate) -> models.ProjectFileAssociation:
     """Associate a file with a project using file_memory_entity_id."""

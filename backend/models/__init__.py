@@ -11,10 +11,11 @@ from .base import (
     ArchivedMixin
 )
 
-# Core models only for now
+# Core models
 from .project import Project, ProjectFileAssociation
 from .task import Task, TaskStatus
 from .comment import Comment
+from .agent import Agent, AgentRule
 from .agent_role import AgentRole
 from .agent_capability import AgentCapability
 from .agent_forbidden_action import AgentForbiddenAction
@@ -27,47 +28,69 @@ from .workflow import Workflow, WorkflowStep
 from .project_template import ProjectTemplate
 from .memory import MemoryEntity, MemoryObservation, MemoryRelation
 
-# Simple agent model
-try:
-    from .agent import Agent
-except:
-    # Create a minimal agent model if import fails
-    from sqlalchemy import Column, String, Text
-    class Agent(Base, BaseModel):
-        __tablename__ = "agents"
-        name = Column(String(255), nullable=False, unique=True)
-        description = Column(Text, nullable=True)
+# Enhanced models for Phase 1
+from .file_asset import FileAsset, FileAssetTag, FileAssetTagAssociation, FileProcessingJob
+from .agent_execution import TaskWorkflowExecution, TaskStatusTransition, AgentHandoffEvent, AgentPerformanceMetric
+from .mcp_integration import MCPTool, MCPToolExecution, MCPToolMetric, MCPToolDependency
+from .enums_tables import EnumRegistry, EnumValue, StatusTransitionRule
 
 # Simple audit model
 from .audit import AuditLog
 
 # Export essential models only
 __all__ = [
+    # Base classes
     'Base',
     'BaseModel',
     'JSONText',
     'generate_uuid',
     'generate_uuid_with_hyphens',
     'ArchivedMixin',
+    
+    # Core models
     'Project',
+    'ProjectFileAssociation',
     'Task',
     'TaskStatus',
     'Agent',
-    'AuditLog',
-    'Comment',
+    'AgentRule',
     'AgentRole',
+    'Comment',
+    'AuditLog',
+    
+    # Agent system
     'AgentCapability',
     'AgentForbiddenAction',
     'AgentVerificationRequirement',
     'AgentHandoffCriteria',
     'AgentErrorProtocol',
     'AgentPromptTemplate',
-    'UniversalMandate',
+    
+    # Workflow and templates
     'Workflow',
     'WorkflowStep',
-    'ProjectFileAssociation',
     'ProjectTemplate',
+    'UniversalMandate',
+    
+    # Memory system
     'MemoryEntity',
     'MemoryObservation',
     'MemoryRelation',
+    
+    # Enhanced models (Phase 1)
+    'FileAsset',
+    'FileAssetTag', 
+    'FileAssetTagAssociation',
+    'FileProcessingJob',
+    'TaskWorkflowExecution',
+    'TaskStatusTransition',
+    'AgentHandoffEvent',
+    'AgentPerformanceMetric',
+    'MCPTool',
+    'MCPToolExecution',
+    'MCPToolMetric',
+    'MCPToolDependency',
+    'EnumRegistry',
+    'EnumValue',
+    'StatusTransitionRule',
 ]

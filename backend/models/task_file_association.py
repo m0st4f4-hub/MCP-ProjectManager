@@ -24,4 +24,4 @@ class TaskFileAssociation(Base):
                    "Task.task_number == TaskFileAssociation.task_task_number)",
         foreign_keys=[task_project_id, task_task_number]
     )
-    file_entity = relationship("FIXME", back_populates="task_file_associations")
+    file_entity = relationship("MemoryEntity", back_populates="task_file_associations")

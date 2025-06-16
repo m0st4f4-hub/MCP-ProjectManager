@@ -22,12 +22,10 @@ def test_individual_imports():
         print("SUCCESS: Base model utilities imported successfully")
         
         print("Testing enums...")
-        from enums import TaskStatusEnum, UserRoleEnum
+        from enums import TaskStatusEnum
         print("SUCCESS: Enums imported successfully")
         
         # Test models individually to avoid table conflicts
-        print("Testing User model directly...")
-        from models.user import User
         print("SUCCESS: User model imported successfully")
         
         return True

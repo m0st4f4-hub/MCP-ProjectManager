@@ -2,9 +2,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import or_, func, select, delete
 from backend import models
 from backend import schemas
-from schemas import Project
-from models.project import Project as ProjectModel
-from models.task import Task
+from backend.schemas.project import Project
+from backend.models.project import Project as ProjectModel
+from backend.models.task import Task
 import uuid
 from typing import Optional, List
 from .project_validation import project_name_exists
@@ -13,7 +13,7 @@ from sqlalchemy.orm import joinedload
 from datetime import datetime, timezone
 
 # Uncomment MemoryEntity related imports
-from schemas.memory import MemoryEntityCreate, MemoryEntityUpdate
+from backend.schemas.memory import MemoryEntityCreate, MemoryEntityUpdate
 from backend.crud import memory as memory_crud
 
 
@@ -314,36 +314,7 @@ async def delete_project(db: AsyncSession, project_id: str):
     return None
 
 
-async def add_project_member(db: AsyncSession, project_member: schemas.ProjectMemberCreate):
-                                                        """Add a member to a project."""
-                                                        db_project_member = models.ProjectMember(**project_member.model_dump())
-                                                        db.add(db_project_member)
-                                                        await db.commit()
-                                                        await db.refresh(db_project_member)
-                                                        return db_project_member
-
-
-async def remove_project_member(
-                                                    db: AsyncSession, project_id: str, user_id: str
-                                                    ):
-                                                        stmt = select(models.ProjectMember).filter(
-                                                            models.ProjectMember.project_id == project_id,
-                                                            models.ProjectMember.user_id == user_id,
-                                                        )
-                                                        result = await db.execute(stmt)
-                                                        db_project_member = await result.scalars().first()
-
-                                                        if db_project_member:
-                                                            await db.delete(db_project_member)
-                                                            await db.commit()
-                                                            return True
-                                                        return False
-
-
-async def get_project_members(db: AsyncSession, project_id: str):
-                                                        stmt = select(models.ProjectMember).filter(models.ProjectMember.project_id == project_id)
-                                                        result = await db.execute(stmt)
-                                                        return await result.scalars().all()
+# Project member functions removed for single-user mode
 
 
 async def get_tasks_by_project(

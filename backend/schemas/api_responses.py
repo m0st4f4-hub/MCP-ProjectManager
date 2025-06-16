@@ -30,3 +30,12 @@ class PaginationParams(BaseModel):
     """Pagination parameters."""
     skip: int = Field(default=0, ge=0, description="Number of items to skip")
     limit: int = Field(default=100, ge=1, le=1000, description="Number of items to return")
+
+
+class MetricsResponse(BaseModel):
+    """Metrics response for MCP tools usage."""
+    tool_name: str = Field(..., description="Name of the MCP tool")
+    call_count: int = Field(default=0, description="Number of times the tool was called")
+    success_count: int = Field(default=0, description="Number of successful calls")
+    error_count: int = Field(default=0, description="Number of failed calls")
+    avg_duration_ms: Optional[float] = Field(None, description="Average execution duration in milliseconds")

@@ -7,7 +7,7 @@ from the FastAPI-MCP documentation.
 
 from typing import List, Optional
 from fastapi import FastAPI
-from fastapi_mcp import FastApiMCP, AuthConfig
+from fastapi_mcp import FastApiMCP
 
 def create_mcp_server(app: FastAPI) -> Optional[FastApiMCP]:
     """
@@ -17,7 +17,6 @@ def create_mcp_server(app: FastAPI) -> Optional[FastApiMCP]:
     - Selective endpoint exposure (only safe GET/POST operations)
     - Clear operation IDs for better tool naming
     - Proper tagging for tool categorization
-    - Authentication ready configuration
     - Safety-first approach (no PUT/DELETE by default)
     
     Args:
@@ -34,18 +33,9 @@ def create_mcp_server(app: FastAPI) -> Optional[FastApiMCP]:
             app=app,
             name="Task Manager MCP Server",
             description="AI-powered task and project management server with comprehensive tooling",
-            
-            # Tool Selection - Following best practices for safety
             include_tags=["mcp-tools"],  # Only expose endpoints tagged as MCP tools
-            
-            # Tool Documentation Enhancement
             describe_all_responses=True,  # Include all response schemas in tool descriptions
             describe_full_response_schema=True,  # Include full JSON schema details
-            
-            # Future: Authentication configuration can be added here
-            # auth_config=AuthConfig(
-            #     dependencies=[Depends(verify_auth)],
-            # )
         )
         
         return mcp
@@ -130,12 +120,9 @@ def configure_mcp_security():
     
     This implements the security recommendations from FastAPI-MCP docs:
     - No PUT/DELETE endpoints exposed by default
-    - Authentication ready
     - Rate limiting considerations
     """
     # Future implementation:
-    # - JWT token validation
-    # - Role-based access control
     # - Rate limiting per client
     # - Request logging and monitoring
     pass
@@ -165,8 +152,7 @@ def get_mcp_remote_config(port: int = 8080) -> dict:
     """
     Get configuration for using mcp-remote bridge client.
     
-    This is useful when authentication is needed or when the MCP client
-    doesn't support SSE transport.
+    This is useful when the MCP client doesn't support SSE transport.
     
     Args:
         port: Port number for mcp-remote bridge
@@ -181,7 +167,7 @@ def get_mcp_remote_config(port: int = 8080) -> dict:
                 "args": [
                     "mcp-remote",
                     "http://localhost:8000/mcp",
-                    str(port)  # Fixed port for OAuth callback configuration
+                    str(port)  # Fixed port for callback configuration
                 ]
             }
         }

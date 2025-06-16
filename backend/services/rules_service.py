@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Dict, Any, Optional, List, Union
 from ..crud import rules as crud_rules
-from ..models.audit import AgentBehaviorLog, AgentRuleViolation
+# from ..models.audit import AgentBehaviorLog, AgentRuleViolation  # Removed for single-user mode
 import json
 import uuid
 import asyncio
@@ -71,72 +71,48 @@ class RulesService:
 
         return {
             "is_valid": len(violations_data) == 0,
-            "violations": [violation.__dict__ for violation in logged_violations],
+            "violations": logged_violations,  # logged_violations are now dictionaries, not objects
             "agent_name": agent_name
         }
 
     def log_agent_action(self, agent_name: str, action_type: str, action_description: str = None,
                         task_project_id: Union[str, uuid.UUID] = None, task_number: Optional[int] = None, success: bool = True, error_message: str = None,
-                        action_data: Dict[str, Any] = None, duration_seconds: Optional[int] = None) -> AgentBehaviorLog:
-        """Log an agent action for behavior tracking"""
-        # Get agent role ID
-        agent_role = crud_rules.get_agent_role_by_name(self.db, agent_name)
-        if not agent_role:
-            # Create a default agent role if it doesn't exist
-            from backend.schemas import AgentRoleCreate
-            agent_role = crud_rules.create_agent_role(self.db, AgentRoleCreate(
-                name=agent_name,
-                display_name=agent_name.replace("_", " ").title(),
-                primary_purpose=f"Agent role for {agent_name}",
-                is_active=True
-            ))
-
-        from backend.schemas.agent_behavior_log import AgentBehaviorLogCreate
-        behavior_log = AgentBehaviorLogCreate(
-            agent_name=agent_name,
-            agent_role_id=agent_role.id if agent_role else None,
-            action_type=action_type,
-            action_description=action_description,
-            task_project_id=str(task_project_id) if task_project_id else None,
-            task_task_number=task_number,
-            success=success,
-            error_message=error_message,
-            action_data=json.dumps(action_data) if action_data else None,
-            duration_seconds=duration_seconds
-        )
-
-        return crud_rules.log_agent_behavior(self.db, behavior_log)
+                        action_data: Dict[str, Any] = None, duration_seconds: Optional[int] = None) -> Dict[str, Any]:
+        """Log an agent action for behavior tracking - DISABLED in single-user mode"""
+        # Agent behavior logging is disabled in single-user mode
+        # Return a placeholder dictionary with the action details
+        return {
+            "agent_name": agent_name,
+            "action_type": action_type,
+            "action_description": action_description,
+            "task_project_id": str(task_project_id) if task_project_id else None,
+            "task_number": task_number,
+            "success": success,
+            "error_message": error_message,
+            "action_data": action_data,
+            "duration_seconds": duration_seconds,
+            "logged": False,  # Indicates this was not actually logged
+            "reason": "Agent behavior logging disabled in single-user mode"
+        }
 
     def log_rule_violation(self, agent_name: str, violation_type: str, description: str,
                           violated_rule_category: str, violated_rule_identifier: str,
-                          task_project_id: Union[str, uuid.UUID] = None, task_number: Optional[int] = None, severity: str = "medium") -> AgentRuleViolation:
-        """Log a rule violation by an agent, including details about the violated rule."""
-        # Get agent role ID
-        agent_role = crud_rules.get_agent_role_by_name(self.db, agent_name)
-        if not agent_role:
-            # Create a default agent role if it doesn't exist
-            from backend.schemas import AgentRoleCreate
-            agent_role = crud_rules.create_agent_role(self.db, AgentRoleCreate(
-                name=agent_name,
-                display_name=agent_name.replace("_", " ").title(),
-                primary_purpose=f"Agent role for {agent_name}",
-                is_active=True
-            ))
-
-        from backend.schemas.agent_rule_violation import AgentRuleViolationCreate
-        violation = AgentRuleViolationCreate(
-            agent_name=agent_name,
-            agent_role_id=agent_role.id if agent_role else None,
-            violation_type=violation_type,
-            violation_description=description,
-            violated_rule_category=violated_rule_category,
-            violated_rule_identifier=violated_rule_identifier,
-            task_project_id=str(task_project_id) if task_project_id else None,
-            task_task_number=task_number,
-            severity=severity
-        )
-
-        return crud_rules.log_rule_violation(self.db, violation)
+                          task_project_id: Union[str, uuid.UUID] = None, task_number: Optional[int] = None, severity: str = "medium") -> Dict[str, Any]:
+        """Log a rule violation by an agent - DISABLED in single-user mode"""
+        # Rule violation logging is disabled in single-user mode
+        # Return a placeholder dictionary with the violation details
+        return {
+            "agent_name": agent_name,
+            "violation_type": violation_type,
+            "violation_description": description,
+            "violated_rule_category": violated_rule_category,
+            "violated_rule_identifier": violated_rule_identifier,
+            "task_project_id": str(task_project_id) if task_project_id else None,
+            "task_number": task_number,
+            "severity": severity,
+            "logged": False,  # Indicates this was not actually logged
+            "reason": "Rule violation logging disabled in single-user mode"
+        }
 
     def check_agent_capabilities(self, agent_name: str, required_capabilities: List[str]) -> Dict[str, Any]:
         """Check if agent has required capabilities"""
@@ -629,12 +605,24 @@ def delete_prompt_template_method(self, template_id: str) -> bool:
 
 def log_rule_violation_method(self, agent_name: str, violation_type: str, description: str,
                       violated_rule_category: str, violated_rule_identifier: str,
-                      task_project_id: Union[str, uuid.UUID] = None, task_number: Optional[int] = None, severity: str = "medium") -> "AgentRuleViolation":
-    """Instance method wrapper that calls CRUD directly"""
-    return crud_rules.log_rule_violation(self.db, agent_name, violation_type, description, violated_rule_category, violated_rule_identifier, task_project_id, task_number, severity)
+                      task_project_id: Union[str, uuid.UUID] = None, task_number: Optional[int] = None, severity: str = "medium") -> Dict[str, Any]:
+    """Instance method wrapper - DISABLED in single-user mode"""
+    # Rule violation logging is disabled in single-user mode
+    return {
+        "agent_name": agent_name,
+        "violation_type": violation_type,
+        "violation_description": description,
+        "violated_rule_category": violated_rule_category,
+        "violated_rule_identifier": violated_rule_identifier,
+        "task_project_id": str(task_project_id) if task_project_id else None,
+        "task_number": task_number,
+        "severity": severity,
+        "logged": False,
+        "reason": "Rule violation logging disabled in single-user mode"
+    }
 
 def validate_agent_task_method(self, agent_name: str, task_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Instance method wrapper that calls CRUD directly"""
+    """Instance method wrapper - DISABLED rule violation logging in single-user mode"""
     violations_data = crud_rules.validate_task_against_agent_rules(self.db, agent_name, task_data)
     
     logged_violations = []
@@ -642,21 +630,24 @@ def validate_agent_task_method(self, agent_name: str, task_data: Dict[str, Any])
         task_project_id = task_data.get('task_project_id')
         task_number = task_data.get('task_number')
 
-        logged_violation = self.log_rule_violation(
-            agent_name=agent_name,
-            violation_type=violation_data.get('violation_type', 'unknown'),
-            description=violation_data.get('description', 'No description provided.'),
-            violated_rule_category=violation_data.get('violated_rule_category', 'unknown'),
-            violated_rule_identifier=violation_data.get('violated_rule_identifier', 'unknown'),
-            task_project_id=task_project_id,
-            task_number=task_number,
-            severity=violation_data.get('severity', 'medium')
-        )
+        # Create placeholder violation dictionary (logging is disabled)
+        logged_violation = {
+            "agent_name": agent_name,
+            "violation_type": violation_data.get('violation_type', 'unknown'),
+            "violation_description": violation_data.get('description', 'No description provided.'),
+            "violated_rule_category": violation_data.get('violated_rule_category', 'unknown'),
+            "violated_rule_identifier": violation_data.get('violated_rule_identifier', 'unknown'),
+            "task_project_id": str(task_project_id) if task_project_id else None,
+            "task_number": task_number,
+            "severity": violation_data.get('severity', 'medium'),
+            "logged": False,
+            "reason": "Rule violation logging disabled in single-user mode"
+        }
         logged_violations.append(logged_violation)
 
     return {
         "is_valid": len(violations_data) == 0,
-        "violations": [violation.__dict__ for violation in logged_violations],
+        "violations": logged_violations,  # logged_violations are now dictionaries, not objects
         "agent_name": agent_name
     }
 

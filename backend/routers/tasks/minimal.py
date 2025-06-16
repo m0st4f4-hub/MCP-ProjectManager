@@ -6,8 +6,6 @@ from ...database import get_db
 from ...services.task_service import TaskService
 from ...schemas.task import Task, TaskCreate, TaskUpdate
 from ...schemas.api_responses import DataResponse
-from ...auth import get_current_active_user
-from ...models import User as UserModel
 from typing import List, Optional
 
 router = APIRouter()
@@ -16,7 +14,6 @@ router = APIRouter()
 async def create_task(
     task: TaskCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: UserModel = Depends(get_current_active_user)
 ):
     try:
         task_service = TaskService(db)
@@ -99,7 +96,6 @@ async def create_task_for_project(
 @router.get("/", response_model=DataResponse[List[Task]])
 async def get_tasks(
     db: AsyncSession = Depends(get_db),
-    current_user: UserModel = Depends(get_current_active_user),
     project_id: Optional[str] = None,
     skip: int = 0,
     limit: int = Query(20, le=1000),

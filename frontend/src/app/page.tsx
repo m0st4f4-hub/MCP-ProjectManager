@@ -19,7 +19,6 @@ import AgentList from "@/components/AgentList";
 import { useTaskStore } from "@/store/taskStore";
 import { useProjectStore } from "@/store/projectStore";
 import { useAgentStore } from "../store/agentStore";
-import { useAuthStore } from "../store/authStore";
 import { createProject, createAgent } from "../services/api";
 import { ProjectCreateData } from "../types/project";
 import Dashboard from "../components/Dashboard";

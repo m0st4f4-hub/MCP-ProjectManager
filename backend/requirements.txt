@@ -14,7 +14,6 @@ httpx
 prometheus-client
 websockets==12.0
 email-validator>=2.0.0
-redis
 
 # For CI/Dev
 flake8

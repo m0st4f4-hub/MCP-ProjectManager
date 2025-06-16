@@ -148,7 +148,14 @@
       "Bash(java:*)",
       "Bash(javac:*)",
       "Bash(mvn:*)",
-      "Bash(gradle:*)"
+      "Bash(gradle:*)",
+      "Bash(rg:*)",
+      "mcp__desktop-commander__list_directory",
+      "mcp__desktop-commander__read_file",
+      "mcp__desktop-commander__execute_command",
+      "mcp__desktop-commander__read_output",
+      "mcp__desktop-commander__force_terminate",
+      "mcp__desktop-commander__write_file"
     ],
     "deny": []
   }

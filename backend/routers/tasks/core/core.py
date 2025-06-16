@@ -16,9 +16,7 @@ from backend.services.exceptions import (
     AuthorizationError
 )
 from backend.enums import TaskStatusEnum
-# from backend.auth import get_current_active_user  # Removed for single-user mode
 from backend.services.audit_log_service import AuditLogService
-# from backend.models import User as UserModel  # Removed for single-user mode
 
 
 router = APIRouter()
@@ -60,7 +58,7 @@ async def create_task_for_project(
 
         await audit_log_service.create_log(
             action="create_task",
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
             details={
                 "project_id": project_id,
                 "task_title_from_input": task.title
@@ -224,7 +222,7 @@ async def archive_task_endpoint(
 
         await audit_log_service.create_log(
             action="archive_task",
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
             details={
                 "project_id": project_id,
                 "task_number": task_number
@@ -267,7 +265,7 @@ async def unarchive_task_endpoint(
 
         await audit_log_service.create_log(
             action="unarchive_task",
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
             details={
                 "project_id": project_id,
                 "task_number": task_number
@@ -312,7 +310,7 @@ async def update_task(
 
         await audit_log_service.create_log(
             action="update_task",
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
             details={
                 "project_id": project_id,
                 "task_number": task_number,
@@ -362,7 +360,7 @@ async def delete_task(
 
         await audit_log_service.create_log(
             action="delete_task",
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
             details={
                 "project_id": project_id,
                 "task_number": task_number

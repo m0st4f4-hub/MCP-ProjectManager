@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from typing import Optional, List
 import logging
 
-from models.agent_forbidden_action import AgentForbiddenAction
-from services.audit_log_service import AuditLogService
+from backend.models.agent_forbidden_action import AgentForbiddenAction
+from backend.services.audit_log_service import AuditLogService
 
 logger = logging.getLogger(__name__)
 

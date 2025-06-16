@@ -7,7 +7,8 @@ from sqlalchemy import (
     ForeignKey,
     PrimaryKeyConstraint,
     and_,
-    ForeignKeyConstraint
+    ForeignKeyConstraint,
+    Index
 )
 from sqlalchemy.orm import relationship
 from typing import List, Optional
@@ -24,6 +25,9 @@ class TaskDependency(Base):
                            ['tasks.project_id', 'tasks.task_number']),
         ForeignKeyConstraint(['successor_project_id', 'successor_task_number'], 
                            ['tasks.project_id', 'tasks.task_number']),
+        Index('idx_task_dependencies_predecessor', 'predecessor_project_id', 'predecessor_task_number'),
+        Index('idx_task_dependencies_successor', 'successor_project_id', 'successor_task_number'),
+        Index('idx_task_dependencies_type', 'type'),
     )
 
     predecessor_project_id = Column(String(32))

@@ -9,13 +9,10 @@ from backend.services.project_file_association_service import ProjectFileAssocia
 from backend.services.audit_log_service import AuditLogService
 from backend.schemas.project import ProjectFileAssociation, ProjectFileAssociationCreate
 from backend.schemas.api_responses import DataResponse, ListResponse
-# from backend.auth import get_current_active_user  # Removed for single-user mode
-# from backend.models import User as UserModel  # Removed for single-user mode
 
 router = APIRouter(
     prefix="/{project_id}/files",
     tags=["Project Files"],
-    dependencies=[Depends(get_current_active_user)]
 )
 
 async def get_project_file_association_service(
@@ -36,7 +33,7 @@ async def get_audit_log_service(
 )
 async def get_project_files(
     project_id: Annotated[str, Path(description="Project ID")],
-    service: Annotated[ProjectFileAssociationService, Depends(get_project_file_association_service)],    # current_user: ...  # Removed for single-user mode],
+    service: Annotated[ProjectFileAssociationService, Depends(get_project_file_association_service)],
     skip: Annotated[int, Query(ge=0, description="Number of files to skip")] = 0,
     limit: Annotated[int, Query(ge=1, le=100, description="Maximum number of files to return")] = 100
 ):
@@ -69,7 +66,7 @@ async def associate_file_with_project(
     project_id: Annotated[str, Path(description="Project ID")],
     association: ProjectFileAssociationCreate,
     service: Annotated[ProjectFileAssociationService, Depends(get_project_file_association_service)],
-    audit_service: Annotated[AuditLogService, Depends(get_audit_log_service)],    # current_user: ...  # Removed for single-user mode]
+    audit_service: Annotated[AuditLogService, Depends(get_audit_log_service)]
 ):
     """Associate a file with a project."""
     try:
@@ -80,7 +77,7 @@ async def associate_file_with_project(
         
         # Log the action
         await audit_service.log_action(
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
             action="associate_file_with_project",
             resource_type="project_file_association",
             resource_id=str(new_association.id),
@@ -107,7 +104,7 @@ async def remove_file_association(
     project_id: Annotated[str, Path(description="Project ID")],
     association_id: Annotated[str, Path(description="Association ID")],
     service: Annotated[ProjectFileAssociationService, Depends(get_project_file_association_service)],
-    audit_service: Annotated[AuditLogService, Depends(get_audit_log_service)],    # current_user: ...  # Removed for single-user mode]
+    audit_service: Annotated[AuditLogService, Depends(get_audit_log_service)]
 ):
     """Remove a file association from a project."""
     try:
@@ -120,7 +117,7 @@ async def remove_file_association(
         
         # Log the action
         await audit_service.log_action(
-            user_id=current_user.id,
+            user_id="00000000-0000-0000-0000-000000000000",  # Placeholder
             action="remove_file_from_project",
             resource_type="project_file_association", 
             resource_id=association_id,

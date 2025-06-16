@@ -1,0 +1,269 @@
+name: file_embed
+display_name: File Embedding & Vector Search Tool
+description: Process files, create embeddings, and enable semantic search across project documents and code
+version: 1.0.0
+category: file
+tags:
+  - embedding
+  - vector_search
+  - semantic_analysis
+  - file_processing
+
+timeout_seconds: 120
+max_retries: 2
+rate_limit_per_minute: 20
+
+parameters:
+  - name: action
+    type: string
+    description: Action to perform (embed, search, analyze, cluster, compare)
+    required: true
+    enum: [embed, search, analyze, cluster, compare]
+    
+  - name: file_path
+    type: string
+    description: Path to file for embedding or analysis (required for embed, analyze)
+    required: false
+    max_length: 1000
+    
+  - name: file_content
+    type: string
+    description: Direct file content for processing (alternative to file_path)
+    required: false
+    max_length: 50000
+    
+  - name: search_query
+    type: string
+    description: Query text for semantic search (required for search)
+    required: false
+    min_length: 3
+    max_length: 1000
+    
+  - name: file_type
+    type: string
+    description: Type of file being processed
+    required: false
+    enum: [code, documentation, text, markdown, json, yaml, log]
+    
+  - name: embedding_model
+    type: string
+    description: Embedding model to use for processing
+    required: false
+    enum: [sentence_transformer, code_bert, universal_encoder]
+    default: sentence_transformer
+    
+  - name: chunk_size
+    type: integer
+    description: Size of text chunks for embedding (in tokens)
+    required: false
+    min_value: 100
+    max_value: 8000
+    default: 512
+    
+  - name: chunk_overlap
+    type: integer
+    description: Overlap between chunks (in tokens)
+    required: false
+    min_value: 0
+    max_value: 200
+    default: 50
+    
+  - name: similarity_threshold
+    type: number
+    description: Minimum similarity score for search results
+    required: false
+    min_value: 0.0
+    max_value: 1.0
+    default: 0.5
+    
+  - name: max_results
+    type: integer
+    description: Maximum number of search results to return
+    required: false
+    min_value: 1
+    max_value: 100
+    default: 10
+    
+  - name: include_metadata
+    type: boolean
+    description: Include file metadata in results
+    required: false
+    default: true
+    
+  - name: store_embeddings
+    type: boolean
+    description: Store embeddings in memory system for future searches
+    required: false
+    default: true
+    
+  - name: project_context
+    type: string
+    description: Project ID for scoping searches and embeddings
+    required: false
+    max_length: 36
+    
+  - name: semantic_analysis_depth
+    type: string
+    description: Depth of semantic analysis to perform
+    required: false
+    enum: [basic, detailed, comprehensive]
+    default: basic
+    
+  - name: language_hint
+    type: string
+    description: Programming language hint for code files
+    required: false
+    enum: [python, javascript, typescript, java, cpp, csharp, go, rust, php]
+    
+  - name: comparison_files
+    type: array
+    description: List of files to compare (for compare action)
+    required: false
+
+response:
+  type: object
+  description: File embedding and search operation result
+  schema:
+    type: object
+    properties:
+      success:
+        type: boolean
+      action:
+        type: string
+      data:
+        type: object
+      metrics:
+        type: object
+      message:
+        type: string
+    required: [success, action]
+
+errors:
+  - code: FILE_NOT_FOUND
+    message: Specified file could not be found or accessed
+    recoverable: false
+    
+  - code: UNSUPPORTED_FILE_TYPE
+    message: File type is not supported for embedding
+    recoverable: false
+    
+  - code: EMBEDDING_GENERATION_FAILED
+    message: Failed to generate embeddings for the content
+    recoverable: true
+    
+  - code: VECTOR_SEARCH_FAILED
+    message: Search operation failed due to index or query issues
+    recoverable: true
+    
+  - code: FILE_TOO_LARGE
+    message: File exceeds maximum size limit for processing
+    recoverable: false
+    
+  - code: INVALID_CONTENT_FORMAT
+    message: File content format is invalid or corrupted
+    recoverable: false
+
+usage_examples:
+  - description: Embed a Python source file for semantic search
+    parameters:
+      action: embed
+      file_path: "/project/src/main.py"
+      file_type: code
+      language_hint: python
+      embedding_model: code_bert
+      chunk_size: 256
+      store_embeddings: true
+      project_context: "proj_123"
+    response:
+      success: true
+      action: embed
+      data:
+        file_path: "/project/src/main.py"
+        chunks_created: 12
+        embedding_dimensions: 768
+        total_tokens: 2847
+        storage_info:
+          memory_entity_id: "mem_embed_001"
+          vector_index_id: "vec_idx_001"
+        file_analysis:
+          language: "python"
+          complexity_score: 0.7
+          key_functions: ["main", "process_data", "validate_input"]
+          imports: ["pandas", "numpy", "sklearn"]
+      metrics:
+        processing_time_seconds: 3.2
+        embedding_generation_time: 2.1
+        storage_time: 0.8
+        
+  - description: Search for similar code patterns across project
+    parameters:
+      action: search
+      search_query: "error handling with try-catch blocks"
+      project_context: "proj_123"
+      file_type: code
+      similarity_threshold: 0.7
+      max_results: 5
+      include_metadata: true
+    response:
+      success: true
+      action: search
+      data:
+        query: "error handling with try-catch blocks"
+        results_found: 5
+        search_results:
+          - file_path: "/project/src/utils.py"
+            similarity_score: 0.89
+            chunk_content: "try:\n    result = process_data(input)\nexcept ValidationError as e:\n    logger.error(f\"Validation failed: {e}\")\n    return None"
+            line_range: [45, 52]
+            context: "Error handling in data processing function"
+          - file_path: "/project/src/api.py"
+            similarity_score: 0.76
+            chunk_content: "try:\n    response = external_api.call(params)\nexcept requests.RequestException:\n    return {\"error\": \"API call failed\"}"
+            line_range: [123, 128]
+            context: "API error handling"
+      metrics:
+        search_time_seconds: 0.45
+        vectors_searched: 1247
+        
+  - description: Analyze code complexity and patterns in a file
+    parameters:
+      action: analyze
+      file_path: "/project/src/complex_module.py"
+      file_type: code
+      language_hint: python
+      semantic_analysis_depth: comprehensive
+    response:
+      success: true
+      action: analyze
+      data:
+        file_analysis:
+          complexity_metrics:
+            cyclomatic_complexity: 8.3
+            cognitive_complexity: 12.1
+            maintainability_index: 67.2
+          code_patterns:
+            design_patterns: ["singleton", "factory"]
+            anti_patterns: ["god_class"]
+            code_smells: ["long_method", "duplicate_code"]
+          semantic_analysis:
+            main_concepts: ["data_processing", "validation", "transformation"]
+            dependencies: ["pandas", "numpy", "custom_utils"]
+            responsibility_score: 0.6
+          recommendations:
+            - "Consider breaking down large methods"
+            - "Extract common validation logic"
+            - "Add more error handling"
+
+implementation_class: FileEmbedTool
+dependencies:
+  - sentence-transformers
+  - numpy
+  - scikit-learn
+
+notes: |
+  The File Embedding Tool enables semantic search and analysis across project files by creating
+  vector embeddings of code and documentation. This allows agents to find relevant code patterns,
+  similar functions, and related documentation based on semantic meaning rather than just keywords.
+  
+  The tool supports various embedding models optimized for different content types (code vs text)
+  and can analyze code complexity, identify patterns, and provide recommendations for improvement.

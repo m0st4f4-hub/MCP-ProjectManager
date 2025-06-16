@@ -47,11 +47,6 @@ from .error_protocol_tools import (
     list_error_protocols_tool,
     remove_error_protocol_tool,
 )
-from .user_role_tools import (
-    assign_role_tool,
-    list_roles_tool,
-    remove_role_tool,
-)
 from .verification_requirement_tools import (
     create_verification_requirement_tool,
     list_verification_requirements_tool,
@@ -115,10 +110,6 @@ __all__ = [
     'add_error_protocol_tool',
     'list_error_protocols_tool',
     'remove_error_protocol_tool',
-    # User role tools
-    'assign_role_tool',
-    'list_roles_tool',
-    'remove_role_tool',
     # Verification requirement tools
     'create_verification_requirement_tool',
     'list_verification_requirements_tool',

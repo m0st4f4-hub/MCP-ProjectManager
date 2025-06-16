@@ -16,6 +16,25 @@ eslint_report.json
 .pytest_cache/
 *.egg-info/
 
+# Virtual environments
+backend/fresh_venv/
+backend/venv/
+backend/env/
+venv/
+env/
+.venv/
+.env/
+
+# Log files
+*.log
+backend/server.log
+frontend/frontend.log
+
+# Backup files
+*.backup
+*.bak
+*.backup-original
+
 # IDE and editor files
 .vscode/
 .idea/
@@ -30,3 +49,6 @@ eslint_report.json
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Claude settings
+.claude/settings.local.json

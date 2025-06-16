@@ -12,9 +12,7 @@ from backend.schemas.project import (
 )
 from backend.schemas.api_responses import DataResponse, ListResponse, PaginationParams
 from backend.services.exceptions import EntityNotFoundError, DuplicateEntityError, ValidationError
-# from backend.auth import get_current_active_user, RequireRole  # Removed for single-user mode
 from backend.enums import ProjectStatus, ProjectPriority, ProjectVisibility
-# from backend.models import User as UserModel  # Removed for single-user mode
 
 router = APIRouter(
     prefix="",
@@ -39,7 +37,6 @@ async def create_project_endpoint(
     project_data: ProjectCreate,
     project_service: Annotated[ProjectService, Depends(get_project_service)],
     audit_log_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
-    # current_user: Annotated[UserModel, Depends(RequireRole(allowed_roles=[UserRoleEnum.ADMIN, UserRoleEnum.MANAGER]))]  # Removed for single-user mode
 ):
     """
     Create a new project. Only accessible by Admins and Managers.
@@ -184,7 +181,6 @@ async def archive_project_endpoint(
     project_id: Annotated[str, Path(description="ID of the project to archive")],
     project_service: Annotated[ProjectService, Depends(get_project_service)],
     audit_log_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
-    # current_user: Annotated[UserModel, Depends(RequireRole(allowed_roles=[UserRoleEnum.ADMIN, UserRoleEnum.MANAGER]))]  # Removed for single-user mode
 ):
     """
     Archive a project. Only accessible by Admins and Managers.
@@ -214,7 +210,6 @@ async def unarchive_project_endpoint(
     project_id: Annotated[str, Path(description="ID of the project to unarchive")],
     project_service: Annotated[ProjectService, Depends(get_project_service)],
     audit_log_service: Annotated[AuditLogService, Depends(get_audit_log_service)],
-    # current_user: Annotated[UserModel, Depends(RequireRole(allowed_roles=[UserRoleEnum.ADMIN, UserRoleEnum.MANAGER]))]  # Removed for single-user mode
 ):
     """
     Unarchive a project. Only accessible by Admins and Managers.

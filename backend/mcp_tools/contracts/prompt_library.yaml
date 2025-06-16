@@ -1,0 +1,183 @@
+name: prompt_library
+display_name: Prompt Library Manager
+description: Store, retrieve, and manage context-aware prompts for agent tasks and workflows
+version: 1.0.0
+category: agent
+tags:
+  - prompts
+  - templates
+  - context
+  - reusability
+
+timeout_seconds: 15
+max_retries: 3
+rate_limit_per_minute: 120
+
+parameters:
+  - name: action
+    type: string
+    description: Action to perform (create, get, list, update, delete, search)
+    required: true
+    enum: [create, get, list, update, delete, search]
+    
+  - name: prompt_id
+    type: string
+    description: Unique identifier for the prompt (required for get, update, delete)
+    required: false
+    pattern: "^[a-zA-Z0-9_-]+$"
+    max_length: 100
+    
+  - name: name
+    type: string
+    description: Human-readable name for the prompt (required for create)
+    required: false
+    min_length: 3
+    max_length: 200
+    
+  - name: content
+    type: string
+    description: The prompt template content with placeholders (required for create)
+    required: false
+    min_length: 10
+    max_length: 10000
+    
+  - name: category
+    type: string
+    description: Prompt category for organization
+    required: false
+    enum: [task_planning, code_generation, analysis, documentation, review, debugging, testing]
+    default: task_planning
+    
+  - name: tags
+    type: array
+    description: List of tags for prompt categorization and search
+    required: false
+    
+  - name: context_requirements
+    type: object
+    description: Required context variables and their types
+    required: false
+    
+  - name: agent_roles
+    type: array
+    description: List of agent roles that can use this prompt
+    required: false
+    
+  - name: search_query
+    type: string
+    description: Search query for finding prompts (used with search action)
+    required: false
+    min_length: 2
+    max_length: 500
+    
+  - name: variables
+    type: object
+    description: Variables to substitute in prompt template (used with get action)
+    required: false
+    
+  - name: include_examples
+    type: boolean
+    description: Include usage examples in response
+    required: false
+    default: false
+
+response:
+  type: object
+  description: Prompt library operation result
+  schema:
+    type: object
+    properties:
+      success:
+        type: boolean
+      action:
+        type: string
+      data:
+        type: object
+      message:
+        type: string
+    required: [success, action]
+
+errors:
+  - code: PROMPT_NOT_FOUND
+    message: Prompt with specified ID not found
+    recoverable: false
+    
+  - code: INVALID_TEMPLATE
+    message: Prompt template contains invalid placeholders or syntax
+    recoverable: true
+    
+  - code: DUPLICATE_PROMPT
+    message: Prompt with this name already exists
+    recoverable: true
+    
+  - code: MISSING_VARIABLES
+    message: Required template variables not provided
+    recoverable: true
+    
+  - code: ACCESS_DENIED
+    message: Agent role not authorized to access this prompt
+    recoverable: false
+
+usage_examples:
+  - description: Create a new task planning prompt
+    parameters:
+      action: create
+      name: "Feature Development Planning"
+      content: "Plan the development of {feature_name} with the following requirements:\n{requirements}\n\nConsider:\n- Architecture implications\n- Testing strategy\n- Timeline estimation\n- Risk assessment"
+      category: task_planning
+      tags: ["development", "planning", "features"]
+      context_requirements:
+        feature_name: string
+        requirements: string
+      agent_roles: ["developer", "architect", "project_manager"]
+    response:
+      success: true
+      action: create
+      data:
+        prompt_id: "feat_dev_planning_001"
+        name: "Feature Development Planning"
+        created_at: "2025-06-15T12:00:00Z"
+      message: "Prompt created successfully"
+      
+  - description: Get and render a prompt with variables
+    parameters:
+      action: get
+      prompt_id: "feat_dev_planning_001"
+      variables:
+        feature_name: "User Authentication System"
+        requirements: "OAuth2 integration, role-based access, audit logging"
+    response:
+      success: true
+      action: get
+      data:
+        prompt_id: "feat_dev_planning_001"
+        name: "Feature Development Planning"
+        rendered_content: "Plan the development of User Authentication System with the following requirements:\nOAuth2 integration, role-based access, audit logging\n\nConsider:\n- Architecture implications\n- Testing strategy\n- Timeline estimation\n- Risk assessment"
+        metadata:
+          category: task_planning
+          tags: ["development", "planning", "features"]
+          
+  - description: Search prompts by keyword
+    parameters:
+      action: search
+      search_query: "testing strategy"
+      include_examples: true
+    response:
+      success: true
+      action: search
+      data:
+        prompts:
+          - prompt_id: "feat_dev_planning_001"
+            name: "Feature Development Planning"
+            category: task_planning
+            relevance_score: 0.85
+            snippet: "...Consider:\n- Architecture implications\n- Testing strategy\n- Timeline estimation..."
+
+implementation_class: PromptLibraryTool
+dependencies: []
+
+notes: |
+  The Prompt Library Tool provides a centralized way to manage reusable prompts for agent workflows.
+  Prompts can include template variables that are substituted at runtime, making them highly flexible
+  for different contexts. The tool supports categorization, tagging, and search functionality to help
+  agents quickly find the right prompts for their tasks.

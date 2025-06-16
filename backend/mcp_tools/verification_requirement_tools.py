@@ -6,8 +6,8 @@ from typing import Optional
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from models.agent_verification_requirement import AgentVerificationRequirement
-from services.audit_log_service import AuditLogService
+from backend.models.agent_verification_requirement import AgentVerificationRequirement
+from backend.services.audit_log_service import AuditLogService
 
 logger = logging.getLogger(__name__)
 
